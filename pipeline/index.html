@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bid Pipeline — Y8S Operations Portal</title>
+<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="Y8S Operations Portal">
+<meta property="og:title" content="YATES Company, LLC — Operations Portal">
+<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Bid Pipeline' });
+const me = currentPersona();
+if (!me || me.perms.external || !(can('bids') || can('margins'))) {
+  if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
+    <div class="ynote">The bid pipeline requires estimating or financial access.</div></div>`;
+} else {
+  render();
+}
+
+function render() {
+  const showMargin = can('margins');
+  const P = BID_PIPELINE;
+  const open = P.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
+  const won = P.filter(b => b.status === 'Won');
+  const lost = P.filter(b => b.status === 'Lost');
+  const hitRate = won.length / (won.length + lost.length) * 100;
+  const dollarHit = won.reduce((s, b) => s + b.amount, 0) / (won.reduce((s, b) => s + b.amount, 0) + lost.reduce((s, b) => s + b.amount, 0)) * 100;
+  const avgMarginWon = won.reduce((s, b) => s + b.marginPct, 0) / won.length;
+  const avgMarginLost = lost.reduce((s, b) => s + b.marginPct, 0) / lost.length;
+  const openVal = open.reduce((s, b) => s + b.amount, 0);
+  const weighted = open.reduce((s, b) => s + b.amount * ({ Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status]), 0);
+
+  const stPill = (st) => `<span class="ypill ${{ Draft: 'gray', Submitted: 'blue', 'Pending Award': 'amber', Won: 'green', Lost: 'red' }[st]}">${st}</span>`;
+
+  const stages = [['Draft', '#8a93a1'], ['Submitted', '#083d75'], ['Pending Award', '#b98a36'], ['Won (T-6 mo)', '#4f7d5d'], ['Lost (T-6 mo)', '#b1503f']];
+  const stageVals = [
+    P.filter(b => b.status === 'Draft').reduce((s, b) => s + b.amount, 0),
+    P.filter(b => b.status === 'Submitted').reduce((s, b) => s + b.amount, 0),
+    P.filter(b => b.status === 'Pending Award').reduce((s, b) => s + b.amount, 0),
+    won.reduce((s, b) => s + b.amount, 0),
+    lost.reduce((s, b) => s + b.amount, 0),
+  ];
+  const maxStage = Math.max(...stageVals, 1);
+
+  const rows = P.slice().sort((a, b) => b.due.localeCompare(a.due)).map(b => `
+    <tr>
+      <td><b>${b.id}</b></td>
+      <td>${esc(b.project)}<div class="ynote">${esc(b.owner)}${b.note ? ' · <i>' + esc(b.note) + '</i>' : ''}</div></td>
+      <td>${esc(b.sector)}</td>
+      <td>${esc(b.est)}</td>
+      <td>${fmtDateShort(b.due)}, ${b.due.slice(2, 4)}</td>
+      <td style="text-align:right">${fmt$(b.amount)}</td>
+      ${showMargin ? `<td style="text-align:right">${fmtPct(b.marginPct)}</td>` : ''}
+      <td>${stPill(b.status)}${b.jobId ? ` <a href="/yates/jobs/job/?id=${b.jobId}" style="font-size:10px;color:var(--color-blue);font-weight:700">→ ${b.jobId}</a>` : ''}</td>
+    </tr>`).join('');
+
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">PRECONSTRUCTION · WIN/LOSS INTELLIGENCE</div>
+        <h1>Bid <em>Pipeline</em></h1>
+        <div class="sub">Every bid out the door — status, hit rate, and where margin wins or loses work. Won bids link straight to their job; the weighted pipeline feeds the revenue forecast.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> ${open.length} OPEN BIDS · ${fmtK(openVal)}</span>
+        <span style="display:flex;gap:6px">${srcChip('prop')}</span>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Open Pipeline</div><div class="v">${fmtK(openVal)}</div><div class="s">${open.length} bids in flight</div></div>
+      <div class="ykpi"><div class="l">Weighted Pipeline</div><div class="v">${fmtK(weighted)}</div><div class="s">by stage probability</div></div>
+      <div class="ykpi green"><div class="l">Hit Rate (T-6 mo)</div><div class="v">${fmtPct(hitRate, 0)}</div><div class="s">${won.length} won / ${lost.length} lost · ${fmtPct(dollarHit, 0)} by $</div></div>
+      ${showMargin ? `<div class="ykpi amber"><div class="l">Avg Margin — Won</div><div class="v">${fmtPct(avgMarginWon)}</div><div class="s">vs ${fmtPct(avgMarginLost)} on lost bids</div></div>
+      <div class="ykpi red"><div class="l">Margin Insight</div><div class="v" style="font-size:14px;line-height:1.4">Losses cluster below ${fmtPct(14, 0)}</div><div class="s">price isn't the win lever — fit is</div></div>` : ''}
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Pipeline by Stage</h2><span class="k">$ value</span></div>
+        <div class="demo-aging">${stages.map((st, i) => `
+          <div class="demo-aging-row">
+            <div class="lab" style="width:110px">${st[0]}</div>
+            <div class="bar"><i style="width:${stageVals[i] / maxStage * 100}%;background:${st[1]}"></i></div>
+            <div class="amt">${fmtK(stageVals[i])}</div>
+          </div>`).join('')}</div>
+        <div class="ynote" style="margin-top:10px">Weighted pipeline applies 15% / 35% / 65% probability by stage — ${fmtK(weighted)} expected award value.</div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Win Rate by Sector</h2><span class="k">trailing 6 months</span></div>
+        <div class="demo-chart" style="height:230px"><canvas id="ch-sector"></canvas></div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Bid Register</h2><span class="k">estimators: David Glenney · Taz Abid · Joe Luna</span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th>Bid #</th><th>Project / Owner</th><th>Sector</th><th>Estimator</th><th>Bid Date</th><th style="text-align:right">Amount</th>${showMargin ? '<th style="text-align:right">Margin Bid</th>' : ''}<th>Status</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      </div>
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+
+  /* sector win-rate chart */
+  const sectors = [...new Set(BID_PIPELINE.filter(b => ['Won', 'Lost'].includes(b.status)).map(b => b.sector))];
+  const rates = sectors.map(sec => {
+    const w = BID_PIPELINE.filter(b => b.sector === sec && b.status === 'Won').length;
+    const l = BID_PIPELINE.filter(b => b.sector === sec && b.status === 'Lost').length;
+    return w / (w + l) * 100;
+  });
+  new Chart($('#ch-sector'), {
+    type: 'bar',
+    data: { labels: sectors, datasets: [{ label: 'Win rate', data: rates, backgroundColor: rates.map(r => r >= 60 ? '#4f7d5d' : r >= 40 ? '#b98a36' : '#b1503f') }] },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { min: 0, max: 100, ticks: { callback: v => v + '%', font: { size: 10 } } }, y: { ticks: { font: { size: 10 } } } } }
+  });
+}
+</script>
+</body>
+</html>

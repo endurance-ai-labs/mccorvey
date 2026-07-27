@@ -132,7 +132,7 @@ function secOverview(m) {
         <div class="demo-chart" style="height:240px"><canvas id="ch-curve"></canvas></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Project Team & Change Orders</h2></div>
+        <div class="demo-panel-head"><h2>Project Team & Change Orders</h2>${internal ? `<button class="pa-btn primary" style="cursor:pointer" onclick="newCO()">＋ New Change Order</button>` : ''}</div>
         <div style="font-size:12.5px;line-height:2;color:var(--color-cloud-whisper)">
           <b>Lead Subcontractor:</b> ${esc(j.sub)}<br>
           <b>Project Manager:</b> ${esc(j.pm)} &nbsp;·&nbsp; <b>Superintendent:</b> ${esc(j.super)}<br>
@@ -140,7 +140,7 @@ function secOverview(m) {
         </div>
         <table class="demo-tbl tbl-left" style="margin-top:12px">
           <thead><tr><th style="width:64px">CO #</th><th>Description</th><th style="text-align:right;width:110px">Amount</th><th style="width:230px">Status</th></tr></thead>
-          <tbody>${(j.changeOrders || []).map(c => `<tr><td><b>${c.num}</b></td><td>${esc(c.desc)}</td><td style="text-align:right">${c.amount ? fmt$2(c.amount) : '—'}</td><td><span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span></td></tr>`).join('') || '<tr><td colspan="4" class="ynote">No change orders on this job.</td></tr>'}</tbody>
+          <tbody>${(j.changeOrders || []).map(c => `<tr><td><b>${c.num}</b></td><td>${esc(c.desc)}</td><td style="text-align:right">${c.amount ? fmt$2(c.amount) : '—'}</td><td>${internal ? coCell(c) : `<span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span>`}</td></tr>`).join('') || '<tr><td colspan="4" class="ynote">No change orders on this job.</td></tr>'}</tbody>
         </table>
       </div>
     </div>
@@ -196,6 +196,77 @@ function updPct(i, v) {
   render();
 }
 
+
+
+/* ---------- change-order builder (localStorage) with PM + Owner e-sign ---------- */
+function coStore() { try { return JSON.parse(localStorage.getItem('yates-co:' + j.id) || '[]'); } catch (e) { return []; } }
+function coSave(list) { try { localStorage.setItem('yates-co:' + j.id, JSON.stringify(list)); } catch (e) {} }
+
+function newCO() {
+  const ov = document.createElement('div');
+  ov.className = 'svc-modal';
+  ov.innerHTML = `
+    <div class="svc-card" onclick="event.stopPropagation()" style="max-width:600px">
+      <div class="svc-card-head">
+        <div><b>＋ New Change Order — ${j.id}</b><div class="ynote">Priced with the standard bid levers (OH 6% · profit 9% · bond &amp; GL 1.85%). Routes PM → Owner for e-signature, then rolls into the contract sum and payment package.</div></div>
+        <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
+      </div>
+      <label class="yfld" style="margin-bottom:10px">Description of change<textarea class="yin" id="co-desc" rows="3" placeholder="e.g. Add CO2 monitoring to 12 additional classrooms per district request"></textarea></label>
+      <label class="yfld" style="margin-bottom:10px">Direct cost (labor + materials)<input class="yin num" id="co-cost" type="number" step="100" placeholder="0"></label>
+      <div class="ynote" id="co-calc" style="margin-bottom:6px">Sell price computes as you type.</div>
+      <div class="ytoolrow" style="margin-bottom:0">
+        <div class="spacer"></div>
+        <button class="pa-btn primary" style="cursor:pointer" id="co-create">Create Change Order</button>
+      </div>
+    </div>`;
+  ov.addEventListener('click', () => ov.remove());
+  document.body.appendChild(ov);
+  const sell = (c) => Math.round(c * 1.06 * 1.09 * 1.0185 * 100) / 100;
+  ov.querySelector('#co-cost').addEventListener('input', (e) => {
+    const c = parseFloat(e.target.value) || 0;
+    ov.querySelector('#co-calc').innerHTML = c ? `Direct ${fmt$2(c)} → <b>sell price ${fmt$2(sell(c))}</b> (OH + profit + bond/GL applied)` : 'Sell price computes as you type.';
+  });
+  ov.querySelector('#co-create').addEventListener('click', () => {
+    const desc = ov.querySelector('#co-desc').value.trim();
+    const c = parseFloat(ov.querySelector('#co-cost').value) || 0;
+    if (!desc || !c) return;
+    const list = coStore();
+    const num = 'CO-' + String((j.changeOrders || []).filter(x => !x.portal).length + list.length + 1).padStart(2, '0');
+    list.push({ num, desc, amount: sell(c), status: 'Awaiting PM Signature', portal: true, sigs: {} });
+    coSave(list);
+    j.changeOrders.push(list[list.length - 1]);
+    ov.remove();
+    render();
+  });
+}
+
+function coSign(num, who) {
+  const list = coStore();
+  const co = list.find(x => x.num === num); if (!co) return;
+  const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  if (who === 'pm') {
+    const p = currentPersona();
+    if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) { alert('The PM signature requires a project manager (Tyler, Jordan or Brandon). Switch user via the account menu.'); return; }
+    co.sigs.pm = { name: p.name, at: now };
+    co.status = 'Awaiting Owner Signature';
+  } else {
+    const name = prompt('Owner / authorized agent — type your full name to sign electronically:');
+    if (!name || !name.trim()) return;
+    co.sigs.owner = { name: name.trim(), at: now };
+    co.status = 'Approved';
+  }
+  coSave(list);
+  const live = j.changeOrders.find(x => x.num === num && x.portal);
+  if (live) Object.assign(live, co);
+  render();
+}
+
+function coCell(c) {
+  if (!c.portal) return `<span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span>`;
+  if (c.status === 'Awaiting PM Signature') return `<button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','pm')">✍ PM Sign</button>`;
+  if (c.status === 'Awaiting Owner Signature') return `<span class="ynote">PM: ${esc(c.sigs.pm.name)} ✓</span> <button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','owner')">✍ Owner Sign</button>`;
+  return `<span class="demo-chip ok">APPROVED ✓</span><div class="ynote">${esc(c.sigs.pm ? c.sigs.pm.name : '')} · ${esc(c.sigs.owner ? c.sigs.owner.name : '')}</div>`;
+}
 
 /* ============ ENGINEERING & SUBMITTALS ============ */
 function secEngineering() {
@@ -666,8 +737,8 @@ function showG702(num) {
       <table>
         <tbody>
           <tr><td>1. Original contract sum</td><td class="num">${fmt$2(j.contract)}</td></tr>
-          <tr><td>2. Net change by change orders</td><td class="num">$0.00</td></tr>
-          <tr><td>3. Contract sum to date</td><td class="num">${fmt$2(j.contract)}</td></tr>
+          <tr><td>2. Net change by approved change orders</td><td class="num">${fmt$2(m.coApproved)}</td></tr>
+          <tr><td>3. Contract sum to date</td><td class="num">${fmt$2(j.contract + m.coApproved)}</td></tr>
           <tr><td>4. Total completed &amp; stored to date</td><td class="num">${fmt$2(Math.min(j.contract, (prior + p.certified) / (isRet ? 1 : (1 - j.retainagePct / 100))))}</td></tr>
           <tr><td>5. Retainage (${j.retainagePct}% of completed work)</td><td class="num">${fmt$2(isRet ? 0 : Math.min(j.contract, (prior + p.certified) / (1 - j.retainagePct / 100)) * j.retainagePct / 100)}</td></tr>
           <tr><td>6. Total earned less retainage</td><td class="num">${fmt$2(prior + p.certified)}</td></tr>
