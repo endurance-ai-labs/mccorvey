@@ -76,6 +76,7 @@ const mLong = (ym) => { const d = new Date(ym + '-15T12:00:00'); return d.toLoca
 let asOf = MONTHS.length - 1;
 let fbasis = 12;
 let view = 'annual';
+let svcGrowth = 45;   // service MRR growth %/yr (attach + upgrades)
 const A = { newAwards: 6.0, contingency: 1.0, tax: 21.0, distribution: 40.0 };  // ratio levers
 const G = { rev: [{ f: 1, t: 60, r: 6.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.0 }] };
 let ovrInplace = {};   // key -> override value (annual $)
@@ -336,6 +337,27 @@ function render() {
       </div>
     </div>
 
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Service Line — Recurring Revenue Build</h2>
+        <span style="display:flex;gap:10px;align-items:center">${srcChip('st')}
+        <span class="k">MRR from the agreement book · growth lever</span>
+        <span class="fc-assump" style="display:inline-flex;align-items:center;gap:6px;margin:0"><label style="margin:0">Service growth /yr</label><div class="ip" style="width:86px"><input data-svcg value="${svcGrowth}" inputmode="decimal"><span class="u">%</span></div></span></span></div>
+      <div class="demo-two">
+        <div class="demo-chart" style="height:240px"><canvas id="ch-service"></canvas></div>
+        <div style="font-size:12.5px;line-height:1.8;color:var(--color-cloud-whisper)">
+          ${(() => {
+            const mrr = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+            const arr0 = mrr * 12;
+            const arr5 = arr0 * Math.pow(1 + svcGrowth / 100, 5);
+            const rev5 = cd[8].revenue;
+            return `Current agreement book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} ARR)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active agreements.<br>
+            At ${svcGrowth}%/yr (construction-to-service conversion + tier upgrades), the service line reaches <b>${fmtK(arr5)} ARR by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, recurring.<br>
+            <span class="ynote">Recurring revenue is the multiplier on the $300M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
+          })()}
+        </div>
+      </div>
+    </div>
+
     <div class="demo-panel">
       <div class="demo-panel-head"><h2>Job-Level Contribution — Construction Division</h2><span class="k">projected margin at completion</span></div>
       <table class="demo-tbl">
@@ -368,6 +390,7 @@ function wire() {
   $('#fc-month').addEventListener('change', e => { asOf = +e.target.value; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); });
   $$('#fc-basis button').forEach(b => b.addEventListener('click', () => { fbasis = +b.dataset.b; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); }));
   $$('#fc-view button').forEach(b => b.addEventListener('click', () => { view = b.dataset.v; render(); }));
+  $$('input[data-svcg]').forEach(inp => inp.addEventListener('change', () => { const v = parseFloat(inp.value); if (!isNaN(v)) svcGrowth = v; render(); }));
   $$('input[data-g]').forEach(inp => inp.addEventListener('change', () => {
     const v = parseFloat(inp.value); if (!isNaN(v)) G[inp.dataset.g] = [{ f: 1, t: 60, r: v }];
     buildCum(); render();
@@ -400,6 +423,23 @@ function drawCharts(cd) {
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
       scales: { y: { ticks: { callback: v => '$' + v.toFixed(0) + 'M', font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
   });
+  const chSvc = $('#ch-service');
+  if (chSvc) {
+    const mrr0 = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
+    new Chart(chSvc, {
+      type: 'bar',
+      data: {
+        labels: years,
+        datasets: [
+          { label: 'Construction revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
+          { label: 'Service revenue (recurring)', data: [1, 2, 3, 4, 5].map(y => mrr0 * Math.pow(1 + svcGrowth / 100, y) / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
+        ],
+      },
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+        scales: { x: { stacked: true, ticks: { font: { size: 10 } } }, y: { stacked: true, ticks: { callback: v => '$' + v.toFixed(1) + 'M', font: { size: 10 } } } } }
+    });
+  }
   new Chart($('#ch-backlog'), {
     type: 'doughnut',
     data: {
