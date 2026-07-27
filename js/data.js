@@ -687,3 +687,37 @@ window.SERVICE_TIERS = SERVICE_TIERS;
     j.eng = { design, submittals, rfis, equipment, servicePkg };
   });
 })();
+
+
+/* =========================================================
+   SERVICE DIVISION — agreements book + dispatch board.
+   Tiers and inclusions mirror y8sco.com/services-packages.
+   ========================================================= */
+const SERVICE_AGREEMENTS = [
+  { client: "Central Texas ISD", site: "12 campuses · San Marcos", tier: "Monthly", monthly: 3850, start: "2025-01-01", renewal: "2026-12-31", status: "Active", tech: "M. Ibarra" },
+  { client: "Hillview State University", site: "Science Hall + 3 bldgs", tier: "Monthly", monthly: 3200, start: "2025-02-01", renewal: "2027-01-31", status: "Active", tech: "T. Coleman" },
+  { client: "City of San Marcos", site: "Civic Center + Library", tier: "Quarterly", monthly: 1150, start: "2024-03-01", renewal: "2026-08-31", status: "Expiring", tech: "L. Fuentes" },
+  { client: "Guadalupe County", site: "Annex + Courthouse", tier: "Quarterly", monthly: 980, start: "2024-04-01", renewal: "2027-03-31", status: "Active", tech: "M. Ibarra" },
+  { client: "Plum Creek Medical Partners", site: "Kyle MOB", tier: "Monthly", monthly: 2650, start: "2024-08-01", renewal: "2026-09-30", status: "Expiring", tech: "T. Coleman" },
+  { client: "Blanco River Holdings", site: "Office Park — 3 bldgs", tier: "Quarterly", monthly: 890, start: "2024-05-01", renewal: "2027-04-30", status: "Active", tech: "L. Fuentes" },
+  { client: "City of New Braunfels", site: "Rec Center + Pool", tier: "Quarterly", monthly: 1240, start: "2025-03-01", renewal: "2027-02-28", status: "Active", tech: "M. Ibarra" },
+  { client: "Hill Country Baptist Health", site: "Main Hospital Campus", tier: "Monthly", monthly: 3675, start: "2025-06-01", renewal: "2027-05-31", status: "Active", tech: "T. Coleman" },
+  { client: "Riverbend Church", site: "Sanctuary + Annex", tier: "Annual", monthly: 420, start: "2024-10-01", renewal: "2026-09-30", status: "Expiring", tech: "L. Fuentes" },
+  { client: "San Marcos Outlet Pavilion", site: "Retail Pavilion", tier: "Custom", monthly: 1550, start: "2025-07-01", renewal: "2027-06-30", status: "Active", tech: "M. Ibarra" },
+  { client: "Comal County Offices", site: "3 county facilities", tier: "Annual", monthly: 510, start: "2025-01-15", renewal: "2027-01-14", status: "Active", tech: "L. Fuentes" },
+  { client: "Alamo Foods Distribution", site: "Cold Storage — Selma", tier: "Monthly", monthly: 2980, start: "2025-09-01", renewal: "2026-10-15", status: "Proposed", tech: "—" },
+  { client: "Lone Star Data Infrastructure", site: "Buda Data Center", tier: "Custom", monthly: 4400, start: "2026-02-01", renewal: "2027-01-31", status: "Proposed", tech: "—" },
+  { client: "Wimberley ISD", site: "District-wide", tier: "Quarterly", monthly: 1380, start: "2025-12-01", renewal: "2026-11-30", status: "Proposed", tech: "—" },
+];
+const SERVICE_CALLS = [
+  { num: "SC-4211", client: "Hill Country Baptist Health", issue: "OR suite humidity alarm — AHU-2 valve hunting", priority: "Emergency", tech: "T. Coleman", status: "In Progress", opened: "2026-07-27" },
+  { num: "SC-4209", client: "Central Texas ISD", issue: "Campus 4 chiller 2 failed to stage during afternoon peak", priority: "High", tech: "M. Ibarra", status: "In Progress", opened: "2026-07-27" },
+  { num: "SC-4206", client: "City of San Marcos", issue: "Library RTU-3 economizer damper fault", priority: "Standard", tech: "L. Fuentes", status: "Scheduled", opened: "2026-07-26" },
+  { num: "SC-4204", client: "Plum Creek Medical Partners", issue: "Suite 210 zone sensor offline — comm loss", priority: "Standard", tech: "T. Coleman", status: "Scheduled", opened: "2026-07-26" },
+  { num: "SC-4199", client: "Guadalupe County", issue: "Courthouse boiler lockout — flame sensor", priority: "High", tech: "M. Ibarra", status: "Parts on Order", opened: "2026-07-24" },
+  { num: "SC-4195", client: "Blanco River Holdings", issue: "Bldg B after-hours override schedule not releasing", priority: "Standard", tech: "L. Fuentes", status: "Dispatched", opened: "2026-07-24" },
+  { num: "SC-4192", client: "Hillview State University", issue: "Science Hall lab exhaust tracking alarm", priority: "High", tech: "T. Coleman", status: "Parts on Order", opened: "2026-07-23" },
+  { num: "SC-4188", client: "City of New Braunfels", issue: "Pool dehumidification unit condensate alarm", priority: "Standard", tech: "M. Ibarra", status: "Scheduled", opened: "2026-07-22" },
+];
+window.SERVICE_AGREEMENTS = SERVICE_AGREEMENTS;
+window.SERVICE_CALLS = SERVICE_CALLS;

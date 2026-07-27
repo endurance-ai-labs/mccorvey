@@ -75,6 +75,7 @@ const mLong = (ym) => { const d = new Date(ym + '-15T12:00:00'); return d.toLoca
 /* ---- state ---- */
 let asOf = MONTHS.length - 1;
 let fbasis = 12;
+let view = 'annual';
 const A = { newAwards: 6.0, contingency: 1.0, tax: 21.0, distribution: 40.0 };  // ratio levers
 const G = { rev: [{ f: 1, t: 60, r: 6.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.0 }] };
 let ovrInplace = {};   // key -> override value (annual $)
@@ -165,6 +166,102 @@ function monthOpts() {
 const MJOBS = JOBS.map(x => ({ x, mm: jobMetrics(x) }));
 const backlogRemaining = MJOBS.reduce((s, { x, mm }) => s + mm.remaining, 0);
 
+
+/* ---- monthly forward value (month m = 1..60) ---- */
+function monthVal(m) {
+  const b = { revenue: inplace.revenue / 12 * CUM.rev[m] };
+  CK.forEach(k => b['c_' + k] = inplace['c_' + k] / 12 * CUM.cost[m]);
+  OK.forEach(k => b['o_' + k] = inplace['o_' + k] / 12 * CUM.oh[m]);
+  return derive(b);
+}
+const fwdLabel = (m) => { const d = new Date(MONTHS[asOf].m + '-15T12:00:00'); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); };
+const M$ = (n) => '$' + Math.round(n).toLocaleString();
+
+/* ---- hover explanations: the exact logic behind every number ---- */
+const LABELS = {};
+LINES.forEach(L => { if (L[0] !== 'h') LABELS[L[0]] = L[1]; });
+const INPUT_KEYS = new Set(['revenue'].concat(CK.map(k => 'c_' + k), OK.map(k => 'o_' + k)));
+const growthOf = (key) => key === 'revenue' ? G.rev[0].r : key.startsWith('c_') ? G.cost[0].r : G.oh[0].r;
+
+function explDerived(key, d, per) {
+  switch (key) {
+    case 'totCost': return 'Sum of the four construction cost lines:\n' + CK.map(k => LABELS['c_' + k].split('(')[0].trim() + ' ' + M$(d['c_' + k])).join(' + ') + '\n= ' + M$(d.totCost);
+    case 'gross': return 'Gross profit = revenue − total cost of construction\n' + M$(d.revenue) + ' − ' + M$(d.totCost) + ' = ' + M$(d.gross);
+    case 'grossPct': return 'Gross margin = gross profit ÷ revenue\n' + M$(d.gross) + ' ÷ ' + M$(d.revenue) + ' = ' + d.grossPct.toFixed(1) + '%';
+    case 'totOh': return 'Sum of the seven overhead lines = ' + M$(d.totOh);
+    case 'conting': return 'Warranty & contingency reserve = revenue × ' + A.contingency + '%\n' + M$(d.revenue) + ' × ' + A.contingency + '% = ' + M$(d.conting);
+    case 'ebitda': return 'EBITDA = gross profit − overhead − contingency\n' + M$(d.gross) + ' − ' + M$(d.totOh) + ' − ' + M$(d.conting) + ' = ' + M$(d.ebitda);
+    case 'ebitdaPct': return 'EBITDA margin = EBITDA ÷ revenue\n' + M$(d.ebitda) + ' ÷ ' + M$(d.revenue) + ' = ' + d.ebitdaPct.toFixed(1) + '%';
+    case 'tax': return 'Income tax provision = max(0, EBITDA) × ' + A.tax + '%\n' + M$(Math.max(0, d.ebitda)) + ' × ' + A.tax + '% = ' + M$(d.tax);
+    case 'net': return 'Net income = EBITDA − tax\n' + M$(d.ebitda) + ' − ' + M$(d.tax) + ' = ' + M$(d.net);
+    case 'dist': return 'Owner distribution = net income × ' + A.distribution + '% payout\n' + M$(Math.max(0, d.net)) + ' × ' + A.distribution + '% = ' + M$(d.dist);
+    case 'retained': return 'Retained for working capital = net income − distribution\n' + M$(d.net) + ' − ' + M$(d.dist) + ' = ' + M$(d.retained);
+  }
+  return '';
+}
+function explAnnual(key, c, cd) {
+  const lab = LABELS[key] || key;
+  const d = cd[c];
+  if (INPUT_KEYS.has(key)) {
+    if (c <= 2) { const win = [3, 6, 12][c];
+      return '<b>' + lab + ' — T-' + win + ' basis</b>\nSum of the last ' + win + ' months of QuickBooks actuals × ' + (12 / win).toFixed(win === 12 ? 0 : 1) + ' to annualize.\n= ' + M$(d[key]) + '/yr run-rate'; }
+    if (c === 3) return '<b>' + lab + ' — In-Place</b>\nEditable annual run-rate, seeded from the T-' + fbasis + ' trailing basis (' + M$(base[key]) + ').\nEdits ripple through every Year 1–5 and monthly figure.';
+    const y = c - 3, r = growthOf(key);
+    return '<b>' + lab + ' — Year ' + y + '</b>\nIn-Place ' + M$(inplace[key]) + ' ÷ 12, grown at ' + r + '%/yr (compounded monthly), summed over months ' + ((y - 1) * 12 + 1) + '–' + (y * 12) + '.\n= ' + M$(d[key]);
+  }
+  const head = c <= 2 ? 'T-' + [3, 6, 12][c] + ' basis' : c === 3 ? 'In-Place' : 'Year ' + (c - 3);
+  return '<b>' + lab + ' — ' + head + '</b>\n' + explDerived(key, d);
+}
+function explMonthly(key, m, d) {
+  const lab = LABELS[key] || key;
+  if (INPUT_KEYS.has(key)) {
+    const r = growthOf(key), cum = (key === 'revenue' ? CUM.rev : key.startsWith('c_') ? CUM.cost : CUM.oh)[m];
+    return '<b>' + lab + ' — ' + fwdLabel(m) + ' (month ' + m + ')</b>\nIn-Place ' + M$(inplace[key]) + '/yr ÷ 12 = ' + M$(inplace[key] / 12) + '/mo\n× growth factor ' + cum.toFixed(4) + ' (' + r + '%/yr compounded monthly for ' + m + ' months)\n= ' + M$(d[key]);
+  }
+  return '<b>' + lab + ' — ' + fwdLabel(m) + ' (month ' + m + ')</b>\n' + explDerived(key, d);
+}
+const expAttr = (txt) => ' data-exp="' + txt.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '&#10;') + '"';
+
+/* ---- table renderers ---- */
+function annualTable(cd) {
+  return `<div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="fc-tbl">
+          <thead><tr><th>Line item · $/yr</th>${COLS.map(cc => `<th>${cc}</th>`).join('')}</tr></thead>
+          <tbody id="fc-body">${LINES.map(Lr => {
+            if (Lr[0] === 'h') return `<tr class="head"><td colspan="10">${Lr[1]}</td></tr>`;
+            const key = Lr[0], lab = Lr[1];
+            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
+            const neg = Lr[2] === 1 || Lr[5] === 1;
+            const editK = Lr[3], pct = Lr[4] === 'pct';
+            let cells = '';
+            for (let cc = 0; cc < 9; cc++) {
+              if (editK && cc === 3) cells += `<td class="fc-ipcol"${expAttr(explAnnual(key, 3, cd))}><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
+              else cells += `<td${cc === 3 ? ' class="fc-ipcol"' : ''}${expAttr(explAnnual(key, cc, cd))}>${cellFmt(cd[cc][key], neg, pct)}</td>`;
+            }
+            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>`;
+}
+function monthlyTable() {
+  const mv = []; for (let m = 1; m <= 60; m++) mv.push(monthVal(m));
+  return `<div class="fc-mwrap grid-scroll">
+        <table class="fc-tbl">
+          <thead><tr><th>Line item · $/mo</th>${mv.map((_, i) => `<th>${fwdLabel(i + 1)}</th>`).join('')}</tr></thead>
+          <tbody>${LINES.map(Lr => {
+            if (Lr[0] === 'h') return `<tr class="head"><td colspan="61">${Lr[1]}</td></tr>`;
+            const key = Lr[0], lab = Lr[1];
+            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
+            const neg = Lr[2] === 1 || Lr[5] === 1;
+            const pct = Lr[4] === 'pct';
+            const cells = mv.map((d, i) => `<td${expAttr(explMonthly(key, i + 1, d))}>${cellFmt(d[key], neg, pct)}</td>`).join('');
+            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+      <div class="fc-inplace-note">Monthly · 60-month view — every forward month compounds the In-Place run-rate at the growth schedule. Hover any figure for the exact calculation behind it.</div>`;
+}
+
 function gsummary() {
   const seg = list => list.map(t => 'mo ' + t.f + '-' + t.t + ': ' + t.r + '%').join(' · ');
   return `<b style="color:var(--color-blue)">Growth schedule</b> — Revenue [${seg(G.rev)}] &nbsp; Construction cost [${seg(G.cost)}] &nbsp; Overhead [${seg(G.oh)}]`;
@@ -211,6 +308,8 @@ function render() {
         <select id="fc-month" class="pa-btn" style="cursor:pointer">${monthOpts()}</select>
         <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">Forecast base</label>
         <div class="sreo-modes" id="fc-basis"><button data-b="3" ${fbasis === 3 ? 'class="active"' : ''}>T-3</button><button data-b="6" ${fbasis === 6 ? 'class="active"' : ''}>T-6</button><button data-b="12" ${fbasis === 12 ? 'class="active"' : ''}>T-12</button></div>
+        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">View</label>
+        <div class="sreo-modes" id="fc-view"><button data-v="annual" ${view === 'annual' ? 'class="active"' : ''}>Annual</button><button data-v="monthly" ${view === 'monthly' ? 'class="active"' : ''}>Monthly · 60 mo</button></div>
         <span class="ynote">Edit any In-Place cell — Years 1–5 compound it monthly per the growth schedule.</span>
       </div>
       <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-muted);margin:0 0 6px">Growth &amp; ratio levers</div>
@@ -221,24 +320,7 @@ function render() {
         ${A_FIELDS.map(f => `<div class="fc-assump"><label>${f[1]}</label><div class="ip"><input data-a="${f[0]}" value="${A[f[0]]}" inputmode="decimal"><span class="u">%</span></div></div>`).join('')}
       </div>
       <div id="fc-gsummary" style="font-size:11px;color:var(--color-slate-hint);margin:8px 0 12px;font-family:var(--font-mono)">${gsummary()}</div>
-      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
-        <table class="fc-tbl">
-          <thead><tr><th>Line item · $/yr</th>${COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
-          <tbody id="fc-body">${LINES.map(Lr => {
-            if (Lr[0] === 'h') return `<tr class="head"><td colspan="10">${Lr[1]}</td></tr>`;
-            const key = Lr[0], lab = Lr[1];
-            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
-            const neg = Lr[2] === 1 || Lr[5] === 1;
-            const editK = Lr[3], pct = Lr[4] === 'pct';
-            let cells = '';
-            for (let c = 0; c < 9; c++) {
-              if (editK && c === 3) cells += `<td class="fc-ipcol"><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
-              else cells += `<td${c === 3 ? ' class="fc-ipcol"' : ''}>${cellFmt(cd[c][key], neg, pct)}</td>`;
-            }
-            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
-          }).join('')}</tbody>
-        </table>
-      </div>
+      ${view === 'annual' ? annualTable(cd) : monthlyTable()}
       <div class="fc-inplace-note">The <b>In-Place</b> column is the division's current annual run-rate (seeded from the trailing window you pick, storm-surge months included). Years 1–5 compound each In-Place line monthly at the growth schedule — the same engine as the asset-level proforma.</div>
     </div>
 
@@ -285,6 +367,7 @@ function render() {
 function wire() {
   $('#fc-month').addEventListener('change', e => { asOf = +e.target.value; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); });
   $$('#fc-basis button').forEach(b => b.addEventListener('click', () => { fbasis = +b.dataset.b; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); }));
+  $$('#fc-view button').forEach(b => b.addEventListener('click', () => { view = b.dataset.v; render(); }));
   $$('input[data-g]').forEach(inp => inp.addEventListener('change', () => {
     const v = parseFloat(inp.value); if (!isNaN(v)) G[inp.dataset.g] = [{ f: 1, t: 60, r: v }];
     buildCum(); render();
@@ -327,6 +410,29 @@ function drawCharts(cd) {
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
   });
 }
+
+/* ---- hover tooltip (single element, delegated, 250ms delay — non-invasive) ---- */
+(function () {
+  const tip = document.createElement('div'); tip.id = 'fc-tip'; document.body.appendChild(tip);
+  let timer = null;
+  function show(el, x, y) {
+    tip.innerHTML = el.getAttribute('data-exp').replace(/&#10;/g, '\n');
+    tip.style.display = 'block';
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    let left = x + 14, top = y + 16;
+    if (left + w > innerWidth - 10) left = x - w - 14;
+    if (top + h > innerHeight - 10) top = y - h - 12;
+    tip.style.left = Math.max(6, left) + 'px'; tip.style.top = Math.max(6, top) + 'px';
+  }
+  document.addEventListener('mouseover', (e) => {
+    const el = e.target.closest('[data-exp]');
+    clearTimeout(timer);
+    if (!el) { tip.style.display = 'none'; return; }
+    timer = setTimeout(() => show(el, e.clientX, e.clientY), 250);
+  });
+  document.addEventListener('mouseout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-exp]')) { clearTimeout(timer); tip.style.display = 'none'; } });
+  document.addEventListener('scroll', () => { clearTimeout(timer); tip.style.display = 'none'; }, true);
+})();
 
 render();
 }
