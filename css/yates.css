@@ -237,3 +237,11 @@ label.yfld > * { margin-top: 5px; width: 100%; display: block; }
 .sig-btn:hover { background: #0a4c92; }
 .sig-btn.locked { background: #97a0ad; cursor: not-allowed; }
 @media print { .sig-btn { display: none !important; } }
+
+
+/* ---- split-panel formatting fixes ---- */
+.demo-two > *, .demo-three > * { min-width: 0; }
+table.fc-tbl.compact { min-width: 0; width: 100%; }
+table.fc-tbl.compact td:last-child { text-align: right; white-space: nowrap; }
+.alt-amt { display: inline-flex; align-items: center; gap: 4px; }
+.alt-amt .u { color: var(--color-text-muted); font-size: 11px; }
