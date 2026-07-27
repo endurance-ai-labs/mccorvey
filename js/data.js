@@ -435,3 +435,85 @@ window.BID_DEFAULTS = BID_DEFAULTS;
     });
   });
 })();
+
+/* =========================================================
+   ESTIMATING CATALOG — dropdown options for the Bid Builder
+   ========================================================= */
+const CSI_OPTIONS = [
+  ["01 31 00", "Project Management & Coordination"],
+  ["01 31 13", "Project Coordination"],
+  ["01 79 00", "Demonstration & Training"],
+  ["23 05 00", "Common Work Results for HVAC"],
+  ["23 05 93", "Testing, Adjusting & Balancing"],
+  ["23 09 13", "Instrumentation & Control Devices for HVAC"],
+  ["23 09 23", "Direct-Digital Control System for HVAC"],
+  ["23 09 33", "Electric & Electronic Control System for HVAC"],
+  ["23 09 93", "Sequences of Operation for HVAC Controls"],
+  ["25 05 28", "Pathways for Integrated Automation"],
+  ["25 08 00", "Commissioning of Integrated Automation"],
+  ["25 11 00", "Integrated Automation Network Devices"],
+  ["25 14 00", "Integrated Automation Local Control Units"],
+  ["25 15 00", "Integrated Automation Instrumentation & Terminal Devices"],
+  ["25 36 00", "Integrated Automation Meters"],
+  ["25 90 00", "Integrated Automation Control Sequences"],
+  ["26 05 00", "Common Work Results for Electrical"],
+  ["27 15 00", "Communications Horizontal Cabling"],
+];
+const UNITS = ["LS", "ea", "campus", "bldg", "floor", "SF", "LF", "pt", "RTU", "VAV", "panel", "hr", "wk"];
+const TRADE_CATALOG = [
+  { trade: "DDC Controls", csi: "25 14 00", unit: "campus", sub: 0, descs: [
+    "i-Vu DDC controllers, field hardware and panel fabrication",
+    "DDC controller replacement and database migration",
+    "New DDC control system — controllers, panels and software" ] },
+  { trade: "Front-End & Network", csi: "25 11 00", unit: "LS", sub: 0, descs: [
+    "Head-end server, network devices and BACnet configuration",
+    "Front-end migration to i-Vu with graphics conversion" ] },
+  { trade: "RTU Integration", csi: "23 09 33", unit: "RTU", sub: 0, descs: [
+    "Rooftop unit controls integration incl. economizer sequences",
+    "RTU replacement controls with demand-controlled ventilation" ] },
+  { trade: "VAV Controls", csi: "23 09 23", unit: "VAV", sub: 0, descs: [
+    "VAV terminal controllers, airflow calibration and mapping",
+    "VAV retrofit — controllers, actuators and space sensors" ] },
+  { trade: "AHU Controls", csi: "23 09 23", unit: "ea", sub: 0, descs: [
+    "Air handler controls — sensors, safeties and sequences",
+    "AHU retrofit with static optimization and alarming" ] },
+  { trade: "Plant Controls", csi: "23 09 93", unit: "LS", sub: 0, descs: [
+    "Chiller and boiler plant sequences of operation, safeties and optimization",
+    "Chilled-water plant optimization and staging sequences" ] },
+  { trade: "LV Wiring", csi: "25 05 28", unit: "LS", sub: 3, descs: [
+    "Low-voltage wiring, conduit and pathway",
+    "Communications cabling for BAS VLAN per TIA standards" ] },
+  { trade: "Actuators", csi: "23 09 13", unit: "ea", sub: 2, descs: [
+    "Valve and damper actuator replacement at AHUs and VAVs",
+    "Control valve replacement incl. piping coordination" ] },
+  { trade: "Sensors", csi: "25 15 00", unit: "pt", sub: 0, descs: [
+    "Space sensors, thermostats and CO2 monitoring",
+    "Duct and pipe instrumentation per engineered points list" ] },
+  { trade: "Metering", csi: "25 36 00", unit: "ea", sub: 0, descs: [
+    "Utility metering and submetering with dashboard integration",
+    "Power monitoring — CTs, meters and trend configuration" ] },
+  { trade: "Graphics", csi: "25 90 00", unit: "LS", sub: 0, descs: [
+    "Front-end graphics, alarming, trending and energy dashboards",
+    "Graphics standardization across campuses with alarm routing" ] },
+  { trade: "Electrical Sub", csi: "26 05 00", unit: "LS", sub: 1, descs: [
+    "Line-voltage power to panels and transformers by electrical subcontractor",
+    "Electrical rough-in coordination and circuits for controls" ] },
+  { trade: "Mechanical Allowance", csi: "23 05 00", unit: "LS", sub: 2, descs: [
+    "Concealed-condition mechanical allowance (valves, dampers, piping repairs)",
+    "Mechanical repairs allowance billed against documented quantities" ] },
+  { trade: "TAB & Commissioning", csi: "25 08 00", unit: "LS", sub: 4, descs: [
+    "Point-to-point checkout, commissioning support and TAB coordination",
+    "Functional performance testing and commissioning documentation" ] },
+  { trade: "Training & Closeout", csi: "01 79 00", unit: "LS", sub: 0, descs: [
+    "Owner training, O&M documentation and as-builts",
+    "Closeout package — warranties, as-builts and training sessions" ] },
+  { trade: "General Conditions", csi: "01 31 00", unit: "LS", sub: 0, descs: [
+    "Site logistics, lifts, badging, protection and daily coordination",
+    "General conditions — supervision support, safety and cleanup" ] },
+  { trade: "PM & Engineering", csi: "01 31 13", unit: "LS", sub: 0, descs: [
+    "Project management, engineering, submittals and closeout documentation",
+    "Engineering — sequences, submittals and coordination drawings" ] },
+];
+window.CSI_OPTIONS = CSI_OPTIONS;
+window.UNITS = UNITS;
+window.TRADE_CATALOG = TRADE_CATALOG;

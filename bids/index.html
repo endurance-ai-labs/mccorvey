@@ -29,6 +29,41 @@ const APPR_STEPS = [
   { role: 'owner', label: 'Owner — Authorize Submission',             doneLabel: 'Authorized by Owner' },
 ];
 
+
+/* ---------- catalog-driven dropdown options ---------- */
+const opt = (v, label, cur) => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(label)}</option>`;
+const withCurrent = (list, cur) => (cur && !list.includes(cur)) ? [cur, ...list] : list;
+function csiOpts(cur) {
+  const known = CSI_OPTIONS.map(c => c[0]);
+  return withCurrent(known, cur).map(code => {
+    const m = CSI_OPTIONS.find(c => c[0] === code);
+    return opt(code, code + (m ? ' — ' + m[1] : ''), cur);
+  }).join('');
+}
+function tradeOpts(cur) {
+  return withCurrent(TRADE_CATALOG.map(t => t.trade), cur).map(t => opt(t, t, cur)).join('');
+}
+function descOpts(l) {
+  const cat = TRADE_CATALOG.find(t => t.trade === l.trade);
+  const list = withCurrent(cat ? cat.descs.slice() : [], l.desc);
+  return list.map(d => opt(d, d, l.desc)).join('');
+}
+function unitOpts(cur) {
+  return withCurrent(UNITS.slice(), cur).map(u => opt(u, u, cur)).join('');
+}
+function applyTrade(i, trade) {
+  const l = BID.lines[i];
+  l.trade = trade;
+  const cat = TRADE_CATALOG.find(t => t.trade === trade);
+  if (cat) {
+    l.csi = cat.csi;
+    l.unit = cat.unit;
+    l.sub = SUBS[cat.sub];
+    l.desc = cat.descs[0];
+  }
+  render();
+}
+
 function lineCalc(l) {
   const direct = l.qty * l.unitCost;
   const esc$ = direct * BID.levers.escalationPct / 100;
@@ -57,7 +92,11 @@ function updLine(i, k, v) {
   if (['qty', 'unitCost', 'offset', 'dur'].includes(k)) l[k] = parseFloat(v) || 0; else l[k] = v;
   render();
 }
-function addLine() { BID.lines.push({ trade: 'New Trade', csi: '00 00 00', desc: 'Describe scope…', qty: 1, unit: 'LS', unitCost: 0, sub: SUBS[0], offset: 0, dur: 5 }); render(); }
+function addLine() {
+  const c = TRADE_CATALOG[0];
+  BID.lines.push({ trade: c.trade, csi: c.csi, desc: c.descs[0], qty: 1, unit: c.unit, unitCost: 0, sub: SUBS[c.sub], offset: 0, dur: 5 });
+  render();
+}
 function delLine(i) { BID.lines.splice(i, 1); render(); }
 function updAlt(i, k, v) {
   const a = BID.alternates[i];
@@ -87,11 +126,11 @@ function viewInternal() {
     const subOpts = SUBS.map(s => `<option ${s === l.sub ? 'selected' : ''}>${esc(s)}</option>`).join('');
     return `
       <tr>
-        <td><input class="yin" value="${esc(l.csi || '')}" style="width:74px" onchange="updLine(${i},'csi',this.value)" title="CSI MasterFormat section"></td>
-        <td><input class="yin" value="${esc(l.trade)}" style="width:112px" onchange="updLine(${i},'trade',this.value)"></td>
-        <td><input class="yin" value="${esc(l.desc)}" style="min-width:230px" onchange="updLine(${i},'desc',this.value)"></td>
+        <td><select class="yin" style="width:96px" onchange="updLine(${i},'csi',this.value)" title="CSI MasterFormat section">${csiOpts(l.csi)}</select></td>
+        <td><select class="yin" style="width:150px" onchange="applyTrade(${i},this.value)">${tradeOpts(l.trade)}</select></td>
+        <td><select class="yin" style="min-width:250px;max-width:340px" onchange="updLine(${i},'desc',this.value)">${descOpts(l)}</select></td>
         <td><input class="yin num" type="number" step="1" value="${l.qty}" style="width:56px" onchange="updLine(${i},'qty',this.value)"></td>
-        <td><input class="yin" value="${esc(l.unit)}" style="width:46px" onchange="updLine(${i},'unit',this.value)"></td>
+        <td><select class="yin" style="width:70px" onchange="updLine(${i},'unit',this.value)">${unitOpts(l.unit)}</select></td>
         <td><input class="yin num" type="number" step="0.01" value="${l.unitCost.toFixed(2)}" style="width:96px" onchange="updLine(${i},'unitCost',this.value)"></td>
         <td style="text-align:right">${fmt$2(c.direct)}</td>
         <td style="text-align:right">${fmt$2(c.oh)}</td>
@@ -108,7 +147,7 @@ function viewInternal() {
     <tr>
       <td><b>${a.id}</b></td>
       <td><input class="yin" value="${esc(a.desc)}" onchange="updAlt(${i},'desc',this.value)"></td>
-      <td><input class="yin num" type="number" step="100" value="${a.amount}" style="width:110px" onchange="updAlt(${i},'amount',this.value)"></td>
+      <td><span class="alt-amt"><span class="u">$</span><input class="yin num" type="number" step="100" value="${a.amount}" style="width:96px" onchange="updAlt(${i},'amount',this.value)"></span><div class="ynote" style="text-align:right">${a.amount < 0 ? '(' + fmt$(Math.abs(a.amount)) + ')' : fmt$(a.amount)}</div></td>
       <td style="text-align:center"><input type="checkbox" ${a.included ? 'checked' : ''} onchange="updAlt(${i},'included',this.checked)" style="width:16px;height:16px;cursor:pointer"></td>
       <td>${a.included ? '<span class="demo-chip ok">IN BID</span>' : '<span class="demo-chip mut">EXCLUDED</span>'}</td>
     </tr>`).join('');
@@ -207,7 +246,7 @@ function viewInternal() {
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Bid Summary Ladder</h2><span class="k">direct cost → base bid</span></div>
-        <table class="fc-tbl"><tbody>${ladder}</tbody></table>
+        <table class="fc-tbl compact"><tbody>${ladder}</tbody></table>
       </div>
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Alternates</h2><span class="k">toggle IN BID — totals reprice live</span></div>
