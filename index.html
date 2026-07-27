@@ -78,11 +78,11 @@ if (internal) {
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Contract · Earned · Billed by Job</h2><span class="k">$ thousands</span></div>
+        <div class="demo-panel-head"><h2>Contract · Earned · Billed — Top 10 Jobs</h2><span class="k">$ thousands</span></div>
         <div class="demo-chart" style="height:280px"><canvas id="ch-jobs"></canvas></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Portfolio Margin Bridge</h2><span class="k">projected at completion</span></div>
+        <div class="demo-panel-head"><h2>Margin Bridge — Top 10 Jobs</h2><span class="k">projected at completion</span></div>
         <div class="demo-chart" style="height:280px"><canvas id="ch-margin"></canvas></div>
       </div>
     </div>
@@ -110,17 +110,18 @@ if (internal) {
     </div>
     <div class="demo-note">Y8S Operations Portal — demo environment, fictional data · concept build by Endurance AI Labs</div>`;
 
-  /* charts */
-  const labels = JOBS.map(j => j.id);
+  /* charts — top 10 jobs by contract for readability */
+  const TOP = M.slice().sort((a, b) => b.j.contract - a.j.contract).slice(0, 10);
+  const labels = TOP.map(x => x.j.id);
   const css = getComputedStyle(document.documentElement);
   const cBlue = css.getPropertyValue('--color-blue').trim() || '#005c97';
   const cGreen = css.getPropertyValue('--color-green').trim() || '#4f7d5d';
   new Chart($('#ch-jobs'), {
     type: 'bar',
     data: { labels, datasets: [
-      { label: 'Contract', data: JOBS.map(j => j.contract / 1e3), backgroundColor: 'rgba(27,34,48,0.16)' },
-      { label: 'Earned', data: M.map(x => x.m.earned / 1e3), backgroundColor: cBlue },
-      { label: 'Billed', data: M.map(x => x.m.billedAll / 1e3), backgroundColor: cGreen },
+      { label: 'Contract', data: TOP.map(x => x.j.contract / 1e3), backgroundColor: 'rgba(27,34,48,0.16)' },
+      { label: 'Earned', data: TOP.map(x => x.m.earned / 1e3), backgroundColor: cBlue },
+      { label: 'Billed', data: TOP.map(x => x.m.billedAll / 1e3), backgroundColor: cGreen },
     ]},
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
@@ -130,7 +131,7 @@ if (internal) {
     type: 'bar',
     data: { labels, datasets: [
       { label: 'Budget Cost', data: M.map(x => x.m.budget / 1e3), backgroundColor: 'rgba(198,151,17,0.55)', stack: 's' },
-      { label: 'Projected Margin', data: M.map(x => x.m.projMargin / 1e3), backgroundColor: cBlue, stack: 's' },
+      { label: 'Projected Margin', data: TOP.map(x => x.m.projMargin / 1e3), backgroundColor: cBlue, stack: 's' },
     ]},
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },

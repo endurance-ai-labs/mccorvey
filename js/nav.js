@@ -42,7 +42,6 @@ const NAV_GROUPS = [
       { href: '/yates/timesheets/', label: 'Timesheets' },
     ],
   },
-  { id: 'brain', label: 'Brain', href: '/yates/brain/', items: [], cta: true },
 ];
 
 function _normalizePath(p) {

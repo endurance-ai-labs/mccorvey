@@ -54,7 +54,7 @@
   var panel = document.createElement('div');
   panel.className = 'bw-panel';
   panel.innerHTML =
-    '<div class="bw-head"><div class="t"><span class="dot"></span>Y8S — Operating Brain</div>' +
+    '<div class="bw-head"><div class="t"><span class="dot"></span>Y8S — Operating Brain<a href="/yates/brain/" style="margin-left:auto;font-size:10px;color:#cfe0f8;text-decoration:none;font-weight:600" title="Open full page">FULL PAGE ↗</a></div>' +
       '<div class="s">Every job, pay app and crew — synthesized live</div></div>' +
     '<div class="bw-disc">⚠ Demo assistant. Responses are illustrative and <b>entirely fictional</b> — not factual, not advice, and should not be relied upon.</div>' +
     '<div class="bw-body" id="bw-body"></div>' +

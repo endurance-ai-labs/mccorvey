@@ -330,3 +330,108 @@ const BID_DEFAULTS = {
   ],
 };
 window.BID_DEFAULTS = BID_DEFAULTS;
+
+
+/* =========================================================
+   EXTENDED JOB REGISTER — generated deterministically so every
+   SOV, pay app and phase reconciles with jobMetrics math.
+   Typical Y8S work: K-12, municipal, higher-ed, healthcare,
+   commercial, industrial, hospitality, mission-critical.
+   ========================================================= */
+(function () {
+  const CATALOG = [
+    ["SMCA-2311", "San Marcos Civic Center — i-Vu Front-End Migration", "City of San Marcos", "630 E Hopkins St, San Marcos, TX", "Municipal — Front-End Migration (i-Vu)", "Brandon Yates", "S. Whitmore", 0, "Complete", "2023-11-06", "2024-01-26", 214000, 5, 100, 0.97],
+    ["GUAD-2318", "Guadalupe County Annex — Controls Retrofit", "Guadalupe County", "211 W Court St, Seguin, TX", "Municipal — Controls Retrofit (i-Vu)", "Tyler Reidhead", "R. Trejo", 2, "Complete", "2023-12-04", "2024-03-15", 342500, 5, 100, 0.95],
+    ["BLCO-2402", "Blanco River Office Park — Tenant Controls & Submetering", "Blanco River Holdings, LLC", "100 River Ridge Pkwy, San Marcos, TX", "Commercial — Controls & Metering (Lynxspring)", "Jordan Felps, P.E.", "M. Okafor", 3, "Complete", "2024-02-05", "2024-04-19", 187300, 5, 100, 0.98],
+    ["KYLE-2405", "Kyle Medical Office Building — VAV Controls Upgrade", "Plum Creek Medical Partners", "1180 Kyle Pkwy, Kyle, TX", "Healthcare — VAV Upgrade (Innotech)", "Jordan Felps, P.E.", "M. Okafor", 1, "Complete", "2024-05-06", "2024-07-26", 296800, 5, 100, 0.96],
+    ["TXST-2408", "Hillview State University — Science Hall BAS Replacement", "Hillview State University System", "Campus Dr, San Marcos, TX", "Higher Ed — BAS Replacement (i-Vu)", "Tyler Reidhead", "R. Trejo", 0, "Closeout", "2024-08-12", "2025-01-17", 1120000, 5, 100, 1.02],
+    ["NBRF-2412", "New Braunfels Rec Center — EMS & Pool Dehumidification", "City of New Braunfels", "S Kessler Ave, New Braunfels, TX", "Municipal — EMS (Innotech)", "Brandon Yates", "C. Delgado", 2, "Complete", "2024-12-02", "2025-02-21", 158400, 5, 100, 0.94],
+    ["SEGN-2501", "Seguin ISD — Chiller Plant Optimization (2 Plants)", "Seguin Independent School District", "1221 E Kingsbury St, Seguin, TX", "K-12 — Plant Optimization (i-Vu)", "Tyler Reidhead", "R. Trejo", 2, "In Progress", "2025-02-10", "2025-09-26", 438600, 10, 72, 0.95],
+    ["AUSL-2503", "Austin Logistics Park — Building C Controls (New Construction)", "Capstone Industrial Development", "7800 Burleson Rd, Austin, TX", "Industrial — Plan & Spec (Lynxspring)", "Jordan Felps, P.E.", "C. Delgado", 1, "In Progress", "2025-03-17", "2025-10-10", 524000, 10, 61, 0.97],
+    ["HILL-2504", "Hill Country Baptist Hospital — AHU Controls Phase 2", "Hill Country Baptist Health", "1305 Wonder World Dr, San Marcos, TX", "Healthcare — AHU Controls (Innotech)", "Jordan Felps, P.E.", "M. Okafor", 1, "In Progress", "2025-04-07", "2025-12-12", 912700, 10, 48, 0.99],
+    ["WIMB-2505", "Wimberley ISD — District EMS & Energy Dashboards", "Wimberley Independent School District", "950 FM 2325, Wimberley, TX", "K-12 — EMS & Dashboards (i-Vu)", "Brandon Yates", "S. Whitmore", 0, "In Progress", "2025-05-05", "2025-11-21", 377900, 5, 35, 0.96],
+    ["ALMO-2506", "Alamo Foods Cold Storage — Refrigeration Monitoring & Alarms", "Alamo Foods Distribution, Inc.", "4400 Lookout Rd, Selma, TX", "Industrial — Refrigeration Monitoring (Lynxspring)", "Tyler Reidhead", "C. Delgado", 3, "In Progress", "2025-05-19", "2025-10-03", 458300, 10, 55, 1.09],
+    ["SANM-2508", "San Marcos Outlet Pavilion — RTU Controls & Demand Management", "Pavilion Retail Partners, LP", "3939 S IH-35, San Marcos, TX", "Retail — RTU Controls & Demand Mgmt (i-Vu)", "Brandon Yates", "S. Whitmore", 0, "In Progress", "2025-06-09", "2025-11-07", 243500, 10, 22, 0.95],
+    ["LOCK-2509", "Lockhart City Hall — DDC Upgrade & Utility Metering", "City of Lockhart", "308 W San Antonio St, Lockhart, TX", "Municipal — DDC Upgrade (i-Vu)", "Brandon Yates", "S. Whitmore", 0, "Just Started", "2025-07-07", "2025-10-24", 129800, 5, 6, 0.95],
+    ["BUDA-2510", "Buda Data Processing Center — CRAC Integration & Monitoring", "Lone Star Data Infrastructure", "1550 Main St, Buda, TX", "Mission Critical — CRAC Integration (Lynxspring)", "Jordan Felps, P.E.", "C. Delgado", 3, "Just Started", "2025-07-14", "2026-01-30", 684200, 10, 4, 1.0],
+    ["CANY-2511", "Canyon Lake Resort & Spa — Guestroom EMS (214 Keys)", "Canyon Lake Hospitality Group", "2273 FM 2673, Canyon Lake, TX", "Hospitality — Guestroom EMS (Innotech)", "Brandon Yates", "M. Okafor", 1, "Awarded", "2025-08-18", "2026-02-27", 796400, 10, 0, 1.0],
+    ["SCHL-2512", "Schlagel Distribution HQ — Office & Warehouse BAS", "Schlagel Distribution Co.", "8200 Interport Blvd, San Antonio, TX", "Commercial — New BAS (i-Vu)", "Tyler Reidhead", "R. Trejo", 2, "Awarded", "2025-09-01", "2026-03-20", 312600, 10, 0, 1.0],
+  ];
+
+  const SOV_T = [
+    ["Controls Hardware, Panels & Software", 0.52],
+    ["Installation Labor & Low-Voltage Wiring", 0.22],
+    ["Integration & Programming", 0.12],
+    ["Commissioning, TAB & Training", 0.06],
+    ["General Conditions & PM/Engineering", 0.08],
+  ];
+  const PH_T = [
+    ["Submittals & Procurement", 0.15],
+    ["Rough-In & Controls Installation", 0.45],
+    ["Integration & Programming", 0.20],
+    ["Commissioning & TAB", 0.15],
+    ["Closeout & Owner Training", 0.05],
+  ];
+  const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973; return h; };
+  const addM = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
+
+  CATALOG.forEach((c) => {
+    const id = c[0], name = c[1], owner = c[2], address = c[3], sector = c[4], pm = c[5], sup = c[6],
+          subIdx = c[7], status = c[8], start = c[9], finish = c[10], contract = c[11], ret = c[12],
+          pct = c[13], costFactor = c[14];
+    const h = hash(id);
+    const prefix = 100 + (h % 800);
+
+    const sov = SOV_T.map((t, i) => {
+      const scheduled = Math.round(contract * t[1] / 100) * 100;
+      const budget = Math.round(scheduled / 1.176);
+      const gate = [0.0, 0.15, 0.45, 0.75, 0.35][i];
+      let linePct = pct >= 100 ? 100 : Math.max(0, Math.min(100, Math.round((pct - gate * 100) / (1 - gate + 0.0001))));
+      if (pct === 0) linePct = 0;
+      const costToDate = Math.round(budget * linePct / 100 * costFactor);
+      return { item: String(prefix) + (i + 1), desc: t[0], scheduled, pct: linePct, budget, costToDate };
+    });
+    sov[0].scheduled += contract - sov.reduce((s, r) => s + r.scheduled, 0);
+
+    const earned = sov.reduce((s, r) => s + r.scheduled * r.pct / 100, 0);
+
+    const payApps = [];
+    if (earned > 0) {
+      const done = pct >= 100;
+      const nApps = done ? 3 : Math.max(1, Math.min(4, Math.floor(pct / 22)) || 1);
+      const billable = earned * (1 - ret / 100);
+      for (let i = 0; i < nApps; i++) {
+        const last = i === nApps - 1;
+        payApps.push({
+          num: prefix + "-0" + (i + 1),
+          label: i === 0 ? "Pay App 1 — Mobilization & Hardware" : "Pay App " + (i + 1),
+          period: addM(start, i + 1),
+          certified: Math.round(billable / nApps * 100) / 100,
+          status: done ? "Paid" : last ? ["Submitted", "Pending Owner", "Draft"][h % 3] : "Paid",
+        });
+      }
+      if (done) payApps.push({ num: prefix + "-RET", label: "Retention Release", period: addM(start, nApps + 1), certified: Math.round(earned * ret / 100 * 100) / 100, status: "Paid" });
+    }
+
+    const t0 = new Date(start + "T12:00:00").getTime(), t1 = new Date(finish + "T12:00:00").getTime();
+    let cum = 0;
+    const phases = PH_T.map((p, i) => {
+      const s = new Date(t0 + (t1 - t0) * cum).toISOString().slice(0, 10);
+      cum += p[1];
+      const f = new Date(t0 + (t1 - t0) * Math.min(1, cum)).toISOString().slice(0, 10);
+      const gate = [0, 0.15, 0.6, 0.8, 0.95][i];
+      let ppct = pct >= 100 ? 100 : Math.max(0, Math.min(100, Math.round((pct - gate * 100) / (1 - gate + 0.0001))));
+      if (pct === 0) ppct = 0;
+      return { name: p[0], start: s, finish: f, value: Math.round(contract * p[1]), pct: ppct };
+    });
+
+    JOBS.push({
+      id: id, name: name, owner: owner, address: address, sector: sector, pm: pm, super: sup, sub: SUBS[subIdx],
+      status: status, contractDate: addM(start, -1), start: start, finish: finish,
+      retainagePct: ret, contract: contract, sov: sov, payApps: payApps, phases: phases,
+      changeOrders: (h % 3 === 0 && pct > 20) ? [{ num: "CO-01", desc: "Owner-added points and graphics revisions per field walk", amount: Math.round(contract * 0.021 / 100) * 100, status: h % 2 ? "Approved" : "Submitted" }] : [],
+      photos: pct > 0 ? [{ src: "/yates/assets/photos/b" + String((h % 14) + 1).padStart(2, "0") + ".jpg", cap: "Field progress — " + name.split("—")[1].trim().toLowerCase(), date: addM(start, 1), tag: "Controls" }] : [],
+      reports: pct > 10 && pct < 100 ? [{ date: addM(start, 1), title: "Monthly Progress Report", photos: 18 + (h % 30), author: pm }] : [],
+    });
+  });
+})();
