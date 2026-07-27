@@ -32,7 +32,14 @@ const NAV_GROUPS = [
     ],
   },
   { id: 'service', label: 'Service', href: '/yates/service/', items: [] },
-  { id: 'bids', label: 'Bid Builder', href: '/yates/bids/', items: [] },
+  {
+    id: 'bids',
+    label: 'Preconstruction',
+    items: [
+      { href: '/yates/bids/',     label: 'Bid Builder' },
+      { href: '/yates/pipeline/', label: 'Bid Pipeline & Win/Loss' },
+    ],
+  },
   {
     id: 'finance',
     label: 'Financial',
@@ -61,6 +68,7 @@ function _activeGroup(path) {
   if (path.startsWith('/photos/')) return 'jobs';
   if (path.startsWith('/service/')) return 'service';
   if (path.startsWith('/bids/')) return 'bids';
+  if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/billing/')) return 'finance';
   if (path.startsWith('/timesheets/')) return 'finance';

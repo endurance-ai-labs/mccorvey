@@ -721,3 +721,40 @@ const SERVICE_CALLS = [
 ];
 window.SERVICE_AGREEMENTS = SERVICE_AGREEMENTS;
 window.SERVICE_CALLS = SERVICE_CALLS;
+
+
+/* =========================================================
+   BID PIPELINE — preconstruction book for win/loss analytics.
+   Estimators = the real Y8S sales team.
+   ========================================================= */
+const BID_PIPELINE = [
+  { id: "B-2601", project: "Comal ISD — 4-Campus Controls Retrofit", owner: "Comal ISD", sector: "K-12", est: "David Glenney", due: "2026-08-14", amount: 918000, marginPct: 14.8, status: "Submitted" },
+  { id: "B-2602", project: "Kerrville Medical Pavilion — New BAS", owner: "Hill Country Medical REIT", sector: "Healthcare", est: "Taz Abid", due: "2026-08-21", amount: 1240000, marginPct: 15.6, status: "Draft" },
+  { id: "B-2603", project: "San Antonio Food Bank — EMS & Refrigeration", owner: "SA Food Bank", sector: "Industrial", est: "Joe Luna", due: "2026-08-08", amount: 486000, marginPct: 13.9, status: "Submitted" },
+  { id: "B-2604", project: "Georgetown Civic Complex — Plant Optimization", owner: "City of Georgetown", sector: "Municipal", est: "David Glenney", due: "2026-09-04", amount: 352000, marginPct: 14.2, status: "Draft" },
+  { id: "B-2605", project: "Alamo Heights Hotel — Guestroom EMS (168 keys)", owner: "AH Hospitality LP", sector: "Hospitality", est: "Taz Abid", due: "2026-08-28", amount: 642000, marginPct: 16.1, status: "Pending Award" },
+  { id: "B-2598", project: "Bexar County Annex — DDC Upgrade", owner: "Bexar County", sector: "Municipal", est: "Joe Luna", due: "2026-07-10", amount: 298000, marginPct: 13.5, status: "Pending Award" },
+  { id: "B-2594", project: "Canyon Lake Resort — Guestroom EMS", owner: "Canyon Lake Hospitality Group", sector: "Hospitality", est: "Taz Abid", due: "2026-06-19", amount: 796400, marginPct: 15.2, status: "Won", jobId: "CANY-2511" },
+  { id: "B-2593", project: "Schlagel Distribution HQ — Office & Warehouse BAS", owner: "Schlagel Distribution Co.", sector: "Commercial", est: "David Glenney", due: "2026-06-12", amount: 312600, marginPct: 14.6, status: "Won", jobId: "SCHL-2512" },
+  { id: "B-2590", project: "Buda Data Processing Center — CRAC Integration", owner: "Lone Star Data Infrastructure", sector: "Mission Critical", est: "Joe Luna", due: "2026-05-29", amount: 684200, marginPct: 15.9, status: "Won", jobId: "BUDA-2510" },
+  { id: "B-2588", project: "Rock Creek ISD — Controls Standardization", owner: "Rock Creek ISD", sector: "K-12", est: "David Glenney", due: "2026-05-15", amount: 869300, marginPct: 15.1, status: "Won", jobId: "RCI-2507" },
+  { id: "B-2586", project: "Medina Valley ISD — 2-Campus Retrofit", owner: "Medina Valley ISD", sector: "K-12", est: "David Glenney", due: "2026-05-08", amount: 512000, marginPct: 12.4, status: "Lost", note: "Price — incumbent 9% under" },
+  { id: "B-2583", project: "Northline Office Tower — BAS Replacement", owner: "Northline Partners", sector: "Commercial", est: "Taz Abid", due: "2026-04-24", amount: 1180000, marginPct: 16.8, status: "Lost", note: "Owner deferred capital to 2027" },
+  { id: "B-2580", project: "San Marcos Outlet Pavilion — RTU & Demand Mgmt", owner: "Pavilion Retail Partners, LP", sector: "Retail", est: "Joe Luna", due: "2026-04-10", amount: 243500, marginPct: 14.0, status: "Won", jobId: "SANM-2508" },
+  { id: "B-2577", project: "Guadalupe Regional Clinic — VAV Controls", owner: "GR Health", sector: "Healthcare", est: "Taz Abid", due: "2026-03-27", amount: 388000, marginPct: 15.4, status: "Won" },
+  { id: "B-2574", project: "Seguin Distribution Center — Warehouse EMS", owner: "Seguin Logistics LLC", sector: "Industrial", est: "Joe Luna", due: "2026-03-13", amount: 705000, marginPct: 13.2, status: "Lost", note: "Bid as plan-and-spec; GC self-performed" },
+  { id: "B-2571", project: "Lockhart City Hall — DDC & Metering", owner: "City of Lockhart", sector: "Municipal", est: "David Glenney", due: "2026-02-27", amount: 129800, marginPct: 14.9, status: "Won", jobId: "LOCK-2509" },
+  { id: "B-2568", project: "Blanco County Justice Center — New BAS", owner: "Blanco County", sector: "Municipal", est: "Joe Luna", due: "2026-02-13", amount: 445000, marginPct: 13.8, status: "Lost", note: "Price — 4% over low bidder" },
+  { id: "B-2565", project: "Hays Medical Plaza — BAS & Energy Retrofit", owner: "Hays Medical Properties, LP", sector: "Healthcare", est: "Taz Abid", due: "2026-01-09", amount: 1284500, marginPct: 15.7, status: "Won", jobId: "HMP-2502" },
+];
+window.BID_PIPELINE = BID_PIPELINE;
+
+/* ---- change orders created in the portal (localStorage) merge into each job ---- */
+(function () {
+  JOBS.forEach((j) => {
+    try {
+      const stored = JSON.parse(localStorage.getItem('yates-co:' + j.id) || '[]');
+      stored.forEach(co => j.changeOrders.push(co));
+    } catch (e) {}
+  });
+})();
