@@ -49,7 +49,7 @@ function jobMetrics(j) {
 }
 
 const statusPill = (s) => {
-  const map = { "In Progress": "blue", "Closeout": "green", "Just Started": "amber", "Complete": "green" };
+  const map = { "In Progress": "blue", "Closeout": "green", "Just Started": "amber", "Complete": "green", "Awarded": "gray" };
   return `<span class="ypill ${map[s] || "gray"}">${s}</span>`;
 };
 const payPill = (s) => {
