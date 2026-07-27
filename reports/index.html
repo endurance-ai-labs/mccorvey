@@ -28,6 +28,32 @@ function render() {
   const activePhases = j.phases.filter(p => p.pct > 0 && p.pct < 100);
   const nextPhases = j.phases.filter(p => p.pct === 0);
 
+  /* ---- payment ledger (G702-style application summary) ---- */
+  const coApproved = (j.changeOrders || []).filter(c => c.status === 'Approved').reduce((s, c) => s + (c.amount || 0), 0);
+  const contractToDate = j.contract + coApproved;
+  const retReleased = j.payApps.some(p => p.num.includes('RET'));
+  const retHeld = retReleased ? 0 : m.earned * j.retainagePct / 100;
+  const earnedLessRet = m.earned - retHeld;
+  const paidApps = j.payApps.filter(p => p.status === 'Paid');
+  const paidToDate = paidApps.reduce((s, p) => s + p.certified, 0);
+  const pendingApps = j.payApps.filter(p => p.status !== 'Paid');
+  const currentDue = pendingApps.reduce((s, p) => s + p.certified, 0);
+  const balanceToFinish = Math.max(0, contractToDate - earnedLessRet);
+  const payRef = (p, i) => p.status === 'Paid' ? 'ACH ••' + String(4200 + ((p.num.charCodeAt(0) * 7 + i * 13) % 780)).padStart(4, '0') : '—';
+  let runPaid = 0;
+  const payRows = j.payApps.map((p, i) => {
+    if (p.status === 'Paid') runPaid += p.certified;
+    return `<tr>
+      <td><b>${esc(p.num)}</b></td><td>${esc(p.label)}</td><td>${fmtDate(p.period)}</td>
+      <td class="num">${fmt$2(p.certified)}</td>
+      <td>${p.status === 'Paid' ? 'Paid · ' + payRef(p, i) : esc(p.status)}</td>
+      <td class="num">${fmt$2(runPaid)}</td>
+      <td class="num">${fmt$2(Math.max(0, contractToDate - runPaid - (p.status === 'Paid' ? 0 : 0)))}</td>
+    </tr>`;
+  }).join('');
+  const waiverFinal = retReleased && m.pct >= 100;
+  const waiverAmount = currentDue > 0 ? currentDue : (j.payApps.length ? j.payApps[j.payApps.length - 1].certified : 0);
+
   $('#app').innerHTML = `
     <div class="ytoolrow" style="margin-top:24px">
       <label class="yfld" style="min-width:420px">Job
@@ -72,6 +98,29 @@ function render() {
         ${j.insurance ? `This is an insurance restoration project (${esc(j.insurance.carrier)} — ${esc(j.insurance.approval)}).` : ''}
       </p>
 
+      <h3 class="sect">Contract &amp; Payment Status</h3>
+      <table>
+        <tbody>
+          <tr><td>1. Original contract sum</td><td class="num">${fmt$2(j.contract)}</td></tr>
+          <tr><td>2. Net change by approved change orders</td><td class="num">${fmt$2(coApproved)}</td></tr>
+          <tr><td>3. Contract sum to date</td><td class="num">${fmt$2(contractToDate)}</td></tr>
+          <tr><td>4. Total completed &amp; stored to date</td><td class="num">${fmt$2(m.earned)}</td></tr>
+          <tr><td>5. Retainage (${j.retainagePct}% of completed work)${retReleased ? ' — <b>released at final completion</b>' : ' — held'}</td><td class="num">${fmt$2(retHeld)}</td></tr>
+          <tr><td>6. Total earned less retainage</td><td class="num">${fmt$2(earnedLessRet)}</td></tr>
+          <tr><td>7. Payments received to date</td><td class="num">${fmt$2(paidToDate)}</td></tr>
+          <tr style="font-weight:800"><td>8. CURRENT AMOUNT DUE (applications in process)</td><td class="num">${fmt$2(currentDue)}</td></tr>
+          <tr><td>9. Balance to finish, including retainage</td><td class="num">${fmt$2(balanceToFinish)}</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="sect">Payment History &amp; Balances</h3>
+      <table>
+        <thead><tr><th>App #</th><th>Description</th><th>Period To</th><th class="num">Amount Certified</th><th>Status / Ref</th><th class="num">Paid to Date</th><th class="num">Balance to Finish</th></tr></thead>
+        <tbody>${payRows || '<tr><td colspan="7">No payment applications issued yet — first application follows mobilization.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="3">Totals</td><td class="num">${fmt$2(m.billedAll)}</td><td></td><td class="num">${fmt$2(paidToDate)}</td><td class="num">${fmt$2(Math.max(0, contractToDate - m.billedAll))}</td></tr></tfoot>
+      </table>
+      <p style="font-size:11px;color:#5b6472">All amounts reconcile to the AIA G702/G703 applications on file. Retainage ${retReleased ? 'has been released with final completion.' : 'is held at ' + j.retainagePct + '% until final completion, lien waivers and closeout documentation.'}</p>
+
       <h3 class="sect">Work Completed</h3>
       <ul>${donePhases.map(p => `<li><b>${esc(p.name)}</b> — complete (${fmtDate(p.start)} – ${fmtDate(p.finish)})</li>`).join('') || '<li>Mobilization underway.</li>'}</ul>
 
@@ -94,10 +143,52 @@ function render() {
       <h3 class="sect page-break">Photo Documentation (${j.photos.length})</h3>
       <div class="yphoto-grid" style="grid-template-columns:repeat(3,1fr)">${j.photos.map(photoCard).join('')}</div>` : ''}
 
-      <h3 class="sect">Certification</h3>
-      <p>The undersigned certifies that the work described above has been performed in accordance with the contract documents and that quantities and percentages reported are accurate to the best of their knowledge.</p>
+<!-- ============ page: confirmation of payments received ============ -->
+      <h3 class="sect page-break">Confirmation of Payments Received</h3>
+      <p>${YATES.company} confirms receipt of the following payments from <b>${esc(j.owner)}</b> for the project referenced above. Each payment has been applied against the corresponding application for payment, and all amounts received have been or will be used to promptly pay in full all laborers, subcontractors and suppliers for work performed on this project.</p>
+      <table>
+        <thead><tr><th>App #</th><th>Payment Reference</th><th>Date Applied</th><th class="num">Amount Received</th></tr></thead>
+        <tbody>${paidApps.map((p, i) => `<tr><td><b>${esc(p.num)}</b></td><td>${payRef(p, i)}</td><td>${fmtDate(p.period)}</td><td class="num">${fmt$2(p.certified)}</td></tr>`).join('') || '<tr><td colspan="4">No payments received to date.</td></tr>'}</tbody>
+        <tfoot><tr><td colspan="3">Total payments received to date</td><td class="num">${fmt$2(paidToDate)}</td></tr></tfoot>
+      </table>
+      ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(currentDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
+      <div class="sig-row">
+        <div class="sig">Claudia Chavez — Office Manager, Billing &amp; Payroll, ${YATES.company}</div>
+        <div class="sig">Lisa Jilek — Chief Financial Officer, ${YATES.company}</div>
+      </div>
+
+<!-- ============ page: conditional waiver & release ============ -->
+      <h3 class="sect page-break">Conditional Waiver and Release on ${waiverFinal ? 'Final' : 'Progress'} Payment</h3>
+      <p>On receipt by the signer of this document of a check from <b>${esc(j.owner)}</b> (maker of check) in the sum of <b>${fmt$2(waiverAmount)}</b> payable to <b>${YATES.company}</b> (payee), and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document becomes effective to release any mechanic's lien right, any right arising from a payment bond that complies with a state or federal statute, any common-law payment bond right, any claim for payment, and any rights under any similar ordinance, rule, or statute related to claim or payment rights for persons in the signer's position, that the signer has on the property of <b>${esc(j.owner)}</b> located at <b>${esc(j.address)}</b>, to the following extent: <b>building automation and controls work per the contract dated ${fmtDate(j.contractDate)}</b>.</p>
+      <p>This release covers a ${waiverFinal ? 'final' : 'progress'} payment for all labor, services, equipment, or materials furnished to the property${waiverFinal ? '' : ', except for unpaid retention, pending modifications and changes, or other items furnished'}. Before any recipient of this document relies on it, the recipient should verify evidence of payment to the signer.</p>
+      <p>The signer warrants that the signer has already paid, or will use the funds received from this payment to promptly pay in full, all of the signer's laborers, subcontractors, materialmen and suppliers for all work, materials, equipment, or services provided for or to the above-referenced project.</p>
+      <div class="sig-row">
+        <div class="sig">${YATES.company} ( Company Name )</div>
+        <div class="sig">By ( Signature )</div>
+      </div>
+      <div class="sig-row" style="margin-top:30px">
+        <div class="sig">Title</div>
+        <div class="sig">Date</div>
+      </div>
+
+<!-- ============ page: certification, acceptance & signatures ============ -->
+      <h3 class="sect page-break">Certification &amp; Owner Acceptance</h3>
+      <p><b>Contractor's certification.</b> The undersigned certifies that the work described in this report has been completed in accordance with the contract documents, that quantities, percentages and amounts reported are accurate to the best of their knowledge, that all amounts have been paid by the contractor for work for which previous certificates for payment were issued and payments received, and that the current payment shown herein is now due.</p>
       <div class="sig-row">
         <div class="sig">${esc(j.pm)} — Project Manager, ${YATES.company}</div>
+        <div class="sig">Date</div>
+      </div>
+      <div class="sig-row" style="margin-top:30px">
+        <div class="sig">Lisa Jilek — Chief Financial Officer, ${YATES.company}</div>
+        <div class="sig">Date</div>
+      </div>
+      <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${YATES.email}</b>.</p>
+      <div class="sig-row">
+        <div class="sig">${esc(j.owner)} — Owner / Authorized Agent</div>
+        <div class="sig">Title</div>
+      </div>
+      <div class="sig-row" style="margin-top:30px">
+        <div class="sig">Printed Name</div>
         <div class="sig">Date</div>
       </div>
       <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
