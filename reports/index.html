@@ -104,7 +104,7 @@ function render() {
 
     <div class="demo-panel no-print" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from ServiceTitan</span></span></div>
-      <table class="demo-tbl">
+      <table class="demo-tbl tbl-left">
         <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
         <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
       </table>

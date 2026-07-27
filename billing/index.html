@@ -88,7 +88,7 @@ if (!YatesMode.isInternal() || !can('fin')) {
       </div>
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Retention by Job</h2><span class="k">held until final</span></div>
-        <table class="demo-tbl"><thead><tr><th>Job</th><th style="text-align:right">Rate</th><th style="text-align:right">Held</th></tr></thead>
+        <table class="demo-tbl tbl-left"><thead><tr><th>Job</th><th style="text-align:right">Rate</th><th style="text-align:right">Held</th></tr></thead>
         <tbody>${JOBS.map(j => {
           const m = jobMetrics(j);
           const held = j.payApps.some(p => p.num.includes('RET')) ? 0 : m.earned * j.retainagePct / 100;
@@ -100,7 +100,7 @@ if (!YatesMode.isInternal() || !can('fin')) {
     <div class="demo-panel">
       <div class="demo-panel-head"><h2>Application Register</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">synced from QuickBooks · click a row for the job's G702</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
-        <table class="demo-tbl">
+        <table class="demo-tbl tbl-left">
           <thead><tr><th>App #</th><th>Job</th><th>Description</th><th>Period To</th><th style="text-align:right">Certified</th><th>Status</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
