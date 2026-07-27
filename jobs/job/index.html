@@ -124,8 +124,8 @@ function secOverview(m) {
           <b>Project Manager:</b> ${esc(j.pm)} &nbsp;·&nbsp; <b>Superintendent:</b> ${esc(j.super)}<br>
           <b>Retainage:</b> ${j.retainagePct}% held until final completion
         </div>
-        <table class="demo-tbl" style="margin-top:12px">
-          <thead><tr><th>CO #</th><th>Description</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead>
+        <table class="demo-tbl tbl-left" style="margin-top:12px">
+          <thead><tr><th style="width:64px">CO #</th><th>Description</th><th style="text-align:right;width:110px">Amount</th><th style="width:230px">Status</th></tr></thead>
           <tbody>${(j.changeOrders || []).map(c => `<tr><td><b>${c.num}</b></td><td>${esc(c.desc)}</td><td style="text-align:right">${c.amount ? fmt$2(c.amount) : '—'}</td><td><span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span></td></tr>`).join('') || '<tr><td colspan="4" class="ynote">No change orders on this job.</td></tr>'}</tbody>
         </table>
       </div>
@@ -360,7 +360,7 @@ function secBilling(m) {
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Payment Applications (AIA G702/G703)</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">synced from QuickBooks · retainage ${ret}%</span></span></div>
-      <table class="demo-tbl">
+      <table class="demo-tbl tbl-left">
         <thead><tr><th>App #</th><th>Description</th><th>Period To</th><th style="text-align:right">Amount Certified</th><th>Status</th><th></th></tr></thead>
         <tbody>${paRows}
           <tr style="font-weight:800;background:var(--color-bg-3)"><td colspan="3">Total Certified</td><td style="text-align:right">${fmt$2(m.billedAll)}</td><td colspan="2"></td></tr>
@@ -456,7 +456,7 @@ function secReports() {
     <div class="demo-panel">
       <div class="demo-panel-head"><h2>Progress Report History</h2>
         <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/yates/reports/?id=${j.id}">📄 Generate New Report</a></div>
-      <table class="demo-tbl">
+      <table class="demo-tbl tbl-left">
         <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
         <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
       </table>

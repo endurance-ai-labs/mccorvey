@@ -250,12 +250,12 @@ function viewInternal() {
       </div>
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Alternates</h2><span class="k">toggle IN BID — totals reprice live</span></div>
-        <table class="demo-tbl">
-          <thead><tr><th>Alt #</th><th>Description</th><th>Amount</th><th style="text-align:center">Include</th><th></th></tr></thead>
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th style="width:56px">Alt #</th><th>Description</th><th style="width:130px">Amount</th><th style="text-align:center;width:70px">Include</th><th style="width:90px"></th></tr></thead>
           <tbody>${altRows}</tbody>
         </table>
         <div class="demo-panel-head" style="margin-top:18px"><h2>Allowances Carried in Base</h2></div>
-        <table class="demo-tbl">
+        <table class="demo-tbl tbl-left">
           <tbody>${BID.allowances.map(a => `<tr><td>${esc(a.desc)}</td><td style="text-align:right">${fmt$2(a.amount)}</td></tr>`).join('')}</tbody>
         </table>
       </div>
