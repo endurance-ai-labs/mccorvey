@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Budget &amp; Forecast — Yates Construction</title>
+<title>Budget &amp; Forecast — Y8S Operations Portal</title>
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
@@ -21,16 +21,16 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'Budget & Forecast' });
-if (!YatesMode.isInternal()) {
+if (!YatesMode.isInternal() || !can('margins')) {
   $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
-    <div class="ynote">Budgeting &amp; forecasting is an internal financial module. Switch to <b>Internal</b> mode (top right) to open it.</div></div>`;
+    <div class="ynote">Budgeting &amp; forecasting requires full financial access (Owner, CFO or Controller). Your current user does not have rights to this module.</div></div>`;
 } else {
   buildForecast();
 }
 
 function buildForecast() {
 /* =============================================================
-   DIVISION BUDGETING & FORECASTING — CFO console
+   Y8S BUDGETING & FORECASTING — CFO console
    Same engine pattern as the Blackwater asset forecast:
    T-3 / T-6 / T-12 trailing actuals → editable In-Place run-rate
    → Years 1-5 compounded monthly by a tiered growth schedule.
@@ -121,21 +121,21 @@ const LINES = [
   ['h', 'CONSTRUCTION REVENUE'],
   ['revenue', 'Contract revenue (earned)', 0, 'revenue'],
   ['h', 'COST OF CONSTRUCTION'],
-  ['c_subs', 'Subcontractors', 1, 'c_subs'], ['c_labor', 'Self-perform labor', 1, 'c_labor'],
-  ['c_mat', 'Materials', 1, 'c_mat'], ['c_equip', 'Equipment & small tools', 1, 'c_equip'],
+  ['c_subs', 'Controls hardware & materials', 1, 'c_subs'], ['c_labor', 'Self-perform field labor', 1, 'c_labor'],
+  ['c_mat', 'Subcontractors (electrical / mechanical)', 1, 'c_mat'], ['c_equip', 'Equipment, lifts & tools', 1, 'c_equip'],
   ['totCost', 'Total cost of construction', 'sub', null, 0, 1],
   ['gross', 'Gross profit', 'noi'], ['grossPct', 'Gross margin', 0, null, 'pct'],
   ['h', 'DIVISION OVERHEAD'],
-  ['o_salaries', 'Office salaries & PM staff', 1, 'o_salaries'], ['o_office', 'Office & yard rent', 1, 'o_office'],
+  ['o_salaries', 'Office salaries, PM & engineering staff', 1, 'o_salaries'], ['o_office', 'Office & yard rent', 1, 'o_office'],
   ['o_insurance', 'Insurance & bonding', 1, 'o_insurance'], ['o_it', 'Software & IT', 1, 'o_it'],
-  ['o_bd', 'Business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & vehicles', 1, 'o_vehicles'],
+  ['o_bd', 'Sales & business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & service vans', 1, 'o_vehicles'],
   ['o_other', 'Other G&A', 1, 'o_other'],
   ['totOh', 'Total overhead', 'sub', null, 0, 1],
-  ['conting', 'Contingency reserve', 1],
-  ['ebitda', 'Division EBITDA', 'noi'], ['ebitdaPct', 'EBITDA margin', 0, null, 'pct'],
+  ['conting', 'Warranty & contingency reserve', 1],
+  ['ebitda', 'Company EBITDA', 'noi'], ['ebitdaPct', 'EBITDA margin', 0, null, 'pct'],
   ['h', 'BELOW THE LINE'],
   ['tax', 'Income tax provision', 1], ['net', 'Net income', 'sub'],
-  ['dist', 'Distribution to parent', 'div'], ['retained', 'Retained for working capital'],
+  ['dist', 'Owner distribution', 'div'], ['retained', 'Retained for working capital'],
 ];
 const COLS = ['T-3', 'T-6', 'T-12', 'In-Place', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
 const Mfmt = n => '$' + Math.round(n).toLocaleString();
@@ -165,12 +165,12 @@ function render() {
   $('#app').innerHTML = `
     <div class="demo-hero" style="padding-bottom:16px">
       <div>
-        <div class="demo-eyebrow">CFO CONSOLE · DIVISION BUDGET</div>
+        <div class="demo-eyebrow">CFO CONSOLE · PATH TO $300M</div>
         <h1>Budgeting &amp; <em>Forecasting</em></h1>
-        <div class="sub">Trailing actuals seed an editable in-place run-rate; Years 1–5 compound it monthly on the growth schedule. Edit any In-Place line — everything downstream recalculates.</div>
+        <div class="sub">No more pulling QuickBooks into Excel and rebuilding the cash forecast by hand. Trailing actuals seed an editable in-place run-rate; Years 1–5 compound it monthly on the growth schedule — and every scenario is measured against the <b>$300M five-year goal</b>.</div>
       </div>
       <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> DFW DIVISION</span>
+        <span class="demo-live"><span class="dot"></span> SAN MARCOS, TX</span>
         <span class="demo-src">Backlog coverage <b>${fmtK(backlogRemaining)}</b> unearned</span>
       </div>
     </div>
@@ -181,19 +181,20 @@ function render() {
       <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
       <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
       <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
+      <div class="ykpi red"><div class="l">$300M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(300e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & service growth</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Forecast Approval — July 2026 Cycle</h2><span class="k">sequential sign-off · role-gated · switch role via account menu</span></div>
       ${approvalChain('fc-division-2026-07', [
-        { role: 'analyst',    label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
+        { role: 'office',     label: 'Office Manager — Prepared, Ready for Review', doneLabel: 'Prepared (Office Mgr)' },
         { role: 'controller', label: 'Controller — Reviewed',               doneLabel: 'Controller Reviewed' },
         { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
       ])}
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Division P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from QuickBooks · engine proprietary</span></span></div>
+      <div class="demo-panel-head"><h2>Company P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from QuickBooks · engine proprietary</span></span></div>
       <div class="fc-topbar" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
         <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">In-place as of</label>
         <select id="fc-month" class="pa-btn" style="cursor:pointer">${monthOpts()}</select>
@@ -232,7 +233,7 @@ function render() {
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Revenue &amp; EBITDA — 5-Year Path</h2><span class="k">annual</span></div>
+        <div class="demo-panel-head"><h2>Five-Year Path vs the $300M Goal</h2><span class="k">plan vs required trajectory</span></div>
         <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
       </div>
       <div class="demo-panel">
@@ -243,7 +244,7 @@ function render() {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Job-Level Contribution — Current Book</h2><span class="k">projected margin at completion</span></div>
+      <div class="demo-panel-head"><h2>Job-Level Contribution — Construction Division</h2><span class="k">projected margin at completion</span></div>
       <table class="demo-tbl">
         <thead><tr><th>Job</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Unearned Backlog</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Margin %</th></tr></thead>
         <tbody>${MJOBS.map(({ x, mm }) => `
@@ -264,7 +265,7 @@ function render() {
         </tbody>
       </table>
     </div>
-    <div class="demo-note">Demo environment · fictional data · engine parity with the Blackwater asset forecast</div>`;
+    <div class="demo-note">Demo environment · fictional data · concept build by Endurance AI Labs</div>`;
 
   wire();
   drawCharts(cd);

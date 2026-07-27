@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIA Billing — Yates Construction</title>
+<title>AIA Billing — Y8S Operations Portal</title>
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
@@ -18,9 +18,9 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'AIA Billing' });
-if (!YatesMode.isInternal()) {
+if (!YatesMode.isInternal() || !can('fin')) {
   $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
-    <div class="ynote">The billing register is internal. Switch to <b>Internal</b> mode (top right) to open it.</div></div>`;
+    <div class="ynote">The billing register requires financial access (Owner, CFO, Controller or Office Manager). Your current user does not have rights to this module.</div></div>`;
 } else {
   const APPS = JOBS.flatMap(j => j.payApps.map(p => ({ j, p })));
   APPS.sort((a, b) => b.p.period.localeCompare(a.p.period));
@@ -70,7 +70,7 @@ if (!YatesMode.isInternal()) {
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>July 2026 Billing Close</h2><span class="k">month-end close control · role-gated</span></div>
       ${approvalChain('close-2026-07', [
-        { role: 'analyst',    label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Reconciled' },
+        { role: 'office',     label: 'Office Manager — Reconciled, Ready for Review', doneLabel: 'Reconciled (Office Mgr)' },
         { role: 'controller', label: 'Controller — Close Billing Period',   doneLabel: 'Controller Closed' },
         { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
       ])}

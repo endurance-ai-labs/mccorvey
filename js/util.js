@@ -86,25 +86,60 @@ const photoCard = (p) => `
    INSTITUTIONAL CONTROLS — personas, approval chains, data-source chips
    ========================================================= */
 
-/* ---- demo personas (role-based sign-off rights) ---- */
+/* ---- Y8S user directory (user-based role access, demo) ---- */
 const PERSONAS = [
-  { id: 'analyst',    name: 'Jordan Ellis',     title: 'Financial Analyst' },
-  { id: 'controller', name: 'Priya Natarajan',  title: 'Controller' },
-  { id: 'cfo',        name: 'Alan Reece',       title: 'Chief Financial Officer' },
-  { id: 'pm',         name: 'Marcus Pruitt',    title: 'Project Manager' },
-  { id: 'chiefest',   name: 'Rachel Vaughn',    title: 'Chief Estimator' },
-  { id: 'divmgr',     name: 'K. Yates',         title: 'Division Manager' },
+  { id: 'owner',      name: 'Brett Yates',      title: 'Owner',                       perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'cfo',        name: 'Lisa Jilek',       title: 'Chief Financial Officer',     perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'controller', name: 'Lonnie Saylors',   title: 'Controller',                  perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'office',     name: 'Claudia Chavez',   title: 'Office Manager — Billing & Payroll', perms: { fin: 1, margins: 0, bids: 0 } },
+  { id: 'conmgr',     name: 'Tyler Reidhead',   title: 'Construction Manager',        perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'svcmgr',     name: 'Brandon Yates',    title: 'Service Operations Manager',  perms: { fin: 0, margins: 0, bids: 0 } },
+  { id: 'eng',        name: 'Jordan Felps, P.E.', title: 'Engineering Manager',       perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'est',        name: 'David Glenney',    title: 'Sales Estimating',            perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'client',     name: 'Owner Rep',        title: 'Client — External View',      perms: { fin: 0, margins: 0, bids: 0, external: 1 } },
 ];
-function currentRole() { try { return localStorage.getItem('yates-role') || 'cfo'; } catch (e) { return 'cfo'; } }
-function currentPersona() { return PERSONAS.find(p => p.id === currentRole()) || PERSONAS[2]; }
-function setRole(id) { try { localStorage.setItem('yates-role', id); } catch (e) {} window.location.reload(); }
+function currentRole() { try { return localStorage.getItem('yates-role') || ''; } catch (e) { return ''; } }
+function currentPersona() { return PERSONAS.find(p => p.id === currentRole()) || null; }
+function can(perm) { const p = currentPersona(); return !!(p && p.perms[perm]); }
+function isSignedIn() { return !!currentPersona(); }
+function setRole(id) {
+  try {
+    localStorage.setItem('yates-role', id);
+    const p = PERSONAS.find(x => x.id === id);
+    localStorage.setItem('yates-mode', p && p.perms.external ? 'client' : 'internal');
+  } catch (e) {}
+  window.location.reload();
+}
+function signOutUser() { try { localStorage.removeItem('yates-role'); } catch (e) {} window.location.reload(); }
+
+/* ---- sign-in overlay: pick your user (permissions flow from role) ---- */
+function renderSignIn() {
+  const cards = PERSONAS.map(p => `
+    <button class="login-card" onclick="setRole('${p.id}')">
+      <span class="avatar">${p.perms.external ? '◇' : p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>
+      <span class="who"><b>${p.name}</b><i>${p.title}</i></span>
+      <span class="perm">${p.perms.external ? 'External portal' : p.perms.fin ? (p.perms.margins ? 'Full financial access' : 'Billing & payroll access') : 'Operations access'}</span>
+    </button>`).join('');
+  const ov = document.createElement('div');
+  ov.className = 'login-overlay';
+  ov.innerHTML = `
+    <div class="login-box">
+      <img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="login-logo">
+      <div class="login-title">Operations Portal</div>
+      <div class="login-sub">Building Automation Systems Nurtured by Experience · single source of truth demo</div>
+      <div class="login-note">Select your user — every module, approval right and financial view is scoped to your role.</div>
+      <div class="login-grid">${cards}</div>
+      <div class="login-foot">Demo environment · fictional data · concept build by Endurance AI Labs</div>
+    </div>`;
+  document.body.appendChild(ov);
+}
 
 /* ---- data-source chips (integration attribution) ---- */
 function srcChip(kind) {
   const map = {
     qb:   ['QUICKBOOKS API', '#2ca01c', 'Financial actuals synced from QuickBooks Online via API'],
     st:   ['SERVICETITAN API', '#f04e23', 'Field production, schedules & photos synced from ServiceTitan via API'],
-    prop: ['YATES PROPRIETARY', '#005c97', 'Proprietary Yates modeling engine — internal only'],
+    prop: ['Y8S PROPRIETARY', '#005c97', 'Proprietary Yates modeling engine — internal only'],
   };
   const m = map[kind]; if (!m) return '';
   return `<span title="${m[2]}" style="display:inline-flex;align-items:center;gap:5px;font-size:8.5px;font-weight:800;letter-spacing:0.1em;padding:2px 8px;border-radius:3px;border:1px solid ${m[1]}44;color:${m[1]};background:${m[1]}12;white-space:nowrap"><span style="width:5px;height:5px;border-radius:99px;background:${m[1]}"></span>${m[0]}</span>`;

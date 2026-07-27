@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Job Tracker — Yates Construction</title>
+<title>Job Tracker — Y8S Operations Portal</title>
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
@@ -29,16 +29,20 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'Job Tracker' });
-const internal = YatesMode.isInternal();
-const j = JOBS.find(x => x.id === (qs('id') || 'LKV-2410')) || JOBS[0];
+const internal = YatesMode.isInternal() && !(currentPersona() && currentPersona().perms.external);
+const showFin = internal && (can('fin') || can('margins'));
+const showMargins = internal && can('margins');
+const j = JOBS.find(x => x.id === (qs('id') || 'CTX-2410')) || JOBS[0];
 
 /* per-job forecast state (FAC overrides) */
 const FAC = {};   // idx -> forecast-at-completion cost override
 j.sov.forEach((r, i) => { FAC[i] = r.pct > 0 ? Math.round(r.costToDate / (r.pct / 100)) : r.budget; if (r.pct >= 100) FAC[i] = r.costToDate; });
 
-const SECTIONS = internal
+const SECTIONS = showFin
   ? [['overview','Overview'],['forecast','Budget & Forecast'],['billing','Billing'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
-  : [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']];
+  : internal
+    ? [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
+    : [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']];
 
 function activeSection() {
   const h = (location.hash || '').replace('#', '');
@@ -91,7 +95,7 @@ function secOverview(m) {
           : `<div class="ybar ${r.pct >= 100 ? 'g' : ''}"><i style="width:${r.pct}%"></i></div><div class="ynote">${r.pct}%</div>`}
       </td>
       <td style="text-align:right">${fmt$2(r.scheduled * r.pct / 100)}</td>
-      ${internal ? `
+      ${showMargins ? `
         <td style="text-align:right">${fmt$2(r.budget)}</td>
         <td style="text-align:right">${fmt$2(r.costToDate || 0)}</td>
         <td style="text-align:right;color:${(r.scheduled * r.pct / 100 - (r.costToDate || 0)) >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$2(r.scheduled * r.pct / 100 - (r.costToDate || 0))}</td>` : ''}
@@ -103,7 +107,7 @@ function secOverview(m) {
       <div class="ykpi"><div class="l">Earned to Date</div><div class="v">${fmtK(m.earned)}</div><div class="s">${fmtPct(m.pct, 1)} complete</div></div>
       <div class="ykpi amber"><div class="l">Billed to Date</div><div class="v">${fmtK(m.billedAll)}</div><div class="s">${m.overUnder >= 0 ? 'over' : 'under'}-billed ${fmtK(Math.abs(m.overUnder))}</div></div>
       <div class="ykpi"><div class="l">Schedule</div><div class="v" style="font-size:15px">${fmtDateShort(j.start)} → ${fmtDateShort(j.finish)}</div><div class="s">${j.status}</div></div>
-      ${internal ? `<div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(m.marginToDate)}</div><div class="s">projected ${fmtK(m.projMargin)} (${fmtPct(m.projMarginPct)})</div></div>` : ''}
+      ${showMargins ? `<div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(m.marginToDate)}</div><div class="s">projected ${fmtK(m.projMargin)} (${fmtPct(m.projMarginPct)})</div></div>` : ''}
     </div>
 
     ${j.insurance ? `<div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)"><div style="font-size:12.5px;color:var(--color-cloud-whisper)">🛡 <b>Insurance restoration</b> — ${esc(j.insurance.carrier)}: ${esc(j.insurance.approval)} · ${esc(j.insurance.peril)}</div></div>` : ''}
@@ -128,14 +132,14 @@ function secOverview(m) {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Schedule of Values ${internal ? '— Internal (cost & margin)' : '— Progress'}</h2><span style="display:flex;gap:6px;align-items:center">${internal ? srcChip('st') + srcChip('qb') : ''}<span class="k">${internal ? '% complete from ServiceTitan field entries · costs from QuickBooks' : 'owner view'}</span></span></div>
+      <div class="demo-panel-head"><h2>Schedule of Values ${showMargins ? '— Internal (cost & margin)' : internal ? '— Field Production' : '— Progress'}</h2><span style="display:flex;gap:6px;align-items:center">${internal ? srcChip('st') + srcChip('qb') : ''}<span class="k">${internal ? '% complete from ServiceTitan field entries · costs from QuickBooks' : 'owner view'}</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
-          <thead><tr><th>Item</th><th>Description of Work</th><th style="text-align:right">Scheduled Value</th><th>% Complete</th><th style="text-align:right">Earned</th>${internal ? '<th style="text-align:right">Budget Cost</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin</th>' : ''}</tr></thead>
+          <thead><tr><th>Item</th><th>Description of Work</th><th style="text-align:right">Scheduled Value</th><th>% Complete</th><th style="text-align:right">Earned</th>${showMargins ? '<th style="text-align:right">Budget Cost</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin</th>' : ''}</tr></thead>
           <tbody>${sovRows}
             <tr style="font-weight:800;background:var(--color-bg-3)">
               <td colspan="2">Total</td><td style="text-align:right">${fmt$2(j.contract)}</td><td>${fmtPct(m.pct, 1)}</td><td style="text-align:right">${fmt$2(m.earned)}</td>
-              ${internal ? `<td style="text-align:right">${fmt$2(m.budget)}</td><td style="text-align:right">${fmt$2(m.cost)}</td><td style="text-align:right">${fmt$2(m.earned - m.cost)}</td>` : ''}
+              ${showMargins ? `<td style="text-align:right">${fmt$2(m.budget)}</td><td style="text-align:right">${fmt$2(m.cost)}</td><td style="text-align:right">${fmt$2(m.earned - m.cost)}</td>` : ''}
             </tr>
           </tbody>
         </table>
@@ -262,9 +266,9 @@ function secForecast(m) {
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>FAC Approval — ${j.id} · Month-End</h2><span class="k">cost forecast certification chain</span></div>
       ${approvalChain('fac-' + j.id + '-2026-07', [
-        { role: 'pm',      label: 'PM — Certify Forecast at Completion', doneLabel: 'PM Certified' },
-        { role: 'analyst', label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
-        { role: 'cfo',     label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
+        { role: 'conmgr',     label: 'PM — Certify Forecast at Completion', doneLabel: 'PM Certified' },
+        { role: 'controller', label: 'Controller — Reviewed',               doneLabel: 'Controller Reviewed' },
+        { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
       ])}
     </div>
 
@@ -348,8 +352,8 @@ function secBilling(m) {
     <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)">
       <div class="demo-panel-head"><h2>Release Control — ${esc(p.num)} (${esc(p.status)})</h2><span class="k">pay application sign-off before owner submission</span></div>
       ${approvalChain('pa-' + j.id + '-' + p.num, [
-        { role: 'pm',         label: 'PM — Certify Quantities',            doneLabel: 'PM Certified' },
-        { role: 'controller', label: 'Controller — Approve Billing',       doneLabel: 'Controller Approved' },
+        { role: 'conmgr',     label: 'PM — Certify Quantities',            doneLabel: 'PM Certified' },
+        { role: 'office',     label: 'Office Manager — Billing Approved',  doneLabel: 'Billing Approved' },
         { role: 'cfo',        label: 'CFO — Sign Off & Release to Owner',  doneLabel: 'CFO Signed Off' },
       ])}
     </div>`).join('')}
@@ -388,7 +392,7 @@ function showG702(num) {
     <div class="ytoolrow no-print"><div class="spacer"></div><button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button></div>
     <div class="ydoc">
       <div class="ydoc-head">
-        <div><div class="word">YATES<span>.</span></div><div class="sub">Construction</div><div class="tag">We Make It Possible</div></div>
+        <div><img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo"><div class="sub" style="margin-top:8px">YATES Company, LLC · Building Automation &amp; Energy Solutions</div></div>
         <div class="right"><b>Application &amp; Certificate for Payment</b><br>AIA-style G702/G703<br>Application #: ${p.num}<br>Period to: ${fmtDate(p.period)}</div>
       </div>
       <div class="big-title">${esc(j.name)}</div>
@@ -414,7 +418,7 @@ function showG702(num) {
         <tfoot><tr><td colspan="2">Total</td><td class="num">${fmt$2(j.contract)}</td><td colspan="4"></td></tr></tfoot>
       </table>
       <p style="margin-top:18px">The undersigned Contractor certifies that the work covered by this Application for Payment has been completed in accordance with the Contract Documents and that current payment shown herein is now due.</p>
-      <div class="sig-row"><div class="sig">Yates Construction — ${esc(j.pm)}, Project Manager</div><div class="sig">Date</div></div>
+      <div class="sig-row"><div class="sig">YATES Company — ${esc(j.pm)}, Project Manager</div><div class="sig">Date</div></div>
     </div>`;
   document.querySelector('#g702-host').scrollIntoView({ behavior: 'smooth' });
 }

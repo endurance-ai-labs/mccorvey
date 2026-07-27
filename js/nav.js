@@ -39,6 +39,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/yates/forecast/', label: 'Budget & Forecast' },
       { href: '/yates/billing/',  label: 'AIA Billing' },
+      { href: '/yates/timesheets/', label: 'Timesheets' },
     ],
   },
   { id: 'brain', label: 'Brain', href: '/yates/brain/', items: [], cta: true },
@@ -61,31 +62,30 @@ function _activeGroup(path) {
   if (path.startsWith('/bids/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/billing/')) return 'finance';
+  if (path.startsWith('/timesheets/')) return 'finance';
   if (path.startsWith('/brain/')) return 'brain';
   return 'home';
 }
 
 /* ---- Static demo ticker: construction market inputs ---- */
 const TICKER = [
-  ['LUMBER (RL COMP)', '$428/MBF', '+1.2%', 'up'],
-  ['HRC STEEL', '$892/ton', '-0.8%', 'down'],
-  ['DIESEL (DOE)', '$3.61/gal', '+0.4%', 'up'],
   ['COPPER', '$4.52/lb', '+2.1%', 'up'],
-  ['CONCRETE PPI', '341.2', '+0.2%', 'up'],
-  ['DFW PERMITS (T-30)', '4,182', '+6.4%', 'up'],
-  ['CREW UTILIZATION (SERVICETITAN)', '87.3%', '+1.1%', 'up'],
+  ['CAT6 / LV CABLE', '$142/box', '-0.6%', 'down'],
+  ['DDC CONTROLLER LEAD TIME', '9 wks', '-1 wk', 'up'],
+  ['ERCOT PEAK (T-1)', '78.4 GW', '+3.2%', 'up'],
+  ['DIESEL (DOE)', '$3.61/gal', '+0.4%', 'up'],
+  ['TECH UTILIZATION (SERVICETITAN)', '87.3%', '+1.1%', 'up'],
   ['AR SYNC (QUICKBOOKS)', 'LIVE', '4 min ago', 'up'],
-  ['ENR CCI', '13,846', '+0.3%', 'up'],
+  ['OPEN SERVICE CALLS', '23', '-4', 'up'],
 ];
 const MARQUEE = [
-  ['ENR', 'DFW commercial starts up 11% year-over-year as logistics and data-center pipelines expand'],
-  ['AGC', 'Craft labor availability improves for a third straight quarter across Texas markets'],
-  ['DODGE', 'Momentum Index edges higher on institutional planning strength'],
-  ['NOAA', 'Hail season outlook: above-normal severe activity for North Texas — restoration demand elevated'],
-  ['ENR', 'Insurance restoration backlog grows as carriers accelerate storm-claim approvals'],
-  ['YATES', 'Safety milestone: 412 consecutive days without a lost-time incident across the Texas Division'],
-  ['YATES', 'Family-owned since 1964 — ENR Top-30 nationally, building across commercial, industrial, manufacturing, hospitality & gaming'],
-  ['DODGE', 'E-commerce distribution and advanced-manufacturing starts keep Texas construction spending at record pace'],
+  ['Y8S', 'Best Place to Work in San Marcos, TX 2026 — thank you to the whole team'],
+  ['ERCOT', 'Summer peak demand programs open — commercial curtailment enrollment closes Aug 15'],
+  ['ASHRAE', 'Guideline 36 high-performance sequences gaining adoption across Texas K-12 retrofits'],
+  ['CPS', 'Utility rebate window for smart-building controls extended through Q4 — applications trending up'],
+  ['TEXAS ISD', 'School bond packages across Central Texas fund HVAC & controls modernization at record pace'],
+  ['Y8S', 'Established 2011 · Carrier i-Vu, Innotech & Lynxspring lines · engineering, construction & 24/7 service'],
+  ['AIA', 'Construction billings index positive for institutional work a sixth straight month'],
 ];
 
 function renderTopbar(opts = {}) {
@@ -94,9 +94,10 @@ function renderTopbar(opts = {}) {
   const subtitle = opts.subtitle || 'Operations Portal';
   const path = _normalizePath(window.location.pathname);
   const activeGroupId = _activeGroup(path);
-  const internal = YatesMode.isInternal();
-  const me = (typeof currentPersona === 'function') ? currentPersona() : { id: 'cfo', name: 'Alan Reece', title: 'Chief Financial Officer' };
-  const groups = NAV_GROUPS.filter(g => internal || !g.internalOnly);
+  if (typeof isSignedIn === 'function' && !isSignedIn()) { renderSignIn(); target.outerHTML = ''; return; }
+  const me = currentPersona();
+  const internal = YatesMode.isInternal() && !me.perms.external;
+  const groups = NAV_GROUPS.filter(g => !g.internalOnly || (internal && me.perms.fin));
   const activeGroup = groups.find(g => g.id === activeGroupId);
 
   const groupLinks = groups.map(g => {
@@ -185,14 +186,15 @@ function renderTopbar(opts = {}) {
     <div class="market-ticker" id="market-ticker">${tickerHtml}</div>
     <div class="portal-topbar">
       <a class="brand" href="/yates/" style="cursor:pointer;text-decoration:none">
-        <div>
-          <div class="yates-word">YATES<span>.</span></div>
-          <div class="yates-sub">Construction · ${subtitle}</div>
+        <img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo">
+        <div class="y8s-brand-text">
+          <div class="y8s-name">YATES Company, LLC</div>
+          <div class="yates-sub">${subtitle}</div>
         </div>
       </a>
       <nav class="nav nav-desktop">${groupLinks}</nav>
       <div class="portal-topbar-right">
-        <div class="mode-toggle" title="Switch between internal (full financials) and client-facing views">
+        <div class="mode-toggle" title="Switch between internal (full financials) and client-facing views" style="${me.perms.external ? 'display:none' : ''}">
           <button id="ymode-int" class="${internal ? 'on' : ''}"><span class="mt-lbl">INTERNAL</span>${internal ? '' : ''}</button>
           <button id="ymode-ext" class="${internal ? '' : 'on'}"><span class="mt-lbl">CLIENT</span></button>
         </div>
@@ -202,23 +204,22 @@ function renderTopbar(opts = {}) {
         </button>
         <div class="nav-item nav-item-with-dropdown nav-user-btn" id="nav-user-btn" title="Account & role">
           <a href="#" class="nav-icon-btn nav-user-trigger" aria-label="Account" onclick="event.preventDefault()">
-            <span class="nav-user-avatar">${me.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>
+            <span class="nav-user-avatar">${me.perms && me.perms.external ? '◇' : me.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>
             <span class="nav-user-label">${me.name.split(' ')[0]}</span>
             <span class="nav-caret">▾</span>
           </a>
           <div class="nav-dropdown nav-dropdown-right">
             <div class="nav-user-card">
               <div class="nav-user-card-title">${me.name} <span class="nav-user-badge">DEMO</span></div>
-              <div class="nav-user-card-sub">${me.name.toLowerCase().replace(/[^a-z]/g, '.').replace(/\.+/g, '.')}@yates.demo</div>
-              <div class="nav-user-card-meta">${me.title.toUpperCase()} · SIGN-OFF RIGHTS ENABLED</div>
+              <div class="nav-user-card-sub">${me.title}</div>
+              <div class="nav-user-card-meta">${me.perms.external ? 'EXTERNAL — CLIENT VIEW' : me.perms.fin ? (me.perms.margins ? 'FULL FINANCIAL ACCESS · SIGN-OFF RIGHTS' : 'BILLING & PAYROLL ACCESS') : 'OPERATIONS ACCESS'}</div>
             </div>
             <div class="nav-user-card" style="padding-top:6px">
-              <div class="nav-user-card-meta" style="margin-bottom:4px">SWITCH ROLE (DEMO)</div>
+              <div class="nav-user-card-meta" style="margin-bottom:4px">SWITCH USER (DEMO)</div>
               ${PERSONAS.map(p => `<a href="#" class="nav-dropdown-item" style="padding:6px 0;${p.id === me.id ? 'color:var(--color-blue);font-weight:700' : ''}" onclick="event.preventDefault();setRole('${p.id}')">${p.id === me.id ? '● ' : '○ '}${p.name} — ${p.title}</a>`).join('')}
             </div>
             <div class="nav-dropdown-divider"></div>
-            <a href="/yates/" class="nav-dropdown-item">Executive Dashboard</a>
-            <a href="/yates/forecast/" class="nav-dropdown-item">Budget &amp; Forecast</a>
+            <a href="#" class="nav-dropdown-item" onclick="event.preventDefault();signOutUser()">Sign out</a>
           </div>
         </div>
       </div>
