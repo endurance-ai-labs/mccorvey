@@ -20,6 +20,37 @@
 YatesNav.renderTopbar({ subtitle: 'Progress Reports' });
 let jobId = qs('id') || 'CTX-2410';
 
+
+/* ---------- e-signature engine (localStorage, role-matched) ---------- */
+function sigState(key) { try { return JSON.parse(localStorage.getItem('yates-sign:' + key) || 'null'); } catch (e) { return null; } }
+function signDoc(key, roles) {
+  roles = roles.split('|');
+  const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  let rec = null;
+  if (roles[0] === 'ownerext') {
+    const name = prompt('Owner / authorized agent — type your full name to sign electronically:');
+    if (!name || !name.trim()) return;
+    const title = prompt('Title (optional):') || 'Authorized Agent';
+    rec = { name: name.trim(), title: title.trim(), at: now };
+  } else {
+    const me = currentPersona();
+    if (!me || !roles.includes(me.id)) {
+      const who = PERSONAS.filter(p => roles.includes(p.id)).map(p => p.name + ' (' + p.title + ')').join(' or ');
+      alert('This line must be signed by ' + who + '.\n\nSwitch user via the account menu (top right).');
+      return;
+    }
+    rec = { name: me.name, title: me.title, at: now };
+  }
+  try { localStorage.setItem('yates-sign:' + key, JSON.stringify(rec)); } catch (e) {}
+  render();
+}
+function clearSig(key) { try { localStorage.removeItem('yates-sign:' + key); } catch (e) {} render(); }
+function sigBlock(key, cap, roles) {
+  const s = sigState(key);
+  if (s) return `<div class="sig signed"><span class="sig-script">${esc(s.name)}</span><div class="sig-meta">Digitally signed — ${esc(s.title)} · ${esc(s.at)} <a href="#" class="no-print" style="color:#97a0ad;font-weight:400" onclick="event.preventDefault();clearSig('${key}')" title="Clear signature (demo)">↺</a></div><div class="sig-cap">${cap}</div></div>`;
+  return `<div class="sig"><button class="sig-btn" onclick="signDoc('${key}','${roles}')">✍ Sign electronically</button><div class="sig-cap">${cap}</div></div>`;
+}
+
 function render() {
   const j = JOBS.find(x => x.id === jobId) || JOBS[0];
   const m = jobMetrics(j);
@@ -153,8 +184,8 @@ function render() {
       </table>
       ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(currentDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
       <div class="sig-row">
-        <div class="sig">Claudia Chavez — Office Manager, Billing &amp; Payroll, ${YATES.company}</div>
-        <div class="sig">Lisa Jilek — Chief Financial Officer, ${YATES.company}</div>
+        ${sigBlock(j.id + ':conf:office', 'Claudia Chavez — Office Manager, Billing &amp; Payroll, ' + YATES.company, 'office')}
+        ${sigBlock(j.id + ':conf:cfo', 'Lisa Jilek — Chief Financial Officer, ' + YATES.company, 'cfo')}
       </div>
 
 <!-- ============ page: conditional waiver & release ============ -->
@@ -164,33 +195,26 @@ function render() {
       <p>The signer warrants that the signer has already paid, or will use the funds received from this payment to promptly pay in full, all of the signer's laborers, subcontractors, materialmen and suppliers for all work, materials, equipment, or services provided for or to the above-referenced project.</p>
       <div class="sig-row">
         <div class="sig">${YATES.company} ( Company Name )</div>
-        <div class="sig">By ( Signature )</div>
+        ${sigBlock(j.id + ':waiver:co', 'By ( Signature — Owner, CFO or Controller )', 'owner|cfo|controller')}
       </div>
       <div class="sig-row" style="margin-top:30px">
-        <div class="sig">Title</div>
-        <div class="sig">Date</div>
+        <div class="sig">${(sigState(j.id + ':waiver:co') || {}).title || 'Title'}</div>
+        <div class="sig">${(sigState(j.id + ':waiver:co') || {}).at || 'Date'}</div>
       </div>
 
 <!-- ============ page: certification, acceptance & signatures ============ -->
       <h3 class="sect page-break">Certification &amp; Owner Acceptance</h3>
       <p><b>Contractor's certification.</b> The undersigned certifies that the work described in this report has been completed in accordance with the contract documents, that quantities, percentages and amounts reported are accurate to the best of their knowledge, that all amounts have been paid by the contractor for work for which previous certificates for payment were issued and payments received, and that the current payment shown herein is now due.</p>
       <div class="sig-row">
-        <div class="sig">${esc(j.pm)} — Project Manager, ${YATES.company}</div>
-        <div class="sig">Date</div>
-      </div>
-      <div class="sig-row" style="margin-top:30px">
-        <div class="sig">Lisa Jilek — Chief Financial Officer, ${YATES.company}</div>
-        <div class="sig">Date</div>
+        ${sigBlock(j.id + ':cert:pm', esc(j.pm) + ' — Project Manager, ' + YATES.company, 'conmgr|eng|svcmgr')}
+        ${sigBlock(j.id + ':cert:cfo', 'Lisa Jilek — Chief Financial Officer, ' + YATES.company, 'cfo')}
       </div>
       <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${YATES.email}</b>.</p>
       <div class="sig-row">
-        <div class="sig">${esc(j.owner)} — Owner / Authorized Agent</div>
-        <div class="sig">Title</div>
+        ${sigBlock(j.id + ':accept:owner', esc(j.owner) + ' — Owner / Authorized Agent', 'ownerext')}
+        <div class="sig">${(sigState(j.id + ':accept:owner') || {}).at || 'Date'}</div>
       </div>
-      <div class="sig-row" style="margin-top:30px">
-        <div class="sig">Printed Name</div>
-        <div class="sig">Date</div>
-      </div>
+      <p class="ynote no-print" style="margin-top:14px">Electronic signatures are recorded with name, title and timestamp (demo: stored locally). The printed package preserves executed signatures; unsigned lines print blank for wet-ink execution.</p>
       <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
