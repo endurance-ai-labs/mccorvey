@@ -38,6 +38,74 @@ if (!me || me.perms.external) {
   render();
 }
 
+
+/* ---- construction -> service conversion pipeline ---- */
+function firstTwo(s) { return s.split(/\s+/).slice(0, 2).join(' ').toLowerCase(); }
+function convState() { try { return JSON.parse(localStorage.getItem('yates-svc-conv') || '[]'); } catch (e) { return []; } }
+function convertJob(id) {
+  const st = convState();
+  if (!st.includes(id)) st.push(id);
+  try { localStorage.setItem('yates-svc-conv', JSON.stringify(st)); } catch (e) {}
+  render();
+}
+function conversionCandidates() {
+  const covered = SERVICE_AGREEMENTS.map(a => firstTwo(a.client));
+  return JOBS.map(j => ({ j, m: jobMetrics(j) }))
+    .filter(({ j, m }) => m.pct >= 50 && !covered.includes(firstTwo(j.owner)))
+    .map(({ j, m }) => {
+      const sec = j.sector.toLowerCase();
+      const tier = sec.includes('health') || sec.includes('mission') ? 'Monthly' : (sec.includes('k-12') || sec.includes('municipal') || sec.includes('higher') ? 'Quarterly' : 'Custom');
+      const monthly = Math.min(4500, Math.max(450, Math.round(j.contract * 0.045 / 12 / 50) * 50));
+      return { j, m, tier, monthly, converted: convState().includes(j.id) };
+    });
+}
+
+/* ---- dispatch call detail (modal) ---- */
+function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973; return h; }
+function showCall(num) {
+  const c = SERVICE_CALLS.find(x => x.num === num); if (!c) return;
+  const h = hash(num);
+  const ag = SERVICE_AGREEMENTS.find(a => firstTwo(a.client) === firstTwo(c.client));
+  const sla = c.priority === 'Emergency' ? '4-hour response' : c.priority === 'High' ? 'Next business day' : '3 business days';
+  const onsiteH = (1 + h % 4) + '.' + (h % 9);
+  const timeline = [
+    ['Call received — logged by T. Coy (Service Coordinator)', c.opened + ' 07:4' + (h % 9)],
+    ['Dispatched to ' + c.tech + ' via ServiceTitan', c.opened + ' 08:1' + (h % 6)],
+    c.status !== 'Dispatched' ? ['Tech on site — diagnostics started', c.opened + ' 09:3' + (h % 9)] : null,
+    c.status === 'In Progress' ? ['Root cause identified — ' + c.issue.split('—')[0].trim().toLowerCase() + ' traced to field device', 'today'] : null,
+    c.status === 'Parts on Order' ? ['Parts ordered — ETA 2 business days', 'yesterday'] : null,
+    c.status === 'Scheduled' ? ['Return visit scheduled with site contact', 'today'] : null,
+  ].filter(Boolean);
+  const parts = c.status === 'Parts on Order' ? [
+    ['ACT-DMP-24', 'Damper actuator, 24V modulating', 1],
+    h % 2 ? ['SEN-DTS-DCT', 'Duct temperature sensor', 2] : ['VLV-CCV-2W', 'Control valve w/ actuator', 1],
+  ] : [];
+
+  const ov = document.createElement('div');
+  ov.className = 'svc-modal';
+  ov.innerHTML = `
+    <div class="svc-card" onclick="event.stopPropagation()">
+      <div class="svc-card-head">
+        <div><b>${c.num}</b> · ${esc(c.client)}<div class="ynote">${esc(c.issue)}</div></div>
+        <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
+      </div>
+      <div class="svc-meta">
+        <span>${c.priority} · SLA: ${sla}</span>
+        <span>Tech: <b>${esc(c.tech)}</b></span>
+        <span>Time on site: <b>${onsiteH} hrs</b></span>
+        <span>Agreement: <b>${ag ? ag.tier + ' package' : 'T&M — no agreement'}</b></span>
+      </div>
+      <div class="svc-sect">Activity Timeline</div>
+      ${timeline.map(x => `<div class="svc-tl"><span class="dot"></span><div><b>${esc(x[0])}</b><div class="ynote">${esc(x[1])}</div></div></div>`).join('')}
+      ${parts.length ? `<div class="svc-sect">Parts on Order</div>
+      <table class="demo-tbl tbl-left"><thead><tr><th>Part</th><th>Description</th><th style="text-align:right">Qty</th></tr></thead>
+      <tbody>${parts.map(p => `<tr><td><b>${p[0]}</b></td><td>${esc(p[1])}</td><td style="text-align:right">${p[2]}</td></tr>`).join('')}</tbody></table>` : ''}
+      <div class="ynote" style="margin-top:14px">Synced from ServiceTitan · demo simulation</div>
+    </div>`;
+  ov.addEventListener('click', () => ov.remove());
+  document.body.appendChild(ov);
+}
+
 function render() {
   const showMoney = can('fin') || can('margins');
   const active = SERVICE_AGREEMENTS.filter(a => a.status === 'Active');
@@ -56,7 +124,11 @@ function render() {
   const tierCounts = tiers.map(t => SERVICE_AGREEMENTS.filter(a => a.tier === t).length);
   const maxTier = Math.max(...tierCounts, 1);
 
-  const agRows = SERVICE_AGREEMENTS.slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
+  const convRows = conversionCandidates().filter(c => c.converted).map(c => ({
+    client: c.j.owner, site: c.j.address, tier: c.tier, monthly: c.monthly,
+    renewal: '2027-08-01', status: 'Proposed', tech: '—',
+  }));
+  const agRows = SERVICE_AGREEMENTS.concat(convRows).slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
     <tr>
       <td><b>${esc(a.client)}</b><div class="ynote">${esc(a.site)}</div></td>
       <td>${tierPill(a.tier)}</td>
@@ -67,7 +139,7 @@ function render() {
     </tr>`).join('');
 
   const callRows = SERVICE_CALLS.map(c => `
-    <tr>
+    <tr class="yclick" onclick="showCall('${c.num}')">
       <td><b>${c.num}</b></td>
       <td>${esc(c.client)}</td>
       <td>${esc(c.issue)}</td>
@@ -131,6 +203,25 @@ function render() {
           ${tiers.map(t => `<div style="margin-bottom:8px"><b style="color:var(--color-cloud-whisper)">${t}:</b> ${SERVICE_TIERS[t].join(' · ')}</div>`).join('')}
         </div>
       </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-green)">
+      <div class="demo-panel-head"><h2>Conversion Pipeline — Construction → Service</h2><span class="k">closing jobs without an agreement · the recurring-revenue attach motion</span></div>
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th>Job</th><th>Owner</th><th style="text-align:right">% Complete</th><th>Proposed Package</th>${showMoney ? '<th style="text-align:right">Est. MRR</th>' : ''}<th style="width:190px"></th></tr></thead>
+        <tbody>${conversionCandidates().map(c => `
+          <tr>
+            <td><a href="/yates/jobs/job/?id=${c.j.id}" style="color:var(--color-blue);font-weight:700">${c.j.id}</a> · ${esc(c.j.name.split('—')[0].trim())}</td>
+            <td>${esc(c.j.owner)}</td>
+            <td style="text-align:right">${fmtPct(c.m.pct, 0)}</td>
+            <td><span class="ypill ${{ Monthly: 'blue', Quarterly: 'green', Custom: 'amber' }[c.tier]}">${c.tier}</span></td>
+            ${showMoney ? `<td style="text-align:right">${fmt$(c.monthly)}/mo</td>` : ''}
+            <td>${c.converted
+              ? '<span class="demo-chip ok">PROPOSAL ISSUED ✓</span>'
+              : `<button class="pa-btn primary" style="cursor:pointer" onclick="convertJob('${c.j.id}')">→ Convert to Agreement</button>`}</td>
+          </tr>`).join('') || '<tr><td colspan="6" class="ynote">Every eligible construction client already holds a service agreement.</td></tr>'}</tbody>
+      </table>
+      ${showMoney ? `<div class="ynote" style="margin-top:8px">Converting all candidates adds ${fmt$(conversionCandidates().filter(c => !c.converted).reduce((s, c) => s + c.monthly, 0))}/mo of pipeline MRR. Issued proposals appear in the book below as Proposed.</div>` : ''}
     </div>
 
     <div class="demo-panel">

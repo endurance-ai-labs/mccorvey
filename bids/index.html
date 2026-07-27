@@ -125,7 +125,58 @@ function bidGantt() {
     </div>`).join('');
 }
 
-function render() { $('#app').innerHTML = internal ? viewInternal() : viewExternal(); }
+let previewProposal = false;
+function render() { $('#app').innerHTML = internal ? (previewProposal ? viewExternal(true) : viewInternal()) : viewExternal(false); }
+
+/* ---------- email the bid straight from the site ---------- */
+function emailBid() {
+  const T = totals();
+  const authorized = apprComplete(APPR_KEY, APPR_STEPS.length);
+  const subject = 'Proposal ' + BID.meta.bidNumber + ' — ' + BID.meta.project + ' — Base Bid ' + fmt$2(T.base);
+  const body = [
+    'Dear ' + BID.meta.owner + ',',
+    '',
+    'Please find our proposal for ' + BID.meta.project + ' summarized below. The full PDF proposal is attached.',
+    '',
+    'Base Bid: ' + fmt$2(T.base) + ' (payment & performance bond and general liability included)',
+    T.alts ? 'Total with accepted alternates: ' + fmt$2(T.grand) : 'Alternates offered: ' + BID.alternates.map(a => a.id + ' ' + (a.amount < 0 ? '(' + fmt$2(Math.abs(a.amount)) + ')' : fmt$2(a.amount))).join(' · '),
+    'Anticipated schedule: ' + fmtDate(BID.meta.startDate) + ' — ' + fmtDate(finishDate()),
+    'Project Manager: ' + BID.meta.pm + '  |  Superintendent: ' + BID.meta.super,
+    'Proposal valid ' + BID.meta.validDays + ' days.',
+    '',
+    (authorized ? '' : 'NOTE (internal): estimate not yet fully authorized for submission.\n\n') +
+    'We appreciate the opportunity and look forward to building with you.',
+    '',
+    YATES.company,
+    YATES.address + ' | ' + YATES.phone + ' | ' + YATES.email,
+  ].join('\n');
+
+  const ov = document.createElement('div');
+  ov.className = 'svc-modal';
+  ov.innerHTML = `
+    <div class="svc-card" onclick="event.stopPropagation()" style="max-width:640px">
+      <div class="svc-card-head">
+        <div><b>✉ Email Proposal ${esc(BID.meta.bidNumber)}</b><div class="ynote">Review and send — opens in your mail app with everything pre-filled.</div></div>
+        <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
+      </div>
+      <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="em-to" value="facilities@${esc(BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '')).slice(0, 18)}.demo" placeholder="owner contact email"></label>
+      <label class="yfld" style="margin-bottom:10px">Subject<input class="yin" id="em-subj" value="${esc(subject)}"></label>
+      <label class="yfld">Message<textarea class="yin" id="em-body" rows="11" style="resize:vertical;font-family:inherit">${esc(body).replace(/\\n/g, String.fromCharCode(10))}</textarea></label>
+      <div class="ytoolrow" style="margin-top:14px;margin-bottom:0">
+        <span class="ynote">Tip: use “PDF the Bid” first and attach the saved PDF before sending.</span>
+        <div class="spacer"></div>
+        <button class="pa-btn primary" style="cursor:pointer" id="em-send">✉ Open in Mail App</button>
+      </div>
+    </div>`;
+  ov.addEventListener('click', () => ov.remove());
+  document.body.appendChild(ov);
+  ov.querySelector('#em-send').addEventListener('click', () => {
+    const to = ov.querySelector('#em-to').value.trim();
+    const subj = encodeURIComponent(ov.querySelector('#em-subj').value);
+    const bod = encodeURIComponent(ov.querySelector('#em-body').value);
+    window.location.href = 'mailto:' + to + '?subject=' + subj + '&body=' + bod;
+  });
+}
 
 /* ---------- INTERNAL: institutional estimate ---------- */
 function viewInternal() {
@@ -191,7 +242,11 @@ function viewInternal() {
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> BASE BID ${fmt$2(T.base)}</span>
         <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
-        <button class="pa-btn primary" style="cursor:pointer" onclick="addLine()">＋ Add Line Item</button>
+        <span style="display:flex;gap:8px">
+          <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
+          <button class="pa-btn primary" style="cursor:pointer" onclick="previewProposal=true;render();window.scrollTo(0,0)">📄 PDF the Bid</button>
+          <button class="pa-btn primary" style="cursor:pointer" onclick="addLine()">＋ Add Line Item</button>
+        </span>
       </div>
     </div>
 
@@ -280,7 +335,7 @@ function viewInternal() {
 }
 
 /* ---------- EXTERNAL (client proposal) ---------- */
-function viewExternal() {
+function viewExternal(preview) {
   const T = totals();
   const authorized = apprComplete(APPR_KEY, APPR_STEPS.length);
   const st = apprState(APPR_KEY, APPR_STEPS.length);
@@ -297,9 +352,11 @@ function viewExternal() {
 
   return `
     <div class="ytoolrow" style="margin-top:24px">
-      <span class="ynote">${authorized ? 'Authorized for submission — full sign-off chain executed.' : '<b style="color:var(--color-red)">DRAFT</b> — not yet authorized for submission (see Estimate Release Control in Internal mode).'}</span>
+      ${preview ? `<button class="pa-btn" style="cursor:pointer" onclick="previewProposal=false;render();window.scrollTo(0,0)">← Back to Estimate</button>` : ''}
+      <span class="ynote">${authorized ? 'Authorized for submission — full sign-off chain executed.' : '<b style="color:var(--color-red)">DRAFT</b> — not yet authorized for submission (see Estimate Release Control).'}</span>
       <div class="spacer"></div>
-      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 PDF the Bid</button>
     </div>
 
     <div class="ydoc" style="position:relative">
