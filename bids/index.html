@@ -468,8 +468,6 @@ function viewExternal(preview) {
     groups[l.trade].offset = Math.min(groups[l.trade].offset, l.offset);
     groups[l.trade].end = Math.max(groups[l.trade].end, l.offset + l.dur);
   });
-  // spread bond/GL pro-rata into displayed category pricing (client-facing)
-  const upl = (T.bond + T.gl + T.contingency + T.tax) / (T.sellSub || 1);
 
   return `
     <div class="ytoolrow" style="margin-top:24px">
@@ -499,14 +497,36 @@ function viewExternal(preview) {
       <h3 class="sect">Scope of Work</h3>
       ${Object.keys(groups).map(tr => BID.scopes[tr] ? `<div class="scope-block"><b>${esc(tr)}</b><p>${esc(BID.scopes[tr])}</p></div>` : '').join('')}
 
-      <h3 class="sect">Base Bid</h3>
+      <h3 class="sect">Base Bid — Detailed Schedule of Values</h3>
       <table>
-        <thead><tr><th>Work Category</th><th class="num">Price</th></tr></thead>
+        <thead><tr><th style="width:70px">CSI</th><th>Description of Work</th><th class="num">Qty</th><th style="width:52px">Unit</th><th class="num">Unit Price</th><th class="num">Extended</th></tr></thead>
         <tbody>
-          ${Object.entries(groups).map(([tr, g]) => `<tr><td><b>${esc(tr)}</b></td><td class="num">${fmt$2(g.sell * (1 + upl))}</td></tr>`).join('')}
+          ${Object.entries(groups).map(([tr, g]) => {
+            const lines = BID.lines.filter(l => l.trade === tr);
+            const catRow = `<tr style="background:#f4f6fa"><td colspan="5" style="font-weight:800;color:#062c55">${esc(tr)}</td><td class="num" style="font-weight:800">${fmt$2(g.sell)}</td></tr>`;
+            const detail = lines.map(l => {
+              const c = lineCalc(l);
+              const unitSell = l.qty ? c.sell / l.qty : c.sell;
+              return `<tr>
+                <td style="color:#5b6472">${esc(l.csi || '')}</td>
+                <td>${esc(l.desc)}<div style="font-size:10.5px;color:#5b6472;margin-top:2px">Performed by ${esc(l.sub)} · ${fmtDate(addDays(BID.meta.startDate, l.offset))} – ${fmtDate(addDays(BID.meta.startDate, l.offset + l.dur))}</div></td>
+                <td class="num">${l.qty}</td>
+                <td>${esc(l.unit)}</td>
+                <td class="num">${fmt$2(unitSell)}</td>
+                <td class="num">${fmt$2(c.sell)}</td>
+              </tr>`;
+            }).join('');
+            return catRow + detail;
+          }).join('')}
+          <tr style="background:#f4f6fa"><td colspan="5" style="font-weight:700">Subtotal — all work categories</td><td class="num" style="font-weight:700">${fmt$2(T.sellSub)}</td></tr>
+          <tr><td colspan="5">Payment &amp; performance bond (${BID.levers.bondPct}%)</td><td class="num">${fmt$2(T.bond)}</td></tr>
+          <tr><td colspan="5">General liability insurance (${BID.levers.glPct}%)</td><td class="num">${fmt$2(T.gl)}</td></tr>
+          ${T.contingency ? `<tr><td colspan="5">Owner contingency (${BID.levers.contingencyPct}%)</td><td class="num">${fmt$2(T.contingency)}</td></tr>` : ''}
+          ${T.tax ? `<tr><td colspan="5">Sales tax (${BID.levers.taxPct}%)</td><td class="num">${fmt$2(T.tax)}</td></tr>` : ''}
         </tbody>
-        <tfoot><tr><td>Total Base Bid — payment &amp; performance bond and general liability included</td><td class="num">${fmt$2(T.base)}</td></tr></tfoot>
+        <tfoot><tr><td colspan="5">TOTAL BASE BID</td><td class="num">${fmt$2(T.base)}</td></tr></tfoot>
       </table>
+      <p style="font-size:11px;color:#5b6472">Unit prices include labor, material, supervision and warranty. Quantities per the engineered points list; final quantities reconciled at approved shop drawings.</p>
 
       <h3 class="sect">Alternates</h3>
       <table>
