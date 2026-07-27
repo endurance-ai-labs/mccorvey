@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yates Construction — Operations Portal</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Operations Portal' });
+const app = $('#app');
+const internal = YatesMode.isInternal();
+
+const M = JOBS.map(j => ({ j, m: jobMetrics(j) }));
+const tot = f => M.reduce((s, x) => s + f(x), 0);
+const backlog = tot(x => x.j.contract);
+const earned  = tot(x => x.m.earned);
+const costTD  = tot(x => x.m.cost);
+const billed  = tot(x => x.m.billedAll);
+const projMargin = tot(x => x.m.projMargin);
+const overUnder = billed - earned;
+
+if (internal) {
+  /* ================= CFO EXECUTIVE DASHBOARD (collective) ================= */
+  const rows = M.map(({ j, m }) => `
+    <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}'">
+      <td><b>${j.id}</b></td>
+      <td>${esc(j.name)}<div class="ynote">${esc(j.pm)} · ${esc(j.sector)}</div></td>
+      <td>${statusPill(j.status)}</td>
+      <td style="text-align:right">${fmt$(j.contract)}</td>
+      <td style="text-align:right">${fmt$(m.earned)}</td>
+      <td><div class="ybar ${m.pct >= 100 ? 'g' : ''}"><i style="width:${Math.min(100, m.pct)}%"></i></div><div class="ynote">${fmtPct(m.pct, 0)}</div></td>
+      <td style="text-align:right">${fmt$(m.cost)}</td>
+      <td style="text-align:right;color:${m.marginToDate >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$(m.marginToDate)}</td>
+      <td style="text-align:right">${fmt$(m.projMargin)} <span class="ynote">(${fmtPct(m.projMarginPct)})</span></td>
+      <td style="text-align:right;color:${m.overUnder >= 0 ? 'var(--color-green)' : 'var(--color-amber)'}">${fmt$(m.overUnder)}</td>
+    </tr>`).join('');
+
+  const watch = M.filter(({ m }) => m.overUnder < -20000 || (m.pct > 5 && m.marginToDate / Math.max(1, m.earned) < 0.08))
+    .map(({ j, m }) => `<li><a href="/yates/jobs/job/?id=${j.id}" style="color:var(--color-blue);font-weight:700">${j.id}</a> — ${
+      m.overUnder < -20000 ? 'under-billed ' + fmt$(Math.abs(m.overUnder)) + '; accelerate the next pay application' : 'margin-to-date thin at ' + fmtPct(m.marginToDate / Math.max(1, m.earned) * 100) }.</li>`).join('')
+    || '<li>No exceptions — all jobs inside billing and margin guardrails.</li>';
+
+  app.innerHTML = `
+    <div class="demo-hero">
+      <div>
+        <div class="demo-eyebrow">EXECUTIVE VIEW · ALL JOBS</div>
+        <h1>The whole operation.<br><em>One picture.</em></h1>
+        <div class="sub">Every contract, pay application, cost ledger and crew — live across the Dallas–Fort Worth division. Individual job drill-downs one click away.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> LIVE · SYNCED ${fmtDate(todayISO()).toUpperCase()}</span>
+        <span class="demo-src">Prepared for <b>${currentPersona().name}, ${currentPersona().title}</b></span>
+        <span style="display:flex;gap:6px">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</span>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Active Contract Backlog</div><div class="v">${fmtK(backlog)}</div><div class="s">${JOBS.length} active jobs</div></div>
+      <div class="ykpi"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><div class="s">${fmtPct(earned / backlog * 100)} of backlog</div></div>
+      <div class="ykpi amber"><div class="l">Billed to Date</div><div class="v">${fmtK(billed)}</div><div class="s">${overUnder >= 0 ? 'over' : 'under'}-billed ${fmtK(Math.abs(overUnder))}</div></div>
+      <div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(earned - costTD)}</div><div class="s">cost to date ${fmtK(costTD)}</div></div>
+      <div class="ykpi red"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><div class="s">${fmtPct(projMargin / backlog * 100)} blended</div></div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Contract · Earned · Billed by Job</h2><span class="k">$ thousands</span></div>
+        <div class="demo-chart" style="height:280px"><canvas id="ch-jobs"></canvas></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Portfolio Margin Bridge</h2><span class="k">projected at completion</span></div>
+        <div class="demo-chart" style="height:280px"><canvas id="ch-margin"></canvas></div>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>All Jobs — CFO Rollup</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">financials from QuickBooks · production from ServiceTitan</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th>Job #</th><th>Project</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Earned</th><th>% Complete</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin to Date</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Over / (Under) Billed</th></tr></thead>
+          <tbody>${rows}
+            <tr style="font-weight:800;background:var(--color-bg-3)">
+              <td colspan="3">Portfolio Total</td>
+              <td style="text-align:right">${fmt$(backlog)}</td><td style="text-align:right">${fmt$(earned)}</td><td></td>
+              <td style="text-align:right">${fmt$(costTD)}</td><td style="text-align:right">${fmt$(earned - costTD)}</td>
+              <td style="text-align:right">${fmt$(projMargin)}</td><td style="text-align:right">${fmt$(overUnder)}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Watch Items</h2><span class="k">auto-flagged</span></div>
+      <ul style="font-size:13px;line-height:1.9;color:var(--color-cloud-whisper);padding-left:20px">${watch}</ul>
+    </div>
+    <div class="demo-note">Yates Construction Operations Portal — demo environment, fictional data · framework parity with the Blackwater operating console</div>`;
+
+  /* charts */
+  const labels = JOBS.map(j => j.id);
+  const css = getComputedStyle(document.documentElement);
+  const cBlue = css.getPropertyValue('--color-blue').trim() || '#005c97';
+  const cGreen = css.getPropertyValue('--color-green').trim() || '#4f7d5d';
+  new Chart($('#ch-jobs'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Contract', data: JOBS.map(j => j.contract / 1e3), backgroundColor: 'rgba(27,34,48,0.16)' },
+      { label: 'Earned', data: M.map(x => x.m.earned / 1e3), backgroundColor: cBlue },
+      { label: 'Billed', data: M.map(x => x.m.billedAll / 1e3), backgroundColor: cGreen },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+      scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() + 'K', font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
+  });
+  new Chart($('#ch-margin'), {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label: 'Budget Cost', data: M.map(x => x.m.budget / 1e3), backgroundColor: 'rgba(198,151,17,0.55)', stack: 's' },
+      { label: 'Projected Margin', data: M.map(x => x.m.projMargin / 1e3), backgroundColor: cBlue, stack: 's' },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+      scales: { x: { stacked: true, ticks: { font: { size: 10 } } }, y: { stacked: true, ticks: { callback: v => '$' + v.toLocaleString() + 'K', font: { size: 10 } } } } }
+  });
+
+} else {
+  /* ================= CLIENT LANDING ================= */
+  const cards = M.map(({ j, m }) => `
+    <a class="demo-prop" href="/yates/jobs/job/?id=${j.id}" style="text-decoration:none">
+      <div class="demo-prop-visual has-photo" style="background:${j.photos.length ? `url('${j.photos[Math.min(3, j.photos.length - 1)].src}') center/cover` : 'linear-gradient(135deg,#002944,#005c97)'};height:120px;position:relative">
+        <span class="demo-prop-state" style="position:absolute;top:10px;right:10px">${statusPill(j.status)}</span>
+      </div>
+      <div class="demo-prop-body">
+        <div class="demo-prop-name">${esc(j.name.split('—')[0].trim())}</div>
+        <div class="demo-prop-loc">${esc(j.address)}</div>
+        <div class="demo-prop-stats">
+          <div><div class="v">${fmtPct(m.pct, 0)}</div><div class="l">Complete</div></div>
+          <div><div class="v">${fmtDateShort(j.finish)}</div><div class="l">Target Finish</div></div>
+          <div><div class="v">${j.reports.length}</div><div class="l">Reports</div></div>
+        </div>
+      </div>
+    </a>`).join('');
+
+  app.innerHTML = `
+    <div class="demo-hero">
+      <div>
+        <div class="demo-eyebrow">CLIENT PORTAL</div>
+        <h1>Your projects,<br><em>fully transparent.</em></h1>
+        <div class="sub">Live progress, schedules, photo documentation and owner reports for every project Yates Construction is building for you.</div>
+      </div>
+      <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> LIVE</span></div>
+    </div>
+    <div class="demo-props" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${cards}</div>
+    <div class="demo-note">Yates Construction · We Make It Possible — demo environment, fictional data</div>`;
+}
+</script>
+</body>
+</html>

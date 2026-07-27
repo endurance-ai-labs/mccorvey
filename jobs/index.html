@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jobs — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Jobs' });
+const internal = YatesMode.isInternal();
+const M = JOBS.map(j => ({ j, m: jobMetrics(j) }));
+
+const rows = M.map(({ j, m }) => `
+  <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}'">
+    <td><b>${j.id}</b></td>
+    <td>${esc(j.name)}<div class="ynote">${esc(j.address)}</div></td>
+    <td>${statusPill(j.status)}</td>
+    <td>${esc(j.pm)}<div class="ynote">Supt. ${esc(j.super)}</div></td>
+    <td>${esc(j.sub.split('(')[0].trim())}</td>
+    <td style="text-align:right">${fmt$(j.contract)}</td>
+    <td><div class="ybar ${m.pct >= 100 ? 'g' : ''}"><i style="width:${Math.min(100, m.pct)}%"></i></div><div class="ynote">${fmtPct(m.pct, 0)} complete</div></td>
+    <td style="text-align:right;white-space:nowrap">${fmtDateShort(j.start)} – ${fmtDateShort(j.finish)}</td>
+    ${internal ? `<td style="text-align:right;color:${m.marginToDate >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$(m.marginToDate)}</td>` : ''}
+  </tr>`).join('');
+
+$('#app').innerHTML = `
+  <div class="demo-hero" style="padding-bottom:18px">
+    <div>
+      <div class="demo-eyebrow">${internal ? 'INTERNAL TRACKING' : 'CLIENT VIEW'}</div>
+      <h1>Active <em>Jobs</em></h1>
+      <div class="sub">${internal ? 'Full financial visibility — earned value, cost and margin per job.' : 'Progress and schedule for every active project.'}</div>
+    </div>
+    <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${JOBS.length} ACTIVE</span></div>
+  </div>
+
+  <div class="demo-panel">
+    <div class="demo-panel-head"><h2>Job Register</h2><span class="k">click a job to open its tracker</span></div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl">
+        <thead><tr><th>Job #</th><th>Project</th><th>Status</th><th>PM / Supt</th><th>Lead Sub</th><th style="text-align:right">Contract</th><th>Progress</th><th style="text-align:right">Schedule</th>${internal ? '<th style="text-align:right">Margin to Date</th>' : ''}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>
+  <div class="demo-note">Demo environment · fictional data</div>`;
+</script>
+</body>
+</html>

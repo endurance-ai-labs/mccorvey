@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Tracker — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+<style>
+  .job-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 24px; }
+  .job-tab { font-size:11.5px; font-weight:700; letter-spacing:0.04em; padding:7px 14px; border-radius:999px;
+    border:1px solid var(--color-border); color:var(--color-text-muted); cursor:pointer; background:var(--color-bg-2); text-decoration:none; }
+  .job-tab:hover { color:var(--color-cloud-whisper); border-color:var(--color-blue); }
+  .job-tab.active { background:var(--color-blue); border-color:var(--color-blue); color:#fff; }
+  .fc-cell-edit { width:110px; text-align:right; }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Job Tracker' });
+const internal = YatesMode.isInternal();
+const j = JOBS.find(x => x.id === (qs('id') || 'LKV-2410')) || JOBS[0];
+
+/* per-job forecast state (FAC overrides) */
+const FAC = {};   // idx -> forecast-at-completion cost override
+j.sov.forEach((r, i) => { FAC[i] = r.pct > 0 ? Math.round(r.costToDate / (r.pct / 100)) : r.budget; if (r.pct >= 100) FAC[i] = r.costToDate; });
+
+const SECTIONS = internal
+  ? [['overview','Overview'],['forecast','Budget & Forecast'],['billing','Billing'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
+  : [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']];
+
+function activeSection() {
+  const h = (location.hash || '').replace('#', '');
+  return SECTIONS.some(s => s[0] === h) ? h : 'overview';
+}
+
+function render() {
+  const m = jobMetrics(j);
+  const act = activeSection();
+  const tabs = SECTIONS.map(s =>
+    `<a class="job-tab ${s[0] === act ? 'active' : ''}" href="#${s[0]}">${s[1]}</a>`).join('');
+
+  $('#app').innerHTML = `
+    <div class="demo-prop-head">
+      <div class="mono-tile" style="background:linear-gradient(135deg,#002944,#005c97);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:0.06em;width:64px;height:64px;border-radius:12px">${j.id.split('-')[0]}</div>
+      <div>
+        <h1>${esc(j.name.split('—')[0].trim())}</h1>
+        <div class="meta">${statusPill(j.status)} <span class="demo-src">${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : j.sector)}</span> <span class="demo-src">PM <b>${esc(j.pm)}</b></span> <span class="demo-src">Supt <b>${esc(j.super)}</b></span></div>
+        <div class="addr">${esc(j.address)} · Owner: ${esc(j.owner)}</div>
+      </div>
+      <div class="demo-prop-head-right">
+        <span class="demo-live"><span class="dot"></span> ${fmtPct(m.pct, 1)} COMPLETE</span>
+        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/yates/reports/?id=${j.id}">📄 Owner Progress Report</a>
+      </div>
+    </div>
+    <div class="job-tabs">${tabs}</div>
+    <div id="section-body"></div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+
+  const body = $('#section-body');
+  if (act === 'overview') body.innerHTML = secOverview(m);
+  else if (act === 'forecast') { body.innerHTML = secForecast(m); wireForecast(); }
+  else if (act === 'billing') body.innerHTML = secBilling(m);
+  else if (act === 'schedule') body.innerHTML = secSchedule(m);
+  else if (act === 'photos') body.innerHTML = secPhotos();
+  else if (act === 'reports') body.innerHTML = secReports();
+  if (act === 'overview') drawCurve(m);
+}
+
+/* ============ OVERVIEW ============ */
+function secOverview(m) {
+  const sovRows = j.sov.map((r, i) => `
+    <tr>
+      <td>${r.item}</td>
+      <td>${esc(r.desc)}</td>
+      <td style="text-align:right">${fmt$2(r.scheduled)}</td>
+      <td style="width:150px">
+        ${internal
+          ? `<input class="yin num" style="width:64px;display:inline-block" type="number" min="0" max="100" value="${r.pct}" onchange="updPct(${i},this.value)"> %`
+          : `<div class="ybar ${r.pct >= 100 ? 'g' : ''}"><i style="width:${r.pct}%"></i></div><div class="ynote">${r.pct}%</div>`}
+      </td>
+      <td style="text-align:right">${fmt$2(r.scheduled * r.pct / 100)}</td>
+      ${internal ? `
+        <td style="text-align:right">${fmt$2(r.budget)}</td>
+        <td style="text-align:right">${fmt$2(r.costToDate || 0)}</td>
+        <td style="text-align:right;color:${(r.scheduled * r.pct / 100 - (r.costToDate || 0)) >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$2(r.scheduled * r.pct / 100 - (r.costToDate || 0))}</td>` : ''}
+    </tr>`).join('');
+
+  return `
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Contract Value</div><div class="v">${fmtK(j.contract)}</div><div class="s">executed ${fmtDate(j.contractDate)}</div></div>
+      <div class="ykpi"><div class="l">Earned to Date</div><div class="v">${fmtK(m.earned)}</div><div class="s">${fmtPct(m.pct, 1)} complete</div></div>
+      <div class="ykpi amber"><div class="l">Billed to Date</div><div class="v">${fmtK(m.billedAll)}</div><div class="s">${m.overUnder >= 0 ? 'over' : 'under'}-billed ${fmtK(Math.abs(m.overUnder))}</div></div>
+      <div class="ykpi"><div class="l">Schedule</div><div class="v" style="font-size:15px">${fmtDateShort(j.start)} → ${fmtDateShort(j.finish)}</div><div class="s">${j.status}</div></div>
+      ${internal ? `<div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(m.marginToDate)}</div><div class="s">projected ${fmtK(m.projMargin)} (${fmtPct(m.projMarginPct)})</div></div>` : ''}
+    </div>
+
+    ${j.insurance ? `<div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)"><div style="font-size:12.5px;color:var(--color-cloud-whisper)">🛡 <b>Insurance restoration</b> — ${esc(j.insurance.carrier)}: ${esc(j.insurance.approval)} · ${esc(j.insurance.peril)}</div></div>` : ''}
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Progress S-Curve</h2><span class="k">earned vs billed, cumulative</span></div>
+        <div class="demo-chart" style="height:240px"><canvas id="ch-curve"></canvas></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Project Team & Change Orders</h2></div>
+        <div style="font-size:12.5px;line-height:2;color:var(--color-cloud-whisper)">
+          <b>Lead Subcontractor:</b> ${esc(j.sub)}<br>
+          <b>Project Manager:</b> ${esc(j.pm)} &nbsp;·&nbsp; <b>Superintendent:</b> ${esc(j.super)}<br>
+          <b>Retainage:</b> ${j.retainagePct}% held until final completion
+        </div>
+        <table class="demo-tbl" style="margin-top:12px">
+          <thead><tr><th>CO #</th><th>Description</th><th style="text-align:right">Amount</th><th>Status</th></tr></thead>
+          <tbody>${(j.changeOrders || []).map(c => `<tr><td><b>${c.num}</b></td><td>${esc(c.desc)}</td><td style="text-align:right">${c.amount ? fmt$2(c.amount) : '—'}</td><td><span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span></td></tr>`).join('') || '<tr><td colspan="4" class="ynote">No change orders on this job.</td></tr>'}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Schedule of Values ${internal ? '— Internal (cost & margin)' : '— Progress'}</h2><span style="display:flex;gap:6px;align-items:center">${internal ? srcChip('st') + srcChip('qb') : ''}<span class="k">${internal ? '% complete from ServiceTitan field entries · costs from QuickBooks' : 'owner view'}</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th>Item</th><th>Description of Work</th><th style="text-align:right">Scheduled Value</th><th>% Complete</th><th style="text-align:right">Earned</th>${internal ? '<th style="text-align:right">Budget Cost</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin</th>' : ''}</tr></thead>
+          <tbody>${sovRows}
+            <tr style="font-weight:800;background:var(--color-bg-3)">
+              <td colspan="2">Total</td><td style="text-align:right">${fmt$2(j.contract)}</td><td>${fmtPct(m.pct, 1)}</td><td style="text-align:right">${fmt$2(m.earned)}</td>
+              ${internal ? `<td style="text-align:right">${fmt$2(m.budget)}</td><td style="text-align:right">${fmt$2(m.cost)}</td><td style="text-align:right">${fmt$2(m.earned - m.cost)}</td>` : ''}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+function drawCurve(m) {
+  const el = $('#ch-curve'); if (!el || !window.Chart) return;
+  const t0 = new Date(j.start).getTime(), t1 = new Date(j.finish).getTime();
+  const N = 10;
+  const labels = [], planned = [], earnedS = [], billedS = [];
+  let cumBill = 0;
+  const pa = j.payApps.slice().sort((a, b) => a.period.localeCompare(b.period));
+  for (let i = 0; i <= N; i++) {
+    const t = t0 + (t1 - t0) * i / N;
+    labels.push(new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    const x = i / N;
+    planned.push(Math.round(j.contract * (3 * x * x - 2 * x * x * x) / 1e3)); // S-curve
+    earnedS.push(Math.round(Math.min(m.earned, j.contract * (3 * x * x - 2 * x * x * x) * (m.pct / 100 >= x ? 1 : m.pct / 100 / Math.max(x, 0.01))) / 1e3));
+    cumBill = pa.filter(p => new Date(p.period + 'T12:00:00').getTime() <= t).reduce((s, p) => s + p.certified, 0);
+    billedS.push(Math.round(cumBill / 1e3));
+  }
+  const css = getComputedStyle(document.documentElement);
+  new Chart(el, {
+    type: 'line',
+    data: { labels, datasets: [
+      { label: 'Planned', data: planned, borderColor: 'rgba(120,130,150,0.5)', borderDash: [5, 4], pointRadius: 0, tension: 0.35 },
+      { label: 'Earned', data: earnedS, borderColor: css.getPropertyValue('--color-blue').trim(), pointRadius: 0, tension: 0.35 },
+      { label: 'Billed', data: billedS, borderColor: css.getPropertyValue('--color-green').trim(), pointRadius: 0, tension: 0.15, stepped: true },
+    ]},
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+      scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() + 'K', font: { size: 9.5 } } }, x: { ticks: { font: { size: 9.5 } } } } }
+  });
+}
+
+function updPct(i, v) {
+  j.sov[i].pct = Math.max(0, Math.min(100, parseFloat(v) || 0));
+  render();
+}
+
+/* ============ BUDGET & FORECAST (internal) ============ */
+const FLEV = { growth: 0.0, retainage: null, lagDays: 30, monthsOverride: null };
+
+function remainingMonths() {
+  if (FLEV.monthsOverride) return FLEV.monthsOverride;
+  const end = new Date(j.finish + 'T12:00:00'), now = new Date(todayISO() + 'T12:00:00');
+  return Math.max(1, Math.ceil((end - now) / (30.44 * 24 * 3600 * 1000)));
+}
+
+function secForecast(m) {
+  const ret = FLEV.retainage == null ? j.retainagePct : FLEV.retainage;
+  const facTotal = j.sov.reduce((s, r, i) => s + FAC[i], 0);
+  const varTotal = m.budget - facTotal;
+  const projMarginF = j.contract - facTotal;
+
+  const rows = j.sov.map((r, i) => {
+    const fac = FAC[i];
+    const vac = r.budget - fac;                       // variance at completion (+ = under budget)
+    const lineMargin = r.scheduled - fac;
+    return `
+      <tr>
+        <td>${r.item}</td>
+        <td>${esc(r.desc)}</td>
+        <td style="text-align:right">${fmt$2(r.scheduled)}</td>
+        <td style="text-align:right">${fmt$2(r.budget)}</td>
+        <td style="text-align:right">${fmt$2(r.costToDate || 0)}</td>
+        <td style="text-align:right">${r.pct}%</td>
+        <td class="fc-ipcol" style="text-align:right"><input class="yin num fc-cell-edit" data-fac="${i}" value="${Math.round(fac).toLocaleString('en-US')}" inputmode="numeric"></td>
+        <td style="text-align:right;color:${vac >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$2(vac)}</td>
+        <td style="text-align:right;color:${lineMargin >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${fmt$2(lineMargin)} <span class="ynote">(${fmtPct(r.scheduled ? lineMargin / r.scheduled * 100 : 0)})</span></td>
+      </tr>`;
+  }).join('');
+
+  /* monthly billing & cash forecast */
+  const N = Math.min(12, remainingMonths());
+  const remEarn = Math.max(0, j.contract - m.earned);
+  const remCost = Math.max(0, facTotal - m.cost);
+  const g = FLEV.growth / 100;
+  let w = []; let tw = 0;
+  for (let i = 0; i < N; i++) { const x = Math.pow(1 + g, i); w.push(x); tw += x; }
+  const mo = [];
+  let cumRet = m.earned * ret / 100 - (j.payApps.some(p => p.num.includes('RET')) ? m.earned * ret / 100 : 0);
+  const start = new Date(todayISO() + 'T12:00:00');
+  for (let i = 0; i < N; i++) {
+    const d = new Date(start); d.setMonth(d.getMonth() + i);
+    const earn = remEarn * w[i] / tw;
+    const cost = remCost * w[i] / tw;
+    const retHeld = earn * ret / 100;
+    cumRet += retHeld;
+    const last = i === N - 1;
+    const retRelease = last ? cumRet : 0;
+    const billNet = earn - retHeld + retRelease;
+    mo.push({ lbl: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), earn, cost, retHeld, retRelease, billNet, cash: billNet - cost });
+  }
+  const sumM = f => mo.reduce((s, x) => s + f(x), 0);
+
+  const mRows = [
+    ['Earned revenue (production)', x => x.earn, 0],
+    ['Retainage withheld (' + ret + '%)', x => -x.retHeld, 1],
+    ['Retention released at completion', x => x.retRelease, 0],
+    ['Net billings', x => x.billNet, 'sub'],
+    ['Forecast cost', x => -x.cost, 1],
+    ['Net job cash flow', x => x.cash, 'noi'],
+  ].map(L => {
+    const cells = mo.map(x => {
+      const v = L[1](x);
+      return `<td>${v < 0 ? '<span class="dim">(' + '$' + Math.abs(Math.round(v)).toLocaleString() + ')</span>' : '$' + Math.round(v).toLocaleString()}</td>`;
+    }).join('');
+    const t = sumM(L[1]);
+    return `<tr class="${L[2] === 'sub' || L[2] === 'noi' ? L[2] : ''}"><td>${L[0]}</td>${cells}<td class="tcol">${t < 0 ? '(' + '$' + Math.abs(Math.round(t)).toLocaleString() + ')' : '$' + Math.round(t).toLocaleString()}</td></tr>`;
+  }).join('');
+
+  return `
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Budget Cost</div><div class="v">${fmtK(m.budget)}</div><div class="s">baseline estimate</div></div>
+      <div class="ykpi"><div class="l">Cost to Date</div><div class="v">${fmtK(m.cost)}</div><div class="s">${fmtPct(m.budget ? m.cost / m.budget * 100 : 0)} of budget</div></div>
+      <div class="ykpi ${varTotal >= 0 ? 'green' : 'red'}"><div class="l">Forecast at Completion</div><div class="v">${fmtK(facTotal)}</div><div class="s">${varTotal >= 0 ? 'under budget ' : 'over budget '}${fmtK(Math.abs(varTotal))}</div></div>
+      <div class="ykpi red"><div class="l">Projected Margin (FAC)</div><div class="v">${fmtK(projMarginF)}</div><div class="s">${fmtPct(j.contract ? projMarginF / j.contract * 100 : 0)} of contract</div></div>
+      <div class="ykpi amber"><div class="l">Cost to Complete</div><div class="v">${fmtK(Math.max(0, facTotal - m.cost))}</div><div class="s">${remainingMonths()} months remaining</div></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>FAC Approval — ${j.id} · Month-End</h2><span class="k">cost forecast certification chain</span></div>
+      ${approvalChain('fac-' + j.id + '-2026-07', [
+        { role: 'pm',      label: 'PM — Certify Forecast at Completion', doneLabel: 'PM Certified' },
+        { role: 'analyst', label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
+        { role: 'cfo',     label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
+      ])}
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Cost to Complete — Forecast at Completion</h2>
+        <span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">cost-to-date from QuickBooks · edit any FAC cell</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="fc-tbl">
+          <thead><tr><th>Item</th><th>Description</th><th>Scheduled Value</th><th>Budget Cost</th><th>Cost to Date</th><th>% Cmp</th><th>Forecast @ Completion</th><th>Variance @ Completion</th><th>Projected Line Margin</th></tr></thead>
+          <tbody>${rows}
+            <tr class="noi"><td colspan="2">Total</td>
+              <td style="text-align:right">${fmt$2(j.contract)}</td>
+              <td style="text-align:right">${fmt$2(m.budget)}</td>
+              <td style="text-align:right">${fmt$2(m.cost)}</td><td></td>
+              <td style="text-align:right">${fmt$2(facTotal)}</td>
+              <td style="text-align:right">${fmt$2(varTotal)}</td>
+              <td style="text-align:right">${fmt$2(projMarginF)}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Billing & Cash Forecast — Remaining Schedule</h2>
+        <span class="k">production spread over remaining months · retention released at completion</span></div>
+      <div class="fc-assumps" style="grid-template-columns:repeat(4,1fr);margin-bottom:14px">
+        <div class="fc-assump"><label>Production ramp / month</label><div class="ip"><input data-flev="growth" value="${FLEV.growth}" inputmode="decimal"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Retainage</label><div class="ip"><input data-flev="retainage" value="${ret}" inputmode="decimal"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Owner payment lag</label><div class="ip"><input data-flev="lagDays" value="${FLEV.lagDays}" inputmode="numeric"><span class="u">days</span></div></div>
+        <div class="fc-assump"><label>Months remaining (override)</label><div class="ip"><input data-flev="monthsOverride" value="${FLEV.monthsOverride || ''}" placeholder="${remainingMonths()}" inputmode="numeric"></div></div>
+      </div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="fc-tbl"><thead><tr><th>Line · $/month</th>${mo.map(x => `<th>${x.lbl}</th>`).join('')}<th class="tcol">Total</th></tr></thead>
+        <tbody>${mRows}</tbody></table>
+      </div>
+      <div class="fc-inplace-note">Remaining earned revenue ${fmt$(remEarn)} and forecast cost-to-complete ${fmt$(Math.max(0, facTotal - m.cost))} are spread across ${N} month(s) with the production ramp applied. Owner payments assumed ${FLEV.lagDays} days behind billing. Edit FAC cells above — this schedule recalculates from them.</div>
+    </div>`;
+}
+
+function wireForecast() {
+  $$('input[data-fac]').forEach(inp => inp.addEventListener('change', () => {
+    const i = +inp.dataset.fac;
+    FAC[i] = Math.max(0, parseFloat(inp.value.replace(/[,$]/g, '')) || 0);
+    render();
+  }));
+  $$('input[data-flev]').forEach(inp => inp.addEventListener('change', () => {
+    const k = inp.dataset.flev;
+    const v = parseFloat(inp.value.replace(/[,$]/g, ''));
+    FLEV[k] = isNaN(v) ? (k === 'monthsOverride' ? null : FLEV[k]) : v;
+    if (k === 'monthsOverride' && (!v || v <= 0)) FLEV.monthsOverride = null;
+    render();
+  }));
+}
+
+/* ============ BILLING ============ */
+function secBilling(m) {
+  const ret = j.retainagePct;
+  let prev = 0;
+  const paRows = j.payApps.map(p => {
+    const row = `
+      <tr>
+        <td><b>${p.num}</b></td>
+        <td>${esc(p.label)}</td>
+        <td>${fmtDate(p.period)}</td>
+        <td style="text-align:right">${fmt$2(p.certified)}</td>
+        <td>${payPill(p.status)}</td>
+        <td><button class="pa-btn" style="cursor:pointer" onclick="showG702('${p.num}')">View G702</button></td>
+      </tr>`;
+    prev += p.certified;
+    return row;
+  }).join('');
+
+  return `
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Contract Sum</div><div class="v">${fmtK(j.contract)}</div><div class="s">net changes $0.00</div></div>
+      <div class="ykpi"><div class="l">Total Certified</div><div class="v">${fmtK(m.billedAll)}</div><div class="s">${j.payApps.length} applications</div></div>
+      <div class="ykpi amber"><div class="l">Retainage Held</div><div class="v">${fmtK(j.payApps.some(p => p.num.includes('RET')) ? 0 : m.earned * ret / 100)}</div><div class="s">${ret}% of completed work</div></div>
+      <div class="ykpi green"><div class="l">Balance to Finish</div><div class="v">${fmtK(Math.max(0, j.contract - m.billedAll))}</div><div class="s">incl. retainage</div></div>
+    </div>
+    ${j.payApps.filter(p => p.status !== 'Paid').map(p => `
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)">
+      <div class="demo-panel-head"><h2>Release Control — ${esc(p.num)} (${esc(p.status)})</h2><span class="k">pay application sign-off before owner submission</span></div>
+      ${approvalChain('pa-' + j.id + '-' + p.num, [
+        { role: 'pm',         label: 'PM — Certify Quantities',            doneLabel: 'PM Certified' },
+        { role: 'controller', label: 'Controller — Approve Billing',       doneLabel: 'Controller Approved' },
+        { role: 'cfo',        label: 'CFO — Sign Off & Release to Owner',  doneLabel: 'CFO Signed Off' },
+      ])}
+    </div>`).join('')}
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Payment Applications (AIA G702/G703)</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">synced from QuickBooks · retainage ${ret}%</span></span></div>
+      <table class="demo-tbl">
+        <thead><tr><th>App #</th><th>Description</th><th>Period To</th><th style="text-align:right">Amount Certified</th><th>Status</th><th></th></tr></thead>
+        <tbody>${paRows}
+          <tr style="font-weight:800;background:var(--color-bg-3)"><td colspan="3">Total Certified</td><td style="text-align:right">${fmt$2(m.billedAll)}</td><td colspan="2"></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="g702-host"></div>`;
+}
+
+function showG702(num) {
+  const m = jobMetrics(j);
+  const idx = j.payApps.findIndex(p => p.num === num);
+  const p = j.payApps[idx];
+  const prior = j.payApps.slice(0, idx).reduce((s, x) => s + x.certified, 0);
+  const isRet = p.num.includes('RET');
+  const completedThrough = prior + p.certified + (isRet ? 0 : m.earned * j.retainagePct / 100 * ((prior + p.certified) / Math.max(1, j.contract)));
+  const g703 = j.sov.map(r => {
+    const share = r.scheduled / j.contract;
+    const complete = Math.min(r.scheduled, (prior + p.certified) / (isRet ? 1 : (1 - j.retainagePct / 100)) * share);
+    return `<tr><td>${r.item}</td><td>${esc(r.desc)}</td>
+      <td class="num">${fmt$2(r.scheduled)}</td>
+      <td class="num">${fmt$2(complete)}</td>
+      <td class="num">${fmtPct(complete / r.scheduled * 100, 1)}</td>
+      <td class="num">${fmt$2(r.scheduled - complete)}</td>
+      <td class="num">${fmt$2(isRet ? 0 : complete * j.retainagePct / 100)}</td></tr>`;
+  }).join('');
+
+  $('#g702-host').innerHTML = `
+    <div class="ytoolrow no-print"><div class="spacer"></div><button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button></div>
+    <div class="ydoc">
+      <div class="ydoc-head">
+        <div><div class="word">YATES<span>.</span></div><div class="sub">Construction</div><div class="tag">We Make It Possible</div></div>
+        <div class="right"><b>Application &amp; Certificate for Payment</b><br>AIA-style G702/G703<br>Application #: ${p.num}<br>Period to: ${fmtDate(p.period)}</div>
+      </div>
+      <div class="big-title">${esc(j.name)}</div>
+      <div class="subtitle">To Owner: ${esc(j.owner)} · ${esc(j.address)} · Contract date ${fmtDate(j.contractDate)}</div>
+      <h3 class="sect">Contractor's Application for Payment</h3>
+      <table>
+        <tbody>
+          <tr><td>1. Original contract sum</td><td class="num">${fmt$2(j.contract)}</td></tr>
+          <tr><td>2. Net change by change orders</td><td class="num">$0.00</td></tr>
+          <tr><td>3. Contract sum to date</td><td class="num">${fmt$2(j.contract)}</td></tr>
+          <tr><td>4. Total completed &amp; stored to date</td><td class="num">${fmt$2(Math.min(j.contract, (prior + p.certified) / (isRet ? 1 : (1 - j.retainagePct / 100))))}</td></tr>
+          <tr><td>5. Retainage (${j.retainagePct}% of completed work)</td><td class="num">${fmt$2(isRet ? 0 : Math.min(j.contract, (prior + p.certified) / (1 - j.retainagePct / 100)) * j.retainagePct / 100)}</td></tr>
+          <tr><td>6. Total earned less retainage</td><td class="num">${fmt$2(prior + p.certified)}</td></tr>
+          <tr><td>7. Less previous certificates for payment</td><td class="num">${fmt$2(prior)}</td></tr>
+          <tr style="font-weight:800"><td>8. CURRENT PAYMENT DUE</td><td class="num">${fmt$2(p.certified)}</td></tr>
+          <tr><td>9. Balance to finish, including retainage</td><td class="num">${fmt$2(Math.max(0, j.contract - prior - p.certified))}</td></tr>
+        </tbody>
+      </table>
+      <h3 class="sect">G703 — Continuation Sheet (Schedule of Values)</h3>
+      <table>
+        <thead><tr><th>Item</th><th>Description of Work</th><th class="num">Scheduled Value</th><th class="num">Completed &amp; Stored</th><th class="num">%</th><th class="num">Balance to Finish</th><th class="num">Retainage</th></tr></thead>
+        <tbody>${g703}</tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="num">${fmt$2(j.contract)}</td><td colspan="4"></td></tr></tfoot>
+      </table>
+      <p style="margin-top:18px">The undersigned Contractor certifies that the work covered by this Application for Payment has been completed in accordance with the Contract Documents and that current payment shown herein is now due.</p>
+      <div class="sig-row"><div class="sig">Yates Construction — ${esc(j.pm)}, Project Manager</div><div class="sig">Date</div></div>
+    </div>`;
+  document.querySelector('#g702-host').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ============ SCHEDULE ============ */
+function secSchedule(m) {
+  return `
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Project Schedule</h2><span class="k">${fmtDate(j.start)} → ${fmtDate(j.finish)}</span></div>
+      ${ganttHTML(j.phases)}
+    </div>
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Phase Detail</h2></div>
+      <table class="demo-tbl">
+        <thead><tr><th>Phase</th><th>Start</th><th>Finish</th><th style="text-align:right">Value</th><th>Progress</th></tr></thead>
+        <tbody>${j.phases.map(p => `<tr><td>${esc(p.name)}</td><td>${fmtDate(p.start)}</td><td>${fmtDate(p.finish)}</td><td style="text-align:right">${fmt$(p.value)}</td>
+          <td><div class="ybar ${p.pct >= 100 ? 'g' : ''}"><i style="width:${p.pct}%"></i></div><div class="ynote">${p.pct}%</div></td></tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+}
+
+/* ============ PHOTOS ============ */
+function secPhotos() {
+  if (!j.photos.length) return `<div class="demo-panel"><div class="ynote">No photos synced for this job yet — ServiceTitan field sync activates at mobilization.</div></div>`;
+  return `
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Field Documentation</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">${j.photos.length} photos · ServiceTitan field sync</span></span></div>
+      <div class="yphoto-grid">${j.photos.map(photoCard).join('')}</div>
+    </div>`;
+}
+
+/* ============ REPORTS ============ */
+function secReports() {
+  return `
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Progress Report History</h2>
+        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/yates/reports/?id=${j.id}">📄 Generate New Report</a></div>
+      <table class="demo-tbl">
+        <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
+        <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
+      </table>
+    </div>`;
+}
+
+window.addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>

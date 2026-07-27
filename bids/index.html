@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bid Builder — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Preconstruction' });
+const internal = YatesMode.isInternal();
+
+/* live working copy — resets on reload */
+const BID = JSON.parse(JSON.stringify(BID_DEFAULTS));
+const APPR_KEY = 'bid-' + BID.meta.bidNumber;
+const APPR_STEPS = [
+  { role: 'analyst',  label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
+  { role: 'chiefest', label: 'Chief Estimator — Approve Estimate',  doneLabel: 'Chief Estimator Approved' },
+  { role: 'divmgr',   label: 'Division Manager — Authorize Submission', doneLabel: 'Authorized for Submission' },
+];
+
+function lineCalc(l) {
+  const direct = l.qty * l.unitCost;
+  const esc$ = direct * BID.levers.escalationPct / 100;
+  const oh = (direct + esc$) * BID.levers.overheadPct / 100;
+  const profit = (direct + esc$ + oh) * BID.levers.profitPct / 100;
+  return { direct, esc$, oh, profit, sell: direct + esc$ + oh + profit };
+}
+function totals() {
+  let direct = 0, esc$ = 0, oh = 0, profit = 0, sellSub = 0;
+  BID.lines.forEach(l => { const c = lineCalc(l); direct += c.direct; esc$ += c.esc$; oh += c.oh; profit += c.profit; sellSub += c.sell; });
+  const bond = sellSub * BID.levers.bondPct / 100;
+  const gl = sellSub * BID.levers.glPct / 100;
+  const contingency = sellSub * BID.levers.contingencyPct / 100;
+  const tax = (sellSub + bond + gl + contingency) * BID.levers.taxPct / 100;
+  const base = sellSub + bond + gl + contingency + tax;
+  const alts = BID.alternates.filter(a => a.included).reduce((s, a) => s + a.amount, 0);
+  return { direct, esc$, oh, profit, sellSub, bond, gl, contingency, tax, base, alts, grand: base + alts,
+           marginPct: base ? (oh + profit + contingency) / base * 100 : 0 };
+}
+const finishDate = () => addDays(BID.meta.startDate, Math.max(...BID.lines.map(l => l.offset + l.dur)));
+
+function updLever(k, v) { BID.levers[k] = parseFloat(v) || 0; render(); }
+function updMeta(k, v) { BID.meta[k] = v; render(); }
+function updLine(i, k, v) {
+  const l = BID.lines[i];
+  if (['qty', 'unitCost', 'offset', 'dur'].includes(k)) l[k] = parseFloat(v) || 0; else l[k] = v;
+  render();
+}
+function addLine() { BID.lines.push({ trade: 'New Trade', csi: '00 00 00', desc: 'Describe scope…', qty: 1, unit: 'LS', unitCost: 0, sub: SUBS[0], offset: 0, dur: 5 }); render(); }
+function delLine(i) { BID.lines.splice(i, 1); render(); }
+function updAlt(i, k, v) {
+  const a = BID.alternates[i];
+  if (k === 'included') a.included = v; else if (k === 'amount') a.amount = parseFloat(v) || 0; else a[k] = v;
+  render();
+}
+
+function bidGantt() {
+  const span = Math.max(1, Math.max(...BID.lines.map(l => l.offset + l.dur)));
+  return BID.lines.map(l => `
+    <div class="ygantt-row">
+      <div class="ygantt-lbl">${esc(l.trade)}</div>
+      <div class="ygantt-track"><div class="ygantt-bar" style="left:${l.offset / span * 100}%;width:${Math.max(1.5, l.dur / span * 100)}%"></div></div>
+      <div class="ygantt-dates">${fmtDateShort(addDays(BID.meta.startDate, l.offset))} · ${l.dur}d</div>
+    </div>`).join('');
+}
+
+function render() { $('#app').innerHTML = internal ? viewInternal() : viewExternal(); }
+
+/* ---------- INTERNAL: institutional estimate ---------- */
+function viewInternal() {
+  const T = totals();
+  const authorized = apprComplete(APPR_KEY, APPR_STEPS.length);
+
+  const rows = BID.lines.map((l, i) => {
+    const c = lineCalc(l);
+    const subOpts = SUBS.map(s => `<option ${s === l.sub ? 'selected' : ''}>${esc(s)}</option>`).join('');
+    return `
+      <tr>
+        <td><input class="yin" value="${esc(l.csi || '')}" style="width:74px" onchange="updLine(${i},'csi',this.value)" title="CSI MasterFormat section"></td>
+        <td><input class="yin" value="${esc(l.trade)}" style="width:112px" onchange="updLine(${i},'trade',this.value)"></td>
+        <td><input class="yin" value="${esc(l.desc)}" style="min-width:230px" onchange="updLine(${i},'desc',this.value)"></td>
+        <td><input class="yin num" type="number" step="1" value="${l.qty}" style="width:56px" onchange="updLine(${i},'qty',this.value)"></td>
+        <td><input class="yin" value="${esc(l.unit)}" style="width:46px" onchange="updLine(${i},'unit',this.value)"></td>
+        <td><input class="yin num" type="number" step="0.01" value="${l.unitCost.toFixed(2)}" style="width:96px" onchange="updLine(${i},'unitCost',this.value)"></td>
+        <td style="text-align:right">${fmt$2(c.direct)}</td>
+        <td style="text-align:right">${fmt$2(c.oh)}</td>
+        <td style="text-align:right">${fmt$2(c.profit)}</td>
+        <td style="text-align:right"><b>${fmt$2(c.sell)}</b></td>
+        <td><select class="yin" style="min-width:140px" onchange="updLine(${i},'sub',this.value)">${subOpts}</select></td>
+        <td><input class="yin num" type="number" value="${l.offset}" style="width:50px" onchange="updLine(${i},'offset',this.value)" title="start offset (days)"></td>
+        <td><input class="yin num" type="number" value="${l.dur}" style="width:50px" onchange="updLine(${i},'dur',this.value)" title="duration (days)"></td>
+        <td><button class="pa-btn" style="cursor:pointer" onclick="delLine(${i})" title="remove line">✕</button></td>
+      </tr>`;
+  }).join('');
+
+  const altRows = BID.alternates.map((a, i) => `
+    <tr>
+      <td><b>${a.id}</b></td>
+      <td><input class="yin" value="${esc(a.desc)}" onchange="updAlt(${i},'desc',this.value)"></td>
+      <td><input class="yin num" type="number" step="100" value="${a.amount}" style="width:110px" onchange="updAlt(${i},'amount',this.value)"></td>
+      <td style="text-align:center"><input type="checkbox" ${a.included ? 'checked' : ''} onchange="updAlt(${i},'included',this.checked)" style="width:16px;height:16px;cursor:pointer"></td>
+      <td>${a.included ? '<span class="demo-chip ok">IN BID</span>' : '<span class="demo-chip mut">EXCLUDED</span>'}</td>
+    </tr>`).join('');
+
+  const pmOpts = PEOPLE.pms.map(p => `<option ${p === BID.meta.pm ? 'selected' : ''}>${p}</option>`).join('');
+  const supOpts = PEOPLE.supers.map(p => `<option ${p === BID.meta.super ? 'selected' : ''}>${p}</option>`).join('');
+
+  const ladder = [
+    ['Direct cost (trade buyout)', T.direct],
+    BID.levers.escalationPct ? ['Material escalation (' + BID.levers.escalationPct + '%)', T.esc$] : null,
+    ['Overhead (' + BID.levers.overheadPct + '%)', T.oh],
+    ['Profit (' + BID.levers.profitPct + '%)', T.profit],
+    ['Sell subtotal', T.sellSub, 'sub'],
+    ['Payment & performance bond (' + BID.levers.bondPct + '%)', T.bond],
+    ['General liability insurance (' + BID.levers.glPct + '%)', T.gl],
+    T.contingency ? ['Estimating contingency (' + BID.levers.contingencyPct + '%)', T.contingency] : null,
+    T.tax ? ['Sales tax (' + BID.levers.taxPct + '%)', T.tax] : null,
+    ['BASE BID', T.base, 'noi'],
+    T.alts ? ['Selected alternates', T.alts] : null,
+    T.alts ? ['TOTAL WITH ALTERNATES', T.grand, 'noi'] : null,
+  ].filter(Boolean).map(r => `<tr class="${r[2] || ''}"><td>${r[0]}</td><td style="text-align:right">${fmt$2(r[1])}</td></tr>`).join('');
+
+  return `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">PRECONSTRUCTION · ESTIMATE ${esc(BID.meta.bidNumber)} · REV 3</div>
+        <h1>Bid <em>Builder</em></h1>
+        <div class="sub">Institutional estimate build-up — CSI-coded trade lines, bond &amp; insurance, alternates and a controlled release workflow. Every lever flows through the whole bid live.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> BASE BID ${fmt$2(T.base)}</span>
+        <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
+        <button class="pa-btn primary" style="cursor:pointer" onclick="addLine()">＋ Add Line Item</button>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid ${authorized ? 'var(--color-green)' : 'var(--yates-red)'}">
+      <div class="demo-panel-head"><h2>Estimate Release Control</h2><span class="k">sequential sign-off · role-gated · switch role via the account menu (top right)</span></div>
+      ${approvalChain(APPR_KEY, APPR_STEPS)}
+      ${authorized ? '' : '<div class="ynote" style="margin-top:8px">The client-facing proposal is watermarked <b>DRAFT</b> until the full chain has signed off.</div>'}
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Project Setup</h2><span class="k">details flow into the proposal</span></div>
+      <div class="fc-assumps" style="grid-template-columns:repeat(4,1fr)">
+        <label class="yfld">Project Name<input class="yin" value="${esc(BID.meta.project)}" onchange="updMeta('project',this.value)"></label>
+        <label class="yfld">Owner / Client<input class="yin" value="${esc(BID.meta.owner)}" onchange="updMeta('owner',this.value)"></label>
+        <label class="yfld">Site Address<input class="yin" value="${esc(BID.meta.address)}" onchange="updMeta('address',this.value)"></label>
+        <label class="yfld">Bid Number<input class="yin" value="${esc(BID.meta.bidNumber)}" onchange="updMeta('bidNumber',this.value)"></label>
+        <label class="yfld">Project Manager<select class="yin" onchange="updMeta('pm',this.value)">${pmOpts}</select></label>
+        <label class="yfld">Superintendent<select class="yin" onchange="updMeta('super',this.value)">${supOpts}</select></label>
+        <label class="yfld">Anticipated Start<input class="yin" type="date" value="${BID.meta.startDate}" onchange="updMeta('startDate',this.value)"></label>
+        <label class="yfld">Computed Finish<input class="yin" value="${fmtDate(finishDate())}" disabled style="opacity:.7"></label>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--yates-red)">
+      <div class="demo-panel-head"><h2>Pricing Levers</h2><span class="k">flow through every line — change one, the whole bid reprices</span></div>
+      <div class="fc-assumps" style="grid-template-columns:repeat(8,1fr)">
+        <div class="fc-assump"><label>Overhead</label><div class="ip"><input value="${BID.levers.overheadPct}" inputmode="decimal" onchange="updLever('overheadPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Profit</label><div class="ip"><input value="${BID.levers.profitPct}" inputmode="decimal" onchange="updLever('profitPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>P&amp;P bond</label><div class="ip"><input value="${BID.levers.bondPct}" inputmode="decimal" onchange="updLever('bondPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>GL insurance</label><div class="ip"><input value="${BID.levers.glPct}" inputmode="decimal" onchange="updLever('glPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Escalation</label><div class="ip"><input value="${BID.levers.escalationPct}" inputmode="decimal" onchange="updLever('escalationPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Contingency</label><div class="ip"><input value="${BID.levers.contingencyPct}" inputmode="decimal" onchange="updLever('contingencyPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Sales tax</label><div class="ip"><input value="${BID.levers.taxPct}" inputmode="decimal" onchange="updLever('taxPct',this.value)"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Retainage</label><div class="ip"><input value="${BID.levers.retainagePct}" inputmode="decimal" onchange="updLever('retainagePct',this.value)"><span class="u">%</span></div></div>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Direct Cost</div><div class="v">${fmtK(T.direct)}</div><div class="s">trade buyout basis</div></div>
+      <div class="ykpi"><div class="l">OH + Profit</div><div class="v">${fmtK(T.oh + T.profit)}</div><div class="s">${BID.levers.overheadPct}% + ${BID.levers.profitPct}%</div></div>
+      <div class="ykpi amber"><div class="l">Bond &amp; Insurance</div><div class="v">${fmtK(T.bond + T.gl)}</div><div class="s">P&amp;P ${BID.levers.bondPct}% · GL ${BID.levers.glPct}%</div></div>
+      <div class="ykpi green"><div class="l">Blended Margin</div><div class="v">${fmtPct(T.marginPct)}</div><div class="s">of base bid</div></div>
+      <div class="ykpi red"><div class="l">${T.alts ? 'Total w/ Alternates' : 'Base Bid'}</div><div class="v">${fmt$2(T.alts ? T.grand : T.base)}</div><div class="s">${T.alts ? 'base ' + fmt$2(T.base) : BID.alternates.length + ' alternates available'}</div></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Estimate Detail — CSI Trade Lines</h2><span style="display:flex;gap:6px">${srcChip('prop')}<span class="k">unit costs from Yates historical cost database</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th>CSI</th><th>Trade</th><th>Scope Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th style="text-align:right">Direct Cost</th><th style="text-align:right">OH</th><th style="text-align:right">Profit</th><th style="text-align:right">Sell</th><th>Subcontractor</th><th>Start +d</th><th>Dur (d)</th><th></th></tr></thead>
+          <tbody>${rows}
+            <tr style="font-weight:800;background:var(--color-bg-3)">
+              <td colspan="6">Totals</td>
+              <td style="text-align:right">${fmt$2(T.direct)}</td><td style="text-align:right">${fmt$2(T.oh)}</td>
+              <td style="text-align:right">${fmt$2(T.profit)}</td><td style="text-align:right">${fmt$2(T.sellSub)}</td>
+              <td colspan="4"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Bid Summary Ladder</h2><span class="k">direct cost → base bid</span></div>
+        <table class="fc-tbl"><tbody>${ladder}</tbody></table>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Alternates</h2><span class="k">toggle IN BID — totals reprice live</span></div>
+        <table class="demo-tbl">
+          <thead><tr><th>Alt #</th><th>Description</th><th>Amount</th><th style="text-align:center">Include</th><th></th></tr></thead>
+          <tbody>${altRows}</tbody>
+        </table>
+        <div class="demo-panel-head" style="margin-top:18px"><h2>Allowances Carried in Base</h2></div>
+        <table class="demo-tbl">
+          <tbody>${BID.allowances.map(a => `<tr><td>${esc(a.desc)}</td><td style="text-align:right">${fmt$2(a.amount)}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Auto-Generated Timeline</h2><span style="display:flex;gap:6px">${srcChip('st')}<span class="k">crew availability from ServiceTitan dispatch · finish ${fmtDate(finishDate())}</span></span></div>
+      ${bidGantt()}
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+}
+
+/* ---------- EXTERNAL (client proposal) ---------- */
+function viewExternal() {
+  const T = totals();
+  const authorized = apprComplete(APPR_KEY, APPR_STEPS.length);
+  const st = apprState(APPR_KEY, APPR_STEPS.length);
+  const groups = {};
+  BID.lines.forEach(l => {
+    const c = lineCalc(l);
+    if (!groups[l.trade]) groups[l.trade] = { sell: 0, offset: l.offset, end: l.offset + l.dur };
+    groups[l.trade].sell += c.sell;
+    groups[l.trade].offset = Math.min(groups[l.trade].offset, l.offset);
+    groups[l.trade].end = Math.max(groups[l.trade].end, l.offset + l.dur);
+  });
+  // spread bond/GL pro-rata into displayed category pricing (client-facing)
+  const upl = (T.bond + T.gl + T.contingency + T.tax) / (T.sellSub || 1);
+
+  return `
+    <div class="ytoolrow" style="margin-top:24px">
+      <span class="ynote">${authorized ? 'Authorized for submission — full sign-off chain executed.' : '<b style="color:var(--color-red)">DRAFT</b> — not yet authorized for submission (see Estimate Release Control in Internal mode).'}</span>
+      <div class="spacer"></div>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+
+    <div class="ydoc" style="position:relative">
+      ${authorized ? '' : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5"><span style="font-size:110px;font-weight:800;letter-spacing:0.2em;color:rgba(198,151,17,0.13);transform:rotate(-24deg)">DRAFT</span></div>`}
+      <div class="ydoc-head">
+        <div><div class="word">YATES<span>.</span></div><div class="sub">Construction</div><div class="tag">We Make It Possible</div></div>
+        <div class="right"><b>Proposal ${esc(BID.meta.bidNumber)}</b><br>Date: ${fmtDate(todayISO())}<br>Valid: ${BID.meta.validDays} days<br>${YATES.license} · Bonded &amp; insured</div>
+      </div>
+      <div class="big-title">${esc(BID.meta.project)}</div>
+      <div class="subtitle">${esc(BID.meta.address)}</div>
+
+      <h3 class="sect">Prepared For</h3>
+      <p><b>${esc(BID.meta.owner)}</b><br>${esc(BID.meta.address)}</p>
+
+      <h3 class="sect">Your Project Team</h3>
+      <p><b>Project Manager:</b> ${esc(BID.meta.pm)} &nbsp;·&nbsp; <b>Superintendent:</b> ${esc(BID.meta.super)}<br>
+      <b>Anticipated schedule:</b> ${fmtDate(BID.meta.startDate)} — ${fmtDate(finishDate())}</p>
+
+      <h3 class="sect">Scope of Work</h3>
+      ${Object.keys(groups).map(tr => BID.scopes[tr] ? `<div class="scope-block"><b>${esc(tr)}</b><p>${esc(BID.scopes[tr])}</p></div>` : '').join('')}
+
+      <h3 class="sect">Base Bid</h3>
+      <table>
+        <thead><tr><th>Work Category</th><th class="num">Price</th></tr></thead>
+        <tbody>
+          ${Object.entries(groups).map(([tr, g]) => `<tr><td><b>${esc(tr)}</b></td><td class="num">${fmt$2(g.sell * (1 + upl))}</td></tr>`).join('')}
+        </tbody>
+        <tfoot><tr><td>Total Base Bid — payment &amp; performance bond and general liability included</td><td class="num">${fmt$2(T.base)}</td></tr></tfoot>
+      </table>
+
+      <h3 class="sect">Alternates</h3>
+      <table>
+        <thead><tr><th>Alt #</th><th>Description</th><th class="num">Add / (Deduct)</th><th>Status</th></tr></thead>
+        <tbody>${BID.alternates.map(a => `<tr><td><b>${a.id}</b></td><td>${esc(a.desc)}</td><td class="num">${a.amount < 0 ? '(' + fmt$2(Math.abs(a.amount)) + ')' : fmt$2(a.amount)}</td><td>${a.included ? 'Accepted' : 'Offered'}</td></tr>`).join('')}</tbody>
+        ${T.alts ? `<tfoot><tr><td colspan="2">Total Contract Price with Accepted Alternates</td><td class="num">${fmt$2(T.grand)}</td><td></td></tr></tfoot>` : ''}
+      </table>
+
+      <h3 class="sect">Allowances Carried in the Base Bid</h3>
+      <ul>${BID.allowances.map(a => `<li>${esc(a.desc)} — ${fmt$2(a.amount)}</li>`).join('')}</ul>
+
+      <h3 class="sect">Project Timeline</h3>
+      <table>
+        <thead><tr><th>Work Category</th><th>Anticipated Start</th><th>Anticipated Completion</th></tr></thead>
+        <tbody>${Object.entries(groups).map(([tr, g]) => `<tr><td>${esc(tr)}</td><td>${fmtDate(addDays(BID.meta.startDate, g.offset))}</td><td>${fmtDate(addDays(BID.meta.startDate, g.end))}</td></tr>`).join('')}</tbody>
+      </table>
+
+      <h3 class="sect">Clarifications &amp; Exclusions</h3>
+      <ul>${BID.exclusions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+
+      <h3 class="sect">Commercial Terms</h3>
+      <ul>${BID.terms.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
+
+      ${authorized ? `<h3 class="sect">Authorization</h3>
+      <p>This proposal was prepared and released under Yates Construction's estimate control procedure:
+      ${st.map((x, i) => `<b>${esc(APPR_STEPS[i].doneLabel)}</b> — ${esc(x.by)}, ${esc(x.at)}`).join(' · ')}.</p>` : ''}
+
+      <h3 class="sect">Acceptance</h3>
+      <p>Acceptance of this proposal constitutes authorization to proceed under the terms above. We appreciate the opportunity and look forward to building with you.</p>
+      <div class="sig-row">
+        <div class="sig">${esc(BID.meta.owner)} — Owner / Authorized Agent</div>
+        <div class="sig">${YATES.company} — ${esc(BID.meta.pm)}, Project Manager</div>
+      </div>
+      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.legal} · ${YATES.hq} · ${YATES.office} · ${YATES.phone} · ${YATES.enr}</p>
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+}
+
+render();
+</script>
+</body>
+</html>

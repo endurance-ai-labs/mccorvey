@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yates Construction — Brain</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+<style>
+  .brain-wrap { max-width: 900px; margin: 0 auto; padding: 8px 0 32px; }
+  .brain-sub { color: var(--color-text-muted); font-size: 12.5px; letter-spacing: 0.3px; margin: 6px 0 18px; }
+  .brain-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; }
+  .ex { font-size: 12.5px; padding: 7px 12px; border-radius: 999px; cursor: pointer; color: var(--color-cloud-whisper);
+        background: var(--color-bg-2); border: 1px solid var(--color-border); }
+  .ex:hover { border-color: var(--color-blue); color: var(--color-blue); }
+  #thread { display: flex; flex-direction: column; gap: 14px; margin-bottom: 18px; min-height: 120px; }
+  .msg { padding: 13px 16px; border-radius: 13px; line-height: 1.55; font-size: 14px; white-space: pre-wrap; }
+  .msg.user { background: var(--color-blue-pale); border: 1px solid var(--color-blue); align-self: flex-end; max-width: 82%; color: var(--color-cloud-whisper); }
+  .msg.bot  { background: var(--color-bg-2); border: 1px solid var(--color-border); color: var(--color-cloud-whisper); }
+  .msg.bot b { color: var(--color-blue); }
+  .inputbar { display: flex; gap: 10px; position: sticky; bottom: 14px; }
+  #q { flex: 1; padding: 14px 16px; border-radius: 13px; background: var(--color-bg-2);
+       border: 1px solid var(--color-border); color: var(--color-cloud-whisper); font: inherit; font-size: 15px; }
+  #q:focus { outline: none; border-color: var(--color-blue); }
+  #send { padding: 0 24px; border-radius: 13px; border: none; cursor: pointer; font-weight: 700; color: #fff;
+          background: linear-gradient(135deg, #005c97, #00385c); }
+  .brain-disc { font-size: 10.5px; color: var(--color-amber); margin-bottom: 14px; }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap">
+    <div class="brain-wrap">
+      <div class="demo-eyebrow" style="margin-top:30px">OPERATING INTELLIGENCE</div>
+      <h1 class="page-hero-title" style="font-weight:800;letter-spacing:-0.02em;font-size:clamp(30px,3.6vw,46px);color:var(--color-cloud-whisper);margin:8px 0 0">Yates <span style="color:var(--color-blue)">Brain</span></h1>
+      <div class="brain-sub">Ask anything about Yates jobs, bids, billing and schedules — synthesized live from the operating data.</div>
+      <div class="brain-disc">⚠ Demo assistant — responses are illustrative and entirely fictional.</div>
+
+      <div class="brain-examples" id="examples">
+        <span class="ex">Which jobs need attention this week?</span>
+        <span class="ex">Status of the Villas job?</span>
+        <span class="ex">How much retention are owners holding?</span>
+        <span class="ex">Where is margin trending across the book?</span>
+        <span class="ex">How is billing tracking against production?</span>
+      </div>
+
+      <div id="thread"></div>
+
+      <div class="inputbar">
+        <input id="q" type="text" placeholder="Ask the Brain…" autocomplete="off">
+        <button id="send">Ask</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js"></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Brain' });
+(function () {
+  const thread = document.getElementById('thread');
+  const input = document.getElementById('q');
+  const send = document.getElementById('send');
+
+  function bubble(cls, html) {
+    const d = document.createElement('div'); d.className = 'msg ' + cls; d.innerHTML = html;
+    thread.appendChild(d); d.scrollIntoView({ behavior: 'smooth', block: 'end' }); return d;
+  }
+
+  /* reuse the floating brain's answer engine by proxy: ask via a hidden call */
+  function ask(text) {
+    text = (text || '').trim(); if (!text) return;
+    bubble('user', esc(text));
+    input.value = '';
+    const out = bubble('bot', '<em style="opacity:.6">Synthesizing from the job register…</em>');
+    setTimeout(() => {
+      // the FAB engine exposes its internals via a temporary panel round-trip;
+      // simplest path: recreate the answer through the same public entry.
+      try {
+        const fabBody = document.getElementById('bw-body');
+        // call the engine directly through the exposed hook
+        out.innerHTML = window.__yatesBrainAnswer ? window.__yatesBrainAnswer(text) : fallback(text);
+      } catch (e) { out.innerHTML = fallback(text); }
+    }, 500 + Math.random() * 400);
+  }
+
+  function fallback(text) {
+    const all = JOBS.map(j => ({ j, m: jobMetrics(j) }));
+    const backlog = all.reduce((a, x) => a + x.j.contract, 0);
+    const projM = all.reduce((a, x) => a + x.m.projMargin, 0);
+    return 'Across the book: backlog <b>' + fmtK(backlog) + '</b>, projected margin <b>' + fmtK(projM) + '</b>. Ask about any job by name, billing, retention, margin or schedule — the floating Brain bubble (bottom right) has the full engine.';
+  }
+
+  send.addEventListener('click', () => ask(input.value));
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') ask(input.value); });
+  document.getElementById('examples').addEventListener('click', e => { if (e.target.classList.contains('ex')) ask(e.target.textContent); });
+})();
+</script>
+</body>
+</html>

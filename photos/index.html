@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Photo Documentation — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+<style>
+  .ph-filter { display:flex; gap:8px; flex-wrap:wrap; }
+  .ph-filter button { font-size:11px; font-weight:700; letter-spacing:0.05em; padding:6px 13px; border-radius:999px;
+    border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-text-muted); cursor:pointer; }
+  .ph-filter button.active { background:var(--color-blue); border-color:var(--color-blue); color:#fff; }
+  .ph-lightbox { position:fixed; inset:0; z-index:3000; background:rgba(10,14,22,0.88); display:none; align-items:center; justify-content:center; padding:30px; cursor:zoom-out; }
+  .ph-lightbox.open { display:flex; }
+  .ph-lightbox img { max-width:92vw; max-height:82vh; border-radius:8px; box-shadow:0 30px 80px rgba(0,0,0,0.5); }
+  .ph-lightbox .cap { position:absolute; bottom:22px; left:50%; transform:translateX(-50%); color:#fff; font-size:13px; background:rgba(0,0,0,0.55); padding:8px 16px; border-radius:999px; white-space:nowrap; }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+<div class="ph-lightbox" id="lightbox" onclick="this.classList.remove('open')"><img id="lb-img" src="" alt=""><div class="cap" id="lb-cap"></div></div>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Photo Documentation' });
+let fJob = qs('id') || 'ALL';
+let fTag = 'ALL';
+
+const ALL = JOBS.flatMap(j => j.photos.map(p => ({ ...p, jobId: j.id, jobName: j.name })));
+
+function render() {
+  const jobs = ['ALL', ...JOBS.filter(j => j.photos.length).map(j => j.id)];
+  const pool = ALL.filter(p => fJob === 'ALL' || p.jobId === fJob);
+  const tags = ['ALL', ...new Set(pool.map(p => p.tag))];
+  const shown = pool.filter(p => fTag === 'ALL' || p.tag === fTag)
+    .sort((a, b) => b.date.localeCompare(a.date));
+
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">FIELD DOCUMENTATION · SERVICETITAN SYNC</div>
+        <h1>Photo <em>Documentation</em></h1>
+        <div class="sub">Every jobsite photo, tagged by trade and date, synced from ServiceTitan field entries. Click any photo to enlarge; owner reports pull directly from this library.</div>
+      </div>
+      <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${ALL.length} PHOTOS ON FILE</span></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Filters</h2></div>
+      <div class="ph-filter" style="margin-bottom:10px">
+        ${jobs.map(id => `<button data-job="${id}" class="${fJob === id ? 'active' : ''}">${id === 'ALL' ? 'All Jobs' : id}</button>`).join('')}
+      </div>
+      <div class="ph-filter">
+        ${tags.map(t => `<button data-tag="${t}" class="${fTag === t ? 'active' : ''}">${t === 'ALL' ? 'All Trades' : t}</button>`).join('')}
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>${shown.length} Photo${shown.length === 1 ? '' : 's'}</h2>
+        <span class="k">${fJob === 'ALL' ? 'all jobs' : fJob}${fTag === 'ALL' ? '' : ' · ' + fTag}</span></div>
+      <div class="yphoto-grid">${shown.map((p, i) => `
+        <div class="yphoto yclick" onclick="openLB(${i})">
+          <img src="${p.src}" alt="${esc(p.cap)}" loading="lazy">
+          <div class="cap"><b>${esc(p.cap)}</b><span>${p.jobId} · ${fmtDate(p.date)} · ${p.tag}</span></div>
+        </div>`).join('') || '<div class="ynote">No photos match these filters.</div>'}</div>
+    </div>
+    <div class="demo-note">Demo environment · fictional data · stock photography via Pexels</div>`;
+
+  window.__shown = shown;
+  $$('.ph-filter button[data-job]').forEach(b => b.addEventListener('click', () => { fJob = b.dataset.job; fTag = 'ALL'; render(); }));
+  $$('.ph-filter button[data-tag]').forEach(b => b.addEventListener('click', () => { fTag = b.dataset.tag; render(); }));
+}
+
+function openLB(i) {
+  const p = window.__shown[i];
+  $('#lb-img').src = p.src;
+  $('#lb-cap').textContent = `${p.cap} — ${p.jobId}, ${fmtDate(p.date)}`;
+  $('#lightbox').classList.add('open');
+}
+
+render();
+</script>
+</body>
+</html>

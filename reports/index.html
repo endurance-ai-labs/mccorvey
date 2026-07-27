@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Progress Reports — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Progress Reports' });
+let jobId = qs('id') || 'LKV-2410';
+
+function render() {
+  const j = JOBS.find(x => x.id === jobId) || JOBS[0];
+  const m = jobMetrics(j);
+  const jobOpts = JOBS.map(x => `<option value="${x.id}" ${x.id === j.id ? 'selected' : ''}>${x.id} — ${esc(x.name)}</option>`).join('');
+  const donePhases = j.phases.filter(p => p.pct >= 100);
+  const activePhases = j.phases.filter(p => p.pct > 0 && p.pct < 100);
+  const nextPhases = j.phases.filter(p => p.pct === 0);
+
+  $('#app').innerHTML = `
+    <div class="ytoolrow" style="margin-top:24px">
+      <label class="yfld" style="min-width:420px">Job
+        <select class="yin" id="rep-job">${jobOpts}</select>
+      </label>
+      <div class="spacer"></div>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+
+    <div class="demo-panel no-print" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Issue Control — ${j.id}</h2><span class="k">owner-facing documents require sign-off before issue</span></div>
+      ${approvalChain('rep-' + j.id + '-2026-07', [
+        { role: 'pm',     label: 'PM — Report Prepared',                 doneLabel: 'PM Prepared' },
+        { role: 'divmgr', label: 'Division Manager — Approve for Issue', doneLabel: 'Approved for Issue' },
+      ])}
+    </div>
+
+    <div class="demo-panel no-print" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from ServiceTitan</span></span></div>
+      <table class="demo-tbl">
+        <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
+        <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
+      </table>
+    </div>
+
+    <!-- ============ owner progress report document ============ -->
+    <div class="ydoc">
+      <div class="ydoc-head">
+        <div><div class="word">YATES<span>.</span></div><div class="sub">Construction</div><div class="tag">We Make It Possible</div></div>
+        <div class="right"><b>Owner Progress Report</b><br>Report date: ${fmtDate(todayISO())}<br>Job #: ${j.id}<br>Prepared by: ${esc(j.pm)}, Project Manager</div>
+      </div>
+
+      <div class="big-title">${esc(j.name)}</div>
+      <div class="subtitle">${esc(j.address)} · Prepared for ${esc(j.owner)}</div>
+
+      <h3 class="sect">Executive Summary</h3>
+      <p>
+        Work is <b>${fmtPct(m.pct, 1)} complete</b> against a contract value of <b>${fmt$2(j.contract)}</b>.
+        Earned value to date is <b>${fmt$2(m.earned)}</b>, with <b>${fmt$2(m.billedAll)}</b> certified across
+        ${j.payApps.length} payment application(s). The project ${m.pct >= 100 ? 'is complete and in closeout' : 'remains on schedule'}
+        with a contract completion date of <b>${fmtDate(j.finish)}</b>.
+        ${j.insurance ? `This is an insurance restoration project (${esc(j.insurance.carrier)} — ${esc(j.insurance.approval)}).` : ''}
+      </p>
+
+      <h3 class="sect">Work Completed</h3>
+      <ul>${donePhases.map(p => `<li><b>${esc(p.name)}</b> — complete (${fmtDate(p.start)} – ${fmtDate(p.finish)})</li>`).join('') || '<li>Mobilization underway.</li>'}</ul>
+
+      ${activePhases.length ? `<h3 class="sect">Work In Progress</h3>
+      <ul>${activePhases.map(p => `<li><b>${esc(p.name)}</b> — ${p.pct}% complete, tracking to ${fmtDate(p.finish)}</li>`).join('')}</ul>` : ''}
+
+      ${nextPhases.length ? `<h3 class="sect">Upcoming Work</h3>
+      <ul>${nextPhases.map(p => `<li><b>${esc(p.name)}</b> — scheduled ${fmtDate(p.start)} – ${fmtDate(p.finish)}</li>`).join('')}</ul>` : ''}
+
+      <h3 class="sect">Progress by Schedule of Values</h3>
+      <table>
+        <thead><tr><th>Item</th><th>Description</th><th class="num">Scheduled Value</th><th style="width:140px">Progress</th><th class="num">%</th></tr></thead>
+        <tbody>${j.sov.map(r => `
+          <tr><td>${r.item}</td><td>${esc(r.desc)}</td><td class="num">${fmt$2(r.scheduled)}</td>
+          <td><div class="ybar ${r.pct >= 100 ? 'g' : ''}"><i style="width:${r.pct}%"></i></div></td><td class="num">${r.pct}%</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="2">Total</td><td class="num">${fmt$2(j.contract)}</td><td></td><td class="num">${fmtPct(m.pct, 1)}</td></tr></tfoot>
+      </table>
+
+      ${j.photos.length ? `
+      <h3 class="sect page-break">Photo Documentation (${j.photos.length})</h3>
+      <div class="yphoto-grid" style="grid-template-columns:repeat(3,1fr)">${j.photos.map(photoCard).join('')}</div>` : ''}
+
+      <h3 class="sect">Certification</h3>
+      <p>The undersigned certifies that the work described above has been performed in accordance with the contract documents and that quantities and percentages reported are accurate to the best of their knowledge.</p>
+      <div class="sig-row">
+        <div class="sig">${esc(j.pm)} — Project Manager, ${YATES.company}</div>
+        <div class="sig">Date</div>
+      </div>
+      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.office} · ${YATES.address} · ${YATES.phone} · ${YATES.license}</p>
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+
+  $('#rep-job').addEventListener('change', e => { jobId = e.target.value; render(); });
+}
+render();
+</script>
+</body>
+</html>
