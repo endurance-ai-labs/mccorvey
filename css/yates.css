@@ -251,3 +251,23 @@ table.fc-tbl.compact td:last-child { text-align: right; white-space: nowrap; }
    opt back in with inline text-align:right (which always wins) ---- */
 table.demo-tbl.tbl-left thead th, table.demo-tbl.tbl-left tbody td { text-align: left; }
 table.demo-tbl.tbl-left tbody td { white-space: normal; }
+
+
+/* ---- proforma hover explanations (non-invasive) ---- */
+#fc-tip {
+  position: fixed; z-index: 6000; max-width: 340px; display: none; pointer-events: none;
+  background: #0e1726; color: #dbe4f0; border: 1px solid #2f4366; border-radius: 8px;
+  padding: 10px 12px; font-size: 11.5px; line-height: 1.5; white-space: pre-line;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.35); border-left: 3px solid #4b86d1;
+}
+#fc-tip b { color: #7fa8e0; }
+[data-exp] { cursor: help; }
+
+/* ---- monthly 60-mo grid: sticky line-item column ---- */
+.fc-mwrap { overflow: auto; max-height: 72vh; border: 1px solid var(--color-border); border-radius: 4px; }
+.fc-mwrap table.fc-tbl { min-width: 0; }
+.fc-mwrap td:first-child, .fc-mwrap th:first-child {
+  position: sticky; left: 0; z-index: 2; background: var(--color-bg-2); min-width: 210px;
+}
+.fc-mwrap thead th:first-child { z-index: 4; background: var(--color-navy); }
+.fc-mwrap tr.head td:first-child { background: var(--color-bg-2); }

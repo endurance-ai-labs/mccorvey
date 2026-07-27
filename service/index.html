@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service Division — Y8S Operations Portal</title>
+<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="Y8S Operations Portal">
+<meta property="og:title" content="YATES Company, LLC — Operations Portal">
+<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Service Division' });
+const me = currentPersona();
+if (!me || me.perms.external) {
+  if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
+    <div class="ynote">The service division board is internal. Client service requests are handled through your account manager.</div></div>`;
+} else {
+  render();
+}
+
+function render() {
+  const showMoney = can('fin') || can('margins');
+  const active = SERVICE_AGREEMENTS.filter(a => a.status === 'Active');
+  const expiring = SERVICE_AGREEMENTS.filter(a => a.status === 'Expiring');
+  const proposed = SERVICE_AGREEMENTS.filter(a => a.status === 'Proposed');
+  const mrr = active.concat(expiring).reduce((s, a) => s + a.monthly, 0);
+  const pipeMrr = proposed.reduce((s, a) => s + a.monthly, 0);
+  const openCalls = SERVICE_CALLS.length;
+
+  const tierPill = (t) => `<span class="ypill ${{ Monthly: 'blue', Quarterly: 'green', Annual: 'gray', Custom: 'amber' }[t] || 'gray'}">${t}</span>`;
+  const stPill = (st) => `<span class="ypill ${{ Active: 'green', Expiring: 'amber', Proposed: 'blue' }[st] || 'gray'}">${st}</span>`;
+  const prPill = (p) => `<span class="ypill ${{ Emergency: 'red', High: 'amber', Standard: 'gray' }[p]}">${p}</span>`;
+  const callPill = (st) => `<span class="demo-chip ${{ 'In Progress': 'ok', Dispatched: 'ok', Scheduled: 'mut', 'Parts on Order': 'warn' }[st] || 'mut'}">${st}</span>`;
+
+  const tiers = ['Monthly', 'Quarterly', 'Annual', 'Custom'];
+  const tierCounts = tiers.map(t => SERVICE_AGREEMENTS.filter(a => a.tier === t).length);
+  const maxTier = Math.max(...tierCounts, 1);
+
+  const agRows = SERVICE_AGREEMENTS.slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
+    <tr>
+      <td><b>${esc(a.client)}</b><div class="ynote">${esc(a.site)}</div></td>
+      <td>${tierPill(a.tier)}</td>
+      ${showMoney ? `<td style="text-align:right">${fmt$(a.monthly)}/mo</td><td style="text-align:right">${fmt$(a.monthly * 12)}</td>` : ''}
+      <td>${fmtDateShort(a.renewal)}, ${a.renewal.slice(0, 4)}</td>
+      <td>${esc(a.tech)}</td>
+      <td>${stPill(a.status)}</td>
+    </tr>`).join('');
+
+  const callRows = SERVICE_CALLS.map(c => `
+    <tr>
+      <td><b>${c.num}</b></td>
+      <td>${esc(c.client)}</td>
+      <td>${esc(c.issue)}</td>
+      <td>${prPill(c.priority)}</td>
+      <td>${esc(c.tech)}</td>
+      <td>${callPill(c.status)}</td>
+    </tr>`).join('');
+
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">SERVICE DIVISION · AGREEMENTS & DISPATCH</div>
+        <h1>Service <em>Division</em></h1>
+        <div class="sub">Every service agreement and open call in one board — tiers per the published Y8S packages, dispatch synced from ServiceTitan, recurring revenue rolled up for the CFO.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> ${SERVICE_AGREEMENTS.length} AGREEMENTS · ${openCalls} OPEN CALLS</span>
+        <span style="display:flex;gap:6px">${srcChip('st')} ${showMoney ? srcChip('qb') : ''}</span>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Active Agreements</div><div class="v">${active.length + expiring.length}</div><div class="s">${proposed.length} proposed in pipeline</div></div>
+      ${showMoney ? `
+      <div class="ykpi green"><div class="l">Service MRR</div><div class="v">${fmtK(mrr)}</div><div class="s">${fmtK(mrr * 12)} annualized</div></div>
+      <div class="ykpi"><div class="l">Pipeline MRR</div><div class="v">${fmtK(pipeMrr)}</div><div class="s">from active construction jobs</div></div>` : ''}
+      <div class="ykpi amber"><div class="l">Renewals Next 90 Days</div><div class="v">${expiring.length}</div><div class="s">${expiring.map(e => e.client.split(' ')[0]).join(', ')}</div></div>
+      <div class="ykpi red"><div class="l">Open Service Calls</div><div class="v">${openCalls}</div><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency · ${SERVICE_CALLS.filter(c => c.priority === 'High').length} high</div></div>
+    </div>
+
+    ${showMoney ? `
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Renewal Control — Q3 2026 Batch</h2><span class="k">expiring agreements require sign-off on renewal pricing</span></div>
+      ${approvalChain('svc-renewals-2026-q3', [
+        { role: 'svcmgr', label: 'Service Ops — Renewal Pricing Proposed', doneLabel: 'Pricing Proposed' },
+        { role: 'cfo',    label: 'CFO — Approve Renewal Terms',            doneLabel: 'CFO Approved' },
+      ])}
+    </div>` : ''}
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Dispatch Board</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">open calls, live from ServiceTitan</span></span></div>
+        <div class="demo-tbl-wrap" style="max-height:360px">
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th>Call #</th><th>Client</th><th>Issue</th><th>Priority</th><th>Tech</th><th>Status</th></tr></thead>
+          <tbody>${callRows}</tbody>
+        </table>
+        </div>
+        <div class="ynote" style="margin-top:8px">${openCalls} of 23 open calls shown — full queue lives in ServiceTitan dispatch.</div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Agreements by Package</h2><span class="k">tiers per y8sco.com/services-packages</span></div>
+        <div class="demo-aging">${tiers.map((t, i) => `
+          <div class="demo-aging-row">
+            <div class="lab">${t}</div>
+            <div class="bar"><i style="width:${tierCounts[i] / maxTier * 100}%;background:${['#083d75', '#4f7d5d', '#8a93a1', '#b98a36'][i]}"></i></div>
+            <div class="amt">${tierCounts[i]}</div>
+          </div>`).join('')}</div>
+        <div class="demo-panel-head" style="margin-top:20px"><h2>Package Inclusions</h2></div>
+        <div style="font-size:11.5px;line-height:1.7;color:var(--color-text-muted)">
+          ${tiers.map(t => `<div style="margin-bottom:8px"><b style="color:var(--color-cloud-whisper)">${t}:</b> ${SERVICE_TIERS[t].join(' · ')}</div>`).join('')}
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Service Agreement Book</h2><span style="display:flex;gap:6px;align-items:center">${showMoney ? srcChip('qb') : ''}<span class="k">sorted by renewal date</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th>Client / Site</th><th>Package</th>${showMoney ? '<th style="text-align:right">MRR</th><th style="text-align:right">Annualized</th>' : ''}<th>Renewal</th><th>Assigned Tech</th><th>Status</th></tr></thead>
+        <tbody>${agRows}
+          ${showMoney ? `<tr style="font-weight:800;background:var(--color-bg-3)"><td colspan="2">Total (active + expiring)</td><td style="text-align:right">${fmt$(mrr)}/mo</td><td style="text-align:right">${fmt$(mrr * 12)}</td><td colspan="3"></td></tr>` : ''}
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+}
+</script>
+</body>
+</html>
