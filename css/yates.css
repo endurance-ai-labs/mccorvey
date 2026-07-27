@@ -1,0 +1,178 @@
+/* ============================================================
+   YATES CONSTRUCTION — portal skin layer
+   Loaded AFTER theme.css + demo.css. Token overrides re-brand the
+   Margins framework to Yates navy/red; below that, portal-specific
+   components (mode toggle, docs, photos, bid inputs, print).
+   ============================================================ */
+
+/* ---- Yates brand tokens (override Margins blue) ---- */
+:root {
+  --color-blue:        #2f89c5;   /* Yates blue — dark-mode accent */
+  --color-blue-light:  #6fb1dd;
+  --color-blue-pale:   rgba(47, 111, 196, 0.14);
+  --color-deep-violet: #c69711;   /* Yates red — secondary accent */
+  --color-violet-pale: rgba(198, 151, 17, 0.10);
+  --yates-red:         #c69711;
+  --gradient-cosmic-b: linear-gradient(90deg, #002944, #005c97 50%, #2f89c5);
+}
+[data-theme="light"] {
+  --color-blue:       #005c97;    /* Yates navy-blue on light */
+  --color-blue-light: #004a7a;
+  --color-blue-pale:  #e8eff9;
+}
+.nav-cta {
+  background: linear-gradient(135deg, #005c97, #00385c) !important;
+  box-shadow: 0 2px 10px rgba(0, 92, 151, 0.35) !important;
+}
+
+/* ---- Brand lockup ---- */
+.brand .yates-word { font-size: 19px; font-weight: 800; letter-spacing: 3.5px; color: var(--color-cloud-whisper); line-height: 1; }
+.brand .yates-word span { color: var(--yates-red); }
+.brand .yates-sub { font-size: 8.5px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--color-text-muted); margin-top: 3px; }
+
+/* ---- Internal / Client mode toggle (topbar) ---- */
+.mode-toggle {
+  display: inline-flex; border: 1.5px solid var(--color-blue); border-radius: 999px;
+  overflow: hidden; font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; flex-shrink: 0;
+}
+.mode-toggle button {
+  border: 0; background: transparent; padding: 5px 12px; cursor: pointer;
+  color: var(--color-blue); font: inherit; font-weight: 800; white-space: nowrap;
+}
+.mode-toggle button.on { background: var(--color-blue); color: #fff; }
+@media (max-width: 1080px) { .mode-toggle .mt-lbl { display: none; } }
+
+/* ---- KPI strip (framework-flavored) ---- */
+.ykpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.ykpi {
+  background: var(--color-bg-2); border: 1px solid var(--color-border);
+  border-left: 3px solid var(--color-blue); border-radius: var(--radius-md);
+  padding: 14px 16px; box-shadow: var(--shadow-xs);
+}
+.ykpi.red { border-left-color: var(--yates-red); }
+.ykpi.green { border-left-color: var(--color-green); }
+.ykpi.amber { border-left-color: var(--color-amber); }
+.ykpi .l { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-text-muted); }
+.ykpi .v { font-size: 21px; font-weight: 800; color: var(--color-cloud-whisper); margin-top: 4px; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.ykpi .s { font-size: 11px; color: var(--color-text-muted); margin-top: 3px; }
+
+/* ---- Progress bars ---- */
+.ybar { height: 7px; background: var(--color-bg-3); border-radius: 99px; overflow: hidden; min-width: 64px; }
+.ybar > i { display: block; height: 100%; background: var(--color-blue); border-radius: 99px; }
+.ybar.g > i { background: var(--color-green); }
+.ybar.a > i { background: var(--color-amber); }
+
+/* ---- Status pills ---- */
+.ypill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
+.ypill.blue  { background: var(--color-blue-pale);  color: var(--color-blue); }
+.ypill.green { background: var(--color-green-bg);   color: var(--color-green); }
+.ypill.amber { background: var(--color-amber-bg);   color: var(--color-amber); }
+.ypill.red   { background: var(--color-red-bg);     color: var(--color-red); }
+.ypill.gray  { background: var(--color-bg-3);       color: var(--color-text-muted); }
+
+/* ---- Gantt ---- */
+.ygantt-row { display: grid; grid-template-columns: 200px 1fr 150px; align-items: center; gap: 10px; padding: 5px 0; font-size: 12px; }
+.ygantt-lbl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--color-cloud-whisper); }
+.ygantt-track { position: relative; height: 16px; background: var(--color-bg-3); border-radius: 4px; }
+.ygantt-bar { position: absolute; top: 2px; bottom: 2px; border-radius: 3px; background: var(--color-blue); opacity: 0.9; }
+.ygantt-bar.done { background: var(--color-green); }
+.ygantt-bar > i { position: absolute; inset: 0; right: auto; background: rgba(255,255,255,0.35); border-radius: 3px; }
+.ygantt-dates { color: var(--color-text-muted); font-size: 10.5px; text-align: right; white-space: nowrap; }
+
+/* ---- Photo grid ---- */
+.yphoto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.yphoto { border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: var(--color-bg-2); box-shadow: var(--shadow-xs); }
+.yphoto img { width: 100%; height: 160px; object-fit: cover; display: block; }
+.yphoto .cap { padding: 9px 11px; font-size: 11px; line-height: 1.45; }
+.yphoto .cap b { display: block; color: var(--color-cloud-whisper); }
+.yphoto .cap span { color: var(--color-text-muted); }
+
+/* ---- Inputs inside tables / assumption grids ---- */
+.yin {
+  font: inherit; font-size: 12.5px; padding: 5px 8px; border-radius: 6px;
+  border: 1px solid var(--color-border); background: var(--color-bg-3);
+  color: var(--color-cloud-whisper); width: 100%;
+}
+.yin:focus { outline: 2px solid var(--color-blue-pale); border-color: var(--color-blue); }
+.yin.num { text-align: right; font-variant-numeric: tabular-nums; }
+label.yfld { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-muted); }
+label.yfld > * { margin-top: 5px; width: 100%; display: block; }
+
+/* ---- External print documents (proposal / progress report / G702) ---- */
+.ydoc {
+  background: #fff; color: #1b2230; border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg); padding: 46px 54px; max-width: 920px; margin: 0 auto;
+  box-shadow: var(--shadow-md);
+}
+[data-theme="dark"] .ydoc { border-color: rgba(255,255,255,0.14); }
+.ydoc-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 4px solid #00385c; padding-bottom: 18px; margin-bottom: 26px; }
+.ydoc-head .word { font-size: 30px; font-weight: 800; letter-spacing: 4px; color: #00385c; }
+.ydoc-head .word span { color: #c69711; }
+.ydoc-head .sub { font-size: 10px; letter-spacing: 2.8px; color: #5b6472; text-transform: uppercase; }
+.ydoc-head .tag { font-size: 11px; color: #b98a36; font-style: italic; margin-top: 6px; }
+.ydoc-head .right { text-align: right; font-size: 11.5px; color: #5b6472; line-height: 1.6; }
+.ydoc h3.sect { font-size: 12px; text-transform: uppercase; letter-spacing: 1.6px; color: #c69711; border-bottom: 1px solid #e3e7ee; padding-bottom: 6px; margin: 26px 0 12px; }
+.ydoc p, .ydoc li { font-size: 12.5px; line-height: 1.65; color: #2a3442; }
+.ydoc ul { padding-left: 20px; }
+.ydoc .big-title { font-size: 21px; font-weight: 800; color: #00385c; margin: 4px 0 2px; }
+.ydoc .subtitle { font-size: 13px; color: #5b6472; }
+.ydoc table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.ydoc th { text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: #5b6472; padding: 7px 9px; border-bottom: 2px solid #00385c; }
+.ydoc td { padding: 7px 9px; border-bottom: 1px solid #e8ebf1; }
+.ydoc .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ydoc tfoot td { font-weight: 800; border-top: 2px solid #00385c; border-bottom: 0; background: #f4f6fa; }
+.ydoc .scope-block { margin-bottom: 14px; }
+.ydoc .scope-block b { color: #00385c; font-size: 12.5px; }
+.ydoc .scope-block p { margin-top: 2px; }
+.ydoc .sig-row { display: flex; gap: 40px; margin-top: 44px; }
+.ydoc .sig { flex: 1; border-top: 1px solid #1b2230; padding-top: 6px; font-size: 11px; color: #5b6472; }
+.ydoc .yphoto img { height: 170px; }
+.ydoc .yphoto { border-color: #e3e7ee; background: #fff; }
+.ydoc .yphoto .cap b { color: #00385c; }
+.ydoc .ybar { background: #e8ebf1; }
+
+/* ---- Section tab body helpers (property-page pattern) ---- */
+.ysection { display: none; }
+.ysection.active { display: block; }
+
+/* ---- Misc ---- */
+.ynote { font-size: 11.5px; color: var(--color-text-muted); }
+.ytoolrow { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.ytoolrow .spacer { flex: 1; }
+.yclick { cursor: pointer; }
+.demo-watermark {
+  position: fixed; bottom: 8px; right: 14px; z-index: 900; pointer-events: none;
+  font-size: 9.5px; letter-spacing: 1.6px; color: var(--color-slate-hint); text-transform: uppercase;
+}
+
+/* ---- Print ---- */
+@media print {
+  body { background: #fff !important; background-image: none !important; }
+  .news-marquee, .market-ticker, .portal-topbar, .section-subnav, .nav-toggle,
+  .ytoolrow, .demo-watermark, .no-print, .bw-fab, .bw-panel { display: none !important; }
+  .page { padding: 0 !important; max-width: none !important; }
+  .ydoc { border: 0; border-radius: 0; box-shadow: none; padding: 20px 8px; max-width: none; }
+  .page-break { page-break-before: always; }
+}
+
+/* ---- approval chains (institutional sign-off) ---- */
+.appr-chain { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 12px 14px; border: 1px dashed var(--color-border); border-radius: var(--radius-md); background: var(--color-bg-3); }
+.appr-chain.complete { border-style: solid; border-color: var(--color-green); background: var(--color-green-bg); }
+.appr-step { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+.appr-step div { display: flex; flex-direction: column; line-height: 1.35; }
+.appr-step b { color: var(--color-cloud-whisper); font-size: 11.5px; }
+.appr-step span { color: var(--color-text-muted); font-size: 10px; }
+.appr-step .tick { width: 20px; height: 20px; border-radius: 99px; background: var(--color-green); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.appr-step .dot { width: 20px; height: 20px; border-radius: 99px; border: 2px dashed var(--color-border); flex-shrink: 0; }
+.appr-step.locked { opacity: 0.65; }
+.appr-step.ready button {
+  font: inherit; font-size: 11.5px; font-weight: 800; letter-spacing: 0.03em; cursor: pointer;
+  background: var(--color-blue); color: #fff; border: 0; border-radius: 7px; padding: 8px 14px;
+  box-shadow: 0 2px 8px rgba(0,92,151,0.3);
+}
+.appr-step.ready button:hover { background: var(--color-blue-light); }
+.appr-step.ready span { max-width: 130px; }
+.appr-arrow { color: var(--color-slate-hint); font-size: 13px; }
+.appr-reset { margin-left: auto; border: 0; background: transparent; color: var(--color-slate-hint); cursor: pointer; font-size: 13px; }
+.appr-reset:hover { color: var(--color-red); }
+@media print { .appr-chain { display: none !important; } }

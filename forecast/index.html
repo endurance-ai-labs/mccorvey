@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Budget &amp; Forecast — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Budget & Forecast' });
+if (!YatesMode.isInternal()) {
+  $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
+    <div class="ynote">Budgeting &amp; forecasting is an internal financial module. Switch to <b>Internal</b> mode (top right) to open it.</div></div>`;
+} else {
+  buildForecast();
+}
+
+function buildForecast() {
+/* =============================================================
+   DIVISION BUDGETING & FORECASTING — CFO console
+   Same engine pattern as the Blackwater asset forecast:
+   T-3 / T-6 / T-12 trailing actuals → editable In-Place run-rate
+   → Years 1-5 compounded monthly by a tiered growth schedule.
+   ============================================================= */
+
+/* ---- 24 months of division actuals (fictional, deterministic) ---- */
+const MONTHS = [];
+(function () {
+  const start = new Date('2024-08-15T12:00:00');
+  // seasonal profile + growth; storm surge Oct-Dec 24
+  for (let i = 0; i < 24; i++) {
+    const d = new Date(start); d.setMonth(d.getMonth() + i);
+    const season = [0.92, 0.95, 1.06, 1.10, 1.02, 0.88, 0.90, 0.97, 1.04, 1.08, 1.10, 1.05][d.getMonth() % 12];
+    const surge = (i >= 2 && i <= 4) ? 1.22 : 1;             // Oct-Dec 24 storm work
+    const grow = Math.pow(1.006, i);
+    const rev = 1520000 * season * surge * grow;
+    const subs = rev * 0.44, labor = rev * 0.16, mat = rev * 0.14, equip = rev * 0.04;
+    const m = {
+      m: d.toISOString().slice(0, 7),
+      revenue: rev,
+      cost: { subs, labor, mat, equip },
+      oh: { salaries: 118000 * Math.pow(1.004, i), office: 18500, insurance: 30000 * Math.pow(1.005, i), it: 8200, bd: 14000, vehicles: 21000, other: 9800 },
+    };
+    MONTHS.push(m);
+  }
+})();
+const CK = ['subs', 'labor', 'mat', 'equip'];
+const OK = ['salaries', 'office', 'insurance', 'it', 'bd', 'vehicles', 'other'];
+const mLong = (ym) => { const d = new Date(ym + '-15T12:00:00'); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); };
+
+/* ---- state ---- */
+let asOf = MONTHS.length - 1;
+let fbasis = 12;
+const A = { newAwards: 6.0, contingency: 1.0, tax: 21.0, distribution: 40.0 };  // ratio levers
+const G = { rev: [{ f: 1, t: 60, r: 6.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.0 }] };
+let ovrInplace = {};   // key -> override value (annual $)
+
+function baseFrom(idx, win) {
+  const w = MONTHS.slice(Math.max(0, idx - win + 1), idx + 1);
+  const ann = 12 / w.length;
+  const S = f => w.reduce((a, m) => a + f(m), 0) * ann;
+  const b = { revenue: S(m => m.revenue) };
+  CK.forEach(k => b['c_' + k] = S(m => m.cost[k]));
+  OK.forEach(k => b['o_' + k] = S(m => m.oh[k]));
+  return b;
+}
+let base = baseFrom(asOf, fbasis);
+let inplace = Object.assign({}, base);
+
+const rateAt = (list, m) => { for (let i = 0; i < list.length; i++) if (m >= list[i].f && m <= list[i].t) return list[i].r; return list[list.length - 1].r; };
+let CUM = {};
+function buildCum() {
+  ['rev', 'cost', 'oh'].forEach(k => {
+    const arr = [1];
+    for (let m = 1; m <= 60; m++) arr[m] = arr[m - 1] * Math.pow(1 + (rateAt(G[k], m) || 0) / 100, 1 / 12);
+    CUM[k] = arr;
+  });
+}
+buildCum();
+
+function derive(b) {
+  const totCost = CK.reduce((s, k) => s + b['c_' + k], 0);
+  const gross = b.revenue - totCost;
+  const totOh = OK.reduce((s, k) => s + b['o_' + k], 0);
+  const conting = b.revenue * A.contingency / 100;
+  const ebitda = gross - totOh - conting;
+  const tax = Math.max(0, ebitda) * A.tax / 100;
+  const net = ebitda - tax;
+  const dist = Math.max(0, net) * A.distribution / 100;
+  return Object.assign({}, b, { totCost, gross, grossPct: b.revenue ? gross / b.revenue * 100 : 0, totOh, conting, ebitda, ebitdaPct: b.revenue ? ebitda / b.revenue * 100 : 0, tax, net, dist, retained: net - dist });
+}
+function yearCol(y) {
+  const out = { revenue: 0 };
+  CK.forEach(k => out['c_' + k] = 0); OK.forEach(k => out['o_' + k] = 0);
+  for (let m = (y - 1) * 12 + 1; m <= y * 12; m++) {
+    out.revenue += inplace.revenue / 12 * CUM.rev[m];
+    CK.forEach(k => out['c_' + k] += inplace['c_' + k] / 12 * CUM.cost[m]);
+    OK.forEach(k => out['o_' + k] += inplace['o_' + k] / 12 * CUM.oh[m]);
+  }
+  return derive(out);
+}
+function colData() {
+  return [derive(baseFrom(asOf, 3)), derive(baseFrom(asOf, 6)), derive(baseFrom(asOf, 12)),
+          derive(inplace), yearCol(1), yearCol(2), yearCol(3), yearCol(4), yearCol(5)];
+}
+
+const LINES = [
+  ['h', 'CONSTRUCTION REVENUE'],
+  ['revenue', 'Contract revenue (earned)', 0, 'revenue'],
+  ['h', 'COST OF CONSTRUCTION'],
+  ['c_subs', 'Subcontractors', 1, 'c_subs'], ['c_labor', 'Self-perform labor', 1, 'c_labor'],
+  ['c_mat', 'Materials', 1, 'c_mat'], ['c_equip', 'Equipment & small tools', 1, 'c_equip'],
+  ['totCost', 'Total cost of construction', 'sub', null, 0, 1],
+  ['gross', 'Gross profit', 'noi'], ['grossPct', 'Gross margin', 0, null, 'pct'],
+  ['h', 'DIVISION OVERHEAD'],
+  ['o_salaries', 'Office salaries & PM staff', 1, 'o_salaries'], ['o_office', 'Office & yard rent', 1, 'o_office'],
+  ['o_insurance', 'Insurance & bonding', 1, 'o_insurance'], ['o_it', 'Software & IT', 1, 'o_it'],
+  ['o_bd', 'Business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & vehicles', 1, 'o_vehicles'],
+  ['o_other', 'Other G&A', 1, 'o_other'],
+  ['totOh', 'Total overhead', 'sub', null, 0, 1],
+  ['conting', 'Contingency reserve', 1],
+  ['ebitda', 'Division EBITDA', 'noi'], ['ebitdaPct', 'EBITDA margin', 0, null, 'pct'],
+  ['h', 'BELOW THE LINE'],
+  ['tax', 'Income tax provision', 1], ['net', 'Net income', 'sub'],
+  ['dist', 'Distribution to parent', 'div'], ['retained', 'Retained for working capital'],
+];
+const COLS = ['T-3', 'T-6', 'T-12', 'In-Place', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
+const Mfmt = n => '$' + Math.round(n).toLocaleString();
+function cellFmt(v, neg, pct) {
+  if (pct) return (isFinite(v) ? v.toFixed(1) : '0.0') + '%';
+  return (neg && Math.round(v) !== 0) ? '<span class="dim">($' + Math.abs(Math.round(v)).toLocaleString() + ')</span>' : Mfmt(v);
+}
+
+const A_FIELDS = [['newAwards', 'New award growth', '%'], ['contingency', 'Contingency /rev', '%'], ['tax', 'Tax rate', '%'], ['distribution', 'Distribution payout', '%']];
+
+function monthOpts() {
+  return MONTHS.map((m, i) => `<option value="${i}" ${i === asOf ? 'selected' : ''}>${mLong(m.m)}</option>`).join('');
+}
+
+/* ---- backlog coverage (from live jobs data) ---- */
+const MJOBS = JOBS.map(x => ({ x, mm: jobMetrics(x) }));
+const backlogRemaining = MJOBS.reduce((s, { x, mm }) => s + mm.remaining, 0);
+
+function gsummary() {
+  const seg = list => list.map(t => 'mo ' + t.f + '-' + t.t + ': ' + t.r + '%').join(' · ');
+  return `<b style="color:var(--color-blue)">Growth schedule</b> — Revenue [${seg(G.rev)}] &nbsp; Construction cost [${seg(G.cost)}] &nbsp; Overhead [${seg(G.oh)}]`;
+}
+
+function render() {
+  const cd = colData();
+  const t12 = cd[2], y1 = cd[4];
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">CFO CONSOLE · DIVISION BUDGET</div>
+        <h1>Budgeting &amp; <em>Forecasting</em></h1>
+        <div class="sub">Trailing actuals seed an editable in-place run-rate; Years 1–5 compound it monthly on the growth schedule. Edit any In-Place line — everything downstream recalculates.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> DFW DIVISION</span>
+        <span class="demo-src">Backlog coverage <b>${fmtK(backlogRemaining)}</b> unearned</span>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">T-12 Revenue</div><div class="v">${fmtK(t12.revenue)}</div><div class="s">trailing run-rate</div></div>
+      <div class="ykpi green"><div class="l">T-12 Gross Margin</div><div class="v">${fmtPct(t12.grossPct)}</div><div class="s">${fmtK(t12.gross)} gross profit</div></div>
+      <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
+      <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
+      <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Forecast Approval — July 2026 Cycle</h2><span class="k">sequential sign-off · role-gated · switch role via account menu</span></div>
+      ${approvalChain('fc-division-2026-07', [
+        { role: 'analyst',    label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
+        { role: 'controller', label: 'Controller — Reviewed',               doneLabel: 'Controller Reviewed' },
+        { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
+      ])}
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Division P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from QuickBooks · engine proprietary</span></span></div>
+      <div class="fc-topbar" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
+        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">In-place as of</label>
+        <select id="fc-month" class="pa-btn" style="cursor:pointer">${monthOpts()}</select>
+        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">Forecast base</label>
+        <div class="sreo-modes" id="fc-basis"><button data-b="3" ${fbasis === 3 ? 'class="active"' : ''}>T-3</button><button data-b="6" ${fbasis === 6 ? 'class="active"' : ''}>T-6</button><button data-b="12" ${fbasis === 12 ? 'class="active"' : ''}>T-12</button></div>
+        <span class="ynote">Edit any In-Place cell — Years 1–5 compound it monthly per the growth schedule.</span>
+      </div>
+      <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-muted);margin:0 0 6px">Growth &amp; ratio levers</div>
+      <div class="fc-assumps" style="grid-template-columns:repeat(7,1fr)">
+        <div class="fc-assump"><label>Revenue growth /yr</label><div class="ip"><input data-g="rev" value="${G.rev[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Cost growth /yr</label><div class="ip"><input data-g="cost" value="${G.cost[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
+        <div class="fc-assump"><label>Overhead growth /yr</label><div class="ip"><input data-g="oh" value="${G.oh[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
+        ${A_FIELDS.map(f => `<div class="fc-assump"><label>${f[1]}</label><div class="ip"><input data-a="${f[0]}" value="${A[f[0]]}" inputmode="decimal"><span class="u">%</span></div></div>`).join('')}
+      </div>
+      <div id="fc-gsummary" style="font-size:11px;color:var(--color-slate-hint);margin:8px 0 12px;font-family:var(--font-mono)">${gsummary()}</div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="fc-tbl">
+          <thead><tr><th>Line item · $/yr</th>${COLS.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+          <tbody id="fc-body">${LINES.map(Lr => {
+            if (Lr[0] === 'h') return `<tr class="head"><td colspan="10">${Lr[1]}</td></tr>`;
+            const key = Lr[0], lab = Lr[1];
+            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
+            const neg = Lr[2] === 1 || Lr[5] === 1;
+            const editK = Lr[3], pct = Lr[4] === 'pct';
+            let cells = '';
+            for (let c = 0; c < 9; c++) {
+              if (editK && c === 3) cells += `<td class="fc-ipcol"><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
+              else cells += `<td${c === 3 ? ' class="fc-ipcol"' : ''}>${cellFmt(cd[c][key], neg, pct)}</td>`;
+            }
+            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
+          }).join('')}</tbody>
+        </table>
+      </div>
+      <div class="fc-inplace-note">The <b>In-Place</b> column is the division's current annual run-rate (seeded from the trailing window you pick, storm-surge months included). Years 1–5 compound each In-Place line monthly at the growth schedule — the same engine as the asset-level proforma.</div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Revenue &amp; EBITDA — 5-Year Path</h2><span class="k">annual</span></div>
+        <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Backlog Coverage vs Year-1 Revenue</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">production from ServiceTitan job register</span></span></div>
+        <div class="demo-chart" style="height:260px"><canvas id="ch-backlog"></canvas></div>
+        <div class="ynote" style="margin-top:10px">Unearned backlog ${fmtK(backlogRemaining)} covers ${fmtPct(backlogRemaining / Math.max(1, y1.revenue) * 100, 0)} of the Year-1 revenue forecast — remainder must come from new awards (lever: ${A.newAwards}%/yr growth).</div>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Job-Level Contribution — Current Book</h2><span class="k">projected margin at completion</span></div>
+      <table class="demo-tbl">
+        <thead><tr><th>Job</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Unearned Backlog</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Margin %</th></tr></thead>
+        <tbody>${MJOBS.map(({ x, mm }) => `
+          <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${x.id}#forecast'">
+            <td><b>${x.id}</b> · ${esc(x.name.split('—')[0].trim())}</td>
+            <td>${statusPill(x.status)}</td>
+            <td style="text-align:right">${fmt$(x.contract)}</td>
+            <td style="text-align:right">${fmt$(mm.remaining)}</td>
+            <td style="text-align:right">${fmt$(mm.projMargin)}</td>
+            <td style="text-align:right">${fmtPct(mm.projMarginPct)}</td>
+          </tr>`).join('')}
+          <tr style="font-weight:800;background:var(--color-bg-3)">
+            <td colspan="2">Total</td>
+            <td style="text-align:right">${fmt$(MJOBS.reduce((s, { x }) => s + x.contract, 0))}</td>
+            <td style="text-align:right">${fmt$(backlogRemaining)}</td>
+            <td style="text-align:right">${fmt$(MJOBS.reduce((s, { mm }) => s + mm.projMargin, 0))}</td><td></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="demo-note">Demo environment · fictional data · engine parity with the Blackwater asset forecast</div>`;
+
+  wire();
+  drawCharts(cd);
+}
+
+function wire() {
+  $('#fc-month').addEventListener('change', e => { asOf = +e.target.value; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); });
+  $$('#fc-basis button').forEach(b => b.addEventListener('click', () => { fbasis = +b.dataset.b; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); }));
+  $$('input[data-g]').forEach(inp => inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value); if (!isNaN(v)) G[inp.dataset.g] = [{ f: 1, t: 60, r: v }];
+    buildCum(); render();
+  }));
+  $$('input[data-a]').forEach(inp => inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value); if (!isNaN(v)) A[inp.dataset.a] = v;
+    render();
+  }));
+  $$('input[data-base]').forEach(inp => inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value.replace(/[,$]/g, ''));
+    if (!isNaN(v)) inplace[inp.dataset.base] = v;
+    render();
+  }));
+}
+
+function drawCharts(cd) {
+  if (!window.Chart) return;
+  const css = getComputedStyle(document.documentElement);
+  const cBlue = css.getPropertyValue('--color-blue').trim();
+  const years = ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
+  new Chart($('#ch-path'), {
+    data: {
+      labels: years,
+      datasets: [
+        { type: 'bar', label: 'Revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(0,92,151,0.30)', yAxisID: 'y' },
+        { type: 'line', label: 'EBITDA', data: cd.slice(4).map(c => c.ebitda / 1e6), borderColor: cBlue, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+      ],
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+      scales: { y: { ticks: { callback: v => '$' + v.toFixed(0) + 'M', font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
+  });
+  new Chart($('#ch-backlog'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Unearned backlog', 'New awards required'],
+      datasets: [{ data: [backlogRemaining, Math.max(0, cd[4].revenue - backlogRemaining)], backgroundColor: [cBlue, 'rgba(198,151,17,0.55)'], borderWidth: 0 }],
+    },
+    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+  });
+}
+
+render();
+}
+</script>
+</body>
+</html>

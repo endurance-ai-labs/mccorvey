@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIA Billing — Yates Construction</title>
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'AIA Billing' });
+if (!YatesMode.isInternal()) {
+  $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
+    <div class="ynote">The billing register is internal. Switch to <b>Internal</b> mode (top right) to open it.</div></div>`;
+} else {
+  const APPS = JOBS.flatMap(j => j.payApps.map(p => ({ j, p })));
+  APPS.sort((a, b) => b.p.period.localeCompare(a.p.period));
+  const tot = APPS.reduce((s, x) => s + x.p.certified, 0);
+  const paid = APPS.filter(x => x.p.status === 'Paid').reduce((s, x) => s + x.p.certified, 0);
+  const open = tot - paid;
+  const retHeld = JOBS.reduce((s, j) => {
+    const m = jobMetrics(j);
+    return s + (j.payApps.some(p => p.num.includes('RET')) ? 0 : m.earned * j.retainagePct / 100);
+  }, 0);
+
+  const rows = APPS.map(({ j, p }) => `
+    <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}#billing'">
+      <td><b>${p.num}</b></td>
+      <td>${j.id} · ${esc(j.name.split('—')[0].trim())}</td>
+      <td>${esc(p.label)}</td>
+      <td>${fmtDate(p.period)}</td>
+      <td style="text-align:right">${fmt$2(p.certified)}</td>
+      <td>${payPill(p.status)}</td>
+    </tr>`).join('');
+
+  const aging = [
+    ['Current', paid, 'var(--color-green)'],
+    ['Submitted', APPS.filter(x => x.p.status === 'Submitted').reduce((s, x) => s + x.p.certified, 0), 'var(--color-blue)'],
+    ['Pending Owner', APPS.filter(x => x.p.status === 'Pending Owner').reduce((s, x) => s + x.p.certified, 0), 'var(--color-amber)'],
+    ['Draft', APPS.filter(x => x.p.status === 'Draft').reduce((s, x) => s + x.p.certified, 0), 'var(--color-slate-hint)'],
+  ];
+  const maxA = Math.max(...aging.map(a => a[1]), 1);
+
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">FINANCIAL · BILLING REGISTER</div>
+        <h1>AIA <em>Billing</em></h1>
+        <div class="sub">Every G702/G703 application across the division — status, aging and retention in one register.</div>
+      </div>
+      <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${APPS.length} APPLICATIONS</span></div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Total Certified</div><div class="v">${fmtK(tot)}</div><div class="s">across ${JOBS.length} jobs</div></div>
+      <div class="ykpi green"><div class="l">Collected</div><div class="v">${fmtK(paid)}</div><div class="s">${fmtPct(paid / tot * 100, 0)} of certified</div></div>
+      <div class="ykpi amber"><div class="l">Open Receivable</div><div class="v">${fmtK(open)}</div><div class="s">submitted + pending + draft</div></div>
+      <div class="ykpi red"><div class="l">Retention Held by Owners</div><div class="v">${fmtK(retHeld)}</div><div class="s">releases at final completion</div></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>July 2026 Billing Close</h2><span class="k">month-end close control · role-gated</span></div>
+      ${approvalChain('close-2026-07', [
+        { role: 'analyst',    label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Reconciled' },
+        { role: 'controller', label: 'Controller — Close Billing Period',   doneLabel: 'Controller Closed' },
+        { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
+      ])}
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Receivable Status</h2><span style="display:flex;gap:6px">${srcChip('qb')}</span></div>
+        <div class="demo-aging">${aging.map(a => `
+          <div class="demo-aging-row">
+            <div class="lab">${a[0]}</div>
+            <div class="bar"><i style="width:${a[1] / maxA * 100}%;background:${a[2]}"></i></div>
+            <div class="amt">${fmtK(a[1])}</div>
+          </div>`).join('')}</div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Retention by Job</h2><span class="k">held until final</span></div>
+        <table class="demo-tbl"><thead><tr><th>Job</th><th style="text-align:right">Rate</th><th style="text-align:right">Held</th></tr></thead>
+        <tbody>${JOBS.map(j => {
+          const m = jobMetrics(j);
+          const held = j.payApps.some(p => p.num.includes('RET')) ? 0 : m.earned * j.retainagePct / 100;
+          return `<tr><td>${j.id} · ${esc(j.name.split('—')[0].trim())}</td><td style="text-align:right">${j.retainagePct}%</td><td style="text-align:right">${held ? fmt$2(held) : '<span class="demo-chip ok">RELEASED</span>'}</td></tr>`;
+        }).join('')}</tbody></table>
+      </div>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Application Register</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">synced from QuickBooks · click a row for the job's G702</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th>App #</th><th>Job</th><th>Description</th><th>Period To</th><th style="text-align:right">Certified</th><th>Status</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+    <div class="demo-note">Demo environment · fictional data</div>`;
+}
+</script>
+</body>
+</html>
