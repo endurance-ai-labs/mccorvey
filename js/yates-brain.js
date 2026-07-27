@@ -54,7 +54,7 @@
   var panel = document.createElement('div');
   panel.className = 'bw-panel';
   panel.innerHTML =
-    '<div class="bw-head"><div class="t"><span class="dot"></span>Yates Construction — Operating Brain</div>' +
+    '<div class="bw-head"><div class="t"><span class="dot"></span>Y8S — Operating Brain</div>' +
       '<div class="s">Every job, pay app and crew — synthesized live</div></div>' +
     '<div class="bw-disc">⚠ Demo assistant. Responses are illustrative and <b>entirely fictional</b> — not factual, not advice, and should not be relied upon.</div>' +
     '<div class="bw-body" id="bw-body"></div>' +
@@ -84,7 +84,7 @@
     var e = document.createElement('div'); e.className = 'bw-empty';
     e.innerHTML = 'I\'m the Yates Operating Brain — I watch every job, pay application, cost ledger and schedule in real time. Ask me anything about the book of work.' +
       '<div class="bw-sugg">' +
-      ['Which jobs need attention?', 'How is billing tracking?', 'Where is margin trending?', 'Status of the Villas job?']
+      ['Which jobs need attention?', 'How is billing tracking?', 'Where is margin trending?', 'Status of the Central Texas ISD job?']
         .map(function (q) { return '<button>' + q + '</button>'; }).join('') + '</div>';
     body.appendChild(e);
     e.querySelectorAll('button').forEach(function (b) { b.addEventListener('click', function () { ask(b.textContent); }); });
@@ -147,19 +147,19 @@
 
     if (/retention|retainage/.test(s)) {
       var ret = all.reduce(function (a, x) { return a + (x.j.payApps.some(function (p) { return p.num.indexOf('RET') !== -1; }) ? 0 : x.m.earned * x.j.retainagePct / 100); }, 0);
-      return 'Owners are currently holding about <b>' + moneyK(ret) + '</b> of retention across the book (5–10% by contract). The Lakeview Villas retention released with final completion — the rest releases at each job\'s closeout.';
+      return 'Owners are currently holding about <b>' + moneyK(ret) + '</b> of retention across the book (5–10% by contract). The Central Texas ISD retention released with final completion — the rest releases at each job\'s closeout.';
     }
 
     if (/schedule|late|delay|finish|complete|when/.test(s)) {
       var act = all.filter(function (x) { return x.m.pct < 100; });
-      return act.map(function (x) { return jobLabel(x.j) + ' — ' + pct(x.m.pct) + ' complete, target finish ' + x.j.finish; }).join('. ') + '. No critical-path slips flagged this week; weather risk is the main variable on the roofing scopes.';
+      return act.map(function (x) { return jobLabel(x.j) + ' — ' + pct(x.m.pct) + ' complete, target finish ' + x.j.finish; }).join('. ') + '. No critical-path slips flagged this week; campus shutdown windows are the main schedule variable on the retrofit scopes.';
     }
 
     if (/safety|incident|osha/.test(s))
-      return 'The DFW division is at <b>412 consecutive days without a lost-time incident</b>. All active jobs ran daily toolbox talks this week; two near-miss reports were logged and closed at Harbor Point (fall-protection anchor relocation).';
+      return 'The DFW division is at <b>412 consecutive days without a lost-time incident</b>. All active jobs ran daily toolbox talks this week; two near-miss reports were logged and closed at Harbor Point (lift-safety anchor relocation).';
 
     if (/crew|labor|sub|workforce/.test(s))
-      return 'Crew utilization is running ~87%. Caldwell Roofing Group leads roofing on three jobs; self-perform crews carry Harbor Point. No labor shortfalls flagged for the next 30-day look-ahead.';
+      return 'Crew utilization is running ~87%. Self-perform controls crews carry three of four jobs; Alamo Electrical and Hill Country Mechanical round out the field. No labor shortfalls flagged for the next 30-day look-ahead.';
 
     if (/best|top|strong|winner|outperform/.test(s)) {
       var t = all.slice().sort(function (a, b) { return b.m.marginToDate - a.m.marginToDate; })[0];

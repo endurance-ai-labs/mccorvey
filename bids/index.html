@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bid Builder — Yates Construction</title>
+<title>Bid Builder — Y8S Operations Portal</title>
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
@@ -18,15 +18,15 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'Preconstruction' });
-const internal = YatesMode.isInternal();
+const internal = YatesMode.isInternal() && can('bids');
 
 /* live working copy — resets on reload */
 const BID = JSON.parse(JSON.stringify(BID_DEFAULTS));
 const APPR_KEY = 'bid-' + BID.meta.bidNumber;
 const APPR_STEPS = [
-  { role: 'analyst',  label: 'Analyst Approved — Ready for Review', doneLabel: 'Analyst Approved' },
-  { role: 'chiefest', label: 'Chief Estimator — Approve Estimate',  doneLabel: 'Chief Estimator Approved' },
-  { role: 'divmgr',   label: 'Division Manager — Authorize Submission', doneLabel: 'Authorized for Submission' },
+  { role: 'est',   label: 'Estimating — Prepared, Ready for Review', doneLabel: 'Estimate Prepared' },
+  { role: 'eng',   label: 'Engineering — Technical Review',           doneLabel: 'Engineering Reviewed' },
+  { role: 'owner', label: 'Owner — Authorize Submission',             doneLabel: 'Authorized by Owner' },
 ];
 
 function lineCalc(l) {
@@ -188,7 +188,7 @@ function viewInternal() {
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Estimate Detail — CSI Trade Lines</h2><span style="display:flex;gap:6px">${srcChip('prop')}<span class="k">unit costs from Yates historical cost database</span></span></div>
+      <div class="demo-panel-head"><h2>Estimate Detail — CSI Trade Lines</h2><span style="display:flex;gap:6px">${srcChip('prop')}<span class="k">unit costs from Y8S historical cost database</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>CSI</th><th>Trade</th><th>Scope Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th style="text-align:right">Direct Cost</th><th style="text-align:right">OH</th><th style="text-align:right">Profit</th><th style="text-align:right">Sell</th><th>Subcontractor</th><th>Start +d</th><th>Dur (d)</th><th></th></tr></thead>
@@ -255,7 +255,7 @@ function viewExternal() {
     <div class="ydoc" style="position:relative">
       ${authorized ? '' : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5"><span style="font-size:110px;font-weight:800;letter-spacing:0.2em;color:rgba(198,151,17,0.13);transform:rotate(-24deg)">DRAFT</span></div>`}
       <div class="ydoc-head">
-        <div><div class="word">YATES<span>.</span></div><div class="sub">Construction</div><div class="tag">We Make It Possible</div></div>
+        <div><img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo"><div class="sub" style="margin-top:8px">YATES Company, LLC · Building Automation &amp; Energy Solutions</div></div>
         <div class="right"><b>Proposal ${esc(BID.meta.bidNumber)}</b><br>Date: ${fmtDate(todayISO())}<br>Valid: ${BID.meta.validDays} days<br>${YATES.license} · Bonded &amp; insured</div>
       </div>
       <div class="big-title">${esc(BID.meta.project)}</div>
@@ -303,7 +303,7 @@ function viewExternal() {
       <ul>${BID.terms.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
 
       ${authorized ? `<h3 class="sect">Authorization</h3>
-      <p>This proposal was prepared and released under Yates Construction's estimate control procedure:
+      <p>This proposal was prepared and released under YATES Company's estimate control procedure:
       ${st.map((x, i) => `<b>${esc(APPR_STEPS[i].doneLabel)}</b> — ${esc(x.by)}, ${esc(x.at)}`).join(' · ')}.</p>` : ''}
 
       <h3 class="sect">Acceptance</h3>
@@ -312,7 +312,7 @@ function viewExternal() {
         <div class="sig">${esc(BID.meta.owner)} — Owner / Authorized Agent</div>
         <div class="sig">${YATES.company} — ${esc(BID.meta.pm)}, Project Manager</div>
       </div>
-      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.legal} · ${YATES.hq} · ${YATES.office} · ${YATES.phone} · ${YATES.enr}</p>
+      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
 }

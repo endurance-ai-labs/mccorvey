@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Yates Construction — Operations Portal</title>
+<title>Y8S — YATES Company Operations Portal</title>
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
@@ -22,7 +22,7 @@
 <script>
 YatesNav.renderTopbar({ subtitle: 'Operations Portal' });
 const app = $('#app');
-const internal = YatesMode.isInternal();
+const internal = YatesMode.isInternal() && can('margins');
 
 const M = JOBS.map(j => ({ j, m: jobMetrics(j) }));
 const tot = f => M.reduce((s, x) => s + f(x), 0);
@@ -59,7 +59,7 @@ if (internal) {
       <div>
         <div class="demo-eyebrow">EXECUTIVE VIEW · ALL JOBS</div>
         <h1>The whole operation.<br><em>One picture.</em></h1>
-        <div class="sub">Every contract, pay application, cost ledger and crew — live across the Dallas–Fort Worth division. Individual job drill-downs one click away.</div>
+        <div class="sub">One source of truth: QuickBooks financials, ServiceTitan field data, job costing and forecasting — no more exports, imports or spreadsheet rebuilds. Individual job drill-downs one click away.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> LIVE · SYNCED ${fmtDate(todayISO()).toUpperCase()}</span>
@@ -108,7 +108,7 @@ if (internal) {
       <div class="demo-panel-head"><h2>Watch Items</h2><span class="k">auto-flagged</span></div>
       <ul style="font-size:13px;line-height:1.9;color:var(--color-cloud-whisper);padding-left:20px">${watch}</ul>
     </div>
-    <div class="demo-note">Yates Construction Operations Portal — demo environment, fictional data · framework parity with the Blackwater operating console</div>`;
+    <div class="demo-note">Y8S Operations Portal — demo environment, fictional data · concept build by Endurance AI Labs</div>`;
 
   /* charts */
   const labels = JOBS.map(j => j.id);
@@ -160,12 +160,12 @@ if (internal) {
       <div>
         <div class="demo-eyebrow">CLIENT PORTAL</div>
         <h1>Your projects,<br><em>fully transparent.</em></h1>
-        <div class="sub">Live progress, schedules, photo documentation and owner reports for every project Yates Construction is building for you.</div>
+        <div class="sub">Live progress, schedules, photo documentation and owner reports for every controls project YATES Company is delivering for you.</div>
       </div>
       <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> LIVE</span></div>
     </div>
     <div class="demo-props" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${cards}</div>
-    <div class="demo-note">Yates Construction · We Make It Possible — demo environment, fictional data</div>`;
+    <div class="demo-note">YATES Company, LLC · Building Automation Systems Nurtured by Experience — demo environment, fictional data</div>`;
 }
 </script>
 </body>
