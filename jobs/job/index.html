@@ -50,9 +50,9 @@ const FAC = {};   // idx -> forecast-at-completion cost override
 j.sov.forEach((r, i) => { FAC[i] = r.pct > 0 ? Math.round(r.costToDate / (r.pct / 100)) : r.budget; if (r.pct >= 100) FAC[i] = r.costToDate; });
 
 const SECTIONS = showFin
-  ? [['overview','Overview'],['forecast','Budget & Forecast'],['billing','Billing'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
+  ? [['overview','Overview'],['engineering','Engineering'],['forecast','Budget & Forecast'],['billing','Billing'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
   : internal
-    ? [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
+    ? [['overview','Overview'],['engineering','Engineering'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']]
     : [['overview','Overview'],['schedule','Schedule'],['photos','Photos'],['reports','Reports']];
 
 function activeSection() {
@@ -85,6 +85,7 @@ function render() {
 
   const body = $('#section-body');
   if (act === 'overview') body.innerHTML = secOverview(m);
+  else if (act === 'engineering') body.innerHTML = secEngineering();
   else if (act === 'forecast') { body.innerHTML = secForecast(m); wireForecast(); }
   else if (act === 'billing') body.innerHTML = secBilling(m);
   else if (act === 'schedule') body.innerHTML = secSchedule(m);
@@ -191,6 +192,72 @@ function drawCurve(m) {
 function updPct(i, v) {
   j.sov[i].pct = Math.max(0, Math.min(100, parseFloat(v) || 0));
   render();
+}
+
+
+/* ============ ENGINEERING & SUBMITTALS ============ */
+function secEngineering() {
+  const E = j.eng || { design: [], submittals: [], rfis: [], equipment: [], servicePkg: null };
+  const subPill = (st) => {
+    const map = { Approved: 'green', 'Approved as Noted': 'green', 'Under Review': 'blue', Submitted: 'blue', 'RFI Open': 'amber', Preparing: 'gray', 'Not Started': 'gray' };
+    return `<span class="ypill ${map[st] || 'gray'}">${st}</span>`;
+  };
+  const totalPts = E.equipment.reduce((a, e) => a + e.points, 0);
+  const doneSteps = E.design.filter(d => d.done).length;
+
+  return `
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Design Process</div><div class="v">${doneSteps} / 6</div><div class="s">Y8S standard engineering workflow</div></div>
+      <div class="ykpi"><div class="l">Submittal Drawings</div><div class="v">${E.submittals.filter(x => x.status.startsWith('Approved')).length} / ${E.submittals.length}</div><div class="s">approved</div></div>
+      <div class="ykpi amber"><div class="l">Open RFIs</div><div class="v">${E.rfis.filter(x => x.status === 'Open').length}</div><div class="s">${E.rfis.length} issued total</div></div>
+      <div class="ykpi green"><div class="l">Controlled Points</div><div class="v">${totalPts.toLocaleString()}</div><div class="s">${E.equipment.reduce((a, e) => a + e.qty, 0)} pieces of equipment</div></div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Design Process</h2><span class="k">y8sco.com standard — sales to engineering to client</span></div>
+        <ol style="padding-left:6px;list-style:none;font-size:12.5px;line-height:1.5">
+          ${E.design.map((d, i) => `<li style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid var(--color-border-soft)">
+            <span style="flex-shrink:0;width:22px;height:22px;border-radius:99px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;${d.done ? 'background:var(--color-green);color:#fff' : 'border:2px dashed var(--color-border);color:var(--color-text-muted)'}">${d.done ? '✓' : i + 1}</span>
+            <span style="color:${d.done ? 'var(--color-cloud-whisper)' : 'var(--color-text-muted)'}">${esc(d.step)}</span>
+          </li>`).join('')}
+        </ol>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>RFI Log</h2><span class="k">step 4 of the design process</span></div>
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th style="width:64px">RFI #</th><th>Subject</th><th style="width:100px">Issued</th><th style="width:96px">Status</th></tr></thead>
+          <tbody>${E.rfis.map(r => `<tr><td><b>${r.num}</b></td><td>${esc(r.subject)}</td><td>${fmtDateShort(r.issued)}</td><td><span class="ypill ${r.status === 'Open' ? 'amber' : 'green'}">${r.status}</span></td></tr>`).join('') || '<tr><td colspan="4" class="ynote">No RFIs on this project.</td></tr>'}</tbody>
+        </table>
+        ${E.servicePkg ? `
+        <div class="demo-panel-head" style="margin-top:20px"><h2>Service Agreement</h2><span class="k">post-construction support</span></div>
+        <div style="font-size:12.5px;line-height:1.8;color:var(--color-cloud-whisper)">
+          <span class="ypill ${E.servicePkg.status === 'Active' ? 'green' : 'blue'}">${E.servicePkg.status}</span>
+          <b style="margin-left:8px">${E.servicePkg.tier} Package</b>
+          <div class="ynote" style="margin-top:6px">${SERVICE_TIERS[E.servicePkg.tier].join(' · ')}</div>
+        </div>` : `
+        <div class="demo-panel-head" style="margin-top:20px"><h2>Service Agreement</h2></div>
+        <div class="ynote">Service package proposal issues at substantial completion — Annual, Quarterly, Monthly or Custom tiers.</div>`}
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Submittal Package — Drawing Register</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('prop')}<span class="k">standard Y8S submittal structure</span></span></div>
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th style="width:80px">Drawing</th><th>Drawing Name</th><th style="width:52px">Rev</th><th style="width:110px">Issued</th><th style="width:150px">Status</th></tr></thead>
+        <tbody>${E.submittals.map(x => `<tr><td><b>${x.no}</b></td><td>${esc(x.name)}</td><td>${x.rev}</td><td>${fmtDateShort(x.date)}</td><td>${subPill(x.status)}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Equipment & Points Schedule</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">controlled equipment inventory</span></span></div>
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th style="width:70px">Tag</th><th>Equipment</th><th style="text-align:right;width:60px">Qty</th><th style="width:160px">Controller</th><th style="text-align:right;width:90px">Pts / Unit</th><th style="text-align:right;width:100px">Total Points</th></tr></thead>
+        <tbody>${E.equipment.map(e => `<tr><td><b>${e.tag}</b></td><td>${esc(e.desc)}</td><td style="text-align:right">${e.qty}</td><td>${esc(e.controller)}</td><td style="text-align:right">${e.ptsEach}</td><td style="text-align:right">${e.points.toLocaleString()}</td></tr>`).join('')}
+          <tr style="font-weight:800;background:var(--color-bg-3)"><td colspan="2">Total</td><td style="text-align:right">${E.equipment.reduce((a, e) => a + e.qty, 0)}</td><td></td><td></td><td style="text-align:right">${totalPts.toLocaleString()}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
 }
 
 /* ============ BUDGET & FORECAST (internal) ============ */

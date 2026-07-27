@@ -12,15 +12,15 @@ const YATES = {
   tagline: "Building Automation Systems Nurtured by Experience",
   mission: "Aggressively challenging the present in order to create the best future.",
   est: "Established 2011",
-  hq: "San Marcos, Texas",
-  address: "San Marcos, TX",
+  hq: "San Antonio, Texas",
+  address: "4738 Whirlwind Dr, San Antonio, TX 78217",
   phone: "(210) 702-3820",
   email: "contact@y8sco.com",
   award: "Best Place to Work in San Marcos, TX 2026",
   lines: "Carrier i-Vu · Innotech · Lynxspring",
   /* compat fields used by document footers */
   legal: "YATES Company, LLC",
-  office: "San Marcos, Texas",
+  office: "4738 Whirlwind Dr, San Antonio, TX 78217",
   license: "TX TACLA #26155E (demo)",
   enr: "Best Place to Work — San Marcos, TX 2026",
 };
@@ -296,6 +296,7 @@ const BID_DEFAULTS = {
     { id: "ALT-1", desc: "District-wide analytics & fault-detection (FDD) layer", amount: 38500.00, included: false },
     { id: "ALT-2", desc: "Gym & kitchen ventilation controls (2 campuses)", amount: 12800.00, included: false },
     { id: "ALT-3", desc: "Deduct — owner-furnished network switches", amount: -6200.00, included: false },
+    { id: "ALT-4", desc: "First-year service agreement — Quarterly package (plant & terminal reviews, remote support)", amount: 14800.00, included: false },
   ],
   allowances: [
     { desc: "Concealed-condition mechanical allowance (carried in base, SOV 1007)", amount: 47400.00 },
@@ -568,3 +569,121 @@ const TRADE_CATALOG = [
 window.CSI_OPTIONS = CSI_OPTIONS;
 window.UNITS = UNITS;
 window.TRADE_CATALOG = TRADE_CATALOG;
+
+
+/* =========================================================
+   ENGINEERING LAYER — design process, submittal register,
+   RFIs, equipment schedule and service agreements. Mirrors
+   the real Y8S engineering workflow (y8sco.com design process,
+   submittal package structure, service package tiers).
+   ========================================================= */
+const DESIGN_PROCESS = [
+  "Internal sales-to-engineering team turnover discussion",
+  "Engineer reviews sales and project documentation",
+  "Request equipment submittals, AutoCAD files, existing site information",
+  "Submit RFI addressing any discrepancies or concerns",
+  "Thorough internal engineering review",
+  "Provide completed design product to client",
+];
+const SERVICE_TIERS = {
+  Annual: ["Database Management", "Basic Operator Training", "Remote Technical Support"],
+  Quarterly: ["Database Management", "Basic Operator Training", "Remote Technical Support", "Central Plant Functional Review", "Maintenance Efficiency Strategies", "Terminal Unit Functional Review"],
+  Monthly: ["Database Management", "Basic Operator Training", "Remote Technical Support", "Central Plant Functional Review", "Maintenance Efficiency Strategies", "Terminal Unit Functional Review", "Central Plant Optimization", "Input/Output Evaluation"],
+  Custom: ["Personalized task list and visit schedule built from any combination of services"],
+};
+window.DESIGN_PROCESS = DESIGN_PROCESS;
+window.SERVICE_TIERS = SERVICE_TIERS;
+
+(function () {
+  const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973; return h; };
+  const addD = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+
+  const SUB_T = [
+    ["TOC.1", "Table of Contents"],
+    ["SYM.1", "Symbols & Tag Descriptions"],
+    ["WIRE.1", "Wiring Instructions (MS/TP · ARC156 · Modbus RTU)"],
+    ["BOM.1", "Summary Bill of Materials"],
+    ["VLV.1", "Valve & Damper Schedule"],
+    ["NET.1", "Network Riser"],
+    ["NET.2", "Network Schedule"],
+    ["SEQ.1", "Air-Side Flow, Module Diagrams & Sequences of Operation"],
+    ["SEQ.2", "Plant / Terminal Unit Sequences of Operation"],
+    ["GFX.1", "Graphics Mockups & Dashboard Standards"],
+  ];
+  const RFI_SUBJECTS = [
+    "Existing transformer sizing at VAV controllers conflicts with drawing E-401",
+    "Chilled water differential-pressure sensor location vs. mechanical riser",
+    "Ceiling access above corridor 214 blocked — request alternate pathway",
+    "Economizer damper actuator torque exceeds spec at AHU-3",
+    "BAS VLAN uplink port assignment pending owner IT confirmation",
+    "Existing pneumatic tubing abandonment scope at mechanical room B",
+  ];
+
+  JOBS.forEach((j) => {
+    const h = hash(j.id);
+    const m = j.sov.reduce((a, r) => a + r.scheduled * r.pct / 100, 0);
+    const pct = j.contract ? m / j.contract * 100 : 0;
+
+    /* design process: steps complete scale with progress; awarded jobs are mid-turnover */
+    const doneSteps = pct >= 15 ? 6 : pct > 0 ? 4 + (h % 2) : (j.status === "Awarded" ? 1 + (h % 2) : 6);
+    const design = DESIGN_PROCESS.map((step, i) => ({ step, done: i < doneSteps }));
+
+    /* submittal register */
+    const submittals = SUB_T.map((t, i) => {
+      let status, rev = "0";
+      if (pct >= 25) { status = (i === 9 && h % 2) ? "Approved as Noted" : "Approved"; rev = (h + i) % 3 ? "1" : "0"; }
+      else if (pct > 5) { status = ["Under Review", "Submitted", "Approved", "RFI Open"][(h + i) % 4]; }
+      else if (pct > 0) { status = i < 4 ? "Submitted" : "Preparing"; }
+      else { status = i < 2 ? "Preparing" : "Not Started"; }
+      return { no: t[0], name: t[1], rev, status, date: addD(j.start, 7 + i * 2) };
+    });
+
+    /* RFIs */
+    const rfis = [];
+    if (pct > 0 && pct < 90 && h % 3 !== 1) {
+      const n = 1 + (h % 2);
+      for (let i = 0; i < n; i++) {
+        rfis.push({
+          num: "RFI-0" + (i + 1),
+          subject: RFI_SUBJECTS[(h + i * 2) % RFI_SUBJECTS.length],
+          issued: addD(j.start, 10 + i * 9),
+          status: (h + i) % 2 ? "Answered" : "Open",
+        });
+      }
+    }
+
+    /* equipment & points schedule (scaled to contract) */
+    const scale = Math.max(1, Math.round(j.contract / 250000));
+    const line = (j.sector.match(/\(([^)]+)\)/) || [null, "i-Vu"])[1].replace("Carrier ", "");
+    const eq = [];
+    const sec = j.sector.toLowerCase();
+    if (sec.includes("k-12") || sec.includes("higher ed") || sec.includes("municipal") || sec.includes("retail") || sec.includes("hospitality") || sec.includes("commercial") || sec.includes("front-end")) {
+      eq.push(["RTU", "Packaged rooftop units", 4 * scale, 12]);
+      eq.push(["EF", "Exhaust fans", 3 * scale, 3]);
+      if (j.contract > 300000) eq.push(["CH/B", "Chiller & boiler plant", 1, 64]);
+      eq.push(["VAV", "VAV terminal units", 8 * scale, 9]);
+    } else if (sec.includes("health")) {
+      eq.push(["AHU", "Air handling units", 2 * scale, 38]);
+      eq.push(["VAV", "VAV terminal units w/ reheat", 10 * scale, 11]);
+      eq.push(["CH", "Chilled water plant", 1, 72]);
+      eq.push(["ISO", "Isolation / pressure-monitored rooms", 2 * scale, 6]);
+    } else if (sec.includes("industrial") || sec.includes("mission critical") || sec.includes("refrigeration") || sec.includes("ems")) {
+      eq.push(["RTU", "Packaged rooftop units", 5 * scale, 12]);
+      eq.push(["HVLS", "HVLS fans & warehouse ventilation", 3 * scale, 4]);
+      eq.push(["MTR", "Utility meters & submeters", 2 * scale, 8]);
+      if (sec.includes("mission critical")) eq.push(["CRAC", "CRAC/CRAH units", 4, 22]);
+      if (sec.includes("refrigeration")) eq.push(["RCK", "Refrigeration racks & cases", 3, 18]);
+    } else {
+      eq.push(["AHU", "Air handling units", 2 * scale, 32]);
+      eq.push(["VAV", "VAV terminal units", 6 * scale, 9]);
+    }
+    const equipment = eq.map((e) => ({ tag: e[0], desc: e[1], qty: e[2], ptsEach: e[3], controller: line + " DDC", points: e[2] * e[3] }));
+
+    /* service agreement (their real tiers) */
+    const tiers = ["Annual", "Quarterly", "Monthly", "Custom"];
+    const tier = tiers[h % 4];
+    const servicePkg = pct >= 100 ? { tier, status: "Active" } : pct > 40 ? { tier, status: "Proposed" } : null;
+
+    j.eng = { design, submittals, rfis, equipment, servicePkg };
+  });
+})();
