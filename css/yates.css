@@ -317,3 +317,12 @@ table.wb input.wb-in:hover, table.wb input.wb-in:focus { border-color: var(--col
 .wb-scroll td:first-child, .wb-scroll th:first-child { position: sticky; left: 0; background: var(--color-bg-2); z-index: 1; }
 .wb-scroll th:first-child { background: var(--color-navy); z-index: 3; }
 .wb-link { color: var(--color-blue); font-weight: 700; text-decoration: none; }
+
+/* ---- workbook cross-tab tie chips ---- */
+.wb-ties { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.wb-tie {
+  display: inline-flex; align-items: center; font-size: 10.5px; font-weight: 700;
+  padding: 4px 10px; border-radius: 999px; text-decoration: none;
+  color: var(--color-green); background: rgba(47,158,110,0.10); border: 1px solid rgba(47,158,110,0.35);
+}
+.wb-tie:hover { background: rgba(47,158,110,0.18); }
