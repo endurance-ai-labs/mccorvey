@@ -49,12 +49,14 @@
 
   var fab = document.createElement('button');
   fab.className = 'bw-fab'; fab.title = 'Open the Yates Operating Brain'; fab.setAttribute('aria-label', 'Open the Yates Operating Brain');
-  fab.innerHTML = '<span class="bw-dot"></span><span class="bw-lbl">BRAIN</span>';
+  fab.innerHTML = '<img src="/yates/assets/brand/y8s-logo-white.png" alt="Y8S" style="height:22px;width:auto;display:block">' +
+    '<svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#e8b23a\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9.5 2.5a2.6 2.6 0 0 0-2.6 2.6c-1.4.2-2.5 1.3-2.5 2.8 0 .5.1 1 .4 1.4A3 3 0 0 0 3 12c0 1 .5 1.9 1.2 2.4-.2.4-.3.9-.3 1.4a2.9 2.9 0 0 0 2.9 2.9c.2 1.3 1.3 2.3 2.7 2.3 1.1 0 2-.6 2.5-1.5V4.3a2.6 2.6 0 0 0-2.5-1.8Z\"/><path d=\"M14.5 2.5a2.6 2.6 0 0 1 2.6 2.6c1.4.2 2.5 1.3 2.5 2.8 0 .5-.1 1-.4 1.4A3 3 0 0 1 21 12c0 1-.5 1.9-1.2 2.4.2.4.3.9.3 1.4a2.9 2.9 0 0 1-2.9 2.9c-.2 1.3-1.3 2.3-2.7 2.3-1.1 0-2-.6-2.5-1.5V4.3a2.6 2.6 0 0 1 2.5-1.8Z\"/><path d=\"M12 4.3v15.2\"/><path d=\"M7 9h2M15 9h2M7.5 13.5H10M14 13.5h2.5\"/></svg>' +
+    '<span class="bw-lbl">BRAIN</span>';
 
   var panel = document.createElement('div');
   panel.className = 'bw-panel';
   panel.innerHTML =
-    '<div class="bw-head"><div class="t"><span class="dot"></span>Y8S — Operating Brain<a href="/yates/brain/" style="margin-left:auto;font-size:10px;color:#cfe0f8;text-decoration:none;font-weight:600" title="Open full page">FULL PAGE ↗</a></div>' +
+    '<div class="bw-head"><div class="t"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#e8b23a\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9.5 2.5a2.6 2.6 0 0 0-2.6 2.6c-1.4.2-2.5 1.3-2.5 2.8 0 .5.1 1 .4 1.4A3 3 0 0 0 3 12c0 1 .5 1.9 1.2 2.4-.2.4-.3.9-.3 1.4a2.9 2.9 0 0 0 2.9 2.9c.2 1.3 1.3 2.3 2.7 2.3 1.1 0 2-.6 2.5-1.5V4.3a2.6 2.6 0 0 0-2.5-1.8Z\"/><path d=\"M14.5 2.5a2.6 2.6 0 0 1 2.6 2.6c1.4.2 2.5 1.3 2.5 2.8 0 .5-.1 1-.4 1.4A3 3 0 0 1 21 12c0 1-.5 1.9-1.2 2.4.2.4.3.9.3 1.4a2.9 2.9 0 0 1-2.9 2.9c-.2 1.3-1.3 2.3-2.7 2.3-1.1 0-2-.6-2.5-1.5V4.3a2.6 2.6 0 0 1 2.5-1.8Z\"/><path d=\"M12 4.3v15.2\"/><path d=\"M7 9h2M15 9h2M7.5 13.5H10M14 13.5h2.5\"/></svg>Y8S — Operating Brain<a href="/yates/brain/" style="margin-left:auto;font-size:10px;color:#cfe0f8;text-decoration:none;font-weight:600" title="Open full page">FULL PAGE ↗</a></div>' +
       '<div class="s">Every job, pay app and crew — synthesized live</div></div>' +
     '<div class="bw-disc">⚠ Demo assistant. Responses are illustrative and <b>entirely fictional</b> — not factual, not advice, and should not be relied upon.</div>' +
     '<div class="bw-body" id="bw-body"></div>' +

@@ -358,7 +358,7 @@ window.BID_DEFAULTS = BID_DEFAULTS;
     ["CANY-2511", "Canyon Lake Resort & Spa — Guestroom EMS (214 Keys)", "Canyon Lake Hospitality Group", "2273 FM 2673, Canyon Lake, TX", "Hospitality — Guestroom EMS (Innotech)", "Brandon Yates", "M. Okafor", 1, "Awarded", "2025-08-18", "2026-02-27", 796400, 10, 0, 1.0],
     ["SCHL-2512", "Schlagel Distribution HQ — Office & Warehouse BAS", "Schlagel Distribution Co.", "8200 Interport Blvd, San Antonio, TX", "Commercial — New BAS (i-Vu)", "Tyler Reidhead", "R. Trejo", 2, "Awarded", "2025-09-01", "2026-03-20", 312600, 10, 0, 1.0],
     ["BLUE-2503", "Bluebonnet ISD — Districtwide MEP Controls Pkg #1 (14 Campuses)", "Bluebonnet Independent School District", "Districtwide · Guadalupe County, TX", "K-12 — Districtwide MEP Controls (i-Vu)", "Tyler Reidhead", "R. Trejo", 1, "In Progress", "2025-03-03", "2026-05-29", 5850000, 5, 41, 0.98],
-    ["BLUE-2601", "Bluebonnet ISD — Districtwide MEP Controls Pkg #2 (11 Campuses)", "Bluebonnet Independent School District", "Districtwide · Guadalupe County, TX", "K-12 — Districtwide MEP Controls (i-Vu)", "Tyler Reidhead", "C. Delgado", 1, "Awarded", "2025-10-05", "2027-02-26", 7150000, 5, 0, 1.0],
+    ["BLUE-2601", "Bluebonnet ISD — Districtwide MEP Controls Pkg #2 (11 Campuses)", "Bluebonnet Independent School District", "Districtwide · Guadalupe County, TX", "K-12 — Districtwide MEP Controls (i-Vu)", "Tyler Reidhead", "C. Delgado", 1, "Awarded", "2026-09-07", "2027-11-26", 7150000, 5, 0, 1.0],
   ];
 
   const SOV_T = [
@@ -772,7 +772,7 @@ const ENGINE = {
   curve18: [2, 2, 4, 5, 3, 9, 10, 8, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5], /* larger jobs */
   weeksPerMo: 4.3, hrsPerWk: 40, utilization: 0.9,                   /* heads = hours / (4.3*40*0.9 = 154.8) */
   blendedRates: { install: 82, tech: 96, eng: 112, pm: 105 },        /* $/hr for hours conversion */
-  installHeadsCurrent: 26,
+  installHeadsCurrent: 38,
 };
 ENGINE.hrsPerHead = ENGINE.weeksPerMo * ENGINE.hrsPerWk * ENGINE.utilization;
 window.ENGINE = ENGINE;
@@ -797,3 +797,24 @@ const KPI_SNAPSHOT = {
   backlogMonths: 7.4, safetyDays: 412, openRFIs: 6,
 };
 window.KPI_SNAPSHOT = KPI_SNAPSHOT;
+
+
+/* ---- schedule hygiene: active work must finish in the future ---- */
+(function () {
+  const addMonths = (iso, n) => { const d = new Date(iso + "T12:00:00"); d.setMonth(d.getMonth() + n); return d.toISOString().slice(0, 10); };
+  const horizon = new Date("2026-08-01T12:00:00");
+  JOBS.forEach(j => {
+    if (["Complete", "Closeout"].includes(j.status)) return;
+    let shift = 0;
+    let fin = new Date(j.finish + "T12:00:00");
+    while (fin < horizon) { shift += 12; fin.setMonth(fin.getMonth() + 12); }
+    if (!shift) return;
+    j.start = addMonths(j.start, shift);
+    j.finish = addMonths(j.finish, shift);
+    j.contractDate = addMonths(j.contractDate, shift);
+    (j.payApps || []).forEach(p => p.period = addMonths(p.period, shift));
+    (j.phases || []).forEach(p => { p.start = addMonths(p.start, shift); p.finish = addMonths(p.finish, shift); });
+    (j.reports || []).forEach(r => r.date = addMonths(r.date, shift));
+    (j.photos || []).forEach(p => p.date = addMonths(p.date, shift));
+  });
+})();

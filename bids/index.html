@@ -195,6 +195,78 @@ function aiAssist() {
   });
 }
 
+
+/* ---------- Project Setup dropdown catalogs ---------- */
+const SETUP = { newCust: false, customName: false, customAddr: false, customBid: false };
+function knownCustomers() {
+  const set = [];
+  JOBS.forEach(j => { if (!set.includes(j.owner)) set.push(j.owner); });
+  BID_PIPELINE.forEach(b => { if (!set.includes(b.owner)) set.push(b.owner); });
+  SERVICE_AGREEMENTS.forEach(a => { if (!set.includes(a.client)) set.push(a.client); });
+  try { JSON.parse(localStorage.getItem('yates-customers') || '[]').forEach(c => { if (!set.includes(c.name)) set.push(c.name); }); } catch (e) {}
+  return set.sort();
+}
+function addrOptions(owner) {
+  const out = [];
+  JOBS.filter(j => j.owner === owner).forEach(j => { if (!out.includes(j.address)) out.push(j.address); });
+  try { JSON.parse(localStorage.getItem('yates-customers') || '[]').filter(c => c.name === owner).forEach(c => { if (c.address && !out.includes(c.address)) out.push(c.address); }); } catch (e) {}
+  ['San Marcos, TX', 'San Antonio, TX', 'New Braunfels, TX', 'Austin, TX', 'Seguin, TX', 'Kyle, TX', 'Buda, TX', 'Districtwide · Multiple Campuses, TX'].forEach(a => { if (!out.includes(a)) out.push(a); });
+  return out;
+}
+const NAME_STEMS = [
+  'District Energy Management Retrofit', 'Campus Controls Retrofit', 'Districtwide MEP Controls Package',
+  'New BAS Installation', 'BAS Replacement & Front-End Migration', 'Controls Standardization',
+  'Chiller Plant Optimization', 'Boiler Plant Controls Upgrade', 'VAV Controls Upgrade',
+  'RTU Controls & Demand Management', 'EMS & Utility Metering', 'Energy Dashboards & Reporting',
+  'Warehouse Controls & EMS', 'CRAC Integration & Monitoring', 'Refrigeration Monitoring & Alarms',
+  'Guestroom EMS', 'Lighting Controls Integration', 'Service Retrofit — Small Project',
+];
+function nameOptions(owner) {
+  const stem = (owner || 'Client').split('—')[0].trim();
+  const opts = NAME_STEMS.map(t => stem + ' — ' + t);
+  JOBS.filter(j => j.owner === owner).forEach(j => { if (!opts.includes(j.name)) opts.unshift(j.name); });
+  return opts;
+}
+function bidNumberOptions() {
+  const base = 418;
+  const used = BID_PIPELINE.map(b => b.id);
+  const out = [BID.meta.bidNumber];
+  for (let i = 1; i <= 5; i++) out.push('Y8S-2026-' + String(base + i * 3 + used.length));
+  return out;
+}
+function pickOwner(v) {
+  if (v === '__new') { SETUP.newCust = true; render(); return; }
+  SETUP.newCust = false;
+  BID.meta.owner = v;
+  const addrs = addrOptions(v);
+  BID.meta.address = addrs[0] || BID.meta.address;
+  BID.meta.project = nameOptions(v)[0];
+  render();
+}
+function saveNewCustomer() {
+  const name = document.getElementById('nc-name').value.trim();
+  const addr = document.getElementById('nc-addr').value.trim();
+  const contact = document.getElementById('nc-contact').value.trim();
+  if (!name) return;
+  try {
+    const list = JSON.parse(localStorage.getItem('yates-customers') || '[]');
+    list.push({ name, address: addr, contact });
+    localStorage.setItem('yates-customers', JSON.stringify(list));
+  } catch (e) {}
+  SETUP.newCust = false;
+  BID.meta.owner = name;
+  if (addr) BID.meta.address = addr;
+  BID.meta.project = nameOptions(name)[0];
+  render();
+}
+function pickField(field, v) {
+  const flag = { project: 'customName', address: 'customAddr', bidNumber: 'customBid' }[field];
+  if (v === '__custom') { SETUP[flag] = true; render(); return; }
+  SETUP[flag] = false;
+  BID.meta[field] = v;
+  render();
+}
+
 function lineCalc(l) {
   const direct = l.qty * l.unitCost;
   const esc$ = direct * BID.levers.escalationPct / 100;
@@ -247,6 +319,85 @@ function bidGantt() {
 
 let previewProposal = false;
 function render() { $('#app').innerHTML = internal ? (previewProposal ? viewExternal(true) : viewInternal()) : viewExternal(false); }
+
+
+/* ---------- proposal e-signatures + send-to-customer flow ---------- */
+function bidSigKey(slot) { return 'yates-sign:bid:' + BID.meta.bidNumber + ':' + slot; }
+function bidSigState(slot) { try { return JSON.parse(localStorage.getItem(bidSigKey(slot)) || 'null'); } catch (e) { return null; } }
+function bidSigSave(slot, rec) { try { localStorage.setItem(bidSigKey(slot), JSON.stringify(rec)); } catch (e) {} }
+function bidSigClear(slot) { try { localStorage.removeItem(bidSigKey(slot)); } catch (e) {} render(); }
+
+function bidSign(slot) {
+  const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+  if (slot === 'pm') {
+    const p = currentPersona();
+    if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) {
+      alert('The Yates signature line must be signed by a project manager (Tyler Reidhead, Jordan Felps or Brandon Yates).\n\nSwitch user via the account menu (top right).');
+      return;
+    }
+    bidSigSave('pm', { name: p.name, title: p.title, at: now });
+  } else {
+    const name = prompt('Customer — type your full name to sign electronically:');
+    if (!name || !name.trim()) return;
+    const title = prompt('Title (optional):') || 'Authorized Agent';
+    bidSigSave('owner', { name: name.trim(), title: title.trim(), at: now });
+  }
+  render();
+}
+
+function bidSigBlock(slot, cap, btnLabel) {
+  const s = bidSigState(slot);
+  if (s) return `<div class="sig signed"><span class="sig-script">${esc(s.name)}</span><div class="sig-meta">Digitally signed — ${esc(s.title)} · ${esc(s.at)} <a href="#" class="no-print" style="color:#97a0ad;font-weight:400" onclick="event.preventDefault();bidSigClear('${slot}')" title="Clear signature (demo)">↺</a></div><div class="sig-cap">${cap}</div></div>`;
+  return `<div class="sig"><button class="sig-btn" onclick="bidSign('${slot}')">${btnLabel}</button><div class="sig-cap">${cap}</div></div>`;
+}
+
+function sendForSignature() {
+  const T = totals();
+  const to = 'facilities@' + BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 18) + '.demo';
+  const link = 'https://endurancelabs.ai/yates/bids/?sign=' + encodeURIComponent(BID.meta.bidNumber);
+  const pmSig = bidSigState('pm');
+  const subject = 'Signature requested — Proposal ' + BID.meta.bidNumber + ' — ' + BID.meta.project;
+  const body = [
+    'Dear ' + BID.meta.owner + ',',
+    '',
+    'Our proposal for ' + BID.meta.project + ' (' + fmt$2(T.alts ? T.grand : T.base) + ') is ready for your electronic signature.',
+    '',
+    'Review and sign here: ' + link,
+    '',
+    'The proposal has been executed by ' + (pmSig ? pmSig.name + ', ' + pmSig.title : 'YATES Company') + ' and is valid for ' + BID.meta.validDays + ' days.',
+    'Questions? Reply to this email or call ' + YATES.phone + '.',
+    '',
+    YATES.company,
+    YATES.address + ' | ' + YATES.email,
+  ].join('\n');
+
+  const ov = document.createElement('div');
+  ov.className = 'svc-modal';
+  ov.innerHTML = `
+    <div class="svc-card" onclick="event.stopPropagation()" style="max-width:640px">
+      <div class="svc-card-head">
+        <div><b>✉ Send for Customer e-Signature</b><div class="ynote">The customer receives a secure signing link — their signature lands back on this proposal automatically.</div></div>
+        <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
+      </div>
+      <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="sfs-to" value="${to}"></label>
+      <label class="yfld" style="margin-bottom:10px">Subject<input class="yin" id="sfs-subj" value="${esc(subject)}"></label>
+      <label class="yfld">Message<textarea class="yin" id="sfs-body" rows="10" style="resize:vertical">${esc(body)}</textarea></label>
+      <div class="ytoolrow" style="margin-top:14px;margin-bottom:0">
+        <span class="ynote">Demo: the signing link opens this proposal with the customer's signature line active.</span>
+        <div class="spacer"></div>
+        <button class="pa-btn primary" style="cursor:pointer" id="sfs-send">✉ Send Signature Request</button>
+      </div>
+    </div>`;
+  ov.addEventListener('click', () => ov.remove());
+  document.body.appendChild(ov);
+  ov.querySelector('#sfs-send').addEventListener('click', () => {
+    const rec = { to: ov.querySelector('#sfs-to').value.trim(), at: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) };
+    bidSigSave('sent', rec);
+    window.location.href = 'mailto:' + rec.to + '?subject=' + encodeURIComponent(ov.querySelector('#sfs-subj').value) + '&body=' + encodeURIComponent(ov.querySelector('#sfs-body').value);
+    ov.remove();
+    render();
+  });
+}
 
 /* ---------- email the bid straight from the site ---------- */
 function emailBid() {
@@ -380,11 +531,44 @@ function viewInternal() {
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Project Setup</h2><span class="k">details flow into the proposal</span></div>
+      ${SETUP.newCust ? `
+      <div class="fc-assumps" style="grid-template-columns:2fr 2fr 2fr 1fr;margin-bottom:12px;border:1px dashed var(--color-blue);border-radius:8px;padding:12px">
+        <label class="yfld">New Customer Name<input class="yin" id="nc-name" placeholder="e.g. Cibolo Creek ISD"></label>
+        <label class="yfld">Address / Territory<input class="yin" id="nc-addr" placeholder="e.g. Districtwide · Cibolo, TX"></label>
+        <label class="yfld">Primary Contact<input class="yin" id="nc-contact" placeholder="name · title · email"></label>
+        <label class="yfld">&nbsp;<button class="pa-btn primary" style="cursor:pointer;width:100%" onclick="saveNewCustomer()">✓ Add Customer</button></label>
+      </div>` : ''}
       <div class="fc-assumps" style="grid-template-columns:repeat(4,1fr)">
-        <label class="yfld">Project Name<input class="yin" value="${esc(BID.meta.project)}" onchange="updMeta('project',this.value)"></label>
-        <label class="yfld">Owner / Client<input class="yin" value="${esc(BID.meta.owner)}" onchange="updMeta('owner',this.value)"></label>
-        <label class="yfld">Site Address<input class="yin" value="${esc(BID.meta.address)}" onchange="updMeta('address',this.value)"></label>
-        <label class="yfld">Bid Number<input class="yin" value="${esc(BID.meta.bidNumber)}" onchange="updMeta('bidNumber',this.value)"></label>
+        <label class="yfld">Project Name
+          ${SETUP.customName
+            ? `<input class="yin" value="${esc(BID.meta.project)}" onchange="updMeta('project',this.value)" onblur="SETUP.customName=false;render()" autofocus>`
+            : `<select class="yin" onchange="pickField('project',this.value)">
+                ${[BID.meta.project, ...nameOptions(BID.meta.owner).filter(n => n !== BID.meta.project)].map(n => `<option value="${esc(n)}" ${n === BID.meta.project ? 'selected' : ''}>${esc(n)}</option>`).join('')}
+                <option value="__custom">✏️ Custom name…</option>
+              </select>`}
+        </label>
+        <label class="yfld">Owner / Client
+          <select class="yin" onchange="pickOwner(this.value)">
+            ${[BID.meta.owner, ...knownCustomers().filter(c => c !== BID.meta.owner)].map(c => `<option value="${esc(c)}" ${c === BID.meta.owner ? 'selected' : ''}>${esc(c)}</option>`).join('')}
+            <option value="__new">＋ New Customer…</option>
+          </select>
+        </label>
+        <label class="yfld">Site Address
+          ${SETUP.customAddr
+            ? `<input class="yin" value="${esc(BID.meta.address)}" onchange="updMeta('address',this.value)" onblur="SETUP.customAddr=false;render()" autofocus>`
+            : `<select class="yin" onchange="pickField('address',this.value)">
+                ${[BID.meta.address, ...addrOptions(BID.meta.owner).filter(a => a !== BID.meta.address)].map(a => `<option value="${esc(a)}" ${a === BID.meta.address ? 'selected' : ''}>${esc(a)}</option>`).join('')}
+                <option value="__custom">✏️ Custom address…</option>
+              </select>`}
+        </label>
+        <label class="yfld">Bid Number
+          ${SETUP.customBid
+            ? `<input class="yin" value="${esc(BID.meta.bidNumber)}" onchange="updMeta('bidNumber',this.value)" onblur="SETUP.customBid=false;render()" autofocus>`
+            : `<select class="yin" onchange="pickField('bidNumber',this.value)">
+                ${bidNumberOptions().map(b => `<option value="${esc(b)}" ${b === BID.meta.bidNumber ? 'selected' : ''}>${esc(b)}</option>`).join('')}
+                <option value="__custom">✏️ Custom number…</option>
+              </select>`}
+        </label>
         <label class="yfld">Project Manager<select class="yin" onchange="updMeta('pm',this.value)">${pmOpts}</select></label>
         <label class="yfld">Superintendent<select class="yin" onchange="updMeta('super',this.value)">${supOpts}</select></label>
         <label class="yfld">Anticipated Start<input class="yin" type="date" value="${BID.meta.startDate}" onchange="updMeta('startDate',this.value)"></label>
@@ -557,10 +741,24 @@ function viewExternal(preview) {
 
       <h3 class="sect">Acceptance</h3>
       <p>Acceptance of this proposal constitutes authorization to proceed under the terms above. We appreciate the opportunity and look forward to building with you.</p>
+      ${(() => {
+        const pmS = bidSigState('pm'), ownS = bidSigState('owner'), sent = bidSigState('sent');
+        return `
       <div class="sig-row">
-        <div class="sig">${esc(BID.meta.owner)} — Owner / Authorized Agent</div>
-        <div class="sig">${YATES.company} — ${esc(BID.meta.pm)}, Project Manager</div>
+        ${bidSigBlock('pm', YATES.company + ' — ' + esc(BID.meta.pm) + ', Project Manager', '✍ Sign as Yates PM')}
+        ${ownS || sent
+          ? bidSigBlock('owner', esc(BID.meta.owner) + ' — Owner / Authorized Agent', '✍ Customer e-Sign (via emailed link)')
+          : `<div class="sig"><div class="sig-cap" style="margin-top:6px">${esc(BID.meta.owner)} — Owner / Authorized Agent<br><span class="ynote">${pmS ? 'Ready to send for customer signature.' : 'Unlocks after the Yates PM signs.'}</span></div></div>`}
       </div>
+      <div class="ytoolrow no-print" style="margin-top:16px;margin-bottom:0">
+        ${pmS && !ownS ? (sent
+          ? `<span class="ypill blue">SENT FOR SIGNATURE</span><span class="ynote">to ${esc(sent.to)} · ${esc(sent.at)} — awaiting customer</span>`
+          : `<button class="pa-btn primary" style="cursor:pointer" onclick="sendForSignature()">✉ Send to Customer for e-Signature</button>`) : ''}
+        ${pmS && ownS ? `<span class="ypill green">FULLY EXECUTED</span><span class="ynote">both parties signed electronically — proposal is now a contract exhibit</span>` : ''}
+        ${!pmS ? `<span class="ynote">Signature flow: Yates PM signs → send to customer → customer e-signs from their inbox.</span>` : ''}
+        <div class="spacer"></div>
+      </div>`;
+      })()}
       <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
