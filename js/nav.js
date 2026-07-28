@@ -92,6 +92,18 @@ const TICKER = [
   ['TECH UTILIZATION (SERVICETITAN)', '87.3%', '+1.1%', 'up'],
   ['AR SYNC (QUICKBOOKS)', 'LIVE', '4 min ago', 'up'],
   ['OPEN SERVICE CALLS', '23', '-4', 'up'],
+  ['FED FUNDS', '3.75–4.00%', 'hold', 'up'],
+  ['PRIME RATE', '6.75%', 'unch', 'up'],
+  ['SOFR', '3.86%', '+2 bps', 'up'],
+  ['UST 2-YR', '3.62%', '-3 bps', 'down'],
+  ['UST 5-YR', '3.78%', '-2 bps', 'down'],
+  ['UST 10-YR', '4.12%', '+1 bp', 'up'],
+  ['UST 30-YR', '4.55%', '+2 bps', 'up'],
+  ['CPI (YOY)', '2.6%', '-0.1 pt', 'down'],
+  ['CORE PCE (YOY)', '2.4%', 'unch', 'up'],
+  ['UNEMPLOYMENT', '4.1%', '+0.1 pt', 'up'],
+  ['NONRES CONSTRUCTION SPEND', '$742B SAAR', '+4.8% YoY', 'up'],
+  ['ISM SERVICES', '53.2', '+0.6', 'up'],
 ];
 const MARQUEE = [
   ['Y8S', 'Best Place to Work in San Marcos, TX 2026 — thank you to the whole team'],
@@ -190,7 +202,7 @@ function renderTopbar(opts = {}) {
 
   const tickerHtml = TICKER.map(t =>
     `<span class="ticker-item"><span class="ticker-label">${t[0]}</span><span class="ticker-value">${t[1]}</span><span class="ticker-change ${t[3]}">${t[2]}</span></span>`
-  ).join('<span class="ticker-sep">·</span>');
+  ).join('<span class="ticker-sep">·</span>') + '<span class="ticker-sep">·</span>';
 
   const marqueeItems = MARQUEE.map(m =>
     `<span class="news-marquee-item"><span class="news-marquee-source">${m[0]}</span><span class="news-marquee-text">${m[1]}</span><span class="news-marquee-sep">—</span></span>`
@@ -198,7 +210,7 @@ function renderTopbar(opts = {}) {
 
   target.outerHTML = `
     <div class="news-marquee" id="news-marquee"><div class="news-marquee-track">${marqueeItems}${marqueeItems}</div></div>
-    <div class="market-ticker" id="market-ticker">${tickerHtml}</div>
+    <div class="market-ticker" id="market-ticker"><div class="ticker-track">${tickerHtml}${tickerHtml}</div></div>
     <div class="portal-topbar">
       <a class="brand" href="/yates/" style="cursor:pointer;text-decoration:none">
         <img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo">
@@ -260,6 +272,15 @@ function renderTopbar(opts = {}) {
   _wireThemeToggle();
   _wireModeToggle();
   _fillJobFlyouts();
+
+  // match ticker scroll speed (px/s) to the news marquee above it
+  (function syncTickerSpeed(tries) {
+    const mt = document.querySelector('.news-marquee-track');
+    const tt = document.querySelector('.ticker-track');
+    if (!mt || !tt) return;
+    if ((!mt.scrollWidth || !tt.scrollWidth) && tries < 40) return requestAnimationFrame(() => syncTickerSpeed(tries + 1));
+    if (mt.scrollWidth && tt.scrollWidth) tt.style.animationDuration = (37 * tt.scrollWidth / mt.scrollWidth).toFixed(1) + 's';
+  })(0);
 }
 
 function _wireModeToggle() {
