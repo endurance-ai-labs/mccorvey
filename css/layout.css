@@ -79,7 +79,7 @@
   align-items: center;
   gap: 16px;
   white-space: nowrap;
-  overflow-x: auto;
+  overflow: hidden;
   border-bottom: 1px solid var(--topbar-border);
   position: sticky;
   top: 28px;
@@ -90,6 +90,15 @@
 }
 .market-ticker::-webkit-scrollbar { height: 0; }
 .market-ticker { scrollbar-width: none; }
+.ticker-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  will-change: transform;
+  animation: cfp-marquee 37s linear infinite;
+}
+.market-ticker:hover .ticker-track { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) { .ticker-track { animation: none; } }
 .ticker-item  { display: inline-flex; align-items: center; gap: 5px; }
 .ticker-label {
   color: var(--ticker-label-color);

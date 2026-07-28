@@ -312,13 +312,29 @@ function render() {
       ${(() => {
         const bud = baseFrom(avbIdx - 1, 3);         /* budget = trailing run-rate set last cycle */
         const act = MONTHS[avbIdx];
+        const prev = MONTHS[avbIdx - 1];
+        /* sub-item composition per line — deterministic monthly wiggle, always sums exactly to the line total */
+        const hsh = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 99991; return h; };
+        const subSplit = (line, items, total, mi) => {
+          const ws = items.map(it => it.w * (1 + (((hsh(line + it.n + mi) % 29) - 14) / 100) * 1.6));
+          const sum = ws.reduce((a, b) => a + b, 0);
+          return items.map((it, i) => ({ n: it.n, v: total * ws[i] / sum }));
+        };
+        const topJobs = JOBS.slice().sort((a, b) => b.contract - a.contract).slice(0, 4);
+        const jobsSum = topJobs.reduce((s, j) => s + j.contract, 0);
+        const REV_ITEMS = topJobs.map(j => ({ n: j.id + ' · ' + j.name.split('—')[0].trim(), w: j.contract / jobsSum * 0.78 })).concat([{ n: 'All other jobs', w: 0.22 }]);
         const rows = [
-          ['Contract revenue', act.revenue, bud.revenue / 12],
-          ['Controls hardware & materials', act.cost.subs, bud.c_subs / 12],
-          ['Self-perform field labor', act.cost.labor, bud.c_labor / 12],
-          ['Subcontractors', act.cost.mat, bud.c_mat / 12],
-          ['Office salaries, PM & engineering', act.oh.salaries, bud.o_salaries / 12],
-          ['Insurance & bonding', act.oh.insurance, bud.o_insurance / 12],
+          ['Contract revenue', act.revenue, bud.revenue / 12, prev.revenue, REV_ITEMS],
+          ['Controls hardware & materials', act.cost.subs, bud.c_subs / 12, prev.cost.subs, [
+            { n: 'DDC controllers & panels', w: 0.34 }, { n: 'Sensors & actuators', w: 0.22 }, { n: 'Control valves & dampers', w: 0.18 }, { n: 'Panel fabrication', w: 0.14 }, { n: 'Wire, conduit & misc', w: 0.12 }]],
+          ['Self-perform field labor', act.cost.labor, bud.c_labor / 12, prev.cost.labor, [
+            { n: 'Install crews — regular time', w: 0.55 }, { n: 'Startup & commissioning techs', w: 0.20 }, { n: 'Install crews — overtime', w: 0.15 }, { n: 'Warranty callbacks', w: 0.10 }]],
+          ['Subcontractors', act.cost.mat, bud.c_mat / 12, prev.cost.mat, [
+            { n: 'Electrical subcontract', w: 0.48 }, { n: 'Mechanical subcontract', w: 0.34 }, { n: 'Test & balance', w: 0.18 }]],
+          ['Office salaries, PM & engineering', act.oh.salaries, bud.o_salaries / 12, prev.oh.salaries, [
+            { n: 'Project management staff', w: 0.44 }, { n: 'Engineering & graphics', w: 0.38 }, { n: 'Admin & coordination', w: 0.18 }]],
+          ['Insurance & bonding', act.oh.insurance, bud.o_insurance / 12, prev.oh.insurance, [
+            { n: 'General liability premium', w: 0.52 }, { n: 'Performance & payment bonds', w: 0.28 }, { n: 'Auto & fleet coverage', w: 0.20 }]],
         ];
         const gmAct = (act.revenue - act.cost.subs - act.cost.labor - act.cost.mat - act.cost.equip) / act.revenue * 100;
         return `<table class="demo-tbl tbl-left">
@@ -326,9 +342,15 @@ function render() {
           <tbody>${rows.map(r => {
             const v = r[1] - r[2], pct = v / r[2] * 100;
             const bad = (r[0] === 'Contract revenue') ? pct < -5 : pct > 5;
+            const cur = subSplit(r[0], r[4], r[1], avbIdx);
+            const pri = subSplit(r[0], r[4], r[3], avbIdx - 1);
+            const movers = cur.map((c, i) => ({ n: c.n, c: c.v, p: pri[i].v, d: c.v - pri[i].v, chg: (c.v / pri[i].v - 1) * 100 }))
+              .sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
+            const drv = movers.map(m2 => `<span class="avb-drv-item"><span style="color:${m2.d >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${m2.d >= 0 ? '▲' : '▼'}</span> ${esc(m2.n)} (${fmt$(m2.c)} vs. ${fmt$(m2.p)} in ${mLong(prev.m)}, ${Math.abs(m2.chg).toFixed(1)}% ${m2.chg >= 0 ? 'increase' : 'decrease'})</span>`).join('');
             return `<tr><td>${r[0]}</td><td style="text-align:right">${fmt$(r[1])}</td><td style="text-align:right">${fmt$(r[2])}</td>
               <td style="text-align:right;color:${bad ? 'var(--color-red)' : 'var(--color-green)'}">${v < 0 ? '(' + fmt$(Math.abs(v)) + ')' : fmt$(v)} · ${fmtPct(Math.abs(pct))}</td>
-              <td>${Math.abs(pct) <= 5 ? '<span class="demo-chip ok">ON BUDGET</span>' : bad ? '<span class="demo-chip bad">REVIEW</span>' : '<span class="demo-chip ok">FAVORABLE</span>'}</td></tr>`;
+              <td>${Math.abs(pct) <= 5 ? '<span class="demo-chip ok">ON BUDGET</span>' : bad ? '<span class="demo-chip bad">REVIEW</span>' : '<span class="demo-chip ok">FAVORABLE</span>'}</td></tr>
+            <tr class="avb-drv"><td colspan="5">↳ Drivers: ${drv}</td></tr>`;
           }).join('')}</tbody>
         </table>
         <div class="ynote" style="margin-top:8px">Gross margin this month: <b>${fmtPct(gmAct)}</b>. Staffing implication of the current plan lives in <a href="/yates/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a> — the plan currently calls for <b>+6 installers by October</b>.</div>`;
