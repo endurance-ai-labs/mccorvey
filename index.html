@@ -120,6 +120,19 @@ if (internal) {
       </div>
     </div>
 
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Monthly Budget vs Actual</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('qb')}<a href="/yates/budget/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">FULL REVIEW →</a></span></div>
+        <div class="demo-chart" style="height:230px"><canvas id="ch-bva"></canvas></div>
+        <div class="ynote" id="bva-note" style="margin-top:10px"></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>5-Year Growth Plan — Goals &amp; Hurdles</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('prop')}<a href="/yates/forecast/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">OPEN MODEL →</a></span></div>
+        <div class="demo-chart" style="height:128px"><canvas id="ch-goal"></canvas></div>
+        <div id="goal-hurdles" style="margin-top:10px"></div>
+      </div>
+    </div>
+
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>All Jobs — CFO Rollup</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">financials from QuickBooks · production from ServiceTitan</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
@@ -170,6 +183,85 @@ if (internal) {
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
       scales: { x: { stacked: true, ticks: { font: { size: 10 } } }, y: { stacked: true, ticks: { callback: v => '$' + v.toLocaleString() + 'K', font: { size: 10 } } } } }
   });
+
+
+  /* ---------- Monthly Budget vs Actual (mirrors /budget/ series) ---------- */
+  (function () {
+    const season = [0.92, 0.95, 1.06, 1.10, 1.02, 0.88, 0.90, 0.97, 1.04, 1.08, 1.10, 1.05];
+    const series = [];
+    const start = new Date('2024-08-15T12:00:00');
+    for (let i = 0; i < 24; i++) {
+      const d = new Date(start); d.setMonth(d.getMonth() + i);
+      const surge = (i >= 2 && i <= 4) ? 1.22 : 1;
+      series.push({ lbl: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), rev: 1880000 * season[d.getMonth() % 12] * surge * Math.pow(1.006, i) });
+    }
+    const last6 = series.slice(18, 24);
+    /* budget = same month prior year + 7% planned growth (how the plan is actually set) */
+    const bud = last6.map((m, i) => series[18 + i - 12].rev * 1.07);
+    const cBlue2 = getComputedStyle(document.documentElement).getPropertyValue('--color-blue').trim();
+    new Chart($('#ch-bva'), {
+      type: 'bar',
+      data: { labels: last6.map(m => m.lbl), datasets: [
+        { label: 'Budget', data: bud.map(v => v / 1e3), backgroundColor: 'rgba(27,34,48,0.18)' },
+        { label: 'Actual', data: last6.map(m => m.rev / 1e3), backgroundColor: last6.map((m, i) => m.rev >= bud[i] ? '#2f9e6e' : '#b98a36') },
+      ]},
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+        scales: { y: { ticks: { callback: v => '$' + v.toLocaleString() + 'K', font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
+    });
+    const cur = last6[5], curBud = bud[5];
+    const varPct = (cur.rev - curBud) / curBud * 100;
+    const onBudget = last6.filter((m, i) => Math.abs(m.rev - bud[i]) / bud[i] <= 0.05).length;
+    $('#bva-note').innerHTML = `${cur.lbl}: actual <b>${fmtK(cur.rev)}</b> vs budget ${fmtK(curBud)} — <b style="color:${varPct >= 0 ? 'var(--color-green)' : 'var(--color-amber)'}">${varPct >= 0 ? '+' : ''}${varPct.toFixed(1)}%</b>. ${onBudget} of 6 months within ±5% of budget. Green = at/above budget, amber = below.`;
+  })();
+
+  /* ---------- 5-Year plan vs goal hurdles (reads the saved scenario) ---------- */
+  (function () {
+    const BASE_C = 24.6e6;
+    const BASE_S = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
+    let P;
+    try { P = JSON.parse(localStorage.getItem('yates-5yr') || 'null'); } catch (e) {}
+    P = P || { constrGrowth: 8, svcGrowth: 20, escalation: 3, newClientsY1: 4, newClientsRamp: 2, newClientSize: 850000, newClientRepeat: 70, newSvcPerYear: 12, newSvcMRR: 1800, churn: 6, attachPct: 60, attachMRR: 2400, gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85, goal: 300, acq: [{ year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 }, { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 }] };
+    const esc2 = P.escalation / 100;
+    const R = [1, 2, 3, 4, 5].map(y => {
+      const co = BASE_C * Math.pow(1 + P.constrGrowth / 100 + esc2, y);
+      let nc = 0;
+      for (let c = 1; c <= y; c++) nc += (P.newClientsY1 + P.newClientsRamp * (c - 1)) * P.newClientSize * Math.pow(P.newClientRepeat / 100, y - c) * Math.pow(1 + esc2, y);
+      const sb = BASE_S * Math.pow(1 + P.svcGrowth / 100, y);
+      let sn = 0;
+      for (let c = 1; c <= y; c++) sn += (P.newSvcPerYear * P.newSvcMRR * 12 + (P.newClientsY1 + P.newClientsRamp * (c - 1)) * (P.attachPct / 100) * P.attachMRR * 12) * Math.pow(1 - P.churn / 100, y - c);
+      let ar = 0, arec = 0;
+      (P.acq || []).forEach(q => { if (y >= q.year) { const r2 = q.revenue * Math.pow(1 + q.growth / 100, y - q.year); ar += r2; arec += r2 * q.rec / 100; } });
+      const total = co + nc + sb + sn + ar;
+      const gp = (co + nc) * P.gmConstr / 100 + (sb + sn) * P.gmSvc / 100 + ar * 0.24;
+      const oh = total * (P.ohPct / 100) * Math.pow(P.ohScale, Math.log2(Math.max(1, total / (BASE_C + BASE_S))));
+      return { y, total, recurring: sb + sn + arec, ebitda: gp - oh };
+    });
+    const goal = (P.goal || 300) * 1e6;
+    const goalPath = [1, 2, 3, 4, 5].map(y => (BASE_C + BASE_S) * Math.pow(goal / (BASE_C + BASE_S), y / 5));
+    new Chart($('#ch-goal'), {
+      data: { labels: R.map(r => 'Y' + r.y), datasets: [
+        { type: 'line', label: 'Plan', data: R.map(r => r.total / 1e6), borderColor: getComputedStyle(document.documentElement).getPropertyValue('--color-blue').trim(), pointRadius: 3, tension: 0.3 },
+        { type: 'line', label: 'Goal path', data: goalPath.map(v => v / 1e6), borderColor: 'rgba(200,80,60,0.85)', borderDash: [6, 5], pointRadius: 0 },
+      ]},
+      options: { responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9.5 } } } },
+        scales: { y: { ticks: { callback: v => '$' + v + 'M', font: { size: 9.5 } } }, x: { ticks: { font: { size: 9.5 } } } } }
+    });
+    const chip = (ok, close) => ok ? '<span class="demo-chip ok">ON TRACK</span>' : close ? '<span class="demo-chip warn">AT RISK</span>' : '<span class="demo-chip bad">BEHIND</span>';
+    const hurdles = [
+      ['Year-1 revenue hurdle', fmtK(goalPath[0]), fmtK(R[0].total), R[0].total >= goalPath[0] * 0.95, R[0].total >= goalPath[0] * 0.8],
+      ['Year-3 revenue hurdle', fmtK(goalPath[2]), fmtK(R[2].total), R[2].total >= goalPath[2] * 0.95, R[2].total >= goalPath[2] * 0.8],
+      ['Recurring ≥ 15% of revenue by Y3', '15%', fmtPct(R[2].recurring / R[2].total * 100, 1), R[2].recurring / R[2].total >= 0.15, R[2].recurring / R[2].total >= 0.11],
+      ['EBITDA ≥ 10% by Y5', '10%', fmtPct(R[4].ebitda / R[4].total * 100, 1), R[4].ebitda / R[4].total >= 0.10, R[4].ebitda / R[4].total >= 0.07],
+      ['Acquisitions closed by Y3', '≥ 2', String((P.acq || []).filter(q => q.year <= 3).length), (P.acq || []).filter(q => q.year <= 3).length >= 2, (P.acq || []).filter(q => q.year <= 3).length >= 1],
+    ];
+    $('#goal-hurdles').innerHTML = `<table class="demo-tbl tbl-left" style="font-size:11px">
+      <thead><tr><th>Performance Hurdle</th><th style="text-align:right">Target</th><th style="text-align:right">Plan</th><th style="width:90px">Status</th></tr></thead>
+      <tbody>${hurdles.map(h => `<tr><td>${h[0]}</td><td style="text-align:right">${h[1]}</td><td style="text-align:right;font-weight:700">${h[2]}</td><td>${chip(h[3], h[4])}</td></tr>`).join('')}</tbody>
+    </table>
+    <div class="ynote" style="margin-top:6px">Hurdles derive from the $${P.goal || 300}M goal path — the current saved scenario in the 5-Year Growth Model drives this card live.</div>`;
+  })();
 
 } else {
   /* ================= CLIENT LANDING ================= */
