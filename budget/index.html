@@ -74,6 +74,8 @@ const mLong = (ym) => { const d = new Date(ym + '-15T12:00:00'); return d.toLoca
 
 /* ---- state ---- */
 let asOf = MONTHS.length - 1;
+let avbIdx = MONTHS.length - 1;   // Actual-vs-Budget month under review
+const mFull = (ym) => new Date(ym + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 let fbasis = 12;
 let view = 'annual';
 let svcGrowth = 45;   // service MRR growth %/yr (attach + upgrades)
@@ -125,9 +127,18 @@ function yearCol(y) {
   }
   return derive(out);
 }
+/* ---- 2026 Budget column: calendar-2025 actuals grown 7%, locked at the January cycle ---- */
+const BUD26 = (() => {
+  const w = MONTHS.filter(m => m.m.startsWith('2025'));
+  const S = f => w.reduce((a, m) => a + f(m), 0) * 1.07;
+  const b = { revenue: S(m => m.revenue) };
+  CK.forEach(k => b['c_' + k] = S(m => m.cost[k]));
+  OK.forEach(k => b['o_' + k] = S(m => m.oh[k]));
+  return b;
+})();
 function colData() {
   return [derive(baseFrom(asOf, 3)), derive(baseFrom(asOf, 6)), derive(baseFrom(asOf, 12)),
-          derive(inplace), yearCol(1), yearCol(2), yearCol(3), yearCol(4), yearCol(5)];
+          derive(BUD26), derive(inplace), yearCol(1), yearCol(2), yearCol(3), yearCol(4), yearCol(5)];
 }
 
 const LINES = [
@@ -150,7 +161,7 @@ const LINES = [
   ['tax', 'Income tax provision', 1], ['net', 'Net income', 'sub'],
   ['dist', 'Owner distribution', 'div'], ['retained', 'Retained for working capital'],
 ];
-const COLS = ['T-3', 'T-6', 'T-12', 'In-Place', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
+const COLS = ['T-3', 'T-6', 'T-12', '2026 Budget', 'In-Place', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
 const Mfmt = n => '$' + Math.round(n).toLocaleString();
 function cellFmt(v, neg, pct) {
   if (pct) return (isFinite(v) ? v.toFixed(1) : '0.0') + '%';
@@ -206,11 +217,12 @@ function explAnnual(key, c, cd) {
   if (INPUT_KEYS.has(key)) {
     if (c <= 2) { const win = [3, 6, 12][c];
       return '<b>' + lab + ' — T-' + win + ' basis</b>\nSum of the last ' + win + ' months of QuickBooks actuals × ' + (12 / win).toFixed(win === 12 ? 0 : 1) + ' to annualize.\n= ' + M$(d[key]) + '/yr run-rate'; }
-    if (c === 3) return '<b>' + lab + ' — In-Place</b>\nEditable annual run-rate, seeded from the T-' + fbasis + ' trailing basis (' + M$(base[key]) + ').\nEdits ripple through every Year 1–5 and monthly figure.';
-    const y = c - 3, r = growthOf(key);
+    if (c === 3) return '<b>' + lab + ' — 2026 Budget</b>\nLocked at the January budget cycle: calendar-2025 actuals × 1.07.\n= ' + M$(d[key]) + '/yr — does not move with the levers.';
+    if (c === 4) return '<b>' + lab + ' — In-Place</b>\nEditable annual run-rate, seeded from the T-' + fbasis + ' trailing basis (' + M$(base[key]) + ').\nEdits ripple through every Year 1–5 and monthly figure.';
+    const y = c - 4, r = growthOf(key);
     return '<b>' + lab + ' — Year ' + y + '</b>\nIn-Place ' + M$(inplace[key]) + ' ÷ 12, grown at ' + r + '%/yr (compounded monthly), summed over months ' + ((y - 1) * 12 + 1) + '–' + (y * 12) + '.\n= ' + M$(d[key]);
   }
-  const head = c <= 2 ? 'T-' + [3, 6, 12][c] + ' basis' : c === 3 ? 'In-Place' : 'Year ' + (c - 3);
+  const head = c <= 2 ? 'T-' + [3, 6, 12][c] + ' basis' : c === 3 ? '2026 Budget' : c === 4 ? 'In-Place' : 'Year ' + (c - 4);
   return '<b>' + lab + ' — ' + head + '</b>\n' + explDerived(key, d);
 }
 function explMonthly(key, m, d) {
@@ -229,15 +241,15 @@ function annualTable(cd) {
         <table class="fc-tbl">
           <thead><tr><th>Line item · $/yr</th>${COLS.map(cc => `<th>${cc}</th>`).join('')}</tr></thead>
           <tbody id="fc-body">${LINES.map(Lr => {
-            if (Lr[0] === 'h') return `<tr class="head"><td colspan="10">${Lr[1]}</td></tr>`;
+            if (Lr[0] === 'h') return `<tr class="head"><td colspan="11">${Lr[1]}</td></tr>`;
             const key = Lr[0], lab = Lr[1];
             const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
             const neg = Lr[2] === 1 || Lr[5] === 1;
             const editK = Lr[3], pct = Lr[4] === 'pct';
             let cells = '';
-            for (let cc = 0; cc < 9; cc++) {
-              if (editK && cc === 3) cells += `<td class="fc-ipcol"${expAttr(explAnnual(key, 3, cd))}><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
-              else cells += `<td${cc === 3 ? ' class="fc-ipcol"' : ''}${expAttr(explAnnual(key, cc, cd))}>${cellFmt(cd[cc][key], neg, pct)}</td>`;
+            for (let cc = 0; cc < 10; cc++) {
+              if (editK && cc === 4) cells += `<td class="fc-ipcol"${expAttr(explAnnual(key, 4, cd))}><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
+              else cells += `<td${cc === 4 ? ' class="fc-ipcol"' : ''}${expAttr(explAnnual(key, cc, cd))}>${cellFmt(cd[cc][key], neg, pct)}</td>`;
             }
             return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
           }).join('')}</tbody>
@@ -270,7 +282,7 @@ function gsummary() {
 
 function render() {
   const cd = colData();
-  const t12 = cd[2], y1 = cd[4];
+  const t12 = cd[2], y1 = cd[5];
   $('#app').innerHTML = `
     <div class="demo-hero" style="padding-bottom:16px">
       <div>
@@ -294,10 +306,12 @@ function render() {
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>July 2026 — Actual vs Budget</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">variance flags over ±5%</span></span></div>
+      <div class="demo-panel-head"><h2>${mFull(MONTHS[avbIdx].m)} — Actual vs Budget</h2><span style="display:flex;gap:10px;align-items:center">
+        <select id="avb-month" class="pa-btn" style="cursor:pointer">${MONTHS.map((m, i) => i >= MONTHS.length - 12 ? `<option value="${i}" ${i === avbIdx ? 'selected' : ''}>${mFull(m.m)}</option>` : '').join('')}</select>
+        ${srcChip('qb')}<span class="k">variance flags over ±5%</span></span></div>
       ${(() => {
-        const bud = baseFrom(asOf - 1, 3);           /* budget = trailing run-rate set last cycle */
-        const act = MONTHS[asOf];
+        const bud = baseFrom(avbIdx - 1, 3);         /* budget = trailing run-rate set last cycle */
+        const act = MONTHS[avbIdx];
         const rows = [
           ['Contract revenue', act.revenue, bud.revenue / 12],
           ['Controls hardware & materials', act.cost.subs, bud.c_subs / 12],
@@ -308,7 +322,7 @@ function render() {
         ];
         const gmAct = (act.revenue - act.cost.subs - act.cost.labor - act.cost.mat - act.cost.equip) / act.revenue * 100;
         return `<table class="demo-tbl tbl-left">
-          <thead><tr><th>Line</th><th style="text-align:right">Actual (Jul)</th><th style="text-align:right">Budget</th><th style="text-align:right">Variance</th><th style="width:110px">Flag</th></tr></thead>
+          <thead><tr><th>Line</th><th style="text-align:right">Actual (${mLong(act.m)})</th><th style="text-align:right">Budget</th><th style="text-align:right">Variance</th><th style="width:110px">Flag</th></tr></thead>
           <tbody>${rows.map(r => {
             const v = r[1] - r[2], pct = v / r[2] * 100;
             const bad = (r[0] === 'Contract revenue') ? pct < -5 : pct > 5;
@@ -402,7 +416,7 @@ function render() {
             const mrr = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
             const arr0 = mrr * 12;
             const arr5 = arr0 * Math.pow(1 + svcGrowth / 100, 5);
-            const rev5 = cd[8].revenue;
+            const rev5 = cd[9].revenue;
             return `Current agreement book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} ARR)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active agreements.<br>
             At ${svcGrowth}%/yr (construction-to-service conversion + tier upgrades), the service line reaches <b>${fmtK(arr5)} ARR by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, recurring.<br>
             <span class="ynote">Recurring revenue is the multiplier on the $300M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
@@ -440,6 +454,7 @@ function render() {
 }
 
 function wire() {
+  $('#avb-month').addEventListener('change', e => { avbIdx = +e.target.value; render(); });
   $('#fc-month').addEventListener('change', e => { asOf = +e.target.value; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); });
   $$('#fc-basis button').forEach(b => b.addEventListener('click', () => { fbasis = +b.dataset.b; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); }));
   $$('#fc-view button').forEach(b => b.addEventListener('click', () => { view = b.dataset.v; render(); }));
@@ -468,8 +483,8 @@ function drawCharts(cd) {
     data: {
       labels: years,
       datasets: [
-        { type: 'bar', label: 'Revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(0,92,151,0.30)', yAxisID: 'y' },
-        { type: 'line', label: 'EBITDA', data: cd.slice(4).map(c => c.ebitda / 1e6), borderColor: cBlue, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+        { type: 'bar', label: 'Revenue', data: cd.slice(5).map(c => c.revenue / 1e6), backgroundColor: 'rgba(0,92,151,0.30)', yAxisID: 'y' },
+        { type: 'line', label: 'EBITDA', data: cd.slice(5).map(c => c.ebitda / 1e6), borderColor: cBlue, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
       ],
     },
     options: { responsive: true, maintainAspectRatio: false,
@@ -484,7 +499,7 @@ function drawCharts(cd) {
       data: {
         labels: years,
         datasets: [
-          { label: 'Construction revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
+          { label: 'Construction revenue', data: cd.slice(5).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
           { label: 'Service revenue (recurring)', data: [1, 2, 3, 4, 5].map(y => mrr0 * Math.pow(1 + svcGrowth / 100, y) / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
         ],
       },

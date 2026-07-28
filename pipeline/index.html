@@ -30,6 +30,7 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'Bid Pipeline' });
+var PFILT = { est: 'all', status: 'all', sector: 'all' };
 const me = currentPersona();
 if (!me || me.perms.external || !(can('bids') || can('margins'))) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
@@ -41,6 +42,8 @@ if (!me || me.perms.external || !(can('bids') || can('margins'))) {
 function render() {
   const showMargin = can('margins');
   const P = BID_PIPELINE;
+  const selOpt = (list, cur) => `<option value="all">All</option>` + list.map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(v)}</option>`).join('');
+  const regRows = P.filter(b => (PFILT.est === 'all' || b.est === PFILT.est) && (PFILT.status === 'all' || b.status === PFILT.status) && (PFILT.sector === 'all' || b.sector === PFILT.sector));
   const open = P.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
   const won = P.filter(b => b.status === 'Won');
   const lost = P.filter(b => b.status === 'Lost');
@@ -63,7 +66,7 @@ function render() {
   ];
   const maxStage = Math.max(...stageVals, 1);
 
-  const rows = P.slice().sort((a, b) => b.due.localeCompare(a.due)).map(b => `
+  const rows = regRows.slice().sort((a, b) => b.due.localeCompare(a.due)).map(b => `
     <tr>
       <td><b>${b.id}</b></td>
       <td>${esc(b.project)}<div class="ynote">${esc(b.owner)}${b.note ? ' · <i>' + esc(b.note) + '</i>' : ''}</div></td>
@@ -114,15 +117,21 @@ function render() {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Bid Register</h2><span class="k">estimators: David Glenney · Taz Abid · Joe Luna</span></div>
+      <div class="demo-panel-head"><h2>Bid Register</h2><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="k">Estimator</label><select class="pa-btn" data-pfilt="est" style="cursor:pointer">${selOpt([...new Set(P.map(b => b.est))].sort(), PFILT.est)}</select>
+        <label class="k">Status</label><select class="pa-btn" data-pfilt="status" style="cursor:pointer">${selOpt(['Draft', 'Submitted', 'Pending Award', 'Won', 'Lost'], PFILT.status)}</select>
+        <label class="k">Sector</label><select class="pa-btn" data-pfilt="sector" style="cursor:pointer">${selOpt([...new Set(P.map(b => b.sector))].sort(), PFILT.sector)}</select>
+        <span class="k">${regRows.length} of ${P.length} bids</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
       <table class="demo-tbl tbl-left">
         <thead><tr><th>Bid #</th><th>Project / Owner</th><th>Sector</th><th>Estimator</th><th>Bid Date</th><th style="text-align:right">Amount</th>${showMargin ? '<th style="text-align:right">Margin Bid</th>' : ''}<th>Status</th></tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody>${rows || `<tr><td colspan="8" style="padding:18px;color:var(--color-text-muted)">No bids match the current filters.</td></tr>`}</tbody>
       </table>
       </div>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
+
+  $$('select[data-pfilt]').forEach(s => s.addEventListener('change', () => { PFILT[s.dataset.pfilt] = s.value; render(); }));
 
   /* sector win-rate chart */
   const sectors = [...new Set(BID_PIPELINE.filter(b => ['Won', 'Lost'].includes(b.status)).map(b => b.sector))];

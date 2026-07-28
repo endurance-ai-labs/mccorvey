@@ -35,7 +35,14 @@ const internal = YatesMode.isInternal() && !(currentPersona() && currentPersona(
 const showMargins = internal && can('margins');
 const M = JOBS.map(j => ({ j, m: jobMetrics(j) }));
 
-const rows = M.map(({ j, m }) => `
+const FILT = { status: 'all', pm: 'all', owner: 'all' };
+const uniq = (f) => [...new Set(JOBS.map(f))].sort();
+const selOpt = (list, cur) => `<option value="all">All</option>` + list.map(v => `<option value="${esc(v)}" ${v === cur ? 'selected' : ''}>${esc(v)}</option>`).join('');
+const jobFilter = ({ j }) => (FILT.status === 'all' || j.status === FILT.status) && (FILT.pm === 'all' || j.pm === FILT.pm) && (FILT.owner === 'all' || j.owner === FILT.owner);
+
+function renderJobs() {
+const shown = M.filter(jobFilter);
+const rows = shown.map(({ j, m }) => `
   <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}'">
     <td><b>${j.id}</b></td>
     <td>${esc(j.name)}<div class="ynote">${esc(j.address)}</div></td>
@@ -55,19 +62,26 @@ $('#app').innerHTML = `
       <h1>Active <em>Jobs</em></h1>
       <div class="sub">${showMargins ? 'Full financial visibility — earned value, cost and margin per job.' : internal ? 'Operational view — production, schedule and field status per job.' : 'Progress and schedule for every active project.'}</div>
     </div>
-    <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${JOBS.length} ACTIVE</span></div>
+    <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${shown.length} OF ${JOBS.length} JOBS</span></div>
   </div>
 
   <div class="demo-panel">
-    <div class="demo-panel-head"><h2>Job Register</h2><span class="k">click a job to open its tracker</span></div>
+    <div class="demo-panel-head"><h2>Job Register</h2><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <label class="k">Status</label><select class="pa-btn" data-filt="status" style="cursor:pointer">${selOpt(uniq(j => j.status), FILT.status)}</select>
+      <label class="k">PM</label><select class="pa-btn" data-filt="pm" style="cursor:pointer">${selOpt(uniq(j => j.pm), FILT.pm)}</select>
+      <label class="k">Customer</label><select class="pa-btn" data-filt="owner" style="cursor:pointer">${selOpt(uniq(j => j.owner), FILT.owner)}</select>
+      <span class="k">click a job to open its tracker</span></span></div>
     <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
       <table class="demo-tbl tbl-left">
         <thead><tr><th>Job #</th><th>Project</th><th>Status</th><th>PM / Supt</th><th>Lead Sub</th><th style="text-align:right">Contract</th><th>Progress</th><th style="text-align:right">Schedule</th>${showMargins ? '<th style="text-align:right">Margin to Date</th>' : ''}</tr></thead>
-        <tbody>${rows}</tbody>
+        <tbody>${rows || `<tr><td colspan="9" style="padding:18px;color:var(--color-text-muted)">No jobs match the current filters.</td></tr>`}</tbody>
       </table>
     </div>
   </div>
   <div class="demo-note">Demo environment · fictional data</div>`;
+$$('select[data-filt]').forEach(s => s.addEventListener('change', () => { FILT[s.dataset.filt] = s.value; renderJobs(); }));
+}
+renderJobs();
 </script>
 </body>
 </html>
