@@ -80,6 +80,18 @@ function render() {
         <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/yates/reports/?id=${j.id}">📄 Owner Progress Report</a>
       </div>
     </div>
+    ${(() => {
+      const stages = [
+        ['Pre-Bid Review', true, 'sales + ops alignment'],
+        ['Sales → Ops Turnover', m.pct > 0 || j.status !== 'Awarded', 'estimate, scope & contacts handed off'],
+        ['Delivery', m.pct > 0, fmtPct(m.pct, 0) + ' complete'],
+        ['Ops → Service Turnover', m.pct >= 100, m.pct >= 100 ? 'service proposal issued' : 'at substantial completion'],
+      ];
+      return `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 14px">
+        ${stages.map((s, i) => `<div style="display:flex;align-items:center;gap:7px;font-size:11px;padding:6px 12px;border-radius:999px;border:1px solid ${s[1] ? 'var(--color-green)' : 'var(--color-border)'};background:${s[1] ? 'var(--color-green-bg)' : 'var(--color-bg-2)'};color:${s[1] ? 'var(--color-green)' : 'var(--color-text-muted)'}">
+          <b>${s[1] ? '✓' : i + 1}</b> ${s[0]} <span style="opacity:.75">· ${s[2]}</span></div>${i < 3 ? '<span style="color:var(--color-slate-hint);align-self:center">→</span>' : ''}`).join('')}
+      </div>`;
+    })()}
     <div class="job-tabs">${tabs}</div>
     <div id="section-body"></div>
     <div class="demo-note">Demo environment · fictional data</div>`;

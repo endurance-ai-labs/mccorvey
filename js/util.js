@@ -207,3 +207,22 @@ function resetChain(key) {
   if (typeof render === 'function') render(); else window.location.reload();
 }
 function apprComplete(key, n) { return apprState(key, n).every(Boolean); }
+
+
+/* ---- booked construction revenue spread over the next N months (per-job even spread to finish) ---- */
+function bookedMonthlySpread(nMonths) {
+  const out = new Array(nMonths).fill(0);
+  const now = new Date('2026-07-15T12:00:00');
+  JOBS.forEach(j => {
+    const m = jobMetrics(j);
+    const remaining = Math.max(0, j.contract - m.earned);
+    if (!remaining) return;
+    const start = j.status === 'Awarded' ? new Date(j.start + 'T12:00:00') : now;
+    const finish = new Date(j.finish + 'T12:00:00');
+    const firstIdx = Math.max(0, Math.round((start - now) / (30.44 * 864e5)));
+    const lastIdx = Math.max(firstIdx, Math.round((finish - now) / (30.44 * 864e5)));
+    const span = lastIdx - firstIdx + 1;
+    for (let i = firstIdx; i <= lastIdx && i < nMonths; i++) out[i] += remaining / span;
+  });
+  return out.map(v => Math.round(v));
+}
