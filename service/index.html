@@ -30,6 +30,7 @@
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
 YatesNav.renderTopbar({ subtitle: 'Service Division' });
+var SFILT = { line: 'all', type: 'all', status: 'all' };
 const me = currentPersona();
 if (!me || me.perms.external) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
@@ -128,7 +129,9 @@ function render() {
     client: c.j.owner, site: c.j.address, tier: c.tier, monthly: c.monthly,
     renewal: '2027-08-01', status: 'Proposed', tech: '—',
   }));
-  const agRows = SERVICE_AGREEMENTS.concat(convRows).slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
+  const allAgs = SERVICE_AGREEMENTS.concat(convRows);
+  const agShown = allAgs.filter(a => (SFILT.line === 'all' || (a.line || 'Controls') === SFILT.line) && (SFILT.type === 'all' || (a.svcType || 'PMA') === SFILT.type) && (SFILT.status === 'all' || a.status === SFILT.status));
+  const agRows = agShown.slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
     <tr>
       <td><b>${esc(a.client)}</b><div class="ynote">${esc(a.site)}</div></td>
       <td>${tierPill(a.tier)}<div class="ynote">${a.line || 'Controls'} · ${a.svcType || 'PMA'}</div></td>
@@ -244,7 +247,11 @@ function render() {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Service Agreement Book</h2><span style="display:flex;gap:6px;align-items:center">${showMoney ? srcChip('qb') : ''}<span class="k">sorted by renewal date</span></span></div>
+      <div class="demo-panel-head"><h2>Service Agreement Book</h2><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="k">Line</label><select class="pa-btn" data-sfilt="line" style="cursor:pointer">${['all', 'Controls', 'HVAC', 'Plumbing'].map(v => `<option value="${v}" ${v === SFILT.line ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
+        <label class="k">Type</label><select class="pa-btn" data-sfilt="type" style="cursor:pointer">${['all', 'PMA', 'On-Demand', 'Small Project'].map(v => `<option value="${v}" ${v === SFILT.type ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
+        <label class="k">Status</label><select class="pa-btn" data-sfilt="status" style="cursor:pointer">${['all', 'Active', 'Expiring', 'Proposed'].map(v => `<option value="${v}" ${v === SFILT.status ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
+        ${showMoney ? srcChip('qb') : ''}<span class="k">${agShown.length} of ${allAgs.length} · sorted by renewal date</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
       <table class="demo-tbl tbl-left">
         <thead><tr><th>Client / Site</th><th>Package</th>${showMoney ? '<th style="text-align:right">MRR</th><th style="text-align:right">Annualized</th>' : ''}<th>Renewal</th><th>Assigned Tech</th><th>Status</th></tr></thead>
@@ -255,6 +262,7 @@ function render() {
       </div>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
+  $$('select[data-sfilt]').forEach(s => s.addEventListener('change', () => { SFILT[s.dataset.sfilt] = s.value; render(); }));
 }
 </script>
 </body>
