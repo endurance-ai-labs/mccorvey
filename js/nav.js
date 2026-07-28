@@ -46,6 +46,7 @@ const NAV_GROUPS = [
     internalOnly: true,
     items: [
       { href: '/yates/budget/',   label: 'Monthly Budget vs Actual' },
+      { href: '/yates/workbook/', label: 'Forecast Workbook' },
       { href: '/yates/forecast/', label: '5-Year Growth Model' },
       { href: '/yates/manpower/', label: 'Manpower & EAC' },
       { href: '/yates/billing/',  label: 'AIA Billing' },
@@ -73,6 +74,7 @@ function _activeGroup(path) {
   if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/budget/')) return 'finance';
+  if (path.startsWith('/workbook/')) return 'finance';
   if (path.startsWith('/manpower/')) return 'finance';
   if (path.startsWith('/billing/')) return 'finance';
   if (path.startsWith('/timesheets/')) return 'finance';
