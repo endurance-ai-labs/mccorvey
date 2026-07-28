@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Forecast Workbook — Y8S Operations Portal</title>
+<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="Y8S Operations Portal">
+<meta property="og:title" content="YATES Company, LLC — Operations Portal">
+<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Forecast Workbook' });
+if (!YatesMode.isInternal() || !can('fin')) {
+  if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
+    <div class="ynote">The forecast workbook requires financial access.</div></div>`;
+} else {
+  bootWB();
+}
+
+function bootWB() {
+const TABS = [
+  ['estact', 'Job Est and Act'],
+  ['total', 'Total Summary'],
+  ['sales', 'Sales Summary'],
+  ['csummary', 'Construction Summary'],
+  ['cforecast', 'Construction Forecast'],
+  ['clabor', 'Construction Labor'],
+  ['manpower', 'Manpower Forecast'],
+];
+let tab = (location.hash || '').replace('#', '') || 'csummary';
+if (!TABS.some(t => t[0] === tab)) tab = 'csummary';
+
+const M13 = (() => {
+  const out = []; const d = new Date('2026-08-15T12:00:00');
+  for (let i = 0; i < 13; i++) { out.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })); d.setMonth(d.getMonth() + 1); }
+  return out;
+})();
+const $$$ = (n) => Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 0 });
+const $$2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const dcell = (n) => n < 0 ? `<td class="wb-neg">(${$$2(Math.abs(n))})</td>` : `<td>${$$2(n)}</td>`;
+const ACTIVE = () => JOBS.map(j => ({ j, m: jobMetrics(j) }));
+
+/* ---------- 1. Job Est and Act export ---------- */
+function tabEstAct() {
+  const groups = {};
+  ACTIVE().forEach(({ j, m }) => { (groups[j.owner] = groups[j.owner] || []).push({ j, m }); });
+  let rows = '';
+  Object.keys(groups).sort().forEach(owner => {
+    let tec = 0, tac = 0, ter = 0, tar = 0;
+    groups[owner].forEach(({ j, m }) => {
+      const ec = m.budget, ac = m.cost, er = j.contract, ar = m.earned;
+      tec += ec; tac += ac; ter += er; tar += ar;
+      rows += `<tr><td class="wb-indent">${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : j.name)}</td>${dcell(ec)}${dcell(ac)}${dcell(ac - ec)}${dcell(er)}${dcell(ar)}${dcell(ar - er)}</tr>`;
+    });
+    rows = `<tr class="wb-group"><td class="l">${esc(owner)}</td><td colspan="6"></td></tr>` + rows +
+      `<tr class="wb-total"><td class="l">Total ${esc(owner)}</td>${dcell(tec)}${dcell(tac)}${dcell(tac - tec)}${dcell(ter)}${dcell(tar)}${dcell(tar - ter)}</tr>`;
+    // append accumulated
+    tabEstAct._acc = (tabEstAct._acc || '') + rows; rows = '';
+  });
+  const html = tabEstAct._acc; tabEstAct._acc = '';
+  return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · synced from QuickBooks — the manual export this replaces took Tips-tab instructions to run</span></div>
+    <div class="wb-scroll"><table class="wb">
+      <thead><tr><th class="l">Customer / Job</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Revenue</th><th>Act. Revenue</th><th>($) Diff.</th></tr></thead>
+      <tbody>${html}</tbody></table></div>`;
+}
+
+/* ---------- 2. Total Summary ---------- */
+function tabTotal() {
+  const mos = M13.slice(0, 4);
+  const constr = bookedMonthlySpread(4);
+  const svc = (t) => SERVICE_AGREEMENTS.filter(a => a.svcType === t && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+  const pend = BID_PIPELINE.filter(b => ['Submitted', 'Pending Award'].includes(b.status)).reduce((x, b) => x + b.amount * (b.status === 'Submitted' ? 0.35 : 0.65), 0) / 6;
+  const svcPend = SERVICE_AGREEMENTS.filter(a => a.status === 'Proposed').reduce((x, a) => x + a.monthly, 0);
+  const row = (label, vals, cls) => `<tr class="${cls || ''}"><td class="l">${label}</td>${vals.map(v => v === null ? '<td>-</td>' : dcell(v)).join('')}</tr>`;
+  const booked = mos.map((m, i) => constr[i] + svc('On-Demand') + svc('PMA') + svc('Small Project'));
+  return `<div class="wb-stamp">Yates Company <span>4 Month Forecast — the service rows fill themselves here</span></div>
+    <table class="wb" style="max-width:760px">
+      <thead><tr><th class="l"></th>${mos.map(m => `<th>${m}</th>`).join('')}</tr></thead>
+      <tbody>
+        <tr class="wb-group"><td class="l">Booked Jobs</td><td colspan="4"></td></tr>
+        ${row('Construction Jobs Forecast', constr)}
+        ${row('On Demand Service', mos.map(() => svc('On-Demand')))}
+        ${row('Active PMA Contracts — Monthly', mos.map(() => svc('PMA') * 0.72))}
+        ${row('Active PMA Contracts — Qtrly', mos.map(() => svc('PMA') * 0.28))}
+        ${row('Small Projects — Service', mos.map(() => svc('Small Project')))}
+        ${row('Total Booked Jobs', booked, 'wb-total')}
+        <tr><td class="l" colspan="5"></td></tr>
+        <tr class="wb-group"><td class="l">Pending Jobs</td><td colspan="4"></td></tr>
+        ${row('Construction Sales Forecast (weighted)', mos.map(() => pend))}
+        ${row('Service Pending Proposals', mos.map(() => svcPend))}
+        ${row('Total Booked + Pending', mos.map((m, i) => booked[i] + pend + svcPend), 'wb-total')}
+      </tbody></table>`;
+}
+
+/* ---------- 3. Sales Summary ---------- */
+function tabSales() {
+  const ests = [...new Set(BID_PIPELINE.map(b => b.est))];
+  const rows = ests.map(e => {
+    const mine = BID_PIPELINE.filter(b => b.est === e);
+    const open = mine.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
+    const won = mine.filter(b => b.status === 'Won'), lost = mine.filter(b => b.status === 'Lost');
+    const weighted = open.reduce((x, b) => x + b.amount * ({ Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status]), 0);
+    return `<tr><td class="l">${esc(e)}</td><td>${open.length}</td>${dcell(open.reduce((x, b) => x + b.amount, 0))}${dcell(weighted)}<td>${won.length}</td><td>${lost.length}</td><td>${won.length + lost.length ? Math.round(won.length / (won.length + lost.length) * 100) + '%' : '-'}</td></tr>`;
+  }).join('');
+  const openAll = BID_PIPELINE.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
+  return `<div class="wb-stamp">Sales Tracker <span>factored landings feed the Manpower Forecast tab automatically</span></div>
+    <table class="wb" style="max-width:860px">
+      <thead><tr><th class="l">Salesperson</th><th>Open Bids</th><th>Open $</th><th>Factored $</th><th>Won (T-6)</th><th>Lost (T-6)</th><th>Hit Rate</th></tr></thead>
+      <tbody>${rows}
+        <tr class="wb-total"><td class="l">Total</td><td>${openAll.length}</td>${dcell(openAll.reduce((x, b) => x + b.amount, 0))}${dcell(openAll.reduce((x, b) => x + b.amount * ({ Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status]), 0))}<td>${BID_PIPELINE.filter(b => b.status === 'Won').length}</td><td>${BID_PIPELINE.filter(b => b.status === 'Lost').length}</td><td></td></tr>
+      </tbody></table>
+    <div class="ynote" style="margin-top:10px">Full detail with win/loss notes lives in the <a class="wb-link" href="/yates/pipeline/">Bid Pipeline</a>.</div>`;
+}
+
+/* ---------- 4. Construction Summary (their signature sheet) ---------- */
+function tabCSummary() {
+  const rows = ACTIVE().filter(({ m }) => m.pct < 100 || m.pct >= 100 && m.billedAll < 1e12).slice(0)
+    .sort((a, b) => a.j.owner.localeCompare(b.j.owner)).map(({ j, m }) => {
+      const spread = jobMonthlySpread(j, 13);
+      const actGM = m.earned ? (m.earned - m.cost) / m.earned * 100 : 0;
+      const estGM = (j.contract - m.budget) / j.contract * 100;
+      const costPct = m.budget ? m.cost / m.budget * 100 : 0;
+      const billPct = j.contract ? m.billedAll / j.contract * 100 : 0;
+      return `<tr>
+        <td class="l">${esc(j.owner.length > 30 ? j.owner.slice(0, 30) + '…' : j.owner)}</td>
+        <td class="l"><a class="wb-link" href="/yates/jobs/job/?id=${j.id}">${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : j.name)}</a></td>
+        <td class="l">${esc(j.pm.split(' ').map(w => w[0]).join(''))}</td>
+        ${dcell(m.marginToDate)}
+        <td>${estGM.toFixed(1)}%</td>
+        <td class="${actGM < estGM - 2 ? 'wb-neg' : ''}">${actGM.toFixed(1)}%</td>
+        <td>${costPct.toFixed(1)}%</td>
+        <td>${billPct.toFixed(1)}%</td>
+        ${spread.map(v => `<td>${v ? $$$(v) : '-'}</td>`).join('')}
+      </tr>`;
+    }).join('');
+  return `<div class="wb-stamp">Week Ended <span>7/03/2026 · the 13-month spread fills from the size-band curves — no more typed percentages</span></div>
+    <div class="wb-scroll"><table class="wb">
+      <thead><tr><th class="l">Customer</th><th class="l">Job</th><th class="l">PM</th><th>Act. Margin</th><th>Est. GM %</th><th>Act. GM %</th><th>Cost Act/Est</th><th>% Billed</th>${M13.map(m => `<th>${m}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- 5. Construction Forecast (cost-code detail) ---------- */
+function tabCForecast() {
+  const rows = ACTIVE().filter(({ m }) => m.pct > 0 && m.pct < 100).sort((a, b) => b.j.contract - a.j.contract).slice(0, 6).map(({ j, m }) => {
+    const detail = j.sov.map(r => {
+      const ec = r.budget, ac = r.costToDate || 0, er = r.scheduled, ar = r.scheduled * r.pct / 100;
+      return `<tr><td class="wb-indent">${esc(r.desc)} (${r.item})</td>${dcell(ec)}${dcell(ac)}${dcell(ac - ec)}${dcell(er)}${dcell(ar)}</tr>`;
+    }).join('');
+    return `<tr class="wb-group"><td class="l">${esc(j.owner)} — ${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : '')}</td><td colspan="5"></td></tr>
+      ${detail}
+      <tr class="wb-total"><td class="l">Total</td>${dcell(m.budget)}${dcell(m.cost)}${dcell(m.cost - m.budget)}${dcell(j.contract)}${dcell(m.earned)}</tr>`;
+  }).join('');
+  return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · cost-code detail, grouped with subtotals — click any group's job in Construction Summary for the full tracker</span></div>
+    <div class="wb-scroll"><table class="wb">
+      <thead><tr><th class="l">Job / Cost Code</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Revenue</th><th>Act. Revenue</th></tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- 6. Construction Labor ---------- */
+function tabCLabor() {
+  const CODES = [['100-000-00', 'Engineering', 'eng'], ['100-002-00', 'Technical Labor', 'tech'], ['100-004-00', 'Project Management', 'pm'], ['100-006-00', 'Electrical Install Labor', 'install']];
+  const rows = ACTIVE().filter(({ m }) => m.pct > 0 && m.pct < 100).sort((a, b) => b.j.contract - a.j.contract).slice(0, 5).map(({ j, m }) => {
+    const spread = jobMonthlySpread(j, 3);
+    const tot = spread.reduce((a, b) => a + b, 0) || 1;
+    let te = 0, ta = 0, th = 0, tah = 0;
+    const detail = CODES.map(c => {
+      const mixPct = ENGINE.tradeMix[c[2]] / 90;
+      const estC = m.budget * mixPct * 0.55;
+      const actC = m.cost * mixPct * 0.55;
+      const rate = ENGINE.blendedRates[c[2]];
+      const estH = estC / rate, actH = actC / rate;
+      te += estC; ta += actC; th += estH; tah += actH;
+      const over = actH - estH * m.pct / 100;
+      return `<tr><td class="wb-indent">${c[0]} (${c[1]})</td>${dcell(estC)}${dcell(actC)}${dcell(actC - estC)}
+        <td>${Math.round(estH)}</td><td>${Math.round(actH)}</td><td class="${over > 0 ? 'wb-neg' : ''}">${over > 0 ? Math.round(over) : '(' + Math.round(Math.abs(over)) + ')'}</td>
+        ${spread.map(v => `<td>${Math.round(v / tot * 100)}%<span style="opacity:.5;font-size:9px"> auto</span></td>`).join('')}</tr>`;
+    }).join('');
+    return `<tr class="wb-group"><td class="l">${esc(j.owner)} — ${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : '')}</td><td colspan="9"></td></tr>${detail}
+      <tr class="wb-total"><td class="l">Total</td>${dcell(te)}${dcell(ta)}${dcell(ta - te)}<td>${Math.round(th)}</td><td>${Math.round(tah)}</td><td></td><td colspan="3"></td></tr>`;
+  }).join('');
+  return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · where the workbook says "enter %", the curves fill the months automatically</span></div>
+    <div class="wb-scroll"><table class="wb">
+      <thead><tr><th class="l">Job / Labor Code</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Hours</th><th>Actual Hrs</th><th>Hrs (under)/Over</th>${M13.slice(0, 3).map(mm => `<th>${mm}</th>`).join('')}</tr></thead>
+      <tbody>${rows}</tbody></table></div>`;
+}
+
+/* ---------- 7. Manpower Forecast (yellow inputs + red band, alive) ---------- */
+let WMIX = Object.assign({}, ENGINE.tradeMix);
+function tabManpower() {
+  const booked = bookedMonthlySpread(13);
+  const factored = new Array(13).fill(0);
+  const now = new Date('2026-07-15T12:00:00');
+  const landings = [];
+  BID_PIPELINE.filter(b => ['Submitted', 'Pending Award'].includes(b.status)).forEach(b => {
+    const p = b.status === 'Submitted' ? 0.35 : 0.65;
+    const land = Math.max(0, Math.round((new Date(b.due + 'T12:00:00') - now) / (30.44 * 864e5)) + 1);
+    if (land < 13) landings.push({ b, land, amt: b.amount * p });
+    const curve = b.amount > 900000 ? ENGINE.curve18 : ENGINE.curve12;
+    curve.forEach((pct, mi) => { const idx = land + mi; if (idx < 13) factored[idx] += b.amount * p * pct / 100; });
+  });
+  const total = booked.map((v, i) => v + factored[i]);
+  const mixSum = Object.values(WMIX).reduce((a, b) => a + b, 0);
+  const installHrs = total.map(v => v * WMIX.install / 100 / ENGINE.blendedRates.install);
+  const heads = installHrs.map(h => h / ENGINE.hrsPerHead);
+  const mixRow = (k, label) => `<tr><td class="l">${label}</td><td class="wb-yellow"><input class="wb-in" data-wmix="${k}" value="${WMIX[k]}">%</td>${total.map(v => dcell(v * WMIX[k] / 100).replace('<td>', '<td>')).join('')}</tr>`;
+  return `<div class="wb-stamp">Enter Yellow Only <span>— every other cell computes. Mix currently ${mixSum}% of revenue (remainder = mileage & incentive)</span></div>
+    <div class="wb-scroll"><table class="wb">
+      <thead><tr><th class="l">Line</th><th>Mix %</th>${M13.map(m => `<th>${m}</th>`).join('')}</tr></thead>
+      <tbody>
+        <tr class="wb-total"><td class="l">TOTAL REV (booked + factored)</td><td></td>${total.map(v => dcell(v)).join('')}</tr>
+        <tr><td class="l wb-indent">Booked jobs (curve spreads)</td><td></td>${booked.map(v => dcell(v)).join('')}</tr>
+        <tr><td class="l wb-indent">Rev from factored sales</td><td></td>${factored.map(v => dcell(v)).join('')}</tr>
+        <tr class="wb-redband"><td class="l" colspan="2">$350,000 – $900,000 → 12-MO CURVE · &gt;$900,000 → 18-MO CURVE</td><td colspan="13">factored landings: ${landings.slice(0, 4).map(l => l.b.id + ' ' + M13[Math.min(12, l.land)] + ' (' + fmtK(l.amt) + ')').join(' · ') || 'none'}</td></tr>
+        <tr class="wb-group"><td class="l" colspan="15">Revenue by Trade</td></tr>
+        ${mixRow('pm', 'PM')}
+        ${mixRow('eng', 'Eng')}
+        ${mixRow('tech', 'Tech')}
+        ${mixRow('material', 'Material')}
+        ${mixRow('install', 'Install')}
+        <tr class="wb-group"><td class="l" colspan="15">Staffing</td></tr>
+        <tr><td class="l">Manpower Hrs (Install)</td><td></td>${installHrs.map(v => `<td>${$$$(v)}</td>`).join('')}</tr>
+        <tr class="wb-total"><td class="l"># Heads Install (${ENGINE.weeksPerMo}×${ENGINE.hrsPerWk}×${ENGINE.utilization}=${ENGINE.hrsPerHead.toFixed(1)})</td><td></td>${heads.map(v => `<td class="${v > ENGINE.installHeadsCurrent ? 'wb-neg' : ''}">${v.toFixed(1)}</td>`).join('')}</tr>
+      </tbody></table></div>
+    <div class="ynote" style="margin-top:10px">Red months exceed the current crew of ${ENGINE.installHeadsCurrent} — the hiring plan lives in <a class="wb-link" href="/yates/manpower/">Manpower &amp; EAC</a>.</div>`;
+}
+
+/* ---------- shell ---------- */
+function render() {
+  const body = { estact: tabEstAct, total: tabTotal, sales: tabSales, csummary: tabCSummary, cforecast: tabCForecast, clabor: tabCLabor, manpower: tabManpower }[tab]();
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:10px">
+      <div>
+        <div class="demo-eyebrow">FINANCIAL · THE MONTHLY WORKBOOK, ALIVE</div>
+        <h1>Forecast <em>Workbook</em></h1>
+        <div class="sub">The same tabs, the same layout, the same conventions as the monthly forecast file — except nothing is exported, copied forward, or typed by hand. Every cell recomputes from QuickBooks, ServiceTitan and the job register.</div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> ACTUALS AS OF 7/03/2026</span>
+        <span style="display:flex;gap:6px">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</span>
+      </div>
+    </div>
+    <div class="wb-tabs">${TABS.map(t => `<div class="wb-tab ${t[0] === tab ? 'active' : ''}" onclick="location.hash='${t[0]}'">${t[1]}</div>`).join('')}</div>
+    <div class="wb-sheet">${body}</div>
+    <div class="demo-note">Demo environment · fictional data · one workbook, zero manual refresh</div>`;
+  $$('input[data-wmix]').forEach(inp => inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value); if (!isNaN(v)) WMIX[inp.dataset.wmix] = v; render();
+  }));
+}
+window.addEventListener('hashchange', () => { const h = location.hash.replace('#', ''); if (TABS.some(t => t[0] === h)) { tab = h; render(); } });
+render();
+}
+</script>
+</body>
+</html>

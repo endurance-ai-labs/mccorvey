@@ -212,27 +212,29 @@ function apprComplete(key, n) { return apprState(key, n).every(Boolean); }
 /* ---- booked construction revenue spread over the next N months.
    Smoothed: minimum 3-month span, larger jobs spread longer, and a gentle
    bell weighting so no single month spikes. ---- */
-function bookedMonthlySpread(nMonths) {
+function jobMonthlySpread(j, nMonths) {
   const out = new Array(nMonths).fill(0);
   const now = new Date('2026-07-15T12:00:00');
-  JOBS.forEach(j => {
-    const m = jobMetrics(j);
-    const remaining = Math.max(0, j.contract - m.earned);
-    if (!remaining) return;
-    const start = j.status === 'Awarded' ? new Date(j.start + 'T12:00:00') : now;
-    const finish = new Date(j.finish + 'T12:00:00');
-    const firstIdx = Math.max(0, Math.round((start - now) / (30.44 * 864e5)));
-    let span = Math.round((finish - now) / (30.44 * 864e5)) - firstIdx + 1;
-    const minSpan = remaining > 2e6 ? 8 : remaining > 500000 ? 5 : 3;
-    span = Math.max(minSpan, span);
-    /* gentle bell: weights 1..peak..1 */
-    const w = [];
-    for (let i = 0; i < span; i++) w.push(1 + Math.sin(Math.PI * (i + 0.5) / span));
-    const wSum = w.reduce((a, b) => a + b, 0);
-    for (let i = 0; i < span; i++) {
-      const idx = firstIdx + i;
-      if (idx >= 0 && idx < nMonths) out[idx] += remaining * w[i] / wSum;
-    }
-  });
+  const m = jobMetrics(j);
+  const remaining = Math.max(0, j.contract - m.earned);
+  if (!remaining) return out;
+  const start = j.status === 'Awarded' ? new Date(j.start + 'T12:00:00') : now;
+  const finish = new Date(j.finish + 'T12:00:00');
+  const firstIdx = Math.max(0, Math.round((start - now) / (30.44 * 864e5)));
+  let span = Math.round((finish - now) / (30.44 * 864e5)) - firstIdx + 1;
+  const minSpan = remaining > 2e6 ? 8 : remaining > 500000 ? 5 : 3;
+  span = Math.max(minSpan, span);
+  const w = [];
+  for (let i = 0; i < span; i++) w.push(1 + Math.sin(Math.PI * (i + 0.5) / span));
+  const wSum = w.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < span; i++) {
+    const idx = firstIdx + i;
+    if (idx >= 0 && idx < nMonths) out[idx] += remaining * w[i] / wSum;
+  }
   return out.map(v => Math.round(v));
+}
+function bookedMonthlySpread(nMonths) {
+  const out = new Array(nMonths).fill(0);
+  JOBS.forEach(j => jobMonthlySpread(j, nMonths).forEach((v, i) => out[i] += v));
+  return out;
 }
