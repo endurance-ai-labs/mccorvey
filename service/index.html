@@ -131,7 +131,7 @@ function render() {
   const agRows = SERVICE_AGREEMENTS.concat(convRows).slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
     <tr>
       <td><b>${esc(a.client)}</b><div class="ynote">${esc(a.site)}</div></td>
-      <td>${tierPill(a.tier)}</td>
+      <td>${tierPill(a.tier)}<div class="ynote">${a.line || 'Controls'} · ${a.svcType || 'PMA'}</div></td>
       ${showMoney ? `<td style="text-align:right">${fmt$(a.monthly)}/mo</td><td style="text-align:right">${fmt$(a.monthly * 12)}</td>` : ''}
       <td>${fmtDateShort(a.renewal)}, ${a.renewal.slice(0, 4)}</td>
       <td>${esc(a.tech)}</td>
@@ -168,6 +168,25 @@ function render() {
       <div class="ykpi"><div class="l">Pipeline MRR</div><div class="v">${fmtK(pipeMrr)}</div><div class="s">from active construction jobs</div></div>` : ''}
       <div class="ykpi amber"><div class="l">Renewals Next 90 Days</div><div class="v">${expiring.length}</div><div class="s">${expiring.map(e => e.client.split(' ')[0]).join(', ')}</div></div>
       <div class="ykpi red"><div class="l">Open Service Calls</div><div class="v">${openCalls}</div><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency · ${SERVICE_CALLS.filter(c => c.priority === 'High').length} high</div></div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Service Book by Line &amp; Type</h2><span class="k">controls · HVAC · plumbing × PMA · on-demand · small projects</span></div>
+      ${(() => {
+        const lines = ['Controls', 'HVAC', 'Plumbing'];
+        const types = ['PMA', 'On-Demand', 'Small Project'];
+        const cell = (ln, ty) => SERVICE_AGREEMENTS.filter(a => a.line === ln && a.svcType === ty && a.status !== 'Proposed');
+        return `<table class="demo-tbl tbl-left">
+          <thead><tr><th>Service Line</th>${types.map(t => `<th style="text-align:right">${t}</th>`).join('')}<th style="text-align:right">Line Total</th></tr></thead>
+          <tbody>${lines.map(ln => {
+            const rowCells = types.map(ty => { const c = cell(ln, ty); return { n: c.length, mrr: c.reduce((x, a) => x + a.monthly, 0) }; });
+            const tot = rowCells.reduce((x, c) => x + c.mrr, 0);
+            return `<tr><td><b>${ln}</b></td>${rowCells.map(c => `<td style="text-align:right">${c.n ? c.n + ' · ' + (showMoney ? fmt$(c.mrr) + '/mo' : '') : '—'}</td>`).join('')}
+              <td style="text-align:right;font-weight:700">${showMoney ? fmt$(tot) + '/mo' : rowCells.reduce((x, c) => x + c.n, 0) + ' agreements'}</td></tr>`;
+          }).join('')}</tbody>
+        </table>
+        <div class="ynote" style="margin-top:8px">Plumbing is a single agreement today — modeled as its own line so growth (or an acquisition) drops straight in.</div>`;
+      })()}
     </div>
 
     ${showMoney ? `

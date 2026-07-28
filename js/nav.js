@@ -45,7 +45,9 @@ const NAV_GROUPS = [
     label: 'Financial',
     internalOnly: true,
     items: [
-      { href: '/yates/forecast/', label: 'Budget & Forecast' },
+      { href: '/yates/budget/',   label: 'Monthly Budget vs Actual' },
+      { href: '/yates/forecast/', label: '5-Year Growth Model' },
+      { href: '/yates/manpower/', label: 'Manpower & EAC' },
       { href: '/yates/billing/',  label: 'AIA Billing' },
       { href: '/yates/timesheets/', label: 'Timesheets' },
     ],
@@ -70,6 +72,8 @@ function _activeGroup(path) {
   if (path.startsWith('/bids/')) return 'bids';
   if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
+  if (path.startsWith('/budget/')) return 'finance';
+  if (path.startsWith('/manpower/')) return 'finance';
   if (path.startsWith('/billing/')) return 'finance';
   if (path.startsWith('/timesheets/')) return 'finance';
   if (path.startsWith('/brain/')) return 'brain';

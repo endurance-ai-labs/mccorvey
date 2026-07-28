@@ -357,6 +357,8 @@ window.BID_DEFAULTS = BID_DEFAULTS;
     ["BUDA-2510", "Buda Data Processing Center — CRAC Integration & Monitoring", "Lone Star Data Infrastructure", "1550 Main St, Buda, TX", "Mission Critical — CRAC Integration (Lynxspring)", "Jordan Felps, P.E.", "C. Delgado", 3, "Just Started", "2025-07-14", "2026-01-30", 684200, 10, 4, 1.0],
     ["CANY-2511", "Canyon Lake Resort & Spa — Guestroom EMS (214 Keys)", "Canyon Lake Hospitality Group", "2273 FM 2673, Canyon Lake, TX", "Hospitality — Guestroom EMS (Innotech)", "Brandon Yates", "M. Okafor", 1, "Awarded", "2025-08-18", "2026-02-27", 796400, 10, 0, 1.0],
     ["SCHL-2512", "Schlagel Distribution HQ — Office & Warehouse BAS", "Schlagel Distribution Co.", "8200 Interport Blvd, San Antonio, TX", "Commercial — New BAS (i-Vu)", "Tyler Reidhead", "R. Trejo", 2, "Awarded", "2025-09-01", "2026-03-20", 312600, 10, 0, 1.0],
+    ["BLUE-2503", "Bluebonnet ISD — Districtwide MEP Controls Pkg #1 (14 Campuses)", "Bluebonnet Independent School District", "Districtwide · Guadalupe County, TX", "K-12 — Districtwide MEP Controls (i-Vu)", "Tyler Reidhead", "R. Trejo", 1, "In Progress", "2025-03-03", "2026-05-29", 5850000, 5, 41, 0.98],
+    ["BLUE-2601", "Bluebonnet ISD — Districtwide MEP Controls Pkg #2 (11 Campuses)", "Bluebonnet Independent School District", "Districtwide · Guadalupe County, TX", "K-12 — Districtwide MEP Controls (i-Vu)", "Tyler Reidhead", "C. Delgado", 1, "Awarded", "2025-10-05", "2027-02-26", 7150000, 5, 0, 1.0],
   ];
 
   const SOV_T = [
@@ -694,20 +696,20 @@ window.SERVICE_TIERS = SERVICE_TIERS;
    Tiers and inclusions mirror y8sco.com/services-packages.
    ========================================================= */
 const SERVICE_AGREEMENTS = [
-  { client: "Central Texas ISD", site: "12 campuses · San Marcos", tier: "Monthly", monthly: 3850, start: "2025-01-01", renewal: "2026-12-31", status: "Active", tech: "M. Ibarra" },
-  { client: "Hillview State University", site: "Science Hall + 3 bldgs", tier: "Monthly", monthly: 3200, start: "2025-02-01", renewal: "2027-01-31", status: "Active", tech: "T. Coleman" },
-  { client: "City of San Marcos", site: "Civic Center + Library", tier: "Quarterly", monthly: 1150, start: "2024-03-01", renewal: "2026-08-31", status: "Expiring", tech: "L. Fuentes" },
-  { client: "Guadalupe County", site: "Annex + Courthouse", tier: "Quarterly", monthly: 980, start: "2024-04-01", renewal: "2027-03-31", status: "Active", tech: "M. Ibarra" },
-  { client: "Plum Creek Medical Partners", site: "Kyle MOB", tier: "Monthly", monthly: 2650, start: "2024-08-01", renewal: "2026-09-30", status: "Expiring", tech: "T. Coleman" },
-  { client: "Blanco River Holdings", site: "Office Park — 3 bldgs", tier: "Quarterly", monthly: 890, start: "2024-05-01", renewal: "2027-04-30", status: "Active", tech: "L. Fuentes" },
-  { client: "City of New Braunfels", site: "Rec Center + Pool", tier: "Quarterly", monthly: 1240, start: "2025-03-01", renewal: "2027-02-28", status: "Active", tech: "M. Ibarra" },
-  { client: "Hill Country Baptist Health", site: "Main Hospital Campus", tier: "Monthly", monthly: 3675, start: "2025-06-01", renewal: "2027-05-31", status: "Active", tech: "T. Coleman" },
-  { client: "Riverbend Church", site: "Sanctuary + Annex", tier: "Annual", monthly: 420, start: "2024-10-01", renewal: "2026-09-30", status: "Expiring", tech: "L. Fuentes" },
-  { client: "San Marcos Outlet Pavilion", site: "Retail Pavilion", tier: "Custom", monthly: 1550, start: "2025-07-01", renewal: "2027-06-30", status: "Active", tech: "M. Ibarra" },
-  { client: "Comal County Offices", site: "3 county facilities", tier: "Annual", monthly: 510, start: "2025-01-15", renewal: "2027-01-14", status: "Active", tech: "L. Fuentes" },
-  { client: "Alamo Foods Distribution", site: "Cold Storage — Selma", tier: "Monthly", monthly: 2980, start: "2025-09-01", renewal: "2026-10-15", status: "Proposed", tech: "—" },
-  { client: "Lone Star Data Infrastructure", site: "Buda Data Center", tier: "Custom", monthly: 4400, start: "2026-02-01", renewal: "2027-01-31", status: "Proposed", tech: "—" },
-  { client: "Wimberley ISD", site: "District-wide", tier: "Quarterly", monthly: 1380, start: "2025-12-01", renewal: "2026-11-30", status: "Proposed", tech: "—" },
+  { client: "Central Texas ISD", line: "Controls", svcType: "PMA", site: "12 campuses · San Marcos", tier: "Monthly", monthly: 3850, start: "2025-01-01", renewal: "2026-12-31", status: "Active", tech: "M. Ibarra" },
+  { client: "Hillview State University", line: "Controls", svcType: "PMA", site: "Science Hall + 3 bldgs", tier: "Monthly", monthly: 3200, start: "2025-02-01", renewal: "2027-01-31", status: "Active", tech: "T. Coleman" },
+  { client: "City of San Marcos", line: "HVAC", svcType: "PMA", site: "Civic Center + Library", tier: "Quarterly", monthly: 1150, start: "2024-03-01", renewal: "2026-08-31", status: "Expiring", tech: "L. Fuentes" },
+  { client: "Guadalupe County", line: "Controls", svcType: "PMA", site: "Annex + Courthouse", tier: "Quarterly", monthly: 980, start: "2024-04-01", renewal: "2027-03-31", status: "Active", tech: "M. Ibarra" },
+  { client: "Plum Creek Medical Partners", line: "HVAC", svcType: "PMA", site: "Kyle MOB", tier: "Monthly", monthly: 2650, start: "2024-08-01", renewal: "2026-09-30", status: "Expiring", tech: "T. Coleman" },
+  { client: "Blanco River Holdings", line: "Controls", svcType: "On-Demand", site: "Office Park — 3 bldgs", tier: "Quarterly", monthly: 890, start: "2024-05-01", renewal: "2027-04-30", status: "Active", tech: "L. Fuentes" },
+  { client: "City of New Braunfels", line: "HVAC", svcType: "PMA", site: "Rec Center + Pool", tier: "Quarterly", monthly: 1240, start: "2025-03-01", renewal: "2027-02-28", status: "Active", tech: "M. Ibarra" },
+  { client: "Hill Country Baptist Health", line: "Controls", svcType: "PMA", site: "Main Hospital Campus", tier: "Monthly", monthly: 3675, start: "2025-06-01", renewal: "2027-05-31", status: "Active", tech: "T. Coleman" },
+  { client: "Riverbend Church", line: "HVAC", svcType: "On-Demand", site: "Sanctuary + Annex", tier: "Annual", monthly: 420, start: "2024-10-01", renewal: "2026-09-30", status: "Expiring", tech: "L. Fuentes" },
+  { client: "San Marcos Outlet Pavilion", line: "Controls", svcType: "Small Project", site: "Retail Pavilion", tier: "Custom", monthly: 1550, start: "2025-07-01", renewal: "2027-06-30", status: "Active", tech: "M. Ibarra" },
+  { client: "Comal County Offices", line: "Plumbing", svcType: "PMA", site: "3 county facilities", tier: "Annual", monthly: 510, start: "2025-01-15", renewal: "2027-01-14", status: "Active", tech: "L. Fuentes" },
+  { client: "Alamo Foods Distribution", line: "Controls", svcType: "PMA", site: "Cold Storage — Selma", tier: "Monthly", monthly: 2980, start: "2025-09-01", renewal: "2026-10-15", status: "Proposed", tech: "—" },
+  { client: "Lone Star Data Infrastructure", line: "Controls", svcType: "PMA", site: "Buda Data Center", tier: "Custom", monthly: 4400, start: "2026-02-01", renewal: "2027-01-31", status: "Proposed", tech: "—" },
+  { client: "Wimberley ISD", line: "HVAC", svcType: "Small Project", site: "District-wide", tier: "Quarterly", monthly: 1380, start: "2025-12-01", renewal: "2026-11-30", status: "Proposed", tech: "—" },
 ];
 const SERVICE_CALLS = [
   { num: "SC-4211", client: "Hill Country Baptist Health", issue: "OR suite humidity alarm — AHU-2 valve hunting", priority: "Emergency", tech: "T. Coleman", status: "In Progress", opened: "2026-07-27" },
@@ -758,3 +760,40 @@ window.BID_PIPELINE = BID_PIPELINE;
     } catch (e) {}
   });
 })();
+
+
+/* =========================================================
+   FORECAST ENGINE PARAMETERS — fictional recreation of the
+   monthly-forecast math (trade mix, spread curves, heads).
+   ========================================================= */
+const ENGINE = {
+  tradeMix: { pm: 7, eng: 8, tech: 9, material: 46, install: 20 },   /* % of revenue; remainder = mileage/incentive/other */
+  curve12: [1, 3, 26, 18, 16, 11, 3, 3, 4, 5, 5, 5],                 /* % of job revenue by month — $350K-$900K jobs */
+  curve18: [2, 2, 4, 5, 3, 9, 10, 8, 6, 6, 6, 6, 6, 6, 6, 5, 5, 5], /* larger jobs */
+  weeksPerMo: 4.3, hrsPerWk: 40, utilization: 0.9,                   /* heads = hours / (4.3*40*0.9 = 154.8) */
+  blendedRates: { install: 82, tech: 96, eng: 112, pm: 105 },        /* $/hr for hours conversion */
+  installHeadsCurrent: 26,
+};
+ENGINE.hrsPerHead = ENGINE.weeksPerMo * ENGINE.hrsPerWk * ENGINE.utilization;
+window.ENGINE = ENGINE;
+
+/* utilization snapshot — labor dollars costed to… (from timesheets/ServiceTitan) */
+const UTILIZATION = {
+  current: { projects: 71, service: 21, overhead: 8 },
+  trend: [
+    { wk: "Jun 5", projects: 68, service: 22, overhead: 10 },
+    { wk: "Jun 12", projects: 70, service: 21, overhead: 9 },
+    { wk: "Jun 19", projects: 73, service: 19, overhead: 8 },
+    { wk: "Jun 26", projects: 69, service: 23, overhead: 8 },
+    { wk: "Jul 3", projects: 72, service: 20, overhead: 8 },
+    { wk: "Jul 10", projects: 71, service: 21, overhead: 8 },
+  ],
+};
+window.UTILIZATION = UTILIZATION;
+
+/* KPI snapshot for the executive dashboard (fictional) */
+const KPI_SNAPSHOT = {
+  cashOnHand: 2840000, arDays: 52, apDays: 38,
+  backlogMonths: 7.4, safetyDays: 412, openRFIs: 6,
+};
+window.KPI_SNAPSHOT = KPI_SNAPSHOT;

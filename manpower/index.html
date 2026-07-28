@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Manpower &amp; EAC — Y8S Operations Portal</title>
+<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="Y8S Operations Portal">
+<meta property="og:title" content="YATES Company, LLC — Operations Portal">
+<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
+<link rel="stylesheet" href="/yates/css/theme.css">
+<link rel="stylesheet" href="/yates/css/demo.css">
+<link rel="stylesheet" href="/yates/css/yates.css">
+<style>
+  .eac-chip { display: inline-block; font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; margin: 1px 2px 1px 0; white-space: nowrap; }
+  .eac-ok   { background: var(--color-green-bg); color: var(--color-green); }
+  .eac-warn { background: var(--color-amber-bg); color: var(--color-amber); }
+  .eac-bad  { background: var(--color-red-bg);   color: var(--color-red); }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
+
+<script src="/yates/js/data.js"></script>
+<script src="/yates/js/util.js"></script>
+<script src="/yates/js/nav.js"></script>
+<script src="/yates/vendor/chart.umd.min.js"></script>
+<script src="/yates/js/yates-brain.js" defer></script>
+<script>
+YatesNav.renderTopbar({ subtitle: 'Manpower & EAC' });
+const me = currentPersona();
+if (!me || me.perms.external) {
+  if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
+    <div class="ynote">Manpower &amp; EAC is an internal operations/finance module.</div></div>`;
+} else {
+  bootManpower();
+}
+
+function bootManpower() {
+const showMoney = can('margins') || can('fin');
+const MIX = Object.assign({}, ENGINE.tradeMix);
+let utilization = ENGINE.utilization;
+let headsCurrent = ENGINE.installHeadsCurrent;
+
+const MONTH_LABELS = (() => {
+  const out = []; const d = new Date('2026-08-15T12:00:00');
+  for (let i = 0; i < 13; i++) { out.push(d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })); d.setMonth(d.getMonth() + 1); }
+  return out;
+})();
+
+/* factored sales: open bids land (weighted) the month after bid date, then spread on the size-band curve */
+function factoredMonthly() {
+  const out = new Array(13).fill(0);
+  const now = new Date('2026-07-15T12:00:00');
+  BID_PIPELINE.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status)).forEach(b => {
+    const p = { Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status];
+    const land = Math.max(0, Math.round((new Date(b.due + 'T12:00:00') - now) / (30.44 * 864e5)) + 1);
+    const curve = b.amount > 900000 ? ENGINE.curve18 : ENGINE.curve12;
+    curve.forEach((pct, m) => {
+      const idx = land + m;
+      if (idx >= 0 && idx < 13) out[idx] += b.amount * p * pct / 100;
+    });
+  });
+  return out.map(Math.round);
+}
+
+function render() {
+  const hrsPerHead = ENGINE.weeksPerMo * ENGINE.hrsPerWk * utilization;
+  const booked = bookedMonthlySpread(13);
+  const factored = factoredMonthly();
+  const total = booked.map((v, i) => v + factored[i]);
+  const tradeRows = ['pm', 'eng', 'tech', 'material', 'install'].map(t => ({
+    t, label: { pm: 'Project Management', eng: 'Engineering', tech: 'Technical Labor', material: 'Material', install: 'Install Labor' }[t],
+    vals: total.map(v => v * MIX[t] / 100),
+  }));
+  const installHours = total.map(v => v * MIX.install / 100 / ENGINE.blendedRates.install);
+  const heads = installHours.map(h => h / hrsPerHead);
+  const peak = Math.max(...heads);
+  const peakMonth = MONTH_LABELS[heads.indexOf(peak)];
+  const gapNow = Math.max(0, Math.ceil(Math.max(...heads.slice(0, 4)) - headsCurrent));
+
+  /* ---------- EAC table (per active job) ---------- */
+  const hash = (s) => { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973; return h; };
+  const eacRows = JOBS.map(j => ({ j, m: jobMetrics(j) })).filter(x => x.m.pct > 0 && x.m.pct < 100)
+    .sort((a, b) => b.j.contract - a.j.contract).slice(0, 12).map(({ j, m }) => {
+      const h = hash(j.id);
+      const eac = m.pct > 5 ? Math.round(m.cost / (m.pct / 100)) : m.budget;
+      const overUnderEAC = m.budget - eac;
+      const estGM = (j.contract - m.budget) / j.contract * 100;
+      const actGM = m.earned ? (m.earned - m.cost) / m.earned * 100 : 0;
+      const points = (j.eng && j.eng.equipment.length) ? j.eng.equipment.reduce((s, e) => s + e.points, 0) : 0;
+      const laborHrs = m.cost * (MIX.install + MIX.tech) / 90 / 88;
+      const hrsPerPt = points ? (laborHrs / points) : 0;
+      const chips = [
+        m.overUnder < -20000 ? '<span class="eac-chip eac-bad">UNDER-BILLED</span>' : '<span class="eac-chip eac-ok">BILLINGS OK</span>',
+        actGM < estGM - 2 ? '<span class="eac-chip eac-warn">GM Δ ' + (actGM - estGM).toFixed(1) + '</span>' : '<span class="eac-chip eac-ok">GM Δ +' + Math.max(0, actGM - estGM).toFixed(1) + '</span>',
+        overUnderEAC < 0 ? '<span class="eac-chip eac-bad">OVER EAC</span>' : '<span class="eac-chip eac-ok">UNDER EAC</span>',
+        (h % 4 === 0) ? '<span class="eac-chip eac-warn">RATE &gt; STD</span>' : '',
+      ].join('');
+      return `<tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}#forecast'">
+        <td><b>${j.id}</b> · ${esc(j.name.split('—')[0].trim())}<div class="ynote">${esc(j.pm)}</div></td>
+        <td style="text-align:right">${fmtPct(m.pct, 0)}</td>
+        ${showMoney ? `
+        <td style="text-align:right">${fmtK(m.budget)}</td>
+        <td style="text-align:right">${fmtK(m.cost)}</td>
+        <td style="text-align:right">${fmtK(eac)}</td>
+        <td style="text-align:right;color:${overUnderEAC >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${overUnderEAC < 0 ? '(' + fmtK(Math.abs(overUnderEAC)) + ')' : fmtK(overUnderEAC)}</td>
+        <td style="text-align:right">${fmtPct(estGM, 1)} / <b style="color:${actGM >= estGM ? 'var(--color-green)' : 'var(--color-amber)'}">${fmtPct(actGM, 1)}</b></td>` : ''}
+        <td style="text-align:right">${hrsPerPt ? hrsPerPt.toFixed(1) : '—'}</td>
+        <td>${chips}</td>
+      </tr>`;
+    }).join('');
+
+  const rates = [
+    ['Install Labor', 82, 84.6], ['Technical Labor', 96, 93.2],
+    ['Engineering', 112, 118.4], ['Project Management', 105, 104.1],
+  ];
+
+  $('#app').innerHTML = `
+    <div class="demo-hero" style="padding-bottom:16px">
+      <div>
+        <div class="demo-eyebrow">OPERATIONS · REVENUE → HOURS → HEADS</div>
+        <h1>Manpower &amp; <em>EAC</em></h1>
+        <div class="sub">The monthly forecast engine, automated: booked jobs spread on their curves, factored pipeline landings layered in, trade mix applied, and headcount computed — no typed percentages, no tab-hopping. Answers the monthly review's real question: <b>how many people do we need, and when?</b></div>
+      </div>
+      <div class="demo-hero-right">
+        <span class="demo-live"><span class="dot"></span> ${srcChipText()}</span>
+        <span style="display:flex;gap:6px">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</span>
+      </div>
+    </div>
+
+    <div class="ykpi-row">
+      <div class="ykpi"><div class="l">Next-Month Revenue</div><div class="v">${fmtK(total[0])}</div><div class="s">booked ${fmtK(booked[0])} + factored ${fmtK(factored[0])}</div></div>
+      <div class="ykpi"><div class="l">Peak Install Heads</div><div class="v">${Math.round(peak)}</div><div class="s">${peakMonth} · vs ${headsCurrent} on staff</div></div>
+      <div class="ykpi ${gapNow ? 'red' : 'green'}"><div class="l">Hiring Gap (next 4 mo)</div><div class="v">${gapNow ? '+' + gapNow : '0'}</div><div class="s">${gapNow ? 'installers needed — start recruiting now' : 'current crew covers the plan'}</div></div>
+      <div class="ykpi amber"><div class="l">Heads Divisor</div><div class="v">${hrsPerHead.toFixed(1)}</div><div class="s">${ENGINE.weeksPerMo} wks × ${ENGINE.hrsPerWk} hrs × ${Math.round(utilization * 100)}% util</div></div>
+      <div class="ykpi"><div class="l">Utilization Today</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">projects · ${UTILIZATION.current.service}% service · ${UTILIZATION.current.overhead}% overhead</div></div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Install Heads Required — 13 Months</h2><span class="k">bar = required · line = current staff</span></div>
+        <div class="demo-chart" style="height:260px"><canvas id="ch-heads"></canvas></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Engine Parameters</h2><span class="k">the yellow cells, as controls</span></div>
+        <div class="fc-assumps" style="grid-template-columns:repeat(3,1fr)">
+          ${['pm', 'eng', 'tech', 'material', 'install'].map(t => `
+            <div class="fc-assump"><label>${{ pm: 'PM', eng: 'Engineering', tech: 'Technical', material: 'Material', install: 'Install' }[t]} — % of revenue</label>
+            <div class="ip"><input data-mix="${t}" value="${MIX[t]}" inputmode="decimal"><span class="u">%</span></div></div>`).join('')}
+          <div class="fc-assump"><label>Utilization</label><div class="ip"><input data-util value="${Math.round(utilization * 100)}" inputmode="numeric"><span class="u">%</span></div></div>
+          <div class="fc-assump"><label>Current install heads</label><div class="ip"><input data-heads value="${headsCurrent}" inputmode="numeric"></div></div>
+        </div>
+        <div class="ynote" style="margin-top:10px">Spread curves: 12-month band for mid-size jobs, 18-month band for district-scale work — applied automatically by job size instead of typed month-by-month.</div>
+        <div class="demo-panel-head" style="margin-top:16px"><h2>Labor Rates — Actual vs Standard</h2></div>
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th>Trade</th><th style="text-align:right">Standard $/hr</th><th style="text-align:right">Actual $/hr</th><th>Flag</th></tr></thead>
+          <tbody>${rates.map(r => `<tr><td>${r[0]}</td><td style="text-align:right">$${r[1].toFixed(2)}</td><td style="text-align:right">$${r[2].toFixed(2)}</td>
+            <td>${r[2] > r[1] * 1.03 ? '<span class="eac-chip eac-bad">OVER STD</span>' : r[2] > r[1] ? '<span class="eac-chip eac-warn">WATCH</span>' : '<span class="eac-chip eac-ok">OK</span>'}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>13-Month Revenue &amp; Trade Build</h2><span class="k">booked spreads + probability-factored pipeline landings</span></div>
+      <div class="fc-mwrap grid-scroll" style="max-height:none">
+        <table class="fc-tbl">
+          <thead><tr><th>Line · $/mo</th>${MONTH_LABELS.map(m => `<th>${m}</th>`).join('')}</tr></thead>
+          <tbody>
+            <tr><td>Booked construction (curve spreads)</td>${booked.map(v => `<td>${'$' + v.toLocaleString()}</td>`).join('')}</tr>
+            <tr><td>Factored pipeline (from Bid Pipeline)</td>${factored.map(v => `<td class="dim">${'$' + v.toLocaleString()}</td>`).join('')}</tr>
+            <tr class="noi"><td>Total revenue</td>${total.map(v => `<td>${'$' + v.toLocaleString()}</td>`).join('')}</tr>
+            <tr class="head"><td colspan="14">REVENUE BY TRADE (mix applied)</td></tr>
+            ${tradeRows.map(r => `<tr><td>${r.label} (${MIX[r.t]}%)</td>${r.vals.map(v => `<td>${'$' + Math.round(v).toLocaleString()}</td>`).join('')}</tr>`).join('')}
+            <tr class="head"><td colspan="14">STAFFING</td></tr>
+            <tr><td>Install hours (@$${ENGINE.blendedRates.install}/hr)</td>${installHours.map(v => `<td>${Math.round(v).toLocaleString()}</td>`).join('')}</tr>
+            <tr class="sub"><td>Install heads required (÷${hrsPerHead.toFixed(1)})</td>${heads.map(v => `<td style="color:${v > headsCurrent ? 'var(--color-red)' : 'var(--color-cloud-whisper)'}">${v.toFixed(1)}</td>`).join('')}</tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    ${showMoney ? `
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Estimate at Completion — Active Jobs</h2><span class="k">performance indicators per job · click through to the FAC detail</span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th>Job</th><th style="text-align:right">% Comp</th><th style="text-align:right">Budget</th><th style="text-align:right">ITD Cost</th><th style="text-align:right">EAC</th><th style="text-align:right">(Over)/Under</th><th style="text-align:right">GM Est / Act</th><th style="text-align:right">Hrs/Pt</th><th>Indicators</th></tr></thead>
+        <tbody>${eacRows}</tbody>
+      </table>
+      </div>
+    </div>` : `
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Estimate at Completion</h2></div>
+      <div class="ynote">EAC financials require financial access — operations users see hours and staffing above.</div>
+    </div>`}
+    <div class="demo-note">Demo environment · fictional data</div>`;
+
+  wire();
+  drawHeads(heads, headsCurrent);
+}
+
+function srcChipText() { return '13-MONTH HORIZON'; }
+
+function wire() {
+  $$('input[data-mix]').forEach(inp => inp.addEventListener('change', () => {
+    const v = parseFloat(inp.value); if (!isNaN(v)) MIX[inp.dataset.mix] = v; render();
+  }));
+  const u = document.querySelector('input[data-util]');
+  if (u) u.addEventListener('change', () => { const v = parseFloat(u.value); if (!isNaN(v)) utilization = v / 100; render(); });
+  const hc = document.querySelector('input[data-heads]');
+  if (hc) hc.addEventListener('change', () => { const v = parseFloat(hc.value); if (!isNaN(v)) headsCurrent = v; render(); });
+}
+
+function drawHeads(heads, current) {
+  new Chart($('#ch-heads'), {
+    data: {
+      labels: MONTH_LABELS,
+      datasets: [
+        { type: 'bar', label: 'Heads required', data: heads.map(h => Math.round(h * 10) / 10), backgroundColor: heads.map(h => h > current ? 'rgba(177,80,63,0.75)' : 'rgba(8,61,117,0.65)') },
+        { type: 'line', label: 'Current staff', data: heads.map(() => current), borderColor: '#2f9e6e', borderDash: [6, 4], pointRadius: 0 },
+      ],
+    },
+    options: { responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
+      scales: { y: { ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 9 } } } } }
+  });
+}
+
+render();
+}
+</script>
+</body>
+</html>

@@ -87,6 +87,28 @@ if (internal) {
       <div class="ykpi red"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><div class="s">${fmtPct(projMargin / backlog * 100)} blended</div></div>
     </div>
 
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Executive KPI Dashboard</h2><span class="k">a focused set — each tile is configurable per user</span></div>
+      <div class="ykpi-row" style="margin-bottom:14px">
+        <div class="ykpi"><div class="l">Utilization — Projects</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">${UTILIZATION.current.service}% service · ${UTILIZATION.current.overhead}% overhead</div></div>
+        <div class="ykpi green"><div class="l">Service MRR</div><div class="v">${fmtK(SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((s, a) => s + a.monthly, 0))}</div><div class="s">recurring, from the agreement book</div></div>
+        <div class="ykpi"><div class="l">Cash on Hand</div><div class="v">${fmtK(KPI_SNAPSHOT.cashOnHand)}</div><div class="s">AR ${KPI_SNAPSHOT.arDays} days · AP ${KPI_SNAPSHOT.apDays} days</div></div>
+        <div class="ykpi amber"><div class="l">Backlog Coverage</div><div class="v">${KPI_SNAPSHOT.backlogMonths} mo</div><div class="s">at current run-rate</div></div>
+        <div class="ykpi"><div class="l">Bid Hit Rate</div><div class="v">${(() => { const w = BID_PIPELINE.filter(b => b.status === 'Won').length, l = BID_PIPELINE.filter(b => b.status === 'Lost').length; return Math.round(w / (w + l) * 100); })()}%</div><div class="s">trailing 6 months</div></div>
+      </div>
+      <div class="demo-aging">
+        ${UTILIZATION.trend.slice(-4).map(t => `
+        <div class="demo-aging-row" style="grid-template-columns:70px 1fr 150px">
+          <div class="lab">${t.wk}</div>
+          <div class="bar" style="display:flex;overflow:hidden">
+            <i style="width:${t.projects}%;background:#083d75"></i><i style="width:${t.service}%;background:#2f9e6e"></i><i style="width:${t.overhead}%;background:#b98a36"></i>
+          </div>
+          <div class="amt" style="font-size:10.5px">${t.projects}% / ${t.service}% / ${t.overhead}%</div>
+        </div>`).join('')}
+      </div>
+      <div class="ynote" style="margin-top:8px">Labor dollars costed to <b style="color:#4b86d1">projects</b> / <b style="color:#2f9e6e">service tickets</b> / <b style="color:#b98a36">overhead</b> — from timesheets + ServiceTitan, weekly.</div>
+    </div>
+
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Contract · Earned · Billed — Top 10 Jobs</h2><span class="k">$ thousands</span></div>

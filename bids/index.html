@@ -357,12 +357,13 @@ function viewInternal() {
       <div>
         <div class="demo-eyebrow">PRECONSTRUCTION · ESTIMATE ${esc(BID.meta.bidNumber)} · REV 3</div>
         <h1>Bid <em>Builder</em></h1>
-        <div class="sub">Institutional estimate build-up — CSI-coded trade lines, bond &amp; insurance, alternates and a controlled release workflow. Every lever flows through the whole bid live.</div>
+        <div class="sub">Works <b>alongside</b> the estimating workbook, not instead of it — import an estimate or draft one from an RFP, then let the portal do what spreadsheets can't: pricing levers, release control, e-mail/PDF output, and win/loss reporting in the <a href="/yates/pipeline/" style="color:var(--color-blue)">Bid Pipeline</a>.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> BASE BID ${fmt$2(T.base)}</span>
         <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
         <span style="display:flex;gap:8px">
+          <button class="pa-btn" style="cursor:pointer" onclick="alert('Demo: drop the estimating workbook (.xlsx) here — line items, quantities and pricing map into the portal automatically. The estimator keeps their spreadsheet; the company gets the reporting.')">⬆ Import Estimate (.xlsx)</button>
           <button class="pa-btn primary" style="cursor:pointer;background:linear-gradient(135deg,#083d75,#0d5aa7)" onclick="aiAssist()">🤖 AI Draft from RFP</button>
           <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
           <button class="pa-btn primary" style="cursor:pointer" onclick="previewProposal=true;render();window.scrollTo(0,0)">📄 PDF the Bid</button>

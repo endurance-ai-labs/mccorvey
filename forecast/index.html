@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Budget &amp; Forecast — Y8S Operations Portal</title>
+<title>5-Year Growth Model — Y8S Operations Portal</title>
 <meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
 <meta property="og:site_name" content="Y8S Operations Portal">
 <meta property="og:title" content="YATES Company, LLC — Operations Portal">
@@ -18,12 +18,24 @@
 <link rel="stylesheet" href="/yates/css/theme.css">
 <link rel="stylesheet" href="/yates/css/demo.css">
 <link rel="stylesheet" href="/yates/css/yates.css">
+<style>
+  .drv { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; background: var(--color-bg-2); }
+  .drv h4 { font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blue); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+  .drv h4 .rule { flex: 1; height: 1px; background: var(--color-border); }
+  .drv .row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; font-size: 12px; color: var(--color-cloud-whisper); flex-wrap: wrap; }
+  .drv .row label { min-width: 168px; font-size: 11px; color: var(--color-text-muted); }
+  .drv input[type=range] { flex: 1; min-width: 110px; accent-color: #0d5aa7; }
+  .drv .val { min-width: 84px; text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .drv select, .drv input[type=number] { font: inherit; font-size: 12px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); }
+  .acq-row { display: grid; grid-template-columns: 90px 1fr 1fr 1fr 1fr 34px; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 11.5px; }
+  .goal-banner { border-radius: var(--radius-md); padding: 14px 18px; font-size: 13px; margin-bottom: 22px; border: 1px solid; }
+  .goal-hit { background: var(--color-green-bg); border-color: var(--color-green); color: var(--color-green); }
+  .goal-miss { background: var(--color-amber-bg); border-color: var(--color-amber); color: var(--color-amber); }
+</style>
 </head>
 <body>
 <div id="topbar"></div>
-<main class="page">
-  <div class="demo-wrap" id="app"></div>
-</main>
+<main class="page"><div class="demo-wrap" id="app"></div></main>
 
 <script src="/yates/js/data.js"></script>
 <script src="/yates/js/util.js"></script>
@@ -31,448 +43,249 @@
 <script src="/yates/vendor/chart.umd.min.js"></script>
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Budget & Forecast' });
+YatesNav.renderTopbar({ subtitle: '5-Year Growth Model' });
 if (!YatesMode.isInternal() || !can('margins')) {
-  $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
-    <div class="ynote">Budgeting &amp; forecasting requires full financial access (Owner, CFO or Controller). Your current user does not have rights to this module.</div></div>`;
+  if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
+    <div class="ynote">The 5-year growth model requires full financial access (Owner, CFO or Controller).</div></div>`;
 } else {
-  buildForecast();
+  boot5yr();
 }
 
-function buildForecast() {
-/* =============================================================
-   Y8S BUDGETING & FORECASTING — CFO console
-   Same engine pattern as the Blackwater asset forecast:
-   T-3 / T-6 / T-12 trailing actuals → editable In-Place run-rate
-   → Years 1-5 compounded monthly by a tiered growth schedule.
-   ============================================================= */
+function boot5yr() {
 
-/* ---- 24 months of division actuals (fictional, deterministic) ---- */
-const MONTHS = [];
-(function () {
-  const start = new Date('2024-08-15T12:00:00');
-  // seasonal profile + growth; storm surge Oct-Dec 24
-  for (let i = 0; i < 24; i++) {
-    const d = new Date(start); d.setMonth(d.getMonth() + i);
-    const season = [0.92, 0.95, 1.06, 1.10, 1.02, 0.88, 0.90, 0.97, 1.04, 1.08, 1.10, 1.05][d.getMonth() % 12];
-    const surge = (i >= 2 && i <= 4) ? 1.22 : 1;             // Oct-Dec 24 storm work
-    const grow = Math.pow(1.006, i);
-    const rev = 1520000 * season * surge * grow;
-    const subs = rev * 0.44, labor = rev * 0.16, mat = rev * 0.14, equip = rev * 0.04;
-    const m = {
-      m: d.toISOString().slice(0, 7),
-      revenue: rev,
-      cost: { subs, labor, mat, equip },
-      oh: { salaries: 118000 * Math.pow(1.004, i), office: 18500, insurance: 30000 * Math.pow(1.005, i), it: 8200, bd: 14000, vehicles: 21000, other: 9800 },
-    };
-    MONTHS.push(m);
-  }
-})();
-const CK = ['subs', 'labor', 'mat', 'equip'];
-const OK = ['salaries', 'office', 'insurance', 'it', 'bd', 'vehicles', 'other'];
-const mLong = (ym) => { const d = new Date(ym + '-15T12:00:00'); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); };
+/* =========================================================
+   THE DRIVER MODEL — every assumption is a control.
+   Baseline auto-seeds from the live portal (jobs + agreements).
+   State persists in localStorage ('yates-5yr').
+   ========================================================= */
+const BASE_CONSTR = 24.6e6;    /* current construction run-rate ($/yr, fictional) */
+const BASE_SVC_ARR = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
 
-/* ---- state ---- */
-let asOf = MONTHS.length - 1;
-let fbasis = 12;
-let view = 'annual';
-let svcGrowth = 45;   // service MRR growth %/yr (attach + upgrades)
-const A = { newAwards: 6.0, contingency: 1.0, tax: 21.0, distribution: 40.0 };  // ratio levers
-const G = { rev: [{ f: 1, t: 60, r: 6.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.0 }] };
-let ovrInplace = {};   // key -> override value (annual $)
+const DEFAULTS = {
+  constrGrowth: 8, svcGrowth: 20, escalation: 3,
+  newClientsY1: 4, newClientsRamp: 2,
+  newClientSize: 850000, newClientRepeat: 70,
+  newSvcPerYear: 12, newSvcMRR: 1800, churn: 6,
+  attachPct: 60, attachMRR: 2400,
+  gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85,
+  goal: 300,
+  acq: [
+    { year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 },
+    { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 },
+  ],
+};
+const PRESETS = {
+  'Organic Only': Object.assign({}, DEFAULTS, { acq: [], newClientsY1: 3, newClientsRamp: 1, constrGrowth: 10 }),
+  'Balanced Growth': Object.assign({}, DEFAULTS),
+  'Acquisition-Led': Object.assign({}, DEFAULTS, { constrGrowth: 5, newClientsY1: 2, acq: [
+    { year: 1, revenue: 5e6, gm: 25, rec: 40, growth: 10 },
+    { year: 2, revenue: 12e6, gm: 24, rec: 30, growth: 10 },
+    { year: 3, revenue: 20e6, gm: 23, rec: 30, growth: 8 },
+    { year: 4, revenue: 35e6, gm: 22, rec: 25, growth: 8 },
+    { year: 5, revenue: 50e6, gm: 22, rec: 25, growth: 6 },
+  ] }),
+  'Founder Aggressive': Object.assign({}, DEFAULTS, { constrGrowth: 12, newClientsY1: 8, newClientsRamp: 4, newClientSize: 1500000, newSvcPerYear: 24, attachPct: 80, acq: [
+    { year: 2, revenue: 12e6, gm: 25, rec: 35, growth: 12 },
+    { year: 3, revenue: 20e6, gm: 24, rec: 30, growth: 10 },
+    { year: 5, revenue: 40e6, gm: 23, rec: 30, growth: 8 },
+  ] }),
+};
 
-function baseFrom(idx, win) {
-  const w = MONTHS.slice(Math.max(0, idx - win + 1), idx + 1);
-  const ann = 12 / w.length;
-  const S = f => w.reduce((a, m) => a + f(m), 0) * ann;
-  const b = { revenue: S(m => m.revenue) };
-  CK.forEach(k => b['c_' + k] = S(m => m.cost[k]));
-  OK.forEach(k => b['o_' + k] = S(m => m.oh[k]));
-  return b;
+let A = load();
+function load() {
+  try { const raw = localStorage.getItem('yates-5yr'); if (raw) return JSON.parse(raw); } catch (e) {}
+  return JSON.parse(JSON.stringify(DEFAULTS));
 }
-let base = baseFrom(asOf, fbasis);
-let inplace = Object.assign({}, base);
+function save() { try { localStorage.setItem('yates-5yr', JSON.stringify(A)); } catch (e) {} }
 
-const rateAt = (list, m) => { for (let i = 0; i < list.length; i++) if (m >= list[i].f && m <= list[i].t) return list[i].r; return list[list.length - 1].r; };
-let CUM = {};
-function buildCum() {
-  ['rev', 'cost', 'oh'].forEach(k => {
-    const arr = [1];
-    for (let m = 1; m <= 60; m++) arr[m] = arr[m - 1] * Math.pow(1 + (rateAt(G[k], m) || 0) / 100, 1 / 12);
-    CUM[k] = arr;
+/* ---------- the model ---------- */
+function model() {
+  const yrs = [1, 2, 3, 4, 5];
+  const esc = A.escalation / 100;
+  return yrs.map(y => {
+    const constrOrganic = BASE_CONSTR * Math.pow(1 + A.constrGrowth / 100 + esc, y);
+    let newClientRev = 0, clientCount = 0;
+    for (let c = 1; c <= y; c++) {
+      const added = A.newClientsY1 + A.newClientsRamp * (c - 1);
+      clientCount += added;
+      const retention = Math.pow(A.newClientRepeat / 100, y - c);
+      newClientRev += added * A.newClientSize * retention * Math.pow(1 + esc, y);
+    }
+    const svcBase = BASE_SVC_ARR * Math.pow(1 + A.svcGrowth / 100, y);
+    let svcNew = 0;
+    for (let c = 1; c <= y; c++) {
+      const eng = A.newSvcPerYear * A.newSvcMRR * 12;
+      const attach = (A.newClientsY1 + A.newClientsRamp * (c - 1)) * (A.attachPct / 100) * A.attachMRR * 12;
+      svcNew += (eng + attach) * Math.pow(1 - A.churn / 100, y - c) * Math.pow(1 + esc, y - c);
+    }
+    let acqRev = 0, acqGP = 0, acqRec = 0;
+    A.acq.forEach(q => {
+      if (y >= q.year) {
+        const r = q.revenue * Math.pow(1 + q.growth / 100, y - q.year);
+        acqRev += r; acqGP += r * q.gm / 100; acqRec += r * q.rec / 100;
+      }
+    });
+    const constr = constrOrganic + newClientRev;
+    const svc = svcBase + svcNew;
+    const total = constr + svc + acqRev;
+    const gp = constr * A.gmConstr / 100 + svc * A.gmSvc / 100 + acqGP;
+    const scaleFactor = Math.pow(A.ohScale, Math.log2(Math.max(1, total / (BASE_CONSTR + BASE_SVC_ARR))));
+    const oh = total * (A.ohPct / 100) * scaleFactor;
+    const ebitda = gp - oh;
+    const recurring = svc + acqRec;
+    const installRev = constr * ENGINE.tradeMix.install / 90;
+    const heads = installRev / 12 / ENGINE.blendedRates.install / ENGINE.hrsPerHead;
+    return { y, constrOrganic, newClientRev, clientCount, svc, acqRev, total, gp, oh, ebitda, recurring, heads };
   });
 }
-buildCum();
 
-function derive(b) {
-  const totCost = CK.reduce((s, k) => s + b['c_' + k], 0);
-  const gross = b.revenue - totCost;
-  const totOh = OK.reduce((s, k) => s + b['o_' + k], 0);
-  const conting = b.revenue * A.contingency / 100;
-  const ebitda = gross - totOh - conting;
-  const tax = Math.max(0, ebitda) * A.tax / 100;
-  const net = ebitda - tax;
-  const dist = Math.max(0, net) * A.distribution / 100;
-  return Object.assign({}, b, { totCost, gross, grossPct: b.revenue ? gross / b.revenue * 100 : 0, totOh, conting, ebitda, ebitdaPct: b.revenue ? ebitda / b.revenue * 100 : 0, tax, net, dist, retained: net - dist });
-}
-function yearCol(y) {
-  const out = { revenue: 0 };
-  CK.forEach(k => out['c_' + k] = 0); OK.forEach(k => out['o_' + k] = 0);
-  for (let m = (y - 1) * 12 + 1; m <= y * 12; m++) {
-    out.revenue += inplace.revenue / 12 * CUM.rev[m];
-    CK.forEach(k => out['c_' + k] += inplace['c_' + k] / 12 * CUM.cost[m]);
-    OK.forEach(k => out['o_' + k] += inplace['o_' + k] / 12 * CUM.oh[m]);
-  }
-  return derive(out);
-}
-function colData() {
-  return [derive(baseFrom(asOf, 3)), derive(baseFrom(asOf, 6)), derive(baseFrom(asOf, 12)),
-          derive(inplace), yearCol(1), yearCol(2), yearCol(3), yearCol(4), yearCol(5)];
-}
-
-const LINES = [
-  ['h', 'CONSTRUCTION REVENUE'],
-  ['revenue', 'Contract revenue (earned)', 0, 'revenue'],
-  ['h', 'COST OF CONSTRUCTION'],
-  ['c_subs', 'Controls hardware & materials', 1, 'c_subs'], ['c_labor', 'Self-perform field labor', 1, 'c_labor'],
-  ['c_mat', 'Subcontractors (electrical / mechanical)', 1, 'c_mat'], ['c_equip', 'Equipment, lifts & tools', 1, 'c_equip'],
-  ['totCost', 'Total cost of construction', 'sub', null, 0, 1],
-  ['gross', 'Gross profit', 'noi'], ['grossPct', 'Gross margin', 0, null, 'pct'],
-  ['h', 'DIVISION OVERHEAD'],
-  ['o_salaries', 'Office salaries, PM & engineering staff', 1, 'o_salaries'], ['o_office', 'Office & yard rent', 1, 'o_office'],
-  ['o_insurance', 'Insurance & bonding', 1, 'o_insurance'], ['o_it', 'Software & IT', 1, 'o_it'],
-  ['o_bd', 'Sales & business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & service vans', 1, 'o_vehicles'],
-  ['o_other', 'Other G&A', 1, 'o_other'],
-  ['totOh', 'Total overhead', 'sub', null, 0, 1],
-  ['conting', 'Warranty & contingency reserve', 1],
-  ['ebitda', 'Company EBITDA', 'noi'], ['ebitdaPct', 'EBITDA margin', 0, null, 'pct'],
-  ['h', 'BELOW THE LINE'],
-  ['tax', 'Income tax provision', 1], ['net', 'Net income', 'sub'],
-  ['dist', 'Owner distribution', 'div'], ['retained', 'Retained for working capital'],
-];
-const COLS = ['T-3', 'T-6', 'T-12', 'In-Place', 'Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
-const Mfmt = n => '$' + Math.round(n).toLocaleString();
-function cellFmt(v, neg, pct) {
-  if (pct) return (isFinite(v) ? v.toFixed(1) : '0.0') + '%';
-  return (neg && Math.round(v) !== 0) ? '<span class="dim">($' + Math.abs(Math.round(v)).toLocaleString() + ')</span>' : Mfmt(v);
-}
-
-const A_FIELDS = [['newAwards', 'New award growth', '%'], ['contingency', 'Contingency /rev', '%'], ['tax', 'Tax rate', '%'], ['distribution', 'Distribution payout', '%']];
-
-function monthOpts() {
-  return MONTHS.map((m, i) => `<option value="${i}" ${i === asOf ? 'selected' : ''}>${mLong(m.m)}</option>`).join('');
-}
-
-/* ---- backlog coverage (from live jobs data) ---- */
-const MJOBS = JOBS.map(x => ({ x, mm: jobMetrics(x) }));
-const backlogRemaining = MJOBS.reduce((s, { x, mm }) => s + mm.remaining, 0);
-
-
-/* ---- monthly forward value (month m = 1..60) ---- */
-function monthVal(m) {
-  const b = { revenue: inplace.revenue / 12 * CUM.rev[m] };
-  CK.forEach(k => b['c_' + k] = inplace['c_' + k] / 12 * CUM.cost[m]);
-  OK.forEach(k => b['o_' + k] = inplace['o_' + k] / 12 * CUM.oh[m]);
-  return derive(b);
-}
-const fwdLabel = (m) => { const d = new Date(MONTHS[asOf].m + '-15T12:00:00'); d.setMonth(d.getMonth() + m); return d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); };
-const M$ = (n) => '$' + Math.round(n).toLocaleString();
-
-/* ---- hover explanations: the exact logic behind every number ---- */
-const LABELS = {};
-LINES.forEach(L => { if (L[0] !== 'h') LABELS[L[0]] = L[1]; });
-const INPUT_KEYS = new Set(['revenue'].concat(CK.map(k => 'c_' + k), OK.map(k => 'o_' + k)));
-const growthOf = (key) => key === 'revenue' ? G.rev[0].r : key.startsWith('c_') ? G.cost[0].r : G.oh[0].r;
-
-function explDerived(key, d, per) {
-  switch (key) {
-    case 'totCost': return 'Sum of the four construction cost lines:\n' + CK.map(k => LABELS['c_' + k].split('(')[0].trim() + ' ' + M$(d['c_' + k])).join(' + ') + '\n= ' + M$(d.totCost);
-    case 'gross': return 'Gross profit = revenue − total cost of construction\n' + M$(d.revenue) + ' − ' + M$(d.totCost) + ' = ' + M$(d.gross);
-    case 'grossPct': return 'Gross margin = gross profit ÷ revenue\n' + M$(d.gross) + ' ÷ ' + M$(d.revenue) + ' = ' + d.grossPct.toFixed(1) + '%';
-    case 'totOh': return 'Sum of the seven overhead lines = ' + M$(d.totOh);
-    case 'conting': return 'Warranty & contingency reserve = revenue × ' + A.contingency + '%\n' + M$(d.revenue) + ' × ' + A.contingency + '% = ' + M$(d.conting);
-    case 'ebitda': return 'EBITDA = gross profit − overhead − contingency\n' + M$(d.gross) + ' − ' + M$(d.totOh) + ' − ' + M$(d.conting) + ' = ' + M$(d.ebitda);
-    case 'ebitdaPct': return 'EBITDA margin = EBITDA ÷ revenue\n' + M$(d.ebitda) + ' ÷ ' + M$(d.revenue) + ' = ' + d.ebitdaPct.toFixed(1) + '%';
-    case 'tax': return 'Income tax provision = max(0, EBITDA) × ' + A.tax + '%\n' + M$(Math.max(0, d.ebitda)) + ' × ' + A.tax + '% = ' + M$(d.tax);
-    case 'net': return 'Net income = EBITDA − tax\n' + M$(d.ebitda) + ' − ' + M$(d.tax) + ' = ' + M$(d.net);
-    case 'dist': return 'Owner distribution = net income × ' + A.distribution + '% payout\n' + M$(Math.max(0, d.net)) + ' × ' + A.distribution + '% = ' + M$(d.dist);
-    case 'retained': return 'Retained for working capital = net income − distribution\n' + M$(d.net) + ' − ' + M$(d.dist) + ' = ' + M$(d.retained);
-  }
-  return '';
-}
-function explAnnual(key, c, cd) {
-  const lab = LABELS[key] || key;
-  const d = cd[c];
-  if (INPUT_KEYS.has(key)) {
-    if (c <= 2) { const win = [3, 6, 12][c];
-      return '<b>' + lab + ' — T-' + win + ' basis</b>\nSum of the last ' + win + ' months of QuickBooks actuals × ' + (12 / win).toFixed(win === 12 ? 0 : 1) + ' to annualize.\n= ' + M$(d[key]) + '/yr run-rate'; }
-    if (c === 3) return '<b>' + lab + ' — In-Place</b>\nEditable annual run-rate, seeded from the T-' + fbasis + ' trailing basis (' + M$(base[key]) + ').\nEdits ripple through every Year 1–5 and monthly figure.';
-    const y = c - 3, r = growthOf(key);
-    return '<b>' + lab + ' — Year ' + y + '</b>\nIn-Place ' + M$(inplace[key]) + ' ÷ 12, grown at ' + r + '%/yr (compounded monthly), summed over months ' + ((y - 1) * 12 + 1) + '–' + (y * 12) + '.\n= ' + M$(d[key]);
-  }
-  const head = c <= 2 ? 'T-' + [3, 6, 12][c] + ' basis' : c === 3 ? 'In-Place' : 'Year ' + (c - 3);
-  return '<b>' + lab + ' — ' + head + '</b>\n' + explDerived(key, d);
-}
-function explMonthly(key, m, d) {
-  const lab = LABELS[key] || key;
-  if (INPUT_KEYS.has(key)) {
-    const r = growthOf(key), cum = (key === 'revenue' ? CUM.rev : key.startsWith('c_') ? CUM.cost : CUM.oh)[m];
-    return '<b>' + lab + ' — ' + fwdLabel(m) + ' (month ' + m + ')</b>\nIn-Place ' + M$(inplace[key]) + '/yr ÷ 12 = ' + M$(inplace[key] / 12) + '/mo\n× growth factor ' + cum.toFixed(4) + ' (' + r + '%/yr compounded monthly for ' + m + ' months)\n= ' + M$(d[key]);
-  }
-  return '<b>' + lab + ' — ' + fwdLabel(m) + ' (month ' + m + ')</b>\n' + explDerived(key, d);
-}
-const expAttr = (txt) => ' data-exp="' + txt.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '&#10;') + '"';
-
-/* ---- table renderers ---- */
-function annualTable(cd) {
-  return `<div class="demo-tbl-wrap grid-scroll" style="max-height:none">
-        <table class="fc-tbl">
-          <thead><tr><th>Line item · $/yr</th>${COLS.map(cc => `<th>${cc}</th>`).join('')}</tr></thead>
-          <tbody id="fc-body">${LINES.map(Lr => {
-            if (Lr[0] === 'h') return `<tr class="head"><td colspan="10">${Lr[1]}</td></tr>`;
-            const key = Lr[0], lab = Lr[1];
-            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
-            const neg = Lr[2] === 1 || Lr[5] === 1;
-            const editK = Lr[3], pct = Lr[4] === 'pct';
-            let cells = '';
-            for (let cc = 0; cc < 9; cc++) {
-              if (editK && cc === 3) cells += `<td class="fc-ipcol"${expAttr(explAnnual(key, 3, cd))}><input class="fc-cell" data-base="${editK}" value="${Math.round(inplace[editK]).toLocaleString('en-US')}" inputmode="numeric"></td>`;
-              else cells += `<td${cc === 3 ? ' class="fc-ipcol"' : ''}${expAttr(explAnnual(key, cc, cd))}>${cellFmt(cd[cc][key], neg, pct)}</td>`;
-            }
-            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
-          }).join('')}</tbody>
-        </table>
-      </div>`;
-}
-function monthlyTable() {
-  const mv = []; for (let m = 1; m <= 60; m++) mv.push(monthVal(m));
-  return `<div class="fc-mwrap grid-scroll">
-        <table class="fc-tbl">
-          <thead><tr><th>Line item · $/mo</th>${mv.map((_, i) => `<th>${fwdLabel(i + 1)}</th>`).join('')}</tr></thead>
-          <tbody>${LINES.map(Lr => {
-            if (Lr[0] === 'h') return `<tr class="head"><td colspan="61">${Lr[1]}</td></tr>`;
-            const key = Lr[0], lab = Lr[1];
-            const cls = (Lr[2] === 'sub' || Lr[2] === 'noi' || Lr[2] === 'div') ? Lr[2] : '';
-            const neg = Lr[2] === 1 || Lr[5] === 1;
-            const pct = Lr[4] === 'pct';
-            const cells = mv.map((d, i) => `<td${expAttr(explMonthly(key, i + 1, d))}>${cellFmt(d[key], neg, pct)}</td>`).join('');
-            return `<tr class="${cls}"><td>${lab}</td>${cells}</tr>`;
-          }).join('')}</tbody>
-        </table>
-      </div>
-      <div class="fc-inplace-note">Monthly · 60-month view — every forward month compounds the In-Place run-rate at the growth schedule. Hover any figure for the exact calculation behind it.</div>`;
-}
-
-function gsummary() {
-  const seg = list => list.map(t => 'mo ' + t.f + '-' + t.t + ': ' + t.r + '%').join(' · ');
-  return `<b style="color:var(--color-blue)">Growth schedule</b> — Revenue [${seg(G.rev)}] &nbsp; Construction cost [${seg(G.cost)}] &nbsp; Overhead [${seg(G.oh)}]`;
-}
-
+/* ---------- render ---------- */
 function render() {
-  const cd = colData();
-  const t12 = cd[2], y1 = cd[4];
+  save();
+  const R = model();
+  const y5 = R[4];
+  const goal = A.goal * 1e6;
+  const gap = goal - y5.total;
+  const cagr = (Math.pow(y5.total / (BASE_CONSTR + BASE_SVC_ARR), 1 / 5) - 1) * 100;
+  const acqY5 = A.acq.filter(q => 5 >= q.year).reduce((s, q) => s + q.revenue * Math.pow(1 + q.growth / 100, 5 - q.year), 0);
+  const hitYear = R.findIndex(r => r.total >= goal);
+  const suggestion = gap > 0
+    ? `Gap to goal: <b>${fmtK(gap)}</b>. Closing options: ~${Math.ceil(gap / 20e6)} more $20M acquisitions, or +${Math.ceil(gap / (A.newClientSize * 3))} new clients per year, or lift service growth to ${Math.min(60, Math.round(A.svcGrowth + gap / Math.max(1, BASE_SVC_ARR) * 1.4))}%.`
+    : `Goal exceeded by <b>${fmtK(-gap)}</b> — this mix reaches $${A.goal}M in year ${hitYear + 1}.`;
+
+  const acqRows = A.acq.map((q, i) => `
+    <div class="acq-row">
+      <select onchange="updAcq(${i},'year',this.value)">${[1, 2, 3, 4, 5].map(y => `<option value="${y}" ${q.year === y ? 'selected' : ''}>Year ${y}</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'revenue',this.value)">${[2e6, 5e6, 8e6, 12e6, 20e6, 35e6, 50e6].map(v => `<option value="${v}" ${q.revenue === v ? 'selected' : ''}>${fmtK(v)} rev</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'gm',this.value)">${[20, 22, 24, 26, 28, 30].map(v => `<option value="${v}" ${q.gm === v ? 'selected' : ''}>${v}% GM</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'rec',this.value)">${[10, 25, 30, 35, 50, 70].map(v => `<option value="${v}" ${q.rec === v ? 'selected' : ''}>${v}% recurring</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'growth',this.value)">${[0, 5, 8, 10, 12, 15].map(v => `<option value="${v}" ${q.growth === v ? 'selected' : ''}>+${v}%/yr</option>`).join('')}</select>
+      <button class="pa-btn" style="cursor:pointer" onclick="delAcq(${i})">✕</button>
+    </div>`).join('');
+
   $('#app').innerHTML = `
     <div class="demo-hero" style="padding-bottom:16px">
       <div>
-        <div class="demo-eyebrow">CFO CONSOLE · PATH TO $300M</div>
-        <h1>Budgeting &amp; <em>Forecasting</em></h1>
-        <div class="sub">No more pulling QuickBooks into Excel and rebuilding the cash forecast by hand. Trailing actuals seed an editable in-place run-rate; Years 1–5 compound it monthly on the growth schedule — and every scenario is measured against the <b>$300M five-year goal</b>.</div>
+        <div class="demo-eyebrow">CFO CONSOLE · PATH TO $${A.goal}M</div>
+        <h1>5-Year <em>Growth Model</em></h1>
+        <div class="sub">Every growth lever is a control: organic, new clients, service engagements, construction-to-service attach, and acquisitions — with margins, overhead scaling and headcount computed live. Find the mix that reaches the goal, then stress it. Monthly execution lives in <a href="/yates/budget/" style="color:var(--color-blue)">Budget vs Actual</a>.</div>
       </div>
       <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> SAN MARCOS, TX</span>
-        <span class="demo-src">Backlog coverage <b>${fmtK(backlogRemaining)}</b> unearned</span>
+        <span class="demo-live"><span class="dot"></span> BASELINE ${fmtK(BASE_CONSTR + BASE_SVC_ARR)}/yr</span>
+        <span style="display:flex;gap:8px;align-items:center">
+          <select class="yin" style="width:auto" onchange="applyPreset(this.value)">
+            <option value="">Scenario presets…</option>
+            ${Object.keys(PRESETS).map(p => `<option>${p}</option>`).join('')}
+          </select>
+          <button class="pa-btn" style="cursor:pointer" onclick="resetModel()">↺ Reset</button>
+        </span>
       </div>
     </div>
+
+    <div class="goal-banner ${gap > 0 ? 'goal-miss' : 'goal-hit'}">${gap > 0 ? '◔' : '✓'} Year-5 revenue <b>${fmtK(y5.total)}</b> vs the <b>$${A.goal}M goal</b> — ${suggestion}</div>
 
     <div class="ykpi-row">
-      <div class="ykpi"><div class="l">T-12 Revenue</div><div class="v">${fmtK(t12.revenue)}</div><div class="s">trailing run-rate</div></div>
-      <div class="ykpi green"><div class="l">T-12 Gross Margin</div><div class="v">${fmtPct(t12.grossPct)}</div><div class="s">${fmtK(t12.gross)} gross profit</div></div>
-      <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
-      <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
-      <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
-      <div class="ykpi red"><div class="l">$300M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(300e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & service growth</div></div>
-    </div>
-
-    <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Forecast Approval — July 2026 Cycle</h2><span class="k">sequential sign-off · role-gated · switch role via account menu</span></div>
-      ${approvalChain('fc-division-2026-07', [
-        { role: 'office',     label: 'Office Manager — Prepared, Ready for Review', doneLabel: 'Prepared (Office Mgr)' },
-        { role: 'controller', label: 'Controller — Reviewed',               doneLabel: 'Controller Reviewed' },
-        { role: 'cfo',        label: 'CFO — Sign Off',                      doneLabel: 'CFO Signed Off' },
-      ])}
-    </div>
-
-    <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Company P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from QuickBooks · engine proprietary</span></span></div>
-      <div class="fc-topbar" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
-        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">In-place as of</label>
-        <select id="fc-month" class="pa-btn" style="cursor:pointer">${monthOpts()}</select>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">Forecast base</label>
-        <div class="sreo-modes" id="fc-basis"><button data-b="3" ${fbasis === 3 ? 'class="active"' : ''}>T-3</button><button data-b="6" ${fbasis === 6 ? 'class="active"' : ''}>T-6</button><button data-b="12" ${fbasis === 12 ? 'class="active"' : ''}>T-12</button></div>
-        <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">View</label>
-        <div class="sreo-modes" id="fc-view"><button data-v="annual" ${view === 'annual' ? 'class="active"' : ''}>Annual</button><button data-v="monthly" ${view === 'monthly' ? 'class="active"' : ''}>Monthly · 60 mo</button></div>
-        <span class="ynote">Edit any In-Place cell — Years 1–5 compound it monthly per the growth schedule.</span>
-      </div>
-      <div style="font-size:9.5px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--color-text-muted);margin:0 0 6px">Growth &amp; ratio levers</div>
-      <div class="fc-assumps" style="grid-template-columns:repeat(7,1fr)">
-        <div class="fc-assump"><label>Revenue growth /yr</label><div class="ip"><input data-g="rev" value="${G.rev[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
-        <div class="fc-assump"><label>Cost growth /yr</label><div class="ip"><input data-g="cost" value="${G.cost[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
-        <div class="fc-assump"><label>Overhead growth /yr</label><div class="ip"><input data-g="oh" value="${G.oh[0].r}" inputmode="decimal"><span class="u">%</span></div></div>
-        ${A_FIELDS.map(f => `<div class="fc-assump"><label>${f[1]}</label><div class="ip"><input data-a="${f[0]}" value="${A[f[0]]}" inputmode="decimal"><span class="u">%</span></div></div>`).join('')}
-      </div>
-      <div id="fc-gsummary" style="font-size:11px;color:var(--color-slate-hint);margin:8px 0 12px;font-family:var(--font-mono)">${gsummary()}</div>
-      ${view === 'annual' ? annualTable(cd) : monthlyTable()}
-      <div class="fc-inplace-note">The <b>In-Place</b> column is the division's current annual run-rate (seeded from the trailing window you pick, storm-surge months included). Years 1–5 compound each In-Place line monthly at the growth schedule — the same engine as the asset-level proforma.</div>
+      <div class="ykpi"><div class="l">Year-5 Revenue</div><div class="v">${fmtK(y5.total)}</div><div class="s">${fmtPct(cagr, 1)} CAGR from ${fmtK(BASE_CONSTR + BASE_SVC_ARR)}</div></div>
+      <div class="ykpi green"><div class="l">Year-5 EBITDA</div><div class="v">${fmtK(y5.ebitda)}</div><div class="s">${fmtPct(y5.ebitda / y5.total * 100, 1)} margin</div></div>
+      <div class="ykpi amber"><div class="l">Recurring Revenue Y5</div><div class="v">${fmtK(y5.recurring)}</div><div class="s">${fmtPct(y5.recurring / y5.total * 100, 1)} of revenue</div></div>
+      <div class="ykpi"><div class="l">Acquired Revenue Y5</div><div class="v">${fmtK(acqY5)}</div><div class="s">${A.acq.length} acquisition(s) modeled</div></div>
+      <div class="ykpi red"><div class="l">Install Headcount Y5</div><div class="v">${Math.round(y5.heads)}</div><div class="s">vs ${ENGINE.installHeadsCurrent} today — see Manpower &amp; EAC</div></div>
     </div>
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Five-Year Path vs the $300M Goal</h2><span class="k">plan vs required trajectory</span></div>
-        <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
+        <div class="demo-panel-head"><h2>Revenue Build vs Goal</h2><span class="k">stacked by growth category</span></div>
+        <div class="demo-chart" style="height:300px"><canvas id="ch-5yr"></canvas></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Backlog Coverage vs Year-1 Revenue</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">production from ServiceTitan job register</span></span></div>
-        <div class="demo-chart" style="height:260px"><canvas id="ch-backlog"></canvas></div>
-        <div class="ynote" style="margin-top:10px">Unearned backlog ${fmtK(backlogRemaining)} covers ${fmtPct(backlogRemaining / Math.max(1, y1.revenue) * 100, 0)} of the Year-1 revenue forecast — remainder must come from new awards (lever: ${A.newAwards}%/yr growth).</div>
+        <div class="demo-panel-head"><h2>The Plan, Year by Year</h2><span class="k">$ millions</span></div>
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th>Category</th>${R.map(r => `<th style="text-align:right">Y${r.y}</th>`).join('')}</tr></thead>
+          <tbody>
+            <tr><td>Construction — organic</td>${R.map(r => `<td style="text-align:right">${(r.constrOrganic / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Construction — new clients (${R[4].clientCount} by Y5)</td>${R.map(r => `<td style="text-align:right">${(r.newClientRev / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Service (PMA · On-Demand · attach)</td>${R.map(r => `<td style="text-align:right">${(r.svc / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Acquisitions</td>${R.map(r => `<td style="text-align:right">${(r.acqRev / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr class="demo-noi"><td>Total revenue</td>${R.map(r => `<td style="text-align:right">${(r.total / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>EBITDA</td>${R.map(r => `<td style="text-align:right">${(r.ebitda / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Install heads required</td>${R.map(r => `<td style="text-align:right">${Math.round(r.heads)}</td>`).join('')}</tr>
+          </tbody>
+        </table>
       </div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Service Line — Recurring Revenue Build</h2>
-        <span style="display:flex;gap:10px;align-items:center">${srcChip('st')}
-        <span class="k">MRR from the agreement book · growth lever</span>
-        <span class="fc-assump" style="display:inline-flex;align-items:center;gap:6px;margin:0"><label style="margin:0">Service growth /yr</label><div class="ip" style="width:86px"><input data-svcg value="${svcGrowth}" inputmode="decimal"><span class="u">%</span></div></span></span></div>
-      <div class="demo-two">
-        <div class="demo-chart" style="height:240px"><canvas id="ch-service"></canvas></div>
-        <div style="font-size:12.5px;line-height:1.8;color:var(--color-cloud-whisper)">
-          ${(() => {
-            const mrr = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
-            const arr0 = mrr * 12;
-            const arr5 = arr0 * Math.pow(1 + svcGrowth / 100, 5);
-            const rev5 = cd[8].revenue;
-            return `Current agreement book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} ARR)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active agreements.<br>
-            At ${svcGrowth}%/yr (construction-to-service conversion + tier upgrades), the service line reaches <b>${fmtK(arr5)} ARR by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, recurring.<br>
-            <span class="ynote">Recurring revenue is the multiplier on the $300M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
-          })()}
+      <div class="demo-panel-head"><h2>Growth Drivers</h2><span class="k">drag, pick, toggle — the model recomputes on every change and remembers your scenario</span></div>
+      <div class="demo-three">
+        <div class="drv">
+          <h4>Organic Engine <span class="rule"></span></h4>
+          <div class="row"><label>Construction growth /yr</label><input type="range" min="0" max="25" value="${A.constrGrowth}" oninput="upd('constrGrowth',this.value)"><span class="val">${A.constrGrowth}%</span></div>
+          <div class="row"><label>Service growth /yr</label><input type="range" min="0" max="60" value="${A.svcGrowth}" oninput="upd('svcGrowth',this.value)"><span class="val">${A.svcGrowth}%</span></div>
+          <div class="row"><label>Price escalation</label><input type="range" min="0" max="8" value="${A.escalation}" oninput="upd('escalation',this.value)"><span class="val">${A.escalation}%</span></div>
+        </div>
+        <div class="drv">
+          <h4>New Construction Clients <span class="rule"></span></h4>
+          <div class="row"><label>New clients — Year 1</label><input type="range" min="0" max="20" value="${A.newClientsY1}" oninput="upd('newClientsY1',this.value)"><span class="val">${A.newClientsY1}/yr</span></div>
+          <div class="row"><label>Acceleration (+/yr each year)</label><input type="range" min="0" max="6" value="${A.newClientsRamp}" oninput="upd('newClientsRamp',this.value)"><span class="val">+${A.newClientsRamp}</span></div>
+          <div class="row"><label>Avg client size</label>
+            <select onchange="upd('newClientSize',this.value)">${[250000, 500000, 850000, 1500000, 3000000, 6000000].map(v => `<option value="${v}" ${A.newClientSize == v ? 'selected' : ''}>${fmtK(v)}/yr</option>`).join('')}</select></div>
+          <div class="row"><label>Repeat rate (annual)</label><input type="range" min="30" max="95" value="${A.newClientRepeat}" oninput="upd('newClientRepeat',this.value)"><span class="val">${A.newClientRepeat}%</span></div>
+        </div>
+        <div class="drv">
+          <h4>Service Engine <span class="rule"></span></h4>
+          <div class="row"><label>New service clients /yr</label><input type="range" min="0" max="50" value="${A.newSvcPerYear}" oninput="upd('newSvcPerYear',this.value)"><span class="val">${A.newSvcPerYear}</span></div>
+          <div class="row"><label>Avg new-client MRR</label>
+            <select onchange="upd('newSvcMRR',this.value)">${[600, 1200, 1800, 2800, 4200].map(v => `<option value="${v}" ${A.newSvcMRR == v ? 'selected' : ''}>${fmt$(v)}/mo</option>`).join('')}</select></div>
+          <div class="row"><label>Construction→PMA attach</label><input type="range" min="0" max="100" value="${A.attachPct}" oninput="upd('attachPct',this.value)"><span class="val">${A.attachPct}%</span></div>
+          <div class="row"><label>Churn</label><input type="range" min="0" max="20" value="${A.churn}" oninput="upd('churn',this.value)"><span class="val">${A.churn}%</span></div>
+        </div>
+        <div class="drv">
+          <h4>Margins &amp; Overhead <span class="rule"></span></h4>
+          <div class="row"><label>Construction GM</label><input type="range" min="15" max="35" value="${A.gmConstr}" oninput="upd('gmConstr',this.value)"><span class="val">${A.gmConstr}%</span></div>
+          <div class="row"><label>Service GM</label><input type="range" min="30" max="60" value="${A.gmSvc}" oninput="upd('gmSvc',this.value)"><span class="val">${A.gmSvc}%</span></div>
+          <div class="row"><label>Overhead (today)</label><input type="range" min="8" max="20" value="${A.ohPct}" oninput="upd('ohPct',this.value)"><span class="val">${A.ohPct}%</span></div>
+          <div class="row"><label>Overhead scale factor</label><input type="range" min="70" max="100" value="${Math.round(A.ohScale * 100)}" oninput="upd('ohScale',this.value/100)"><span class="val">${Math.round(A.ohScale * 100)}%</span></div>
+        </div>
+        <div class="drv" style="grid-column:span 2">
+          <h4>Acquisitions <span class="rule"></span><button class="pa-btn" style="cursor:pointer" onclick="addAcq()">＋ Add acquisition</button></h4>
+          <div class="acq-row" style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)"><span>Close</span><span>Size</span><span>Gross margin</span><span>Recurring mix</span><span>Post-close growth</span><span></span></div>
+          ${acqRows || '<div class="ynote">No acquisitions modeled — organic only.</div>'}
+          <div class="row" style="margin-top:6px"><label>Revenue goal</label>
+            <select onchange="upd('goal',this.value)">${[100, 150, 200, 250, 300, 400, 500].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
+            <span class="ynote">Build the scenario live with the leadership team — every control persists.</span></div>
         </div>
       </div>
     </div>
+    <div class="demo-note">Demo environment · fictional data · driver model runs entirely in the portal — no spreadsheet</div>`;
 
-    <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Job-Level Contribution — Construction Division</h2><span class="k">projected margin at completion</span></div>
-      <table class="demo-tbl">
-        <thead><tr><th>Job</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Unearned Backlog</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Margin %</th></tr></thead>
-        <tbody>${MJOBS.map(({ x, mm }) => `
-          <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${x.id}#forecast'">
-            <td><b>${x.id}</b> · ${esc(x.name.split('—')[0].trim())}</td>
-            <td>${statusPill(x.status)}</td>
-            <td style="text-align:right">${fmt$(x.contract)}</td>
-            <td style="text-align:right">${fmt$(mm.remaining)}</td>
-            <td style="text-align:right">${fmt$(mm.projMargin)}</td>
-            <td style="text-align:right">${fmtPct(mm.projMarginPct)}</td>
-          </tr>`).join('')}
-          <tr style="font-weight:800;background:var(--color-bg-3)">
-            <td colspan="2">Total</td>
-            <td style="text-align:right">${fmt$(MJOBS.reduce((s, { x }) => s + x.contract, 0))}</td>
-            <td style="text-align:right">${fmt$(backlogRemaining)}</td>
-            <td style="text-align:right">${fmt$(MJOBS.reduce((s, { mm }) => s + mm.projMargin, 0))}</td><td></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="demo-note">Demo environment · fictional data · concept build by Endurance AI Labs</div>`;
-
-  wire();
-  drawCharts(cd);
+  drawChart(R, goal);
 }
 
-function wire() {
-  $('#fc-month').addEventListener('change', e => { asOf = +e.target.value; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); });
-  $$('#fc-basis button').forEach(b => b.addEventListener('click', () => { fbasis = +b.dataset.b; base = baseFrom(asOf, fbasis); inplace = Object.assign({}, base); render(); }));
-  $$('#fc-view button').forEach(b => b.addEventListener('click', () => { view = b.dataset.v; render(); }));
-  $$('input[data-svcg]').forEach(inp => inp.addEventListener('change', () => { const v = parseFloat(inp.value); if (!isNaN(v)) svcGrowth = v; render(); }));
-  $$('input[data-g]').forEach(inp => inp.addEventListener('change', () => {
-    const v = parseFloat(inp.value); if (!isNaN(v)) G[inp.dataset.g] = [{ f: 1, t: 60, r: v }];
-    buildCum(); render();
-  }));
-  $$('input[data-a]').forEach(inp => inp.addEventListener('change', () => {
-    const v = parseFloat(inp.value); if (!isNaN(v)) A[inp.dataset.a] = v;
-    render();
-  }));
-  $$('input[data-base]').forEach(inp => inp.addEventListener('change', () => {
-    const v = parseFloat(inp.value.replace(/[,$]/g, ''));
-    if (!isNaN(v)) inplace[inp.dataset.base] = v;
-    render();
-  }));
-}
-
-function drawCharts(cd) {
-  if (!window.Chart) return;
-  const css = getComputedStyle(document.documentElement);
-  const cBlue = css.getPropertyValue('--color-blue').trim();
-  const years = ['Year 1', 'Year 2', 'Year 3', 'Year 4', 'Year 5'];
-  new Chart($('#ch-path'), {
+function drawChart(R, goal) {
+  new Chart($('#ch-5yr'), {
     data: {
-      labels: years,
+      labels: R.map(r => 'Year ' + r.y),
       datasets: [
-        { type: 'bar', label: 'Revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(0,92,151,0.30)', yAxisID: 'y' },
-        { type: 'line', label: 'EBITDA', data: cd.slice(4).map(c => c.ebitda / 1e6), borderColor: cBlue, pointRadius: 3, tension: 0.3, yAxisID: 'y' },
+        { type: 'bar', label: 'Construction — organic', data: R.map(r => r.constrOrganic / 1e6), backgroundColor: 'rgba(8,61,117,0.75)', stack: 's' },
+        { type: 'bar', label: 'New clients', data: R.map(r => r.newClientRev / 1e6), backgroundColor: 'rgba(13,90,167,0.55)', stack: 's' },
+        { type: 'bar', label: 'Service', data: R.map(r => r.svc / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
+        { type: 'bar', label: 'Acquisitions', data: R.map(r => r.acqRev / 1e6), backgroundColor: '#b98a36', stack: 's' },
+        { type: 'line', label: 'Goal', data: R.map(() => goal / 1e6), borderColor: 'rgba(200,80,60,0.9)', borderDash: [6, 5], pointRadius: 0 },
       ],
     },
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
-      scales: { y: { ticks: { callback: v => '$' + v.toFixed(0) + 'M', font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
-  });
-  const chSvc = $('#ch-service');
-  if (chSvc) {
-    const mrr0 = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
-    new Chart(chSvc, {
-      type: 'bar',
-      data: {
-        labels: years,
-        datasets: [
-          { label: 'Construction revenue', data: cd.slice(4).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
-          { label: 'Service revenue (recurring)', data: [1, 2, 3, 4, 5].map(y => mrr0 * Math.pow(1 + svcGrowth / 100, y) / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
-        ],
-      },
-      options: { responsive: true, maintainAspectRatio: false,
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } },
-        scales: { x: { stacked: true, ticks: { font: { size: 10 } } }, y: { stacked: true, ticks: { callback: v => '$' + v.toFixed(1) + 'M', font: { size: 10 } } } } }
-    });
-  }
-  new Chart($('#ch-backlog'), {
-    type: 'doughnut',
-    data: {
-      labels: ['Unearned backlog', 'New awards required'],
-      datasets: [{ data: [backlogRemaining, Math.max(0, cd[4].revenue - backlogRemaining)], backgroundColor: [cBlue, 'rgba(198,151,17,0.55)'], borderWidth: 0 }],
-    },
-    options: { responsive: true, maintainAspectRatio: false, cutout: '62%',
-      plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } } }
+      scales: { x: { stacked: true, ticks: { font: { size: 10 } } }, y: { stacked: true, ticks: { callback: v => '$' + v + 'M', font: { size: 10 } } } } }
   });
 }
 
-/* ---- hover tooltip (single element, delegated, 250ms delay — non-invasive) ---- */
-(function () {
-  const tip = document.createElement('div'); tip.id = 'fc-tip'; document.body.appendChild(tip);
-  let timer = null;
-  function show(el, x, y) {
-    tip.innerHTML = el.getAttribute('data-exp').replace(/&#10;/g, '\n');
-    tip.style.display = 'block';
-    const w = tip.offsetWidth, h = tip.offsetHeight;
-    let left = x + 14, top = y + 16;
-    if (left + w > innerWidth - 10) left = x - w - 14;
-    if (top + h > innerHeight - 10) top = y - h - 12;
-    tip.style.left = Math.max(6, left) + 'px'; tip.style.top = Math.max(6, top) + 'px';
-  }
-  document.addEventListener('mouseover', (e) => {
-    const el = e.target.closest('[data-exp]');
-    clearTimeout(timer);
-    if (!el) { tip.style.display = 'none'; return; }
-    timer = setTimeout(() => show(el, e.clientX, e.clientY), 250);
-  });
-  document.addEventListener('mouseout', (e) => { if (!e.relatedTarget || !e.relatedTarget.closest('[data-exp]')) { clearTimeout(timer); tip.style.display = 'none'; } });
-  document.addEventListener('scroll', () => { clearTimeout(timer); tip.style.display = 'none'; }, true);
-})();
+/* ---------- control handlers ---------- */
+window.upd = (k, v) => { A[k] = parseFloat(v); render(); };
+window.updAcq = (i, k, v) => { A.acq[i][k] = parseFloat(v); render(); };
+window.addAcq = () => { A.acq.push({ year: Math.min(5, A.acq.length + 1), revenue: 8e6, gm: 24, rec: 30, growth: 10 }); render(); };
+window.delAcq = (i) => { A.acq.splice(i, 1); render(); };
+window.applyPreset = (name) => { if (PRESETS[name]) { A = JSON.parse(JSON.stringify(PRESETS[name])); render(); } };
+window.resetModel = () => { A = JSON.parse(JSON.stringify(DEFAULTS)); render(); };
 
 render();
 }
