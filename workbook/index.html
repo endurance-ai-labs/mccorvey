@@ -57,7 +57,32 @@ const M13 = (() => {
 const $$$ = (n) => Math.round(n).toLocaleString('en-US', { minimumFractionDigits: 0 });
 const $$2 = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const dcell = (n) => n < 0 ? `<td class="wb-neg">(${$$2(Math.abs(n))})</td>` : `<td>${$$2(n)}</td>`;
-const ACTIVE = () => JOBS.map(j => ({ j, m: jobMetrics(j) }));
+
+/* ---------- ONE shared model — every tab reads from here, so the numbers tie across tabs ---------- */
+const PROB = { Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 };
+const MODEL = (() => {
+  const jobs = JOBS.map(j => ({ j, m: jobMetrics(j), spread: jobMonthlySpread(j, 13) }));
+  const booked13 = new Array(13).fill(0);
+  jobs.forEach(r => r.spread.forEach((v, i) => booked13[i] += v));
+  const factored13 = new Array(13).fill(0);
+  const landings = [];
+  const now = new Date('2026-07-15T12:00:00');
+  BID_PIPELINE.filter(b => PROB[b.status]).forEach(b => {
+    const p = PROB[b.status];
+    const land = Math.max(0, Math.round((new Date(b.due + 'T12:00:00') - now) / (30.44 * 864e5)) + 1);
+    if (land < 13) landings.push({ b, land, amt: b.amount * p });
+    const curve = b.amount > 900000 ? ENGINE.curve18 : ENGINE.curve12;
+    curve.forEach((pct, mi) => { const idx = land + mi; if (idx < 13) factored13[idx] += b.amount * p * pct / 100; });
+  });
+  const svcOf = (t) => SERVICE_AGREEMENTS.filter(a => a.svcType === t && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+  const svc = { pma: svcOf('PMA'), onDemand: svcOf('On-Demand'), small: svcOf('Small Project'),
+    pending: SERVICE_AGREEMENTS.filter(a => a.status === 'Proposed').reduce((x, a) => x + a.monthly, 0) };
+  const tot = jobs.reduce((x, r) => ({ ec: x.ec + r.m.budget, ac: x.ac + r.m.cost, er: x.er + r.j.contract, ar: x.ar + r.m.earned }), { ec: 0, ac: 0, er: 0, ar: 0 });
+  const factoredOpen = BID_PIPELINE.filter(b => PROB[b.status]).reduce((x, b) => x + b.amount * PROB[b.status], 0);
+  return { jobs, booked13, factored13, landings, svc, tot, factoredOpen };
+})();
+const ACTIVE = () => MODEL.jobs;
+const tie = (txt, href) => `<a class="wb-tie" href="${href}">✓ ${txt}</a>`;
 
 /* ---------- 1. Job Est and Act export ---------- */
 function tabEstAct() {
@@ -77,38 +102,42 @@ function tabEstAct() {
     tabEstAct._acc = (tabEstAct._acc || '') + rows; rows = '';
   });
   const html = tabEstAct._acc; tabEstAct._acc = '';
+  const T = MODEL.tot;
   return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · synced from QuickBooks — the manual export this replaces took Tips-tab instructions to run</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Customer / Job</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Revenue</th><th>Act. Revenue</th><th>($) Diff.</th></tr></thead>
-      <tbody>${html}</tbody></table></div>`;
+      <tbody>${html}
+        <tr class="wb-total"><td class="l">GRAND TOTAL — ALL CUSTOMERS</td>${dcell(T.ec)}${dcell(T.ac)}${dcell(T.ac - T.ec)}${dcell(T.er)}${dcell(T.ar)}${dcell(T.ar - T.er)}</tr>
+      </tbody></table></div>
+    <div class="wb-ties">${tie('Est/Act cost & revenue flow to → Construction Forecast', '#cforecast')}${tie('GM% on every job flows to → Construction Summary', '#csummary')}</div>`;
 }
 
 /* ---------- 2. Total Summary ---------- */
 function tabTotal() {
   const mos = M13.slice(0, 4);
-  const constr = bookedMonthlySpread(4);
-  const svc = (t) => SERVICE_AGREEMENTS.filter(a => a.svcType === t && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
-  const pend = BID_PIPELINE.filter(b => ['Submitted', 'Pending Award'].includes(b.status)).reduce((x, b) => x + b.amount * (b.status === 'Submitted' ? 0.35 : 0.65), 0) / 6;
-  const svcPend = SERVICE_AGREEMENTS.filter(a => a.status === 'Proposed').reduce((x, a) => x + a.monthly, 0);
+  const constr = MODEL.booked13.slice(0, 4);
+  const factored = MODEL.factored13.slice(0, 4);
+  const S = MODEL.svc;
   const row = (label, vals, cls) => `<tr class="${cls || ''}"><td class="l">${label}</td>${vals.map(v => v === null ? '<td>-</td>' : dcell(v)).join('')}</tr>`;
-  const booked = mos.map((m, i) => constr[i] + svc('On-Demand') + svc('PMA') + svc('Small Project'));
+  const booked = mos.map((m, i) => constr[i] + S.onDemand + S.pma + S.small);
   return `<div class="wb-stamp">Yates Company <span>4 Month Forecast — the service rows fill themselves here</span></div>
     <table class="wb" style="max-width:760px">
       <thead><tr><th class="l"></th>${mos.map(m => `<th>${m}</th>`).join('')}</tr></thead>
       <tbody>
         <tr class="wb-group"><td class="l">Booked Jobs</td><td colspan="4"></td></tr>
         ${row('Construction Jobs Forecast', constr)}
-        ${row('On Demand Service', mos.map(() => svc('On-Demand')))}
-        ${row('Active PMA Contracts — Monthly', mos.map(() => svc('PMA') * 0.72))}
-        ${row('Active PMA Contracts — Qtrly', mos.map(() => svc('PMA') * 0.28))}
-        ${row('Small Projects — Service', mos.map(() => svc('Small Project')))}
+        ${row('On Demand Service', mos.map(() => S.onDemand))}
+        ${row('Active PMA Contracts — Monthly', mos.map(() => S.pma * 0.72))}
+        ${row('Active PMA Contracts — Qtrly', mos.map(() => S.pma * 0.28))}
+        ${row('Small Projects — Service', mos.map(() => S.small))}
         ${row('Total Booked Jobs', booked, 'wb-total')}
         <tr><td class="l" colspan="5"></td></tr>
         <tr class="wb-group"><td class="l">Pending Jobs</td><td colspan="4"></td></tr>
-        ${row('Construction Sales Forecast (weighted)', mos.map(() => pend))}
-        ${row('Service Pending Proposals', mos.map(() => svcPend))}
-        ${row('Total Booked + Pending', mos.map((m, i) => booked[i] + pend + svcPend), 'wb-total')}
-      </tbody></table>`;
+        ${row('Construction Sales Forecast (factored, curve-spread)', factored)}
+        ${row('Service Pending Proposals', mos.map(() => S.pending))}
+        ${row('Total Booked + Pending', mos.map((m, i) => booked[i] + factored[i] + S.pending), 'wb-total')}
+      </tbody></table>
+    <div class="wb-ties">${tie('Construction Jobs Forecast = Construction Summary monthly total, same cells', '#csummary')}${tie('Factored sales rows spread from → Sales Summary', '#sales')}${tie('Service rows = the live agreement book', '/yates/service/')}</div>`;
 }
 
 /* ---------- 3. Sales Summary ---------- */
@@ -118,7 +147,7 @@ function tabSales() {
     const mine = BID_PIPELINE.filter(b => b.est === e);
     const open = mine.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
     const won = mine.filter(b => b.status === 'Won'), lost = mine.filter(b => b.status === 'Lost');
-    const weighted = open.reduce((x, b) => x + b.amount * ({ Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status]), 0);
+    const weighted = open.reduce((x, b) => x + b.amount * PROB[b.status], 0);
     return `<tr><td class="l">${esc(e)}</td><td>${open.length}</td>${dcell(open.reduce((x, b) => x + b.amount, 0))}${dcell(weighted)}<td>${won.length}</td><td>${lost.length}</td><td>${won.length + lost.length ? Math.round(won.length / (won.length + lost.length) * 100) + '%' : '-'}</td></tr>`;
   }).join('');
   const openAll = BID_PIPELINE.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
@@ -126,8 +155,9 @@ function tabSales() {
     <table class="wb" style="max-width:860px">
       <thead><tr><th class="l">Salesperson</th><th>Open Bids</th><th>Open $</th><th>Factored $</th><th>Won (T-6)</th><th>Lost (T-6)</th><th>Hit Rate</th></tr></thead>
       <tbody>${rows}
-        <tr class="wb-total"><td class="l">Total</td><td>${openAll.length}</td>${dcell(openAll.reduce((x, b) => x + b.amount, 0))}${dcell(openAll.reduce((x, b) => x + b.amount * ({ Draft: 0.15, Submitted: 0.35, 'Pending Award': 0.65 }[b.status]), 0))}<td>${BID_PIPELINE.filter(b => b.status === 'Won').length}</td><td>${BID_PIPELINE.filter(b => b.status === 'Lost').length}</td><td></td></tr>
+        <tr class="wb-total"><td class="l">Total</td><td>${openAll.length}</td>${dcell(openAll.reduce((x, b) => x + b.amount, 0))}${dcell(MODEL.factoredOpen)}<td>${BID_PIPELINE.filter(b => b.status === 'Won').length}</td><td>${BID_PIPELINE.filter(b => b.status === 'Lost').length}</td><td></td></tr>
       </tbody></table>
+    <div class="wb-ties">${tie('Factored $ ' + fmtK(MODEL.factoredOpen) + ' lands on the size-band curves in → Manpower Forecast', '#manpower')}${tie('and appears as the Pending rows in → Total Summary', '#total')}</div>
     <div class="ynote" style="margin-top:10px">Full detail with win/loss notes lives in the <a class="wb-link" href="/yates/pipeline/">Bid Pipeline</a>.</div>`;
 }
 
@@ -155,7 +185,10 @@ function tabCSummary() {
   return `<div class="wb-stamp">Week Ended <span>7/03/2026 · the 13-month spread fills from the size-band curves — no more typed percentages</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Customer</th><th class="l">Job</th><th class="l">PM</th><th>Act. Margin</th><th>Est. GM %</th><th>Act. GM %</th><th>Cost Act/Est</th><th>% Billed</th>${M13.map(m => `<th>${m}</th>`).join('')}</tr></thead>
-      <tbody>${rows}</tbody></table></div>`;
+      <tbody>${rows}
+        <tr class="wb-total"><td class="l" colspan="8">MONTHLY TOTAL — ALL JOBS</td>${MODEL.booked13.map(v => `<td>${v ? $$$(v) : '-'}</td>`).join('')}</tr>
+      </tbody></table></div>
+    <div class="wb-ties">${tie('Monthly total row flows to → Total Summary (Construction Jobs Forecast)', '#total')}${tie('and is the Booked-jobs revenue line in → Manpower Forecast', '#manpower')}${tie('Est/Act figures come from → Job Est and Act', '#estact')}</div>`;
 }
 
 /* ---------- 5. Construction Forecast (cost-code detail) ---------- */
@@ -172,7 +205,8 @@ function tabCForecast() {
   return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · cost-code detail, grouped with subtotals — click any group's job in Construction Summary for the full tracker</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Job / Cost Code</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Revenue</th><th>Act. Revenue</th></tr></thead>
-      <tbody>${rows}</tbody></table></div>`;
+      <tbody>${rows}</tbody></table></div>
+    <div class="wb-ties">${tie('Job subtotals tie to → Job Est and Act, line for line', '#estact')}${tie('Labor cost codes break out in → Construction Labor', '#clabor')}</div>`;
 }
 
 /* ---------- 6. Construction Labor ---------- */
@@ -200,23 +234,16 @@ function tabCLabor() {
   return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · where the workbook says "enter %", the curves fill the months automatically</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Job / Labor Code</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Hours</th><th>Actual Hrs</th><th>Hrs (under)/Over</th>${M13.slice(0, 3).map(mm => `<th>${mm}</th>`).join('')}</tr></thead>
-      <tbody>${rows}</tbody></table></div>`;
+      <tbody>${rows}</tbody></table></div>
+    <div class="wb-ties">${tie('Monthly % columns use the same curve spreads as → Construction Summary', '#csummary')}${tie('Hours ÷ heads math continues in → Manpower Forecast', '#manpower')}</div>`;
 }
 
 /* ---------- 7. Manpower Forecast (yellow inputs + red band, alive) ---------- */
 let WMIX = Object.assign({}, ENGINE.tradeMix);
 function tabManpower() {
-  const booked = bookedMonthlySpread(13);
-  const factored = new Array(13).fill(0);
-  const now = new Date('2026-07-15T12:00:00');
-  const landings = [];
-  BID_PIPELINE.filter(b => ['Submitted', 'Pending Award'].includes(b.status)).forEach(b => {
-    const p = b.status === 'Submitted' ? 0.35 : 0.65;
-    const land = Math.max(0, Math.round((new Date(b.due + 'T12:00:00') - now) / (30.44 * 864e5)) + 1);
-    if (land < 13) landings.push({ b, land, amt: b.amount * p });
-    const curve = b.amount > 900000 ? ENGINE.curve18 : ENGINE.curve12;
-    curve.forEach((pct, mi) => { const idx = land + mi; if (idx < 13) factored[idx] += b.amount * p * pct / 100; });
-  });
+  const booked = MODEL.booked13;
+  const factored = MODEL.factored13;
+  const landings = MODEL.landings;
   const total = booked.map((v, i) => v + factored[i]);
   const mixSum = Object.values(WMIX).reduce((a, b) => a + b, 0);
   const installHrs = total.map(v => v * WMIX.install / 100 / ENGINE.blendedRates.install);
@@ -240,6 +267,7 @@ function tabManpower() {
         <tr><td class="l">Manpower Hrs (Install)</td><td></td>${installHrs.map(v => `<td>${$$$(v)}</td>`).join('')}</tr>
         <tr class="wb-total"><td class="l"># Heads Install (${ENGINE.weeksPerMo}×${ENGINE.hrsPerWk}×${ENGINE.utilization}=${ENGINE.hrsPerHead.toFixed(1)})</td><td></td>${heads.map(v => `<td class="${v > ENGINE.installHeadsCurrent ? 'wb-neg' : ''}">${v.toFixed(1)}</td>`).join('')}</tr>
       </tbody></table></div>
+    <div class="wb-ties">${tie('Booked-jobs row = Construction Summary monthly total, cell for cell', '#csummary')}${tie('Factored-sales row = Sales Summary factored $, curve-spread', '#sales')}</div>
     <div class="ynote" style="margin-top:10px">Red months exceed the current crew of ${ENGINE.installHeadsCurrent} — the hiring plan lives in <a class="wb-link" href="/yates/manpower/">Manpower &amp; EAC</a>.</div>`;
 }
 
