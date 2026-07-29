@@ -180,9 +180,11 @@ function approvalChain(key, steps, opts = {}) {
         <span>signing as ${esc(me.name)}, ${esc(me.title)}</span>
       </div>`;
     }
+    const nudgedAt = (() => { try { return localStorage.getItem('yates-nudge:' + key + ':' + i); } catch (e) { return null; } })();
     return `<div class="appr-step locked">
       <span class="dot"></span>
-      <div><b>${esc(s.label)}</b><span>${prevDone ? 'awaiting ' + esc(persona ? persona.title : s.role) : 'locked — prior approval required'}</span></div>
+      <div><b>${esc(s.label)}</b><span class="appr-wait">${prevDone ? 'awaiting ' + esc(persona ? persona.title : s.role) : 'locked — prior approval required'}${nudgedAt ? ' · <i class="appr-nudged">⌲ Slack reminder sent ' + esc(nudgedAt) + '</i>' : ''}</span></div>
+      ${prevDone && persona && !persona.perms.external ? `<button class="slack-nudge" onclick="slackNudge('${key}',${i})">${SLACK_MARK}Message ${esc(persona.name.split(' ')[0])}</button>` : ''}
     </div>`;
   }).join('<div class="appr-arrow">→</div>');
   const complete = st.every(Boolean);
@@ -237,4 +239,65 @@ function bookedMonthlySpread(nMonths) {
   const out = new Array(nMonths).fill(0);
   JOBS.forEach(j => jobMonthlySpread(j, nMonths).forEach((v, i) => out[i] += v));
   return out;
+}
+
+/* ---- Slack nudge: message whoever an approval is waiting on (demo simulation) ---- */
+const SLACK_MARK = `<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="2.5" y="9" width="9" height="4" rx="2" fill="#36C5F0"/><rect x="9" y="2.5" width="4" height="9" rx="2" fill="#2EB67D"/><rect x="12.5" y="11" width="9" height="4" rx="2" fill="#ECB22E"/><rect x="11" y="12.5" width="4" height="9" rx="2" fill="#E01E5A"/></svg>`;
+
+function slackNudge(key, idx) {
+  const steps = window.__apprDefs[key] || [];
+  const s = steps[idx]; if (!s) return;
+  const p = PERSONAS.find(x => x.id === s.role); if (!p) return;
+  const me = currentPersona() || { name: 'Y8S Portal', title: 'Automated reminder' };
+  const first = p.name.split(' ')[0];
+  const init = (n) => n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const page = (document.title || 'Y8S Portal').split('—')[0].trim();
+  const link = location.pathname;
+  const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const msg = `Hi ${first} — “${s.label.replace(/["“”]/g, '')}” is next in the queue and waiting on you in the Y8S Operations Portal (${page}). Everything ahead of it is signed off. One click when you're ready: ${link}`;
+
+  const ov = document.createElement('div');
+  ov.className = 'slk-ov';
+  ov.innerHTML = `
+    <div class="slk-card" onclick="event.stopPropagation()">
+      <div class="slk-head">${SLACK_MARK}<b>Slack</b><span class="slk-dm-label">Direct message</span><button class="slk-x" aria-label="Close">✕</button></div>
+      <div class="slk-peer">
+        <span class="slk-ava peer">${init(p.name)}</span>
+        <div><b>${esc(p.name)}</b><span class="slk-pres"><i></i> Active</span><div class="slk-title">${esc(p.title)} · YATES Company</div></div>
+      </div>
+      <div class="slk-body">
+        <div class="slk-day"><span>Today</span></div>
+        <div class="slk-msg">
+          <span class="slk-ava me">${init(me.name)}</span>
+          <div class="slk-msg-main">
+            <div class="slk-msg-head"><b>${esc(me.name)}</b><span class="slk-app">APP · Y8S Portal</span><span class="slk-time">${now}</span></div>
+            <div class="slk-text">${esc(msg)}</div>
+            <div class="slk-reacts" style="display:none"><span class="slk-react">👀 1</span></div>
+          </div>
+        </div>
+        <div class="slk-status sending"><span class="slk-spin"></span> Sending via Slack…</div>
+      </div>
+      <div class="slk-composer"><span>Sent automatically by the Y8S Operations Portal</span></div>
+    </div>`;
+  const close = () => ov.remove();
+  ov.addEventListener('click', close);
+  ov.querySelector('.slk-x').addEventListener('click', close);
+  document.body.appendChild(ov);
+
+  setTimeout(() => {
+    const stEl = ov.querySelector('.slk-status');
+    if (stEl) { stEl.className = 'slk-status ok'; stEl.innerHTML = '✓ Delivered to ' + esc(first) + ' · just now'; }
+    const stamp = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    try { localStorage.setItem('yates-nudge:' + key + ':' + idx, stamp); } catch (e) {}
+    /* stamp the chain in place — no page re-render needed */
+    document.querySelectorAll('[data-appr="' + key + '"] .appr-step').forEach((el, j) => {
+      if (j === idx) {
+        const w = el.querySelector('.appr-wait');
+        if (w && !w.querySelector('.appr-nudged')) w.innerHTML += ' · <i class="appr-nudged">⌲ Slack reminder sent ' + esc(stamp) + '</i>';
+        const btn = el.querySelector('.slack-nudge');
+        if (btn) btn.innerHTML = SLACK_MARK + 'Message again';
+      }
+    });
+  }, 750);
+  setTimeout(() => { const r = ov.querySelector('.slk-reacts'); if (r) r.style.display = 'flex'; }, 1900);
 }
