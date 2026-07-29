@@ -302,7 +302,7 @@ function render() {
       <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
       <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
       <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
-      <div class="ykpi red"><div class="l">$300M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(300e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & service growth</div></div>
+      <div class="ykpi red"><div class="l">$500M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & service growth</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
@@ -416,7 +416,7 @@ function render() {
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Five-Year Path vs the $300M Goal</h2><span class="k">plan vs required trajectory</span></div>
+        <div class="demo-panel-head"><h2>Five-Year Path vs the $500M Goal</h2><span class="k">plan vs required trajectory</span></div>
         <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
       </div>
       <div class="demo-panel">
@@ -441,7 +441,7 @@ function render() {
             const rev5 = cd[9].revenue;
             return `Current agreement book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} ARR)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active agreements.<br>
             At ${svcGrowth}%/yr (construction-to-service conversion + tier upgrades), the service line reaches <b>${fmtK(arr5)} ARR by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, recurring.<br>
-            <span class="ynote">Recurring revenue is the multiplier on the $300M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
+            <span class="ynote">Recurring revenue is the multiplier on the $500M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
           })()}
         </div>
       </div>

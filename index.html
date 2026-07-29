@@ -220,8 +220,8 @@ if (internal) {
     const BASE_C = 24.6e6;
     const BASE_S = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
     let P;
-    try { P = JSON.parse(localStorage.getItem('yates-5yr') || 'null'); } catch (e) {}
-    P = P || { constrGrowth: 8, svcGrowth: 20, escalation: 3, newClientsY1: 4, newClientsRamp: 2, newClientSize: 850000, newClientRepeat: 70, newSvcPerYear: 12, newSvcMRR: 1800, churn: 6, attachPct: 60, attachMRR: 2400, gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85, goal: 300, acq: [{ year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 }, { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 }] };
+    try { P = JSON.parse(localStorage.getItem('yates-5yr') || 'null'); if (P && P.goal == 300) P.goal = 500; } catch (e) {}
+    P = P || { constrGrowth: 8, svcGrowth: 20, escalation: 3, newClientsY1: 4, newClientsRamp: 2, newClientSize: 850000, newClientRepeat: 70, newSvcPerYear: 12, newSvcMRR: 1800, churn: 6, attachPct: 60, attachMRR: 2400, gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85, goal: 500, acq: [{ year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 }, { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 }] };
     const esc2 = P.escalation / 100;
     const R = [1, 2, 3, 4, 5].map(y => {
       const co = BASE_C * Math.pow(1 + P.constrGrowth / 100 + esc2, y);
@@ -237,7 +237,7 @@ if (internal) {
       const oh = total * (P.ohPct / 100) * Math.pow(P.ohScale, Math.log2(Math.max(1, total / (BASE_C + BASE_S))));
       return { y, total, recurring: sb + sn + arec, ebitda: gp - oh };
     });
-    const goal = (P.goal || 300) * 1e6;
+    const goal = (P.goal || 500) * 1e6;
     const goalPath = [1, 2, 3, 4, 5].map(y => (BASE_C + BASE_S) * Math.pow(goal / (BASE_C + BASE_S), y / 5));
     new Chart($('#ch-goal'), {
       data: { labels: R.map(r => 'Y' + r.y), datasets: [
@@ -260,7 +260,7 @@ if (internal) {
       <thead><tr><th>Performance Hurdle</th><th style="text-align:right">Target</th><th style="text-align:right">Plan</th><th style="width:90px">Status</th></tr></thead>
       <tbody>${hurdles.map(h => `<tr><td>${h[0]}</td><td style="text-align:right">${h[1]}</td><td style="text-align:right;font-weight:700">${h[2]}</td><td>${chip(h[3], h[4])}</td></tr>`).join('')}</tbody>
     </table>
-    <div class="ynote" style="margin-top:6px">Hurdles derive from the $${P.goal || 300}M goal path — the current saved scenario in the 5-Year Growth Model drives this card live.</div>`;
+    <div class="ynote" style="margin-top:6px">Hurdles derive from the $${P.goal || 500}M goal path — the current saved scenario in the 5-Year Growth Model drives this card live.</div>`;
   })();
 
 } else {
