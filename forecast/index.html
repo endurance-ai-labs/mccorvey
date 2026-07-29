@@ -68,7 +68,7 @@ const DEFAULTS = {
   newSvcPerYear: 12, newSvcMRR: 1800, churn: 6,
   attachPct: 60, attachMRR: 2400,
   gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85,
-  goal: 300,
+  goal: 500,
   acq: [
     { year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 },
     { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 },
@@ -93,7 +93,7 @@ const PRESETS = {
 
 let A = load();
 function load() {
-  try { const raw = localStorage.getItem('yates-5yr'); if (raw) return JSON.parse(raw); } catch (e) {}
+  try { const raw = localStorage.getItem('yates-5yr'); if (raw) { const st = JSON.parse(raw); if (st.goal == 300) st.goal = 500; /* goal raised to $500M */ return st; } } catch (e) {}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
 function save() { try { localStorage.setItem('yates-5yr', JSON.stringify(A)); } catch (e) {} }
@@ -251,7 +251,7 @@ function render() {
           <div class="acq-row" style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)"><span>Close</span><span>Size</span><span>Gross margin</span><span>Recurring mix</span><span>Post-close growth</span><span></span></div>
           ${acqRows || '<div class="ynote">No acquisitions modeled — organic only.</div>'}
           <div class="row" style="margin-top:6px"><label>Revenue goal</label>
-            <select onchange="upd('goal',this.value)">${[100, 150, 200, 250, 300, 400, 500].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
+            <select onchange="upd('goal',this.value)">${[200, 250, 300, 400, 500, 600, 750].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
             <span class="ynote">Build the scenario live with the leadership team — every control persists.</span></div>
         </div>
       </div>
