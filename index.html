@@ -31,6 +31,8 @@
 <script src="/yates/vendor/chart.umd.min.js"></script>
 <script src="/yates/js/yates-brain.js" defer></script>
 <script>
+/* Root-first landing: new visitors see the marketing page; “Enter the portal” (?enter=1) reaches the sign-in gate. */
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/yates/welcome/');
 YatesNav.renderTopbar({ subtitle: 'Operations Portal' });
 const app = $('#app');
 const internal = YatesMode.isInternal() && can('margins');

@@ -98,6 +98,15 @@ a.card:hover .go{opacity:1}
 .card ul{margin:10px 0 0;padding-left:16px}
 .card ul li{font-size:12.5px;color:var(--muted);margin-bottom:4px}
 
+/* field photos */
+.shots{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:38px}
+@media(max-width:960px){.shots{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.shots{grid-template-columns:1fr}}
+.shot{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
+.shot img{width:100%;height:210px;object-fit:cover;display:block;transition:transform .25s ease}
+.shot:hover img{transform:scale(1.04)}
+.shot span{position:absolute;left:0;right:0;bottom:0;padding:22px 14px 10px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#fff;background:linear-gradient(180deg,transparent,rgba(8,20,36,.78))}
+
 /* engine steps */
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:38px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg2)}
 @media(max-width:820px){.steps{grid-template-columns:1fr}}
@@ -133,7 +142,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
   <div class="nav-links">
     <a href="#platform">Platform</a><a href="#engine">Engine</a><a href="#governance">Governance</a><a href="#growth">Growth</a>
     <a class="site-link-el" href="https://www.endurancelabs.ai" target="_blank" rel="noopener" style="font-weight:800;color:var(--muted)"><em style="font-style:normal;color:var(--blue)">endurance</em>labs.ai ↗</a>
-    <a class="btn" href="/yates/" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
+    <a class="btn" href="/yates/?enter=1" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
     <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request access →</a>
   </div>
 </div></nav>
@@ -145,7 +154,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
     <p>QuickBooks and ServiceTitan, wired into a single governed system of record — job costing, the monthly forecast workbook, manpower math, bids, AIA billing and the five-year growth model. No exports, no re-keying, no copy-forward spreadsheets. The number the PM sees is the number the CFO signs.</p>
     <div class="hero-ctas">
       <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request a walkthrough</a>
-      <a class="btn" href="/yates/">Enter the portal →</a>
+      <a class="btn" href="/yates/?enter=1">Enter the portal →</a>
       <a class="btn" href="#platform">Read the tour ↓</a>
     </div>
   </div>
@@ -239,6 +248,17 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
   </div>
 </div></section>
 
+<section class="block" id="field" style="padding-top:0"><div class="wrap">
+  <span class="eyebrow">From the field</span>
+  <h2 class="sec">The work behind the numbers.</h2>
+  <div class="shots">
+    <div class="shot reveal"><img src="/yates/assets/photos/b01.jpg" alt="Controls panel build-out" loading="lazy"><span>DDC panel build-out</span></div>
+    <div class="shot reveal"><img src="/yates/assets/photos/b04.jpg" alt="Mechanical room integration" loading="lazy"><span>Mechanical room integration</span></div>
+    <div class="shot reveal"><img src="/yates/assets/photos/b07.jpg" alt="Rooftop unit controls" loading="lazy"><span>Rooftop &amp; air-side controls</span></div>
+    <div class="shot reveal"><img src="/yates/assets/photos/b10.jpg" alt="Commissioning and service" loading="lazy"><span>Commissioning &amp; service</span></div>
+  </div>
+</div></section>
+
 <section class="block tint" id="engine"><div class="wrap">
   <span class="eyebrow">How it works</span>
   <h2 class="sec">Feed → Engine → Exhibit.</h2>
@@ -279,7 +299,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
   <p>The portal behind this page runs on a full demonstration book — 22 jobs, 14 service agreements, a live forecast workbook and a five-year model. Every module is interactive — chains, e-signatures, exports, the Brain. Open it, break it, ask it questions.</p>
   <div class="hero-ctas" style="justify-content:center">
     <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request access →</a>
-    <a class="btn" href="/yates/">Enter the portal →</a>
+    <a class="btn" href="/yates/?enter=1">Enter the portal →</a>
     <a class="btn" href="https://endurancelabs.ai" target="_blank" rel="noopener">Endurance AI Labs ↗</a>
   </div>
 </div></section>
