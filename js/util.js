@@ -129,7 +129,8 @@ function renderSignIn() {
       <div class="login-sub">Building Automation Systems Nurtured by Experience · single source of truth demo</div>
       <div class="login-note">Select your user — every module, approval right and financial view is scoped to your role.</div>
       <div class="login-grid">${cards}</div>
-      <div class="login-foot">Demo environment · fictional data · concept build by Endurance AI Labs</div>
+      <div class="login-foot">Demo environment · fictional data · concept build by Endurance AI Labs<br>
+        <a href="/yates/welcome/" style="color:var(--color-blue);font-weight:700;text-decoration:none">New here? Read about the platform →</a></div>
     </div>`;
   document.body.appendChild(ov);
 }
