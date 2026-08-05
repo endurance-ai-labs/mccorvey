@@ -153,25 +153,36 @@ function render() {
     </tr>`).join('');
 
   $('#app').innerHTML = `
-    <div class="demo-hero" style="padding-bottom:16px">
-      <div>
-        <div class="demo-eyebrow">FABRICATION DIVISION · DUCT DIRECT &amp; SHOP FLOOR</div>
-        <h1>Fabrication <em>Division</em></h1>
-        <div class="sub">Every external fabrication account and open work order in one board — Duct Direct programs for other mechanical contractors, the shop floor synced from STRATUS, and monthly fabrication volume rolled up for the CFO.</div>
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM — FABRICATION DIVISION · DUCT DIRECT &amp; SHOP FLOOR</div>
+          <h1 class="cmd-title">Fabrication Command Center</h1>
+          <div class="cmd-sub">Every external fabrication account and open work order in one board — Duct Direct programs for other mechanical contractors, the shop floor synced from STRATUS, and monthly fabrication volume rolled up for the CFO.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+          <span class="demo-live"><span class="dot"></span> ${SERVICE_AGREEMENTS.length} ACCOUNTS · ${openCalls} OPEN WORK ORDERS</span>
+          <div class="cmd-chips">${srcChip('st')} ${showMoney ? srcChip('qb') : ''}</div>
+        </div>
       </div>
-      <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> ${SERVICE_AGREEMENTS.length} ACCOUNTS · ${openCalls} OPEN WORK ORDERS</span>
-        <span style="display:flex;gap:6px">${srcChip('st')} ${showMoney ? srcChip('qb') : ''}</span>
+      <div class="cmd-tiles">
+        <div class="cmd-tile"><div class="l">Active Fab Accounts</div><div class="v">${active.length + expiring.length}</div><span class="d up">▲ ${proposed.length} proposed</span><div class="s">Duct Direct · Fab Partner · OEM</div>${sparkSVG('fabacct', { up: true, color: '#14283c' })}</div>
+        ${showMoney ? `
+        <div class="cmd-tile"><div class="l">Monthly Fab Volume</div><div class="v">${fmtK(mrr)}</div><span class="d up">▲ ${fmtK(mrr * 12)} annualized</span><div class="s">external book, ex-construction</div>${sparkSVG('fabvol', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Pipeline Volume</div><div class="v">${fmtK(pipeMrr)}</div><span class="d up">▲ conversion pipeline</span><div class="s">from active construction jobs</div>${sparkSVG('fabpipe', { up: true, color: '#14283c' })}</div>` : ''}
+        <div class="cmd-tile ${expiring.length ? 'hot' : ''}"><div class="l">Renewals Next 90 Days</div><div class="v">${expiring.length}</div><span class="d ${expiring.length ? 'down' : 'up'}">${expiring.length ? '▼ act now' : '▲ none due'}</span><div class="s">${expiring.map(e => e.client.split(' ')[0]).join(', ') || 'book is current'}</div>${sparkSVG('renewals', { up: false, color: '#b98a36' })}</div>
+        <div class="cmd-tile"><div class="l">Open Work Orders</div><div class="v">${openCalls}</div><span class="d ${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length ? 'down' : 'up'}">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length ? '▼' : '▲'} ${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency</span><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'High').length} high priority in queue</div>${sparkSVG('workorders', { up: true, color: '#c8102e' })}</div>
       </div>
     </div>
 
-    <div class="ykpi-row">
-      <div class="ykpi"><div class="l">Active Fab Accounts</div><div class="v">${active.length + expiring.length}</div><div class="s">${proposed.length} proposed in pipeline</div></div>
-      ${showMoney ? `
-      <div class="ykpi green"><div class="l">Monthly Fab Volume</div><div class="v">${fmtK(mrr)}</div><div class="s">${fmtK(mrr * 12)} annualized</div></div>
-      <div class="ykpi"><div class="l">Pipeline Volume</div><div class="v">${fmtK(pipeMrr)}</div><div class="s">from active construction jobs</div></div>` : ''}
-      <div class="ykpi amber"><div class="l">Renewals Next 90 Days</div><div class="v">${expiring.length}</div><div class="s">${expiring.map(e => e.client.split(' ')[0]).join(', ')}</div></div>
-      <div class="ykpi red"><div class="l">Open Work Orders</div><div class="v">${openCalls}</div><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency · ${SERVICE_CALLS.filter(c => c.priority === 'High').length} high priority</div></div>
+    <div class="scope-bar">
+      <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+      <span class="scope-chip">Plant: <b>all</b></span>
+      <span class="scope-chip">Line: <b>${SFILT.line}</b></span>
+      <span class="scope-chip">Program: <b>${SFILT.type}</b></span>
+      <span class="scope-chip">Status: <b>${SFILT.status}</b></span>
+      <span class="scope-note">${allAgs.length} accounts in scope · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">

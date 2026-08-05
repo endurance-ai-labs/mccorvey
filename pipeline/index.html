@@ -79,24 +79,35 @@ function render() {
     </tr>`).join('');
 
   $('#app').innerHTML = `
-    <div class="demo-hero" style="padding-bottom:16px">
-      <div>
-        <div class="demo-eyebrow">PRECONSTRUCTION · WIN/LOSS INTELLIGENCE</div>
-        <h1>Bid <em>Pipeline</em></h1>
-        <div class="sub">Every bid out the door — status, hit rate, and where margin wins or loses work. Won bids link straight to their job; the weighted pipeline feeds the revenue forecast.</div>
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM — PRECONSTRUCTION · WIN/LOSS INTELLIGENCE</div>
+          <h1 class="cmd-title">Bid Pipeline Command Center</h1>
+          <div class="cmd-sub">Every bid out the door — status, hit rate, and where margin wins or loses work. Won bids link straight to their job; the weighted pipeline feeds the revenue forecast.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+          <span class="demo-live"><span class="dot"></span> ${open.length} OPEN BIDS · ${fmtK(openVal)}</span>
+          <div class="cmd-chips">${srcChip('brain')} ${srcChip('prop')}</div>
+        </div>
       </div>
-      <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> ${open.length} OPEN BIDS · ${fmtK(openVal)}</span>
-        <span style="display:flex;gap:6px">${srcChip('prop')}</span>
+      <div class="cmd-tiles">
+        <div class="cmd-tile"><div class="l">Open Pipeline</div><div class="v">${fmtK(openVal)}</div><span class="d up">▲ ${open.length} bids in flight</span><div class="s">pre-screened by AI doc review</div>${sparkSVG('openpipe', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Weighted Pipeline</div><div class="v">${fmtK(weighted)}</div><span class="d up">▲ by stage probability</span><div class="s">15% / 35% / 65% by stage</div>${sparkSVG('weighted', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Hit Rate (T-6 mo)</div><div class="v">${fmtPct(hitRate, 0)}</div><span class="d up">▲ ${fmtPct(dollarHit, 0)} by $</span><div class="s">${won.length} won / ${lost.length} lost</div>${sparkSVG('hitrate', { up: true })}</div>
+        ${showMargin ? `<div class="cmd-tile"><div class="l">Avg Margin — Won</div><div class="v">${fmtPct(avgMarginWon)}</div><span class="d up">▲ vs ${fmtPct(avgMarginLost)} lost</span><div class="s">margin holds on wins</div>${sparkSVG('marginwon', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile hot"><div class="l">Margin Insight</div><div class="v" style="font-size:15px;line-height:1.3">Losses cluster &lt; 14%</div><span class="d down">▼ price isn't the lever</span><div class="s">fit is — bid the right work</div>${sparkSVG('insight', { up: false, color: '#c8102e' })}</div>` : ''}
       </div>
     </div>
 
-    <div class="ykpi-row">
-      <div class="ykpi"><div class="l">Open Pipeline</div><div class="v">${fmtK(openVal)}</div><div class="s">${open.length} bids in flight</div></div>
-      <div class="ykpi"><div class="l">Weighted Pipeline</div><div class="v">${fmtK(weighted)}</div><div class="s">by stage probability</div></div>
-      <div class="ykpi green"><div class="l">Hit Rate (T-6 mo)</div><div class="v">${fmtPct(hitRate, 0)}</div><div class="s">${won.length} won / ${lost.length} lost · ${fmtPct(dollarHit, 0)} by $</div></div>
-      ${showMargin ? `<div class="ykpi amber"><div class="l">Avg Margin — Won</div><div class="v">${fmtPct(avgMarginWon)}</div><div class="s">vs ${fmtPct(avgMarginLost)} on lost bids</div></div>
-      <div class="ykpi red"><div class="l">Margin Insight</div><div class="v" style="font-size:14px;line-height:1.4">Losses cluster below ${fmtPct(14, 0)}</div><div class="s">price isn't the win lever — fit is</div></div>` : ''}
+    <div class="scope-bar">
+      <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+      <span class="scope-chip">Sector: <b>all</b></span>
+      <span class="scope-chip">GC: <b>all</b></span>
+      <span class="scope-chip">Estimator: <b>all</b></span>
+      <span class="scope-chip">Stage: <b>all</b></span>
+      <span class="scope-note">${P.length} bids in scope · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
     </div>
 
     <div class="demo-two" style="margin-bottom:22px">

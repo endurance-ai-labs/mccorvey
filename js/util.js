@@ -136,8 +136,47 @@ function setRole(id) {
 }
 function signOutUser() { try { localStorage.removeItem('msm-role'); } catch (e) {} window.location.reload(); }
 
-/* ---- sign-in overlay: pick your user (permissions flow from role) ---- */
+/* ---- access gate: portal code required before the user picker ---- */
+function gateOK() { try { return localStorage.getItem('msm-gate') === 'ok'; } catch (e) { return false; } }
+function tryGate(ev) {
+  ev.preventDefault();
+  const inp = document.getElementById('gate-code');
+  if (inp && inp.value.trim().toLowerCase() === 'enduranceportal') {
+    try { localStorage.setItem('msm-gate', 'ok'); } catch (e) {}
+    const ov = document.querySelector('.login-overlay'); if (ov) ov.remove();
+    renderSignIn();
+  } else {
+    const err = document.getElementById('gate-err');
+    if (err) err.style.display = 'block';
+    if (inp) { inp.value = ''; inp.focus(); }
+  }
+  return false;
+}
+
+/* ---- sign-in overlay: access code, then pick your user ---- */
 function renderSignIn() {
+  if (!gateOK()) {
+    const ov = document.createElement('div');
+    ov.className = 'login-overlay';
+    ov.innerHTML = `
+      <div class="login-box" style="max-width:420px">
+        <img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="login-logo">
+        <div class="login-title">Operations Portal</div>
+        <div class="login-sub">Leaders in the HVAC Industry · private demo</div>
+        <div class="login-note">Enter the access code to continue.</div>
+        <form onsubmit="return tryGate(event)" style="display:flex;flex-direction:column;gap:10px;margin:14px 0 4px">
+          <input id="gate-code" type="password" autocomplete="off" placeholder="Access code" autofocus
+            style="font:inherit;font-size:14px;padding:11px 14px;border-radius:9px;border:1px solid var(--color-border);background:var(--color-bg-3);color:var(--color-cloud-whisper);outline:none;text-align:center;letter-spacing:.08em">
+          <div id="gate-err" style="display:none;font-size:11.5px;color:#c8102e;font-weight:700;text-align:center">Incorrect code — try again.</div>
+          <button type="submit" style="font:inherit;font-size:12.5px;font-weight:800;letter-spacing:.08em;padding:11px;border-radius:9px;border:none;background:#c8102e;color:#fff;cursor:pointer">ENTER PORTAL</button>
+        </form>
+        <div class="login-foot">Demo environment · fictional data · concept build by Endurance AI Labs<br>
+          <a href="/mccorvey/welcome/" style="color:var(--color-blue);font-weight:700;text-decoration:none">New here? Read about the platform →</a></div>
+      </div>`;
+    document.body.appendChild(ov);
+    setTimeout(() => { const i = document.getElementById('gate-code'); if (i) i.focus(); }, 60);
+    return;
+  }
   const cards = PERSONAS.map(p => `
     <button class="login-card" onclick="setRole('${p.id}')">
       <span class="avatar">${p.perms.external ? '◇' : p.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()}</span>
