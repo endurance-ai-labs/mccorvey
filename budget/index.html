@@ -283,25 +283,35 @@ function render() {
   const cd = colData();
   const t12 = cd[2], y1 = cd[5];
   $('#app').innerHTML = `
-    <div class="demo-hero" style="padding-bottom:16px">
-      <div>
-        <div class="demo-eyebrow">CFO CONSOLE · MONTHLY FINANCIAL REVIEW</div>
-        <h1>Budget vs <em>Actual</em></h1>
-        <div class="sub">The monthly financial review, without the spreadsheet: Viewpoint Vista actuals against budget by line, the booked forecast with <b>external fab revenue finally in the picture</b>, and the staffing implication of the plan. One screen from input to answer. The long-range plan lives in the <a href="/mccorvey/forecast/" style="color:var(--color-blue)">5-Year Growth Model</a>.</div>
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM — CFO CONSOLE · MONTHLY FINANCIAL REVIEW</div>
+          <h1 class="cmd-title">Budget Command Center</h1>
+          <div class="cmd-sub">The monthly financial review, without the spreadsheet: Viewpoint Vista actuals against budget by line, the booked forecast with <b style="color:#fff">external fab revenue finally in the picture</b>, and the staffing implication of the plan. The long-range plan lives in the <a href="/mccorvey/forecast/" style="color:#ef6a76;font-weight:700">5-Year Growth Model</a>.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+          <span class="demo-live"><span class="dot"></span> HOUSTON, TX</span>
+          <div class="cmd-chips">${srcChip('qb')} ${srcChip('st')}</div>
+        </div>
       </div>
-      <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> HOUSTON, TX</span>
-        <span class="demo-src">Backlog coverage <b>${fmtK(backlogRemaining)}</b> unearned</span>
+      <div class="cmd-tiles">
+        <div class="cmd-tile"><div class="l">T-12 Revenue</div><div class="v">${fmtK(t12.revenue)}</div><span class="d up">▲ trailing run-rate</span><div class="s">construction + external fab</div>${sparkSVG('t12rev', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">T-12 Gross Margin</div><div class="v">${fmtPct(t12.grossPct)}</div><span class="d up">▲ ${fmtK(t12.gross)} gross</span><div class="s">blended field + shop</div>${sparkSVG('t12gm', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><span class="d up">▲ ${fmtPct(t12.ebitdaPct)} margin</span><div class="s">after overhead</div>${sparkSVG('t12eb', { up: true, color: '#b98a36' })}</div>
+        <div class="cmd-tile"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><span class="d up">▲ ${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</span><div class="s">booked + weighted pipeline</div>${sparkSVG('y1rev', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><span class="d up">▲ ${fmtPct(y1.ebitdaPct)} margin</span><div class="s">at current growth levers</div>${sparkSVG('y1eb', { up: true })}</div>
+        <div class="cmd-tile hot"><div class="l">$500M Goal — Req. CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><span class="d down">▼ vs ${fmtPct(G.rev[0].r, 1)} organic</span><div class="s">gap closed by acquisitions + fab growth</div>${sparkSVG('cagr', { up: false, color: '#c8102e' })}</div>
       </div>
     </div>
 
-    <div class="ykpi-row">
-      <div class="ykpi"><div class="l">T-12 Revenue</div><div class="v">${fmtK(t12.revenue)}</div><div class="s">trailing run-rate</div></div>
-      <div class="ykpi green"><div class="l">T-12 Gross Margin</div><div class="v">${fmtPct(t12.grossPct)}</div><div class="s">${fmtK(t12.gross)} gross profit</div></div>
-      <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
-      <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
-      <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
-      <div class="ykpi red"><div class="l">$500M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & external fab growth</div></div>
+    <div class="scope-bar">
+      <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+      <span class="scope-chip">Entity: <b>consolidated</b></span>
+      <span class="scope-chip">Division: <b>all</b></span>
+      <span class="scope-chip">vs <b>budget + prior year</b></span>
+      <span class="scope-note">Backlog coverage ${fmtK(backlogRemaining)} unearned · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
