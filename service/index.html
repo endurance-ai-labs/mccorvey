@@ -3,50 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Service Division — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Fabrication Division — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM design, pre-fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/vendor/chart.umd.min.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Service Division' });
+McCorveyNav.renderTopbar({ subtitle: 'Fabrication Division' });
 var SFILT = { line: 'all', type: 'all', status: 'all' };
 const me = currentPersona();
 if (!me || me.perms.external) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
-    <div class="ynote">The service division board is internal. Client service requests are handled through your account manager.</div></div>`;
+    <div class="ynote">The fabrication division board is internal. Duct Direct orders and releases are handled through your account manager.</div></div>`;
 } else {
   render();
 }
 
 
-/* ---- construction -> service conversion pipeline ---- */
+/* ---- construction -> Duct Direct account conversion pipeline ---- */
 function firstTwo(s) { return s.split(/\s+/).slice(0, 2).join(' ').toLowerCase(); }
-function convState() { try { return JSON.parse(localStorage.getItem('yates-svc-conv') || '[]'); } catch (e) { return []; } }
+function convState() { try { return JSON.parse(localStorage.getItem('msm-svc-conv') || '[]'); } catch (e) { return []; } }
 function convertJob(id) {
   const st = convState();
   if (!st.includes(id)) st.push(id);
-  try { localStorage.setItem('yates-svc-conv', JSON.stringify(st)); } catch (e) {}
+  try { localStorage.setItem('msm-svc-conv', JSON.stringify(st)); } catch (e) {}
   render();
 }
 function conversionCandidates() {
@@ -55,31 +55,32 @@ function conversionCandidates() {
     .filter(({ j, m }) => m.pct >= 50 && !covered.includes(firstTwo(j.owner)))
     .map(({ j, m }) => {
       const sec = j.sector.toLowerCase();
-      const tier = sec.includes('health') || sec.includes('mission') ? 'Monthly' : (sec.includes('k-12') || sec.includes('municipal') || sec.includes('higher') ? 'Quarterly' : 'Custom');
-      const monthly = Math.min(4500, Math.max(450, Math.round(j.contract * 0.045 / 12 / 50) * 50));
+      const tier = sec.includes('health') || sec.includes('mission') ? 'Standing PO' : (sec.includes('k-12') || sec.includes('municipal') || sec.includes('higher') ? 'On-Demand' : 'Custom');
+      const monthly = Math.min(120000, Math.max(15000, Math.round(j.contract * 0.045 / 12 / 1000) * 1000));
       return { j, m, tier, monthly, converted: convState().includes(j.id) };
     });
 }
 
-/* ---- dispatch call detail (modal) ---- */
+/* ---- work order detail (modal) ---- */
 function hash(s) { let h = 0; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 9973; return h; }
 function showCall(num) {
   const c = SERVICE_CALLS.find(x => x.num === num); if (!c) return;
   const h = hash(num);
   const ag = SERVICE_AGREEMENTS.find(a => firstTwo(a.client) === firstTwo(c.client));
-  const sla = c.priority === 'Emergency' ? '4-hour response' : c.priority === 'High' ? 'Next business day' : '3 business days';
-  const onsiteH = (1 + h % 4) + '.' + (h % 9);
+  const sla = c.priority === 'Emergency' ? 'Same-week plant slot' : c.priority === 'High' ? '5-day plant turnaround' : 'Standard 10-day turnaround';
+  const shopH = (4 + h % 20) + '.' + (h % 9);
   const timeline = [
-    ['Call received — logged by T. Coy (Service Coordinator)', c.opened + ' 07:4' + (h % 9)],
-    ['Dispatched to ' + c.tech + ' via ServiceTitan', c.opened + ' 08:1' + (h % 6)],
-    c.status !== 'Dispatched' ? ['Tech on site — diagnostics started', c.opened + ' 09:3' + (h % 9)] : null,
-    c.status === 'In Progress' ? ['Root cause identified — ' + c.issue.split('—')[0].trim().toLowerCase() + ' traced to field device', 'today'] : null,
-    c.status === 'Parts on Order' ? ['Parts ordered — ETA 2 business days', 'yesterday'] : null,
-    c.status === 'Scheduled' ? ['Return visit scheduled with site contact', 'today'] : null,
+    ['Order received — logged by T. Coy (Fab Coordinator)', c.opened + ' 07:4' + (h % 9)],
+    ['Released to ' + c.tech + ' via STRATUS', c.opened + ' 08:1' + (h % 6)],
+    c.status !== 'Queued' ? ['Coil stock staged — nesting & burn tables generated', c.opened + ' 09:3' + (h % 9)] : null,
+    c.status === 'Cutting' ? ['On the plasma table — ' + c.issue.split('—')[0].trim().toLowerCase() + ' cutting in progress', 'today'] : null,
+    c.status === 'In Fabrication' ? ['Forming, seaming & assembly in progress on the line', 'today'] : null,
+    c.status === 'QC Hold' ? ['QC hold — seam & leakage-class inspection open, disposition pending', 'today'] : null,
+    c.status === 'Shipped' ? ['Loaded & shipped — BOL issued, spool map in the trailer packet', 'yesterday'] : null,
   ].filter(Boolean);
-  const parts = c.status === 'Parts on Order' ? [
-    ['ACT-DMP-24', 'Damper actuator, 24V modulating', 1],
-    h % 2 ? ['SEN-DTS-DCT', 'Duct temperature sensor', 2] : ['VLV-CCV-2W', 'Control valve w/ actuator', 1],
+  const materials = c.status === 'Queued' ? [
+    ['COIL-26GA-G60', 'Galvanized coil stock, 26ga G60', 2],
+    h % 2 ? ['LNR-1IN-ACST', 'Duct liner, 1" acoustic', 4] : ['SS-304-16GA', 'Stainless sheet 304, 16ga', 3],
   ] : [];
 
   const ov = document.createElement('div');
@@ -91,17 +92,17 @@ function showCall(num) {
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
       <div class="svc-meta">
-        <span>${c.priority} · SLA: ${sla}</span>
-        <span>Tech: <b>${esc(c.tech)}</b></span>
-        <span>Time on site: <b>${onsiteH} hrs</b></span>
-        <span>Agreement: <b>${ag ? ag.tier + ' package' : 'T&M — no agreement'}</b></span>
+        <span>${c.priority} · ${sla}</span>
+        <span>Cell: <b>${esc(c.tech)}</b></span>
+        <span>Shop hrs logged: <b>${shopH} hrs</b></span>
+        <span>Program: <b>${ag ? ag.tier + ' program' : 'One-off order — no program'}</b></span>
       </div>
-      <div class="svc-sect">Activity Timeline</div>
+      <div class="svc-sect">Production Timeline</div>
       ${timeline.map(x => `<div class="svc-tl"><span class="dot"></span><div><b>${esc(x[0])}</b><div class="ynote">${esc(x[1])}</div></div></div>`).join('')}
-      ${parts.length ? `<div class="svc-sect">Parts on Order</div>
-      <table class="demo-tbl tbl-left"><thead><tr><th>Part</th><th>Description</th><th style="text-align:right">Qty</th></tr></thead>
-      <tbody>${parts.map(p => `<tr><td><b>${p[0]}</b></td><td>${esc(p[1])}</td><td style="text-align:right">${p[2]}</td></tr>`).join('')}</tbody></table>` : ''}
-      <div class="ynote" style="margin-top:14px">Synced from ServiceTitan · demo simulation</div>
+      ${materials.length ? `<div class="svc-sect">Material Staging</div>
+      <table class="demo-tbl tbl-left"><thead><tr><th>SKU</th><th>Description</th><th style="text-align:right">Qty</th></tr></thead>
+      <tbody>${materials.map(p => `<tr><td><b>${p[0]}</b></td><td>${esc(p[1])}</td><td style="text-align:right">${p[2]}</td></tr>`).join('')}</tbody></table>` : ''}
+      <div class="ynote" style="margin-top:14px">Synced from STRATUS · demo simulation</div>
     </div>`;
   ov.addEventListener('click', () => ov.remove());
   document.body.appendChild(ov);
@@ -116,25 +117,25 @@ function render() {
   const pipeMrr = proposed.reduce((s, a) => s + a.monthly, 0);
   const openCalls = SERVICE_CALLS.length;
 
-  const tierPill = (t) => `<span class="ypill ${{ Monthly: 'blue', Quarterly: 'green', Annual: 'gray', Custom: 'amber' }[t] || 'gray'}">${t}</span>`;
+  const tierPill = (t) => `<span class="ypill ${{ 'Standing PO': 'blue', 'Weekly Release': 'green', 'On-Demand': 'gray', Custom: 'amber' }[t] || 'gray'}">${t}</span>`;
   const stPill = (st) => `<span class="ypill ${{ Active: 'green', Expiring: 'amber', Proposed: 'blue' }[st] || 'gray'}">${st}</span>`;
   const prPill = (p) => `<span class="ypill ${{ Emergency: 'red', High: 'amber', Standard: 'gray' }[p]}">${p}</span>`;
-  const callPill = (st) => `<span class="demo-chip ${{ 'In Progress': 'ok', Dispatched: 'ok', Scheduled: 'mut', 'Parts on Order': 'warn' }[st] || 'mut'}">${st}</span>`;
+  const callPill = (st) => `<span class="ypill ${{ 'In Fabrication': 'blue', Cutting: 'blue', Queued: 'gray', 'QC Hold': 'amber', Shipped: 'green' }[st] || 'gray'}">${st}</span>`;
 
-  const tiers = ['Monthly', 'Quarterly', 'Annual', 'Custom'];
+  const tiers = ['Standing PO', 'Weekly Release', 'On-Demand', 'Custom'];
   const tierCounts = tiers.map(t => SERVICE_AGREEMENTS.filter(a => a.tier === t).length);
   const maxTier = Math.max(...tierCounts, 1);
 
   const convRows = conversionCandidates().filter(c => c.converted).map(c => ({
-    client: c.j.owner, site: c.j.address, tier: c.tier, monthly: c.monthly,
+    client: c.j.owner, site: c.j.address, line: 'Rect', svcType: 'Duct Direct', tier: c.tier, monthly: c.monthly,
     renewal: '2027-08-01', status: 'Proposed', tech: '—',
   }));
   const allAgs = SERVICE_AGREEMENTS.concat(convRows);
-  const agShown = allAgs.filter(a => (SFILT.line === 'all' || (a.line || 'Controls') === SFILT.line) && (SFILT.type === 'all' || (a.svcType || 'PMA') === SFILT.type) && (SFILT.status === 'all' || a.status === SFILT.status));
+  const agShown = allAgs.filter(a => (SFILT.line === 'all' || (a.line || 'Rect') === SFILT.line) && (SFILT.type === 'all' || (a.svcType || 'Duct Direct') === SFILT.type) && (SFILT.status === 'all' || a.status === SFILT.status));
   const agRows = agShown.slice().sort((a, b) => a.renewal.localeCompare(b.renewal)).map(a => `
     <tr>
       <td><b>${esc(a.client)}</b><div class="ynote">${esc(a.site)}</div></td>
-      <td>${tierPill(a.tier)}<div class="ynote">${a.line || 'Controls'} · ${a.svcType || 'PMA'}</div></td>
+      <td>${tierPill(a.tier)}<div class="ynote">${a.line || 'Rect'} · ${a.svcType || 'Duct Direct'}</div></td>
       ${showMoney ? `<td style="text-align:right">${fmt$(a.monthly)}/mo</td><td style="text-align:right">${fmt$(a.monthly * 12)}</td>` : ''}
       <td>${fmtDateShort(a.renewal)}, ${a.renewal.slice(0, 4)}</td>
       <td>${esc(a.tech)}</td>
@@ -154,73 +155,73 @@ function render() {
   $('#app').innerHTML = `
     <div class="demo-hero" style="padding-bottom:16px">
       <div>
-        <div class="demo-eyebrow">SERVICE DIVISION · AGREEMENTS & DISPATCH</div>
-        <h1>Service <em>Division</em></h1>
-        <div class="sub">Every service agreement and open call in one board — tiers per the published Y8S packages, dispatch synced from ServiceTitan, recurring revenue rolled up for the CFO.</div>
+        <div class="demo-eyebrow">FABRICATION DIVISION · DUCT DIRECT &amp; SHOP FLOOR</div>
+        <h1>Fabrication <em>Division</em></h1>
+        <div class="sub">Every external fabrication account and open work order in one board — Duct Direct programs for other mechanical contractors, the shop floor synced from STRATUS, and monthly fabrication volume rolled up for the CFO.</div>
       </div>
       <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> ${SERVICE_AGREEMENTS.length} AGREEMENTS · ${openCalls} OPEN CALLS</span>
+        <span class="demo-live"><span class="dot"></span> ${SERVICE_AGREEMENTS.length} ACCOUNTS · ${openCalls} OPEN WORK ORDERS</span>
         <span style="display:flex;gap:6px">${srcChip('st')} ${showMoney ? srcChip('qb') : ''}</span>
       </div>
     </div>
 
     <div class="ykpi-row">
-      <div class="ykpi"><div class="l">Active Agreements</div><div class="v">${active.length + expiring.length}</div><div class="s">${proposed.length} proposed in pipeline</div></div>
+      <div class="ykpi"><div class="l">Active Fab Accounts</div><div class="v">${active.length + expiring.length}</div><div class="s">${proposed.length} proposed in pipeline</div></div>
       ${showMoney ? `
-      <div class="ykpi green"><div class="l">Service MRR</div><div class="v">${fmtK(mrr)}</div><div class="s">${fmtK(mrr * 12)} annualized</div></div>
-      <div class="ykpi"><div class="l">Pipeline MRR</div><div class="v">${fmtK(pipeMrr)}</div><div class="s">from active construction jobs</div></div>` : ''}
+      <div class="ykpi green"><div class="l">Monthly Fab Volume</div><div class="v">${fmtK(mrr)}</div><div class="s">${fmtK(mrr * 12)} annualized</div></div>
+      <div class="ykpi"><div class="l">Pipeline Volume</div><div class="v">${fmtK(pipeMrr)}</div><div class="s">from active construction jobs</div></div>` : ''}
       <div class="ykpi amber"><div class="l">Renewals Next 90 Days</div><div class="v">${expiring.length}</div><div class="s">${expiring.map(e => e.client.split(' ')[0]).join(', ')}</div></div>
-      <div class="ykpi red"><div class="l">Open Service Calls</div><div class="v">${openCalls}</div><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency · ${SERVICE_CALLS.filter(c => c.priority === 'High').length} high</div></div>
+      <div class="ykpi red"><div class="l">Open Work Orders</div><div class="v">${openCalls}</div><div class="s">${SERVICE_CALLS.filter(c => c.priority === 'Emergency').length} emergency · ${SERVICE_CALLS.filter(c => c.priority === 'High').length} high priority</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Service Book by Line &amp; Type</h2><span class="k">controls · HVAC · plumbing × PMA · on-demand · small projects</span></div>
+      <div class="demo-panel-head"><h2>Fab Book by Product Line &amp; Program</h2><span class="k">rect · spiral · welded × Duct Direct · fab partner · OEM</span></div>
       ${(() => {
-        const lines = ['Controls', 'HVAC', 'Plumbing'];
-        const types = ['PMA', 'On-Demand', 'Small Project'];
+        const lines = ['Rect', 'Spiral', 'Welded', 'Rect + Spiral'];
+        const types = ['Duct Direct', 'Fab Partner', 'OEM Program'];
         const cell = (ln, ty) => SERVICE_AGREEMENTS.filter(a => a.line === ln && a.svcType === ty && a.status !== 'Proposed');
         return `<table class="demo-tbl tbl-left">
-          <thead><tr><th>Service Line</th>${types.map(t => `<th style="text-align:right">${t}</th>`).join('')}<th style="text-align:right">Line Total</th></tr></thead>
+          <thead><tr><th>Product Line</th>${types.map(t => `<th style="text-align:right">${t}</th>`).join('')}<th style="text-align:right">Line Total</th></tr></thead>
           <tbody>${lines.map(ln => {
             const rowCells = types.map(ty => { const c = cell(ln, ty); return { n: c.length, mrr: c.reduce((x, a) => x + a.monthly, 0) }; });
             const tot = rowCells.reduce((x, c) => x + c.mrr, 0);
             return `<tr><td><b>${ln}</b></td>${rowCells.map(c => `<td style="text-align:right">${c.n ? c.n + ' · ' + (showMoney ? fmt$(c.mrr) + '/mo' : '') : '—'}</td>`).join('')}
-              <td style="text-align:right;font-weight:700">${showMoney ? fmt$(tot) + '/mo' : rowCells.reduce((x, c) => x + c.n, 0) + ' agreements'}</td></tr>`;
+              <td style="text-align:right;font-weight:700">${showMoney ? fmt$(tot) + '/mo' : rowCells.reduce((x, c) => x + c.n, 0) + ' accounts'}</td></tr>`;
           }).join('')}</tbody>
         </table>
-        <div class="ynote" style="margin-top:8px">Plumbing is a single agreement today — modeled as its own line so growth (or an acquisition) drops straight in.</div>`;
+        <div class="ynote" style="margin-top:8px">The OEM program is a single proposed account today — modeled as its own type so a dedicated production line (or a second plant shift) drops straight in.</div>`;
       })()}
     </div>
 
     ${showMoney ? `
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Renewal Control — Q3 2026 Batch</h2><span class="k">expiring agreements require sign-off on renewal pricing</span></div>
+      <div class="demo-panel-head"><h2>Renewal Control — Q3 2026 Batch</h2><span class="k">expiring fab programs require sign-off on renewal pricing</span></div>
       ${approvalChain('svc-renewals-2026-q3', [
-        { role: 'svcmgr', label: 'Service Ops — Renewal Pricing Proposed', doneLabel: 'Pricing Proposed' },
-        { role: 'cfo',    label: 'CFO — Approve Renewal Terms',            doneLabel: 'CFO Approved' },
+        { role: 'svcmgr', label: 'Fab Ops — Renewal Pricing Proposed', doneLabel: 'Pricing Proposed' },
+        { role: 'cfo',    label: 'CFO — Approve Renewal Terms',       doneLabel: 'CFO Approved' },
       ])}
     </div>` : ''}
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Dispatch Board</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">open calls, live from ServiceTitan</span></span></div>
+        <div class="demo-panel-head"><h2>Shop Floor Board</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">open work orders, live from STRATUS</span></span></div>
         <div class="demo-tbl-wrap" style="max-height:360px">
         <table class="demo-tbl tbl-left">
-          <thead><tr><th>Call #</th><th>Client</th><th>Issue</th><th>Priority</th><th>Tech</th><th>Status</th></tr></thead>
+          <thead><tr><th>WO #</th><th>Client / Job</th><th>Fabrication Order</th><th>Priority</th><th>Plant · Cell</th><th>Status</th></tr></thead>
           <tbody>${callRows}</tbody>
         </table>
         </div>
-        <div class="ynote" style="margin-top:8px">${openCalls} of 23 open calls shown — full queue lives in ServiceTitan dispatch.</div>
+        <div class="ynote" style="margin-top:8px">${openCalls} of 23 open work orders shown — the full production queue lives in STRATUS.</div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Agreements by Package</h2><span class="k">tiers per y8sco.com/services-packages</span></div>
+        <div class="demo-panel-head"><h2>Accounts by Program</h2><span class="k">the four MSM fab program tiers</span></div>
         <div class="demo-aging">${tiers.map((t, i) => `
           <div class="demo-aging-row">
             <div class="lab">${t}</div>
-            <div class="bar"><i style="width:${tierCounts[i] / maxTier * 100}%;background:${['#083d75', '#4f7d5d', '#8a93a1', '#b98a36'][i]}"></i></div>
+            <div class="bar"><i style="width:${tierCounts[i] / maxTier * 100}%;background:${['#14283c', '#4f7d5d', '#8a93a1', '#b98a36'][i]}"></i></div>
             <div class="amt">${tierCounts[i]}</div>
           </div>`).join('')}</div>
-        <div class="demo-panel-head" style="margin-top:20px"><h2>Package Inclusions</h2></div>
+        <div class="demo-panel-head" style="margin-top:20px"><h2>Program Inclusions</h2></div>
         <div style="font-size:11.5px;line-height:1.7;color:var(--color-text-muted)">
           ${tiers.map(t => `<div style="margin-bottom:8px"><b style="color:var(--color-cloud-whisper)">${t}:</b> ${SERVICE_TIERS[t].join(' · ')}</div>`).join('')}
         </div>
@@ -228,33 +229,33 @@ function render() {
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-green)">
-      <div class="demo-panel-head"><h2>Conversion Pipeline — Construction → Service</h2><span class="k">closing jobs without an agreement · the recurring-revenue attach motion</span></div>
+      <div class="demo-panel-head"><h2>Conversion Pipeline — Construction → Duct Direct</h2><span class="k">closing jobs without a fab account · the recurring-volume attach motion</span></div>
       <table class="demo-tbl tbl-left">
-        <thead><tr><th>Job</th><th>Owner</th><th style="text-align:right">% Complete</th><th>Proposed Package</th>${showMoney ? '<th style="text-align:right">Est. MRR</th>' : ''}<th style="width:190px"></th></tr></thead>
+        <thead><tr><th>Job</th><th>Owner / GC</th><th style="text-align:right">% Complete</th><th>Proposed Program</th>${showMoney ? '<th style="text-align:right">Est. Monthly Volume</th>' : ''}<th style="width:190px"></th></tr></thead>
         <tbody>${conversionCandidates().map(c => `
           <tr>
-            <td><a href="/yates/jobs/job/?id=${c.j.id}" style="color:var(--color-blue);font-weight:700">${c.j.id}</a> · ${esc(c.j.name.split('—')[0].trim())}</td>
+            <td><a href="/mccorvey/jobs/job/?id=${c.j.id}" style="color:var(--color-blue);font-weight:700">${c.j.id}</a> · ${esc(c.j.name.split('—')[0].trim())}</td>
             <td>${esc(c.j.owner)}</td>
             <td style="text-align:right">${fmtPct(c.m.pct, 0)}</td>
-            <td><span class="ypill ${{ Monthly: 'blue', Quarterly: 'green', Custom: 'amber' }[c.tier]}">${c.tier}</span></td>
+            <td><span class="ypill ${{ 'Standing PO': 'blue', 'On-Demand': 'gray', Custom: 'amber' }[c.tier] || 'gray'}">${c.tier}</span></td>
             ${showMoney ? `<td style="text-align:right">${fmt$(c.monthly)}/mo</td>` : ''}
             <td>${c.converted
               ? '<span class="demo-chip ok">PROPOSAL ISSUED ✓</span>'
-              : `<button class="pa-btn primary" style="cursor:pointer" onclick="convertJob('${c.j.id}')">→ Convert to Agreement</button>`}</td>
-          </tr>`).join('') || '<tr><td colspan="6" class="ynote">Every eligible construction client already holds a service agreement.</td></tr>'}</tbody>
+              : `<button class="pa-btn primary" style="cursor:pointer" onclick="convertJob('${c.j.id}')">→ Convert to Fab Account</button>`}</td>
+          </tr>`).join('') || '<tr><td colspan="6" class="ynote">Every eligible construction client already holds a fabrication account.</td></tr>'}</tbody>
       </table>
-      ${showMoney ? `<div class="ynote" style="margin-top:8px">Converting all candidates adds ${fmt$(conversionCandidates().filter(c => !c.converted).reduce((s, c) => s + c.monthly, 0))}/mo of pipeline MRR. Issued proposals appear in the book below as Proposed.</div>` : ''}
+      ${showMoney ? `<div class="ynote" style="margin-top:8px">Converting all candidates adds ${fmt$(conversionCandidates().filter(c => !c.converted).reduce((s, c) => s + c.monthly, 0))}/mo of pipeline fabrication volume. Issued proposals appear in the book below as Proposed.</div>` : ''}
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Service Agreement Book</h2><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <label class="k">Line</label><select class="pa-btn" data-sfilt="line" style="cursor:pointer">${['all', 'Controls', 'HVAC', 'Plumbing'].map(v => `<option value="${v}" ${v === SFILT.line ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
-        <label class="k">Type</label><select class="pa-btn" data-sfilt="type" style="cursor:pointer">${['all', 'PMA', 'On-Demand', 'Small Project'].map(v => `<option value="${v}" ${v === SFILT.type ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
+      <div class="demo-panel-head"><h2>Fabrication Accounts (Duct Direct)</h2><span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <label class="k">Line</label><select class="pa-btn" data-sfilt="line" style="cursor:pointer">${['all', 'Rect', 'Spiral', 'Welded', 'Rect + Spiral'].map(v => `<option value="${v}" ${v === SFILT.line ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
+        <label class="k">Type</label><select class="pa-btn" data-sfilt="type" style="cursor:pointer">${['all', 'Duct Direct', 'Fab Partner', 'OEM Program'].map(v => `<option value="${v}" ${v === SFILT.type ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
         <label class="k">Status</label><select class="pa-btn" data-sfilt="status" style="cursor:pointer">${['all', 'Active', 'Expiring', 'Proposed'].map(v => `<option value="${v}" ${v === SFILT.status ? 'selected' : ''}>${v === 'all' ? 'All' : v}</option>`).join('')}</select>
         ${showMoney ? srcChip('qb') : ''}<span class="k">${agShown.length} of ${allAgs.length} · sorted by renewal date</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
       <table class="demo-tbl tbl-left">
-        <thead><tr><th>Client / Site</th><th>Package</th>${showMoney ? '<th style="text-align:right">MRR</th><th style="text-align:right">Annualized</th>' : ''}<th>Renewal</th><th>Assigned Tech</th><th>Status</th></tr></thead>
+        <thead><tr><th>Client / Territory</th><th>Program</th>${showMoney ? '<th style="text-align:right">Monthly Volume</th><th style="text-align:right">Annualized</th>' : ''}<th>Renewal</th><th>Plant · Cell</th><th>Status</th></tr></thead>
         <tbody>${agRows}
           ${showMoney ? `<tr style="font-weight:800;background:var(--color-bg-3)"><td colspan="2">Total (active + expiring)</td><td style="text-align:right">${fmt$(mrr)}/mo</td><td style="text-align:right">${fmt$(mrr * 12)}</td><td colspan="3"></td></tr>` : ''}
         </tbody>

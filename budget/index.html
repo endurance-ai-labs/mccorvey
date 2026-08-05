@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Monthly Budget vs Actual — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Monthly Budget vs Actual — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork fabrication & installation since 1925. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
@@ -25,14 +25,14 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/vendor/chart.umd.min.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Monthly Budget vs Actual' });
-if (!YatesMode.isInternal() || !can('margins')) {
+McCorveyNav.renderTopbar({ subtitle: 'Monthly Budget vs Actual' });
+if (!McCorveyMode.isInternal() || !can('margins')) {
   $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
     <div class="ynote">Budgeting &amp; forecasting requires full financial access (Owner, CFO or Controller). Your current user does not have rights to this module.</div></div>`;
 } else {
@@ -41,8 +41,7 @@ if (!YatesMode.isInternal() || !can('margins')) {
 
 function buildForecast() {
 /* =============================================================
-   Y8S BUDGETING & FORECASTING — CFO console
-   Same engine pattern as the Blackwater asset forecast:
+   MSM BUDGETING & FORECASTING — CFO console
    T-3 / T-6 / T-12 trailing actuals → editable In-Place run-rate
    → Years 1-5 compounded monthly by a tiered growth schedule.
    ============================================================= */
@@ -51,19 +50,19 @@ function buildForecast() {
 const MONTHS = [];
 (function () {
   const start = new Date('2024-08-15T12:00:00');
-  // seasonal profile + growth; storm surge Oct-Dec 24
+  // seasonal profile + growth; data-center schedule accelerations Oct-Dec 24
   for (let i = 0; i < 24; i++) {
     const d = new Date(start); d.setMonth(d.getMonth() + i);
     const season = [0.92, 0.95, 1.06, 1.10, 1.02, 0.88, 0.90, 0.97, 1.04, 1.08, 1.10, 1.05][d.getMonth() % 12];
-    const surge = (i >= 2 && i <= 4) ? 1.22 : 1;             // Oct-Dec 24 storm work
+    const surge = (i >= 2 && i <= 4) ? 1.22 : 1;             // Oct-Dec 24 mission-critical accelerations
     const grow = Math.pow(1.006, i);
-    const rev = 1880000 * season * surge * grow;
-    const subs = rev * 0.44, labor = rev * 0.16, mat = rev * 0.14, equip = rev * 0.04;
+    const rev = 20500000 * season * surge * grow;
+    const subs = rev * 0.40, labor = rev * 0.30, mat = rev * 0.09, equip = rev * 0.04;
     const m = {
       m: d.toISOString().slice(0, 7),
       revenue: rev,
       cost: { subs, labor, mat, equip },
-      oh: { salaries: 138000 * Math.pow(1.004, i), office: 18500, insurance: 30000 * Math.pow(1.005, i), it: 8200, bd: 14000, vehicles: 21000, other: 9800 },
+      oh: { salaries: 985000 * Math.pow(1.004, i), office: 145000, insurance: 260000 * Math.pow(1.005, i), it: 60000, bd: 55000, vehicles: 165000, other: 72000 },
     };
     MONTHS.push(m);
   }
@@ -78,9 +77,9 @@ let avbIdx = MONTHS.length - 1;   // Actual-vs-Budget month under review
 const mFull = (ym) => new Date(ym + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 let fbasis = 12;
 let view = 'annual';
-let svcGrowth = 45;   // service MRR growth %/yr (attach + upgrades)
+let svcGrowth = 25;   // external fab volume growth %/yr (new Duct Direct accounts + program upgrades)
 const A = { newAwards: 6.0, contingency: 1.0, tax: 21.0, distribution: 40.0 };  // ratio levers
-const G = { rev: [{ f: 1, t: 60, r: 6.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.0 }] };
+const G = { rev: [{ f: 1, t: 60, r: 7.0 }], cost: [{ f: 1, t: 60, r: 6.5 }], oh: [{ f: 1, t: 60, r: 3.5 }] };
 let ovrInplace = {};   // key -> override value (annual $)
 
 function baseFrom(idx, win) {
@@ -145,14 +144,14 @@ const LINES = [
   ['h', 'CONSTRUCTION REVENUE'],
   ['revenue', 'Contract revenue (earned)', 0, 'revenue'],
   ['h', 'COST OF CONSTRUCTION'],
-  ['c_subs', 'Controls hardware & materials', 1, 'c_subs'], ['c_labor', 'Self-perform field labor', 1, 'c_labor'],
-  ['c_mat', 'Subcontractors (electrical / mechanical)', 1, 'c_mat'], ['c_equip', 'Equipment, lifts & tools', 1, 'c_equip'],
+  ['c_subs', 'Sheet metal & raw materials (coil, spiral, liner)', 1, 'c_subs'], ['c_labor', 'Self-perform labor (shop + field)', 1, 'c_labor'],
+  ['c_mat', 'Subcontractors & bought-out (insulation, rigging)', 1, 'c_mat'], ['c_equip', 'Equipment, lifts & tools', 1, 'c_equip'],
   ['totCost', 'Total cost of construction', 'sub', null, 0, 1],
   ['gross', 'Gross profit', 'noi'], ['grossPct', 'Gross margin', 0, null, 'pct'],
   ['h', 'DIVISION OVERHEAD'],
-  ['o_salaries', 'Office salaries, PM & engineering staff', 1, 'o_salaries'], ['o_office', 'Office & yard rent', 1, 'o_office'],
+  ['o_salaries', 'Office salaries, PM & detailing staff', 1, 'o_salaries'], ['o_office', 'Office & plant facilities', 1, 'o_office'],
   ['o_insurance', 'Insurance & bonding', 1, 'o_insurance'], ['o_it', 'Software & IT', 1, 'o_it'],
-  ['o_bd', 'Sales & business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & service vans', 1, 'o_vehicles'],
+  ['o_bd', 'Sales & business development', 1, 'o_bd'], ['o_vehicles', 'Fleet & field trucks', 1, 'o_vehicles'],
   ['o_other', 'Other G&A', 1, 'o_other'],
   ['totOh', 'Total overhead', 'sub', null, 0, 1],
   ['conting', 'Warranty & contingency reserve', 1],
@@ -216,7 +215,7 @@ function explAnnual(key, c, cd) {
   const d = cd[c];
   if (INPUT_KEYS.has(key)) {
     if (c <= 2) { const win = [3, 6, 12][c];
-      return '<b>' + lab + ' — T-' + win + ' basis</b>\nSum of the last ' + win + ' months of QuickBooks actuals × ' + (12 / win).toFixed(win === 12 ? 0 : 1) + ' to annualize.\n= ' + M$(d[key]) + '/yr run-rate'; }
+      return '<b>' + lab + ' — T-' + win + ' basis</b>\nSum of the last ' + win + ' months of Vista actuals × ' + (12 / win).toFixed(win === 12 ? 0 : 1) + ' to annualize.\n= ' + M$(d[key]) + '/yr run-rate'; }
     if (c === 3) return '<b>' + lab + ' — 2026 Budget</b>\nLocked at the January budget cycle: calendar-2025 actuals × 1.07.\n= ' + M$(d[key]) + '/yr — does not move with the levers.';
     if (c === 4) return '<b>' + lab + ' — In-Place</b>\nEditable annual run-rate, seeded from the T-' + fbasis + ' trailing basis (' + M$(base[key]) + ').\nEdits ripple through every Year 1–5 and monthly figure.';
     const y = c - 4, r = growthOf(key);
@@ -288,10 +287,10 @@ function render() {
       <div>
         <div class="demo-eyebrow">CFO CONSOLE · MONTHLY FINANCIAL REVIEW</div>
         <h1>Budget vs <em>Actual</em></h1>
-        <div class="sub">The monthly financial review, without the spreadsheet: QuickBooks actuals against budget by line, the booked forecast with <b>service revenue finally in the picture</b>, and the staffing implication of the plan. One screen from input to answer. The long-range plan lives in the <a href="/yates/forecast/" style="color:var(--color-blue)">5-Year Growth Model</a>.</div>
+        <div class="sub">The monthly financial review, without the spreadsheet: Viewpoint Vista actuals against budget by line, the booked forecast with <b>external fab revenue finally in the picture</b>, and the staffing implication of the plan. One screen from input to answer. The long-range plan lives in the <a href="/mccorvey/forecast/" style="color:var(--color-blue)">5-Year Growth Model</a>.</div>
       </div>
       <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> SAN MARCOS, TX</span>
+        <span class="demo-live"><span class="dot"></span> HOUSTON, TX</span>
         <span class="demo-src">Backlog coverage <b>${fmtK(backlogRemaining)}</b> unearned</span>
       </div>
     </div>
@@ -302,7 +301,7 @@ function render() {
       <div class="ykpi amber"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><div class="s">${fmtPct(t12.ebitdaPct)} margin</div></div>
       <div class="ykpi"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><div class="s">${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</div></div>
       <div class="ykpi red"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><div class="s">${fmtPct(y1.ebitdaPct)} margin</div></div>
-      <div class="ykpi red"><div class="l">$500M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & service growth</div></div>
+      <div class="ykpi red"><div class="l">$500M Goal — Required CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><div class="s">vs ${fmtPct(G.rev[0].r, 1)} organic plan — gap closed by acquisitions & external fab growth</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
@@ -325,14 +324,14 @@ function render() {
         const REV_ITEMS = topJobs.map(j => ({ n: j.id + ' · ' + j.name.split('—')[0].trim(), w: j.contract / jobsSum * 0.78 })).concat([{ n: 'All other jobs', w: 0.22 }]);
         const rows = [
           ['Contract revenue', act.revenue, bud.revenue / 12, prev.revenue, REV_ITEMS],
-          ['Controls hardware & materials', act.cost.subs, bud.c_subs / 12, prev.cost.subs, [
-            { n: 'DDC controllers & panels', w: 0.34 }, { n: 'Sensors & actuators', w: 0.22 }, { n: 'Control valves & dampers', w: 0.18 }, { n: 'Panel fabrication', w: 0.14 }, { n: 'Wire, conduit & misc', w: 0.12 }]],
-          ['Self-perform field labor', act.cost.labor, bud.c_labor / 12, prev.cost.labor, [
-            { n: 'Install crews — regular time', w: 0.55 }, { n: 'Startup & commissioning techs', w: 0.20 }, { n: 'Install crews — overtime', w: 0.15 }, { n: 'Warranty callbacks', w: 0.10 }]],
-          ['Subcontractors', act.cost.mat, bud.c_mat / 12, prev.cost.mat, [
-            { n: 'Electrical subcontract', w: 0.48 }, { n: 'Mechanical subcontract', w: 0.34 }, { n: 'Test & balance', w: 0.18 }]],
-          ['Office salaries, PM & engineering', act.oh.salaries, bud.o_salaries / 12, prev.oh.salaries, [
-            { n: 'Project management staff', w: 0.44 }, { n: 'Engineering & graphics', w: 0.38 }, { n: 'Admin & coordination', w: 0.18 }]],
+          ['Sheet metal & raw materials', act.cost.subs, bud.c_subs / 12, prev.cost.subs, [
+            { n: 'Galvanized coil & liner', w: 0.34 }, { n: 'Spiral pipe & fittings', w: 0.22 }, { n: 'Stainless & welded stock', w: 0.18 }, { n: 'Hangers & supports', w: 0.14 }, { n: 'Fire/smoke dampers, GRDs & misc', w: 0.12 }]],
+          ['Self-perform labor (shop + field)', act.cost.labor, bud.c_labor / 12, prev.cost.labor, [
+            { n: 'Field install crews — regular time', w: 0.38 }, { n: 'Shop fabrication crews', w: 0.30 }, { n: 'Welders — stainless & kitchen exhaust', w: 0.14 }, { n: 'Field crews — overtime', w: 0.10 }, { n: 'Rework & punch', w: 0.08 }]],
+          ['Subcontractors & bought-out', act.cost.mat, bud.c_mat / 12, prev.cost.mat, [
+            { n: 'Insulation subcontract', w: 0.42 }, { n: 'Crane, rigging & hoisting', w: 0.26 }, { n: 'Freight & hauling', w: 0.18 }, { n: 'Scaffolding & access', w: 0.14 }]],
+          ['Office salaries, PM & detailing', act.oh.salaries, bud.o_salaries / 12, prev.oh.salaries, [
+            { n: 'Project management staff', w: 0.44 }, { n: 'Detailing & BIM coordination', w: 0.38 }, { n: 'Admin & coordination', w: 0.18 }]],
           ['Insurance & bonding', act.oh.insurance, bud.o_insurance / 12, prev.oh.insurance, [
             { n: 'General liability premium', w: 0.52 }, { n: 'Performance & payment bonds', w: 0.28 }, { n: 'Auto & fleet coverage', w: 0.20 }]],
         ];
@@ -353,32 +352,32 @@ function render() {
             <tr class="avb-drv"><td colspan="5">↳ Drivers: ${drv}</td></tr>`;
           }).join('')}</tbody>
         </table>
-        <div class="ynote" style="margin-top:8px">Gross margin this month: <b>${fmtPct(gmAct)}</b>. Staffing implication of the current plan lives in <a href="/yates/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a> — the plan currently calls for <b>+6 installers by October</b>.</div>`;
+        <div class="ynote" style="margin-top:8px">Gross margin this month: <b>${fmtPct(gmAct)}</b>. Staffing implication of the current plan lives in <a href="/mccorvey/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a> — the plan currently calls for <b>+45 field installers by Q4</b>.</div>`;
       })()}
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-green)">
-      <div class="demo-panel-head"><h2>4-Month Booked Forecast — Construction + Service</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">the rows the spreadsheet leaves blank</span></span></div>
+      <div class="demo-panel-head"><h2>4-Month Booked Forecast — Construction + External Fab</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">the rows the spreadsheet leaves blank</span></span></div>
       ${(() => {
         const mos = ['Aug-26', 'Sep-26', 'Oct-26', 'Nov-26'];
         const constr = bookedMonthlySpread(4);
-        const pmaM = SERVICE_AGREEMENTS.filter(a => a.svcType === 'PMA' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
-        const od = SERVICE_AGREEMENTS.filter(a => a.svcType === 'On-Demand' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
-        const sp = SERVICE_AGREEMENTS.filter(a => a.svcType === 'Small Project' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+        const pmaM = SERVICE_AGREEMENTS.filter(a => a.svcType === 'Duct Direct' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+        const od = SERVICE_AGREEMENTS.filter(a => a.svcType === 'Fab Partner' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
+        const sp = SERVICE_AGREEMENTS.filter(a => a.svcType === 'OEM Program' && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
         const pend = BID_PIPELINE.filter(bd => ['Submitted', 'Pending Award'].includes(bd.status)).reduce((x, bd) => x + bd.amount * (bd.status === 'Submitted' ? 0.35 : 0.65), 0) / 6;
         const row = (label, vals, cls) => `<tr class="${cls || ''}"><td>${label}</td>${vals.map(v => `<td style="text-align:right">${v === null ? '—' : fmt$(v)}</td>`).join('')}<td style="text-align:right">${fmt$(vals.reduce((x, y) => x + (y || 0), 0))}</td></tr>`;
         return `<table class="demo-tbl tbl-left">
           <thead><tr><th>Booked</th>${mos.map(m => `<th style="text-align:right">${m}</th>`).join('')}<th style="text-align:right">4-Mo Total</th></tr></thead>
           <tbody>
-            ${row('Construction jobs (13-mo spreads)', constr)}
-            ${row('On-Demand Service (run-rate)', mos.map(() => od))}
-            ${row('Active PMA Contracts — Monthly/Qtrly', mos.map(() => pmaM))}
-            ${row('Small Projects — Service', mos.map(() => sp))}
+            ${row('Construction packages (13-mo spreads)', constr)}
+            ${row('Duct Direct accounts (Standing PO / Weekly Release)', mos.map(() => pmaM))}
+            ${row('Fab Partner programs', mos.map(() => od))}
+            ${row('OEM programs', mos.map(() => sp))}
             ${row('Total booked', mos.map((m, i) => constr[i] + od + pmaM + sp), 'demo-noi')}
             ${row('Pending — weighted construction pipeline', mos.map(() => pend))}
           </tbody>
         </table>
-        <div class="ynote" style="margin-top:8px">In the current workbook the On-Demand and PMA rows exist but sit empty — no bridge from the service system. Here they fill from the live agreement book automatically.</div>`;
+        <div class="ynote" style="margin-top:8px">In the current workbook the external-fab rows exist but sit empty — no bridge from the fab sales ledger. Here they fill from the live Duct Direct account book automatically.</div>`;
       })()}
     </div>
 
@@ -392,7 +391,7 @@ function render() {
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Company P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from QuickBooks · engine proprietary</span></span></div>
+      <div class="demo-panel-head"><h2>Company P&amp;L Forecast</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('prop')}<span class="k">trailing actuals from Vista · engine proprietary</span></span></div>
       <div class="fc-topbar" style="display:flex;flex-wrap:wrap;gap:14px;align-items:center;margin-bottom:14px">
         <label style="font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--color-text-muted)">In-place as of</label>
         <select id="fc-month" class="pa-btn" style="cursor:pointer">${monthOpts()}</select>
@@ -420,17 +419,17 @@ function render() {
         <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Backlog Coverage vs Year-1 Revenue</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">production from ServiceTitan job register</span></span></div>
+        <div class="demo-panel-head"><h2>Backlog Coverage vs Year-1 Revenue</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">production from GTP STRATUS job register</span></span></div>
         <div class="demo-chart" style="height:260px"><canvas id="ch-backlog"></canvas></div>
         <div class="ynote" style="margin-top:10px">Unearned backlog ${fmtK(backlogRemaining)} covers ${fmtPct(backlogRemaining / Math.max(1, y1.revenue) * 100, 0)} of the Year-1 revenue forecast — remainder must come from new awards (lever: ${A.newAwards}%/yr growth).</div>
       </div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Service Line — Recurring Revenue Build</h2>
+      <div class="demo-panel-head"><h2>External Fabrication — Duct Direct Revenue Build</h2>
         <span style="display:flex;gap:10px;align-items:center">${srcChip('st')}
-        <span class="k">MRR from the agreement book · growth lever</span>
-        <span class="fc-assump" style="display:inline-flex;align-items:center;gap:6px;margin:0"><label style="margin:0">Service growth /yr</label><div class="ip" style="width:86px"><input data-svcg value="${svcGrowth}" inputmode="decimal"><span class="u">%</span></div></span></span></div>
+        <span class="k">monthly volume from the account book · growth lever</span>
+        <span class="fc-assump" style="display:inline-flex;align-items:center;gap:6px;margin:0"><label style="margin:0">External fab growth /yr</label><div class="ip" style="width:86px"><input data-svcg value="${svcGrowth}" inputmode="decimal"><span class="u">%</span></div></span></span></div>
       <div class="demo-two">
         <div class="demo-chart" style="height:240px"><canvas id="ch-service"></canvas></div>
         <div style="font-size:12.5px;line-height:1.8;color:var(--color-cloud-whisper)">
@@ -439,9 +438,9 @@ function render() {
             const arr0 = mrr * 12;
             const arr5 = arr0 * Math.pow(1 + svcGrowth / 100, 5);
             const rev5 = cd[9].revenue;
-            return `Current agreement book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} ARR)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active agreements.<br>
-            At ${svcGrowth}%/yr (construction-to-service conversion + tier upgrades), the service line reaches <b>${fmtK(arr5)} ARR by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, recurring.<br>
-            <span class="ynote">Recurring revenue is the multiplier on the $500M path: it survives bid cycles, compounds through acquisitions, and every closing construction job below feeds it. Conversion pipeline lives on the Service Division board.</span>`;
+            return `Current account book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} annualized)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active Duct Direct &amp; partner accounts.<br>
+            At ${svcGrowth}%/yr (new mechanical-contractor accounts + Standing PO upgrades), external fab reaches <b>${fmtK(arr5)}/yr by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, at ~28% gross margin.<br>
+            <span class="ynote">External fab is the margin multiplier on the $500M path: it survives bid cycles, keeps the plants loaded between package releases, and every GC relationship below feeds it. Account pipeline lives on the Fabrication Division board.</span>`;
           })()}
         </div>
       </div>
@@ -452,7 +451,7 @@ function render() {
       <table class="demo-tbl">
         <thead><tr><th>Job</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Unearned Backlog</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Margin %</th></tr></thead>
         <tbody>${MJOBS.map(({ x, mm }) => `
-          <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${x.id}#forecast'">
+          <tr class="yclick" onclick="location.href='/mccorvey/jobs/job/?id=${x.id}#forecast'">
             <td><b>${x.id}</b> · ${esc(x.name.split('—')[0].trim())}</td>
             <td>${statusPill(x.status)}</td>
             <td style="text-align:right">${fmt$(x.contract)}</td>
@@ -521,8 +520,8 @@ function drawCharts(cd) {
       data: {
         labels: years,
         datasets: [
-          { label: 'Construction revenue', data: cd.slice(5).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
-          { label: 'Service revenue (recurring)', data: [1, 2, 3, 4, 5].map(y => mrr0 * Math.pow(1 + svcGrowth / 100, y) / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
+          { label: 'Construction packages', data: cd.slice(5).map(c => c.revenue / 1e6), backgroundColor: 'rgba(8,61,117,0.30)', stack: 's' },
+          { label: 'External fab (Duct Direct)', data: [1, 2, 3, 4, 5].map(y => mrr0 * Math.pow(1 + svcGrowth / 100, y) / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
         ],
       },
       options: { responsive: true, maintainAspectRatio: false,

@@ -1,5 +1,5 @@
 /* ============================================================
-   YATES CONSTRUCTION — Operations Portal nav
+   MCCORVEY SHEET METAL — Operations Portal nav
    Same framework as the CFP/Margins portal: sticky marquee +
    market ticker + topbar with grouped nav + section subnav +
    theme toggle. Adds a global Internal / Client mode toggle.
@@ -8,36 +8,37 @@
 /* ---- Theme: every load starts light (Margins profile) ---- */
 (function () {
   document.documentElement.setAttribute('data-theme', 'light');
-  try { localStorage.setItem('yates-theme', 'light'); } catch (e) {}
+  try { localStorage.setItem('msm-theme', 'light'); } catch (e) {}
 })();
 
 /* ---- Global view mode: internal (full financials) vs client (external-safe) ---- */
-const YatesMode = (function () {
-  const KEY = 'yates-mode';
+const McCorveyMode = (function () {
+  const KEY = 'msm-mode';
   function get() { try { return localStorage.getItem(KEY) === 'client' ? 'client' : 'internal'; } catch (e) { return 'internal'; } }
   function set(m) { try { localStorage.setItem(KEY, m); } catch (e) {} window.location.reload(); }
   return { get, set, isInternal: () => get() === 'internal' };
 })();
-window.YatesMode = YatesMode;
+window.McCorveyMode = McCorveyMode;
 
 const NAV_GROUPS = [
-  { id: 'home', label: 'Home', href: '/yates/', items: [] },
+  { id: 'home', label: 'Home', href: '/mccorvey/', items: [] },
   {
     id: 'jobs',
     label: 'Jobs',
     items: [
-      { href: '/yates/jobs/',    label: 'All Jobs', jobFlyout: true },
-      { href: '/yates/reports/', label: 'Progress Reports' },
-      { href: '/yates/photos/',  label: 'Photo Documentation' },
+      { href: '/mccorvey/jobs/',    label: 'All Jobs', jobFlyout: true },
+      { href: '/mccorvey/reports/', label: 'Progress Reports' },
+      { href: '/mccorvey/photos/',  label: 'Photo Documentation' },
     ],
   },
-  { id: 'service', label: 'Service', href: '/yates/service/', items: [] },
+  { id: 'service', label: 'Fabrication', href: '/mccorvey/service/', items: [] },
   {
     id: 'bids',
     label: 'Preconstruction',
     items: [
-      { href: '/yates/bids/',     label: 'Bid Builder' },
-      { href: '/yates/pipeline/', label: 'Bid Pipeline & Win/Loss' },
+      { href: '/mccorvey/bidreview/', label: '🧠 AI Bid & Document Review' },
+      { href: '/mccorvey/bids/',     label: 'Bid Builder' },
+      { href: '/mccorvey/pipeline/', label: 'Bid Pipeline & Win/Loss' },
     ],
   },
   {
@@ -45,12 +46,12 @@ const NAV_GROUPS = [
     label: 'Financial',
     internalOnly: true,
     items: [
-      { href: '/yates/budget/',   label: 'Monthly Budget vs Actual' },
-      { href: '/yates/workbook/', label: 'Forecast Workbook' },
-      { href: '/yates/forecast/', label: '5-Year Growth Model' },
-      { href: '/yates/manpower/', label: 'Manpower & EAC' },
-      { href: '/yates/billing/',  label: 'AIA Billing' },
-      { href: '/yates/timesheets/', label: 'Timesheets' },
+      { href: '/mccorvey/budget/',   label: 'Monthly Budget vs Actual' },
+      { href: '/mccorvey/workbook/', label: 'Forecast Workbook' },
+      { href: '/mccorvey/forecast/', label: '5-Year Growth Model' },
+      { href: '/mccorvey/manpower/', label: 'Manpower & EAC' },
+      { href: '/mccorvey/billing/',  label: 'AIA Billing' },
+      { href: '/mccorvey/timesheets/', label: 'Timesheets' },
     ],
   },
 ];
@@ -58,8 +59,8 @@ const NAV_GROUPS = [
 function _normalizePath(p) {
   if (!p) return '/';
   p = p.replace(/\/index\.html$/, '/');
-  if (p === '/yates') return '/';
-  if (p.startsWith('/yates/')) p = p.slice(6);
+  if (p === '/mccorvey') return '/';
+  if (p.startsWith('/mccorvey/')) p = p.slice(9);
   return p || '/';
 }
 
@@ -71,6 +72,7 @@ function _activeGroup(path) {
   if (path.startsWith('/photos/')) return 'jobs';
   if (path.startsWith('/service/')) return 'service';
   if (path.startsWith('/bids/')) return 'bids';
+  if (path.startsWith('/bidreview/')) return 'bids';
   if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/budget/')) return 'finance';
@@ -84,14 +86,15 @@ function _activeGroup(path) {
 
 /* ---- Static demo ticker: construction market inputs ---- */
 const TICKER = [
-  ['COPPER', '$4.52/lb', '+2.1%', 'up'],
-  ['CAT6 / LV CABLE', '$142/box', '-0.6%', 'down'],
-  ['DDC CONTROLLER LEAD TIME', '9 wks', '-1 wk', 'up'],
-  ['ERCOT PEAK (T-1)', '78.4 GW', '+3.2%', 'up'],
+  ['GALV COIL (CRU)', '$52.40/cwt', '+1.8%', 'up'],
+  ['304 SS SURCHARGE', '$0.86/lb', '-0.4%', 'down'],
+  ['ALUMINUM (MW)', '$1.32/lb', '+0.9%', 'up'],
+  ['SPIRAL LINE UTILIZATION', '91.2%', '+2.0%', 'up'],
+  ['PLASMA TABLES (PLANT 1)', '87.6%', '+1.1%', 'up'],
+  ['FAB BACKLOG', '9.4M lbs', '+310K lbs', 'up'],
   ['DIESEL (DOE)', '$3.61/gal', '+0.4%', 'up'],
-  ['TECH UTILIZATION (SERVICETITAN)', '87.3%', '+1.1%', 'up'],
-  ['AR SYNC (QUICKBOOKS)', 'LIVE', '4 min ago', 'up'],
-  ['OPEN SERVICE CALLS', '23', '-4', 'up'],
+  ['AR SYNC (VISTA)', 'LIVE', '4 min ago', 'up'],
+  ['DOC REVIEW QUEUE', '6 ITBs', '2 due this wk', 'up'],
   ['FED FUNDS', '3.75–4.00%', 'hold', 'up'],
   ['PRIME RATE', '6.75%', 'unch', 'up'],
   ['SOFR', '3.86%', '+2 bps', 'up'],
@@ -106,12 +109,12 @@ const TICKER = [
   ['ISM SERVICES', '53.2', '+0.6', 'up'],
 ];
 const MARQUEE = [
-  ['Y8S', 'Best Place to Work in San Marcos, TX 2026 — thank you to the whole team'],
-  ['ERCOT', 'Summer peak demand programs open — commercial curtailment enrollment closes Aug 15'],
-  ['ASHRAE', 'Guideline 36 high-performance sequences gaining adoption across Texas K-12 retrofits'],
-  ['CPS', 'Utility rebate window for smart-building controls extended through Q4 — applications trending up'],
-  ['TEXAS ISD', 'School bond packages across Central Texas fund HVAC & controls modernization at record pace'],
-  ['Y8S', 'Established 2011 · Carrier i-Vu, Innotech & Lynxspring lines · engineering, construction & 24/7 service'],
+  ['MSM', 'Est. 1925 · 3,000+ major commercial projects · among the largest HVAC ductwork fabricators in the U.S.'],
+  ['MSM BRAIN', 'AI document review live — 412 bid sets machine-read YTD, $2.36M run-rate savings against the $3M review spend'],
+  ['SMACNA', 'New duct construction standards edition adopted — gauge tables updated in the estimating library'],
+  ['TEXAS', 'Data center and semiconductor mechanical awards at record pace across the Austin–Taylor corridor'],
+  ['DUCT DIRECT', 'Same-week shipping on stock fittings — reserved plant capacity for Standing PO accounts'],
+  ['MSM', 'BIM Design · Pre-Fabrication · HVAC Installation · Turnkey — Houston, TX'],
   ['AIA', 'Construction billings index positive for institutional work a sixth straight month'],
 ];
 
@@ -123,7 +126,7 @@ function renderTopbar(opts = {}) {
   const activeGroupId = _activeGroup(path);
   if (typeof isSignedIn === 'function' && !isSignedIn()) { renderSignIn(); target.outerHTML = ''; return; }
   const me = currentPersona();
-  const internal = YatesMode.isInternal() && !me.perms.external;
+  const internal = McCorveyMode.isInternal() && !me.perms.external;
   const groups = NAV_GROUPS.filter(g => !g.internalOnly || (internal && me.perms.fin));
   const activeGroup = groups.find(g => g.id === activeGroupId);
 
@@ -212,11 +215,11 @@ function renderTopbar(opts = {}) {
     <div class="news-marquee" id="news-marquee"><div class="news-marquee-track">${marqueeItems}${marqueeItems}</div></div>
     <div class="market-ticker" id="market-ticker"><div class="ticker-track">${tickerHtml}${tickerHtml}</div></div>
     <div class="portal-topbar">
-      <a class="brand" href="/yates/" style="cursor:pointer;text-decoration:none">
-        <img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo">
-        <div class="y8s-brand-text">
-          <div class="y8s-name">YATES Company, LLC</div>
-          <div class="yates-sub">${subtitle}</div>
+      <a class="brand" href="/mccorvey/" style="cursor:pointer;text-decoration:none">
+        <img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo">
+        <div class="msm-brand-text">
+          <div class="msm-name">McCorvey Sheet Metal Works, L.P.</div>
+          <div class="msm-sub">${subtitle}</div>
         </div>
       </a>
       <nav class="nav nav-desktop">${groupLinks}</nav>
@@ -285,15 +288,15 @@ function renderTopbar(opts = {}) {
 
 function _wireModeToggle() {
   const i = document.getElementById('ymode-int'), e = document.getElementById('ymode-ext');
-  if (i) i.addEventListener('click', () => { if (!YatesMode.isInternal()) YatesMode.set('internal'); });
-  if (e) e.addEventListener('click', () => { if (YatesMode.isInternal()) YatesMode.set('client'); });
+  if (i) i.addEventListener('click', () => { if (!McCorveyMode.isInternal()) McCorveyMode.set('internal'); });
+  if (e) e.addEventListener('click', () => { if (McCorveyMode.isInternal()) McCorveyMode.set('client'); });
 }
 
 function _fillJobFlyouts() {
   const hosts = document.querySelectorAll('[data-job-flyout]');
   if (!hosts.length || !window.JOBS) return;
   const html = window.JOBS.map(j =>
-    `<a href="/yates/jobs/job/?id=${j.id}"><span>${j.name.split('—')[0].trim()}</span><span class="fl-meta">${j.id} · ${j.status}</span></a>`).join('');
+    `<a href="/mccorvey/jobs/job/?id=${j.id}"><span>${j.name.split('—')[0].trim()}</span><span class="fl-meta">${j.id} · ${j.status}</span></a>`).join('');
   hosts.forEach(h => { h.innerHTML = html; });
 }
 
@@ -329,7 +332,7 @@ function _wireThemeToggle() {
   if (!btn) return;
   function _applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
-    try { localStorage.setItem('yates-theme', theme); } catch (e) {}
+    try { localStorage.setItem('msm-theme', theme); } catch (e) {}
     const moon = btn.querySelector('.theme-icon-moon');
     const sun = btn.querySelector('.theme-icon-sun');
     if (theme === 'light') { if (moon) moon.style.display = 'none'; if (sun) sun.style.display = ''; }
@@ -344,12 +347,12 @@ function _wireThemeToggle() {
 
 /* sticky bottom horizontal scrollbar helper (same as CFP) */
 (function loadStickyHscroll() {
-  if (window.__yatesStickyHscrollLoaded) return;
-  window.__yatesStickyHscrollLoaded = true;
+  if (window.__mccorveyStickyHscrollLoaded) return;
+  window.__mccorveyStickyHscrollLoaded = true;
   const s = document.createElement('script');
-  s.src = '/yates/js/sticky-hscroll.js';
+  s.src = '/mccorvey/js/sticky-hscroll.js';
   s.async = true;
   document.head.appendChild(s);
 })();
 
-window.YatesNav = { renderTopbar };
+window.McCorveyNav = { renderTopbar };

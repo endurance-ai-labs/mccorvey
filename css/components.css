@@ -37,7 +37,7 @@
 .card-interactive:hover {
   background: var(--glass-bg-hover);
   border-color: rgba(91,141,239,0.30);
-  box-shadow: 0 0 0 1px rgba(39,102,214,0.12), 0 8px 24px rgba(0,0,0,0.25);
+  box-shadow: 0 0 0 1px rgba(200,16,46,0.12), 0 8px 24px rgba(0,0,0,0.25);
 }
 
 .card-accent { border-left: 3px solid var(--color-blue); }
@@ -121,7 +121,7 @@
 .tool-card:hover {
   background: var(--glass-bg-hover);
   border-color: rgba(91,141,239,0.30);
-  box-shadow: 0 0 0 1px rgba(39,102,214,0.10), 0 8px 24px rgba(0,0,0,0.20);
+  box-shadow: 0 0 0 1px rgba(200,16,46,0.10), 0 8px 24px rgba(0,0,0,0.20);
 }
 .tool-card-title { font-weight: 700; font-size: 15px; color: var(--color-cloud-whisper); }
 .tool-card-desc  { font-size: 13px; color: var(--color-text-muted); margin-top: var(--space-2); line-height: 1.6; }
@@ -243,7 +243,7 @@
 }
 .hl-card-pill.multifamily { background: var(--color-blue-pale);          color: var(--color-blue-light); }
 .hl-card-pill.economic    { background: rgba(201,146,69,0.15);           color: #C99245; }
-.hl-card-pill.ai          { background: linear-gradient(135deg, #2766d6 0%, #2766d6 100%); color: #fff; }
+.hl-card-pill.ai          { background: linear-gradient(135deg, #c8102e 0%, #c8102e 100%); color: #fff; }
 
 /* ---- Key rates strip ---- */
 .key-rates {
@@ -495,7 +495,7 @@ table.cfp-table td.muted { color: var(--color-text-muted); }
 }
 .btn-primary:hover {
   background: var(--color-blue-light);
-  box-shadow: 0 0 0 3px rgba(39,102,214,0.25);
+  box-shadow: 0 0 0 3px rgba(200,16,46,0.25);
 }
 .btn-ghost {
   background: transparent;
@@ -528,7 +528,7 @@ input:not([type=range]):not([type=checkbox]):not([type=radio]):focus,
 select:focus {
   outline: none;
   border-color: var(--color-blue);
-  box-shadow: 0 0 0 3px rgba(39,102,214,0.15);
+  box-shadow: 0 0 0 3px rgba(200,16,46,0.15);
 }
 input::placeholder { color: var(--color-slate-hint); }
 
@@ -567,7 +567,7 @@ select {
 .filter-bar select:focus {
   outline: none;
   border-color: var(--color-blue);
-  box-shadow: 0 0 0 3px rgba(39,102,214,0.15);
+  box-shadow: 0 0 0 3px rgba(200,16,46,0.15);
 }
 .filter-bar input[type=search] { min-width: 220px; }
 
@@ -603,12 +603,12 @@ select {
   font-weight: 800;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  background: rgba(39,102,214,0.15);
+  background: rgba(200,16,46,0.15);
   color: var(--color-blue-light);
 }
 .cat-pill.economic  { background: rgba(201,146,69,0.15);  color: var(--color-amber); }
 .cat-pill.financing { background: var(--color-green-bg);  color: var(--color-green); }
-.cat-pill.market    { background: rgba(39,102,214,0.20);  color: #5B8DEF; }
+.cat-pill.market    { background: rgba(200,16,46,0.20);  color: #ef6a76; }
 
 /* ---- Components responsive ---- */
 @media (max-width: 900px) {
@@ -694,9 +694,9 @@ select {
 }
 .tab-bar button:hover  { color: var(--color-cloud-whisper); background: var(--glass-bg-hover); }
 .tab-bar button.active {
-  background: rgba(39,102,214,0.15);
+  background: rgba(200,16,46,0.15);
   color: var(--color-cloud-whisper);
-  border-color: rgba(39,102,214,0.35);
+  border-color: rgba(200,16,46,0.35);
 }
 .tab-bar-count { font-family: var(--font-mono); font-size: 11px; opacity: 0.6; }
 

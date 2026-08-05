@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Bid Builder — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Bid Builder — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Preconstruction' });
-const internal = YatesMode.isInternal() && can('bids');
+McCorveyNav.renderTopbar({ subtitle: 'Preconstruction' });
+const internal = McCorveyMode.isInternal() && can('bids');
 
 /* live working copy — resets on reload */
 const BID = JSON.parse(JSON.stringify(BID_DEFAULTS));
@@ -77,29 +77,29 @@ function applyTrade(i, trade) {
 
 
 /* ---------- AI Bid Assistant: paste an RFP, get a drafted bid ---------- */
-const SAMPLE_RFP = `Request for Proposal — Building Automation Retrofit
-Guadalupe Heights ISD, 8 campuses, approx. 620,000 SF total.
-Scope: replace existing pneumatic controls district-wide with DDC. Integrate 42 rooftop units
-and 3 central plants (chillers and boilers). Provide 96 VAV terminal controllers with new
-space sensors and CO2 monitoring in classrooms. New low-voltage wiring and network riser per
-campus, BACnet front end with graphics and energy dashboards for the facilities office.
-Include utility submetering at each campus, full commissioning with point-to-point checkout,
-and operator training for district staff. Bids due August 22.`;
+const SAMPLE_RFP = `Request for Proposal — HVAC Sheet Metal Ductwork Package
+Harmon Construction, Memorial Bend Surgical Pavilion, Houston TX, approx. 240,000 SF.
+Scope: furnish and install the complete Division 23 sheet metal package. Approximately
+640,000 lbs galvanized rectangular duct per SMACNA and the project gauge schedule, plus
+12,000 LF of spiral round duct on exposed levels. Provide and install 48 fire/smoke dampers
+with access doors, 620 GRDs per the air device schedule, and set 84 VAV air terminal units.
+Kitchen and lab exhaust in welded stainless, liquid-tight per NFPA 96. Duct liner and
+external wrap coordinated with the insulation partner; TAB by others with contractor support.
+LOD 400 BIM coordination with spool drawings released through STRATUS.
+Include rigging of 6 air handling units with a licensed crane partner. Bids due August 22.`;
 
 const AI_RULES = [
-  { re: /(\d+)\s*(campus|school|building|bldg|facilit)/i, trade: 'DDC Controls', perUnit: 26500, unit: 'campus' },
-  { re: /(\d+)\s*(rtu|rooftop)/i, trade: 'RTU Integration', perUnit: 1450, unit: 'RTU' },
-  { re: /(\d+)\s*vav/i, trade: 'VAV Controls', perUnit: 640, unit: 'VAV' },
-  { re: /(\d+)\s*(ahu|air handler)/i, trade: 'AHU Controls', perUnit: 8200, unit: 'ea' },
-  { re: /(\d+)?\s*(central plant|chiller|boiler)/i, trade: 'Plant Controls', perUnit: 31500, unit: 'ea', defQty: 1 },
-  { re: /wiring|conduit|riser|cabl/i, trade: 'LV Wiring', lump: 0.075 },
-  { re: /sensor|thermostat|co2/i, trade: 'Sensors', lump: 0.022 },
-  { re: /actuator|valve|damper/i, trade: 'Actuators', lump: 0.045 },
-  { re: /graphic|dashboard|front.?end|alarm/i, trade: 'Graphics', lump: 0.018 },
-  { re: /(\d+)?\s*(submeter|meter)/i, trade: 'Metering', perUnit: 5800, unit: 'ea', defQty: 4 },
-  { re: /commission|point.?to.?point|checkout|tab\b/i, trade: 'TAB & Commissioning', lump: 0.035 },
-  { re: /train/i, trade: 'Training & Closeout', lump: 0.012 },
-  { re: /bacnet|network|server|integration/i, trade: 'Front-End & Network', lump: 0.028 },
+  { re: /([\d,]+)\s*(lbs?|pounds)/i, trade: 'Rectangular Duct', perUnit: 1.85, unit: 'lbs' },
+  { re: /([\d,]+)\s*(lf|linear\s*f)/i, trade: 'Spiral & Round Duct', perUnit: 18, unit: 'LF' },
+  { re: /([\d,]+)\s*(?:fire[\/\s-]*smoke\s*)?dampers/i, trade: 'Dampers & Accessories', perUnit: 425, unit: 'ea' },
+  { re: /([\d,]+)\s*(grds?|diffuser|register|grille|air device)/i, trade: 'Air Devices', perUnit: 128, unit: 'GRD' },
+  { re: /([\d,]+)\s*(vav|air terminal|fan.?powered)/i, trade: 'Air Terminal Units', perUnit: 310, unit: 'VAV' },
+  { re: /([\d,]+)?\s*(ahu|air handl|rtu|rooftop|equipment pick|rigging pick)/i, trade: 'Equipment Rigging', perUnit: 2400, unit: 'ea', defQty: 4 },
+  { re: /welded|stainless|nfpa\s*96|grease duct|kitchen exhaust|lab exhaust|fume/i, trade: 'Welded Exhaust', lump: 0.06 },
+  { re: /liner|wrap|insulat/i, trade: 'Duct Liner & Wrap', lump: 0.05 },
+  { re: /\btab\b|balanc/i, trade: 'TAB Support', lump: 0.015 },
+  { re: /bim|lod\s*400|coordinat|spool|stratus|shop drawing/i, trade: 'BIM & Shop Drawings', lump: 0.03 },
+  { re: /install|hang|riser|mains|branch/i, trade: 'Field Installation', lump: 0.25 },
 ];
 
 function aiDraftBid(text) {
@@ -114,7 +114,7 @@ function aiDraftBid(text) {
     if (!cat) return;
     let qty = 1, unitCost;
     if (rule.perUnit) {
-      qty = m[1] ? parseInt(m[1]) : (rule.defQty || 1);
+      qty = m[1] ? parseInt(m[1].replace(/,/g, '')) : (rule.defQty || 1);
       unitCost = rule.perUnit;
     } else {
       unitCost = 0;   /* filled after direct base known */
@@ -136,10 +136,10 @@ function aiDraftBid(text) {
 
   /* project + owner detection */
   const lines = text.split(/\n/).map(x => x.trim()).filter(Boolean);
-  const ownerLine = lines.find(l => /(ISD|District|County|City of|LLC|LP|Inc|Health|University)/.test(l) && !/^Request|^RFP|^Scope/i.test(l));
+  const ownerLine = lines.find(l => /(Construction|Builders|Constructors|Design.?Build|JV\b|CM\b|County|City of|LLC|LP|Inc|Health|University)/.test(l) && !/^Request|^RFP|^Scope/i.test(l));
   const owner = ownerLine ? ownerLine.split(',')[0].trim() : BID.meta.owner;
   const title = (lines[0] || '').replace(/^request for proposal\s*[—-]*\s*/i, '').trim();
-  return { lines: found, owner, title: title || owner + ' — Controls Retrofit', sqft, scale };
+  return { lines: found, owner, title: title || owner + ' — Ductwork Package', sqft, scale };
 }
 
 function aiAssist() {
@@ -148,7 +148,7 @@ function aiAssist() {
   ov.innerHTML = `
     <div class="svc-card" onclick="event.stopPropagation()" style="max-width:680px">
       <div class="svc-card-head">
-        <div><b>🤖 AI Bid Assistant</b><div class="ynote">Paste an RFP, scope email or walk notes — the assistant drafts trade lines, CSI codes, quantities and pricing. Y8S proprietary engine (demo).</div></div>
+        <div><b>🤖 AI Bid Assistant</b><div class="ynote">Paste an RFP, scope email or walk notes — the assistant drafts trade lines, CSI codes, quantities and pricing. MSM proprietary engine (demo).</div></div>
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
       <textarea class="yin" id="ai-rfp" rows="10" style="resize:vertical" placeholder="Paste the RFP or scope description here…"></textarea>
@@ -166,10 +166,10 @@ function aiAssist() {
     const text = ov.querySelector('#ai-rfp').value.trim();
     const out = ov.querySelector('#ai-out');
     if (!text) { out.innerHTML = '<div class="ynote">Paste some scope text first.</div>'; return; }
-    out.innerHTML = '<div class="ynote" style="animation:bwpulse 1.1s ease-in-out infinite">Reading scope… matching trades… pricing from the Y8S cost database…</div>';
+    out.innerHTML = '<div class="ynote" style="animation:bwpulse 1.1s ease-in-out infinite">Reading scope… matching trades… pricing from the MSM cost database…</div>';
     setTimeout(() => {
       const d = aiDraftBid(text);
-      if (!d.lines.length) { out.innerHTML = '<div class="ynote">No controls scope detected — try including systems (RTUs, VAVs, plant, wiring…).</div>'; return; }
+      if (!d.lines.length) { out.innerHTML = '<div class="ynote">No sheet-metal scope detected — try including quantities (lbs of rectangular duct, LF of spiral, dampers, GRDs, welded exhaust…).</div>'; return; }
       const direct = d.lines.reduce((a, f) => a + f.qty * f.unitCost, 0);
       out.innerHTML = `
         <div class="svc-sect">Detected Scope — ${d.lines.length} trade lines${d.sqft ? ' · ' + d.sqft + ' SF (pricing scaled)' : ''}</div>
@@ -185,7 +185,7 @@ function aiAssist() {
         BID.lines = d.lines;
         BID.meta.project = d.title;
         BID.meta.owner = d.owner;
-        BID.meta.bidNumber = 'Y8S-2026-' + String(400 + Math.floor(Math.random() * 500));
+        BID.meta.bidNumber = 'MSM-2026-' + String(400 + Math.floor(Math.random() * 500));
         ov.remove();
         previewProposal = false;
         render();
@@ -203,23 +203,23 @@ function knownCustomers() {
   JOBS.forEach(j => { if (!set.includes(j.owner)) set.push(j.owner); });
   BID_PIPELINE.forEach(b => { if (!set.includes(b.owner)) set.push(b.owner); });
   SERVICE_AGREEMENTS.forEach(a => { if (!set.includes(a.client)) set.push(a.client); });
-  try { JSON.parse(localStorage.getItem('yates-customers') || '[]').forEach(c => { if (!set.includes(c.name)) set.push(c.name); }); } catch (e) {}
+  try { JSON.parse(localStorage.getItem('msm-customers') || '[]').forEach(c => { if (!set.includes(c.name)) set.push(c.name); }); } catch (e) {}
   return set.sort();
 }
 function addrOptions(owner) {
   const out = [];
   JOBS.filter(j => j.owner === owner).forEach(j => { if (!out.includes(j.address)) out.push(j.address); });
-  try { JSON.parse(localStorage.getItem('yates-customers') || '[]').filter(c => c.name === owner).forEach(c => { if (c.address && !out.includes(c.address)) out.push(c.address); }); } catch (e) {}
-  ['San Marcos, TX', 'San Antonio, TX', 'New Braunfels, TX', 'Austin, TX', 'Seguin, TX', 'Kyle, TX', 'Buda, TX', 'Districtwide · Multiple Campuses, TX'].forEach(a => { if (!out.includes(a)) out.push(a); });
+  try { JSON.parse(localStorage.getItem('msm-customers') || '[]').filter(c => c.name === owner).forEach(c => { if (c.address && !out.includes(c.address)) out.push(c.address); }); } catch (e) {}
+  ['Houston, TX', 'Texas Medical Center · Houston, TX', 'The Woodlands, TX', 'Katy, TX', 'Sugar Land, TX', 'Baytown, TX', 'Pearland, TX', 'Galveston, TX'].forEach(a => { if (!out.includes(a)) out.push(a); });
   return out;
 }
 const NAME_STEMS = [
-  'District Energy Management Retrofit', 'Campus Controls Retrofit', 'Districtwide MEP Controls Package',
-  'New BAS Installation', 'BAS Replacement & Front-End Migration', 'Controls Standardization',
-  'Chiller Plant Optimization', 'Boiler Plant Controls Upgrade', 'VAV Controls Upgrade',
-  'RTU Controls & Demand Management', 'EMS & Utility Metering', 'Energy Dashboards & Reporting',
-  'Warehouse Controls & EMS', 'CRAC Integration & Monitoring', 'Refrigeration Monitoring & Alarms',
-  'Guestroom EMS', 'Lighting Controls Integration', 'Service Retrofit — Small Project',
+  'HVAC Ductwork Package', 'Sheet Metal Fab & Install', 'Spiral Duct Package — Exposed Rounds',
+  'Welded Stainless Exhaust — NFPA 96', 'Kitchen & Lab Exhaust Package', 'Tenant Build-Out Ductwork',
+  'Patient Tower Ductwork Package', 'Data Center Air Distribution', 'Central Utility Plant Fabrication',
+  'Air Devices & Terminal Units Set', 'Duct Replacement — Occupied Facility', 'BIM Coordination & Spool Package',
+  'Garage Exhaust & Ventilation', 'Cleanroom Ductwork — Stainless', 'Fire/Smoke Damper Replacement',
+  'Service Package — Small Project',
 ];
 function nameOptions(owner) {
   const stem = (owner || 'Client').split('—')[0].trim();
@@ -231,7 +231,7 @@ function bidNumberOptions() {
   const base = 418;
   const used = BID_PIPELINE.map(b => b.id);
   const out = [BID.meta.bidNumber];
-  for (let i = 1; i <= 5; i++) out.push('Y8S-2026-' + String(base + i * 3 + used.length));
+  for (let i = 1; i <= 5; i++) out.push('MSM-2026-' + String(base + i * 3 + used.length));
   return out;
 }
 function pickOwner(v) {
@@ -249,9 +249,9 @@ function saveNewCustomer() {
   const contact = document.getElementById('nc-contact').value.trim();
   if (!name) return;
   try {
-    const list = JSON.parse(localStorage.getItem('yates-customers') || '[]');
+    const list = JSON.parse(localStorage.getItem('msm-customers') || '[]');
     list.push({ name, address: addr, contact });
-    localStorage.setItem('yates-customers', JSON.stringify(list));
+    localStorage.setItem('msm-customers', JSON.stringify(list));
   } catch (e) {}
   SETUP.newCust = false;
   BID.meta.owner = name;
@@ -322,7 +322,7 @@ function render() { $('#app').innerHTML = internal ? (previewProposal ? viewExte
 
 
 /* ---------- proposal e-signatures + send-to-customer flow ---------- */
-function bidSigKey(slot) { return 'yates-sign:bid:' + BID.meta.bidNumber + ':' + slot; }
+function bidSigKey(slot) { return 'msm-sign:bid:' + BID.meta.bidNumber + ':' + slot; }
 function bidSigState(slot) { try { return JSON.parse(localStorage.getItem(bidSigKey(slot)) || 'null'); } catch (e) { return null; } }
 function bidSigSave(slot, rec) { try { localStorage.setItem(bidSigKey(slot), JSON.stringify(rec)); } catch (e) {} }
 function bidSigClear(slot) { try { localStorage.removeItem(bidSigKey(slot)); } catch (e) {} render(); }
@@ -332,7 +332,7 @@ function bidSign(slot) {
   if (slot === 'pm') {
     const p = currentPersona();
     if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) {
-      alert('The Yates signature line must be signed by a project manager (Tyler Reidhead, Jordan Felps or Brandon Yates).\n\nSwitch user via the account menu (top right).');
+      alert('The McCorvey signature line must be signed by a project manager (Travis Boone, Sam Nguyen or Hector Ruiz).\n\nSwitch user via the account menu (top right).');
       return;
     }
     bidSigSave('pm', { name: p.name, title: p.title, at: now });
@@ -353,8 +353,8 @@ function bidSigBlock(slot, cap, btnLabel) {
 
 function sendForSignature() {
   const T = totals();
-  const to = 'facilities@' + BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 18) + '.demo';
-  const link = 'https://endurancelabs.ai/yates/bids/?sign=' + encodeURIComponent(BID.meta.bidNumber);
+  const to = 'precon@' + BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '').slice(0, 18) + '.demo';
+  const link = 'https://endurancelabs.ai/mccorvey/bids/?sign=' + encodeURIComponent(BID.meta.bidNumber);
   const pmSig = bidSigState('pm');
   const subject = 'Signature requested — Proposal ' + BID.meta.bidNumber + ' — ' + BID.meta.project;
   const body = [
@@ -364,11 +364,11 @@ function sendForSignature() {
     '',
     'Review and sign here: ' + link,
     '',
-    'The proposal has been executed by ' + (pmSig ? pmSig.name + ', ' + pmSig.title : 'YATES Company') + ' and is valid for ' + BID.meta.validDays + ' days.',
-    'Questions? Reply to this email or call ' + YATES.phone + '.',
+    'The proposal has been executed by ' + (pmSig ? pmSig.name + ', ' + pmSig.title : 'McCorvey Sheet Metal') + ' and is valid for ' + BID.meta.validDays + ' days.',
+    'Questions? Reply to this email or call ' + MCCORVEY.phone + '.',
     '',
-    YATES.company,
-    YATES.address + ' | ' + YATES.email,
+    MCCORVEY.company,
+    MCCORVEY.address + ' | ' + MCCORVEY.email,
   ].join('\n');
 
   const ov = document.createElement('div');
@@ -418,8 +418,8 @@ function emailBid() {
     (authorized ? '' : 'NOTE (internal): estimate not yet fully authorized for submission.\n\n') +
     'We appreciate the opportunity and look forward to building with you.',
     '',
-    YATES.company,
-    YATES.address + ' | ' + YATES.phone + ' | ' + YATES.email,
+    MCCORVEY.company,
+    MCCORVEY.address + ' | ' + MCCORVEY.phone + ' | ' + MCCORVEY.email,
   ].join('\n');
 
   const ov = document.createElement('div');
@@ -430,7 +430,7 @@ function emailBid() {
         <div><b>✉ Email Proposal ${esc(BID.meta.bidNumber)}</b><div class="ynote">Review and send — opens in your mail app with everything pre-filled.</div></div>
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
-      <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="em-to" value="facilities@${esc(BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '')).slice(0, 18)}.demo" placeholder="owner contact email"></label>
+      <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="em-to" value="precon@${esc(BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '')).slice(0, 18)}.demo" placeholder="GC / owner contact email"></label>
       <label class="yfld" style="margin-bottom:10px">Subject<input class="yin" id="em-subj" value="${esc(subject)}"></label>
       <label class="yfld">Message<textarea class="yin" id="em-body" rows="11" style="resize:vertical;font-family:inherit">${esc(body).replace(/\\n/g, String.fromCharCode(10))}</textarea></label>
       <div class="ytoolrow" style="margin-top:14px;margin-bottom:0">
@@ -508,14 +508,14 @@ function viewInternal() {
       <div>
         <div class="demo-eyebrow">PRECONSTRUCTION · ESTIMATE ${esc(BID.meta.bidNumber)} · REV 3</div>
         <h1>Bid <em>Builder</em></h1>
-        <div class="sub">Works <b>alongside</b> the estimating workbook, not instead of it — import an estimate or draft one from an RFP, then let the portal do what spreadsheets can't: pricing levers, release control, e-mail/PDF output, and win/loss reporting in the <a href="/yates/pipeline/" style="color:var(--color-blue)">Bid Pipeline</a>.</div>
+        <div class="sub">Works <b>alongside</b> the estimating workbook, not instead of it — import an estimate or draft one from an RFP, then let the portal do what spreadsheets can't: pricing levers, release control, e-mail/PDF output, and win/loss reporting in the <a href="/mccorvey/pipeline/" style="color:var(--color-blue)">Bid Pipeline</a>.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> BASE BID ${fmt$2(T.base)}</span>
         <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
         <span style="display:flex;gap:8px">
           <button class="pa-btn" style="cursor:pointer" onclick="alert('Demo: drop the estimating workbook (.xlsx) here — line items, quantities and pricing map into the portal automatically. The estimator keeps their spreadsheet; the company gets the reporting.')">⬆ Import Estimate (.xlsx)</button>
-          <button class="pa-btn primary" style="cursor:pointer;background:linear-gradient(135deg,#083d75,#0d5aa7)" onclick="aiAssist()">🤖 AI Draft from RFP</button>
+          <button class="pa-btn primary" style="cursor:pointer;background:linear-gradient(135deg,#14283c,#0d5aa7)" onclick="aiAssist()">🤖 AI Draft from RFP</button>
           <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
           <button class="pa-btn primary" style="cursor:pointer" onclick="previewProposal=true;render();window.scrollTo(0,0)">📄 PDF the Bid</button>
           <button class="pa-btn primary" style="cursor:pointer" onclick="addLine()">＋ Add Line Item</button>
@@ -523,7 +523,7 @@ function viewInternal() {
       </div>
     </div>
 
-    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid ${authorized ? 'var(--color-green)' : 'var(--yates-red)'}">
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid ${authorized ? 'var(--color-green)' : 'var(--mccorvey-red)'}">
       <div class="demo-panel-head"><h2>Estimate Release Control</h2><span class="k">sequential sign-off · role-gated · switch role via the account menu (top right)</span></div>
       ${approvalChain(APPR_KEY, APPR_STEPS)}
       ${authorized ? '' : '<div class="ynote" style="margin-top:8px">The client-facing proposal is watermarked <b>DRAFT</b> until the full chain has signed off.</div>'}
@@ -533,8 +533,8 @@ function viewInternal() {
       <div class="demo-panel-head"><h2>Project Setup</h2><span class="k">details flow into the proposal</span></div>
       ${SETUP.newCust ? `
       <div class="fc-assumps" style="grid-template-columns:2fr 2fr 2fr 1fr;margin-bottom:12px;border:1px dashed var(--color-blue);border-radius:8px;padding:12px">
-        <label class="yfld">New Customer Name<input class="yin" id="nc-name" placeholder="e.g. Cibolo Creek ISD"></label>
-        <label class="yfld">Address / Territory<input class="yin" id="nc-addr" placeholder="e.g. Districtwide · Cibolo, TX"></label>
+        <label class="yfld">New Customer Name<input class="yin" id="nc-name" placeholder="e.g. Sterling Ridge Constructors"></label>
+        <label class="yfld">Address / Territory<input class="yin" id="nc-addr" placeholder="e.g. Houston, TX"></label>
         <label class="yfld">Primary Contact<input class="yin" id="nc-contact" placeholder="name · title · email"></label>
         <label class="yfld">&nbsp;<button class="pa-btn primary" style="cursor:pointer;width:100%" onclick="saveNewCustomer()">✓ Add Customer</button></label>
       </div>` : ''}
@@ -576,7 +576,7 @@ function viewInternal() {
       </div>
     </div>
 
-    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--yates-red)">
+    <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--mccorvey-red)">
       <div class="demo-panel-head"><h2>Pricing Levers</h2><span class="k">flow through every line — change one, the whole bid reprices</span></div>
       <div class="fc-assumps" style="grid-template-columns:repeat(8,1fr)">
         <div class="fc-assump"><label>Overhead</label><div class="ip"><input value="${BID.levers.overheadPct}" inputmode="decimal" onchange="updLever('overheadPct',this.value)"><span class="u">%</span></div></div>
@@ -599,7 +599,7 @@ function viewInternal() {
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Estimate Detail — CSI Trade Lines</h2><span style="display:flex;gap:6px">${srcChip('prop')}<span class="k">unit costs from Y8S historical cost database</span></span></div>
+      <div class="demo-panel-head"><h2>Estimate Detail — CSI Trade Lines</h2><span style="display:flex;gap:6px">${srcChip('prop')}<span class="k">unit costs from MSM historical cost database</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>CSI</th><th>Trade</th><th>Scope Description</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th style="text-align:right">Direct Cost</th><th style="text-align:right">OH</th><th style="text-align:right">Profit</th><th style="text-align:right">Sell</th><th>Subcontractor</th><th>Start +d</th><th>Dur (d)</th><th></th></tr></thead>
@@ -634,7 +634,7 @@ function viewInternal() {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Auto-Generated Timeline</h2><span style="display:flex;gap:6px">${srcChip('st')}<span class="k">crew availability from ServiceTitan dispatch · finish ${fmtDate(finishDate())}</span></span></div>
+      <div class="demo-panel-head"><h2>Auto-Generated Timeline</h2><span style="display:flex;gap:6px">${srcChip('st')}<span class="k">shop release &amp; crew loading via GTP STRATUS · finish ${fmtDate(finishDate())}</span></span></div>
       ${bidGantt()}
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
@@ -666,8 +666,8 @@ function viewExternal(preview) {
     <div class="ydoc" style="position:relative">
       ${authorized ? '' : `<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5"><span style="font-size:110px;font-weight:800;letter-spacing:0.2em;color:rgba(198,151,17,0.13);transform:rotate(-24deg)">DRAFT</span></div>`}
       <div class="ydoc-head">
-        <div><img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo"><div class="sub" style="margin-top:8px">YATES Company, LLC · Building Automation &amp; Energy Solutions</div></div>
-        <div class="right"><b>Proposal ${esc(BID.meta.bidNumber)}</b><br>Date: ${fmtDate(todayISO())}<br>Valid: ${BID.meta.validDays} days<br>${YATES.license} · Bonded &amp; insured</div>
+        <div><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo"><div class="sub" style="margin-top:8px">McCorvey Sheet Metal Works, L.P. · HVAC Sheet Metal — Fabrication &amp; Installation</div></div>
+        <div class="right"><b>Proposal ${esc(BID.meta.bidNumber)}</b><br>Date: ${fmtDate(todayISO())}<br>Valid: ${BID.meta.validDays} days<br>${MCCORVEY.license} · Bonded &amp; insured</div>
       </div>
       <div class="big-title">${esc(BID.meta.project)}</div>
       <div class="subtitle">${esc(BID.meta.address)}</div>
@@ -711,7 +711,7 @@ function viewExternal(preview) {
         </tbody>
         <tfoot><tr><td colspan="5">TOTAL BASE BID</td><td class="num">${fmt$2(T.base)}</td></tr></tfoot>
       </table>
-      <p style="font-size:11px;color:#5b6472">Unit prices include labor, material, supervision and warranty. Quantities per the engineered points list; final quantities reconciled at approved shop drawings.</p>
+      <p style="font-size:11px;color:#5b6472">Unit prices include labor, material, supervision and warranty. Quantities per the contract drawings and gauge schedule; final quantities reconciled at approved spool/shop drawings released through STRATUS.</p>
 
       <h3 class="sect">Alternates</h3>
       <table>
@@ -736,7 +736,7 @@ function viewExternal(preview) {
       <ul>${BID.terms.map(x => `<li>${esc(x)}</li>`).join('')}</ul>
 
       ${authorized ? `<h3 class="sect">Authorization</h3>
-      <p>This proposal was prepared and released under YATES Company's estimate control procedure:
+      <p>This proposal was prepared and released under McCorvey Sheet Metal's estimate control procedure:
       ${st.map((x, i) => `<b>${esc(APPR_STEPS[i].doneLabel)}</b> — ${esc(x.by)}, ${esc(x.at)}`).join(' · ')}.</p>` : ''}
 
       <h3 class="sect">Acceptance</h3>
@@ -745,21 +745,21 @@ function viewExternal(preview) {
         const pmS = bidSigState('pm'), ownS = bidSigState('owner'), sent = bidSigState('sent');
         return `
       <div class="sig-row">
-        ${bidSigBlock('pm', YATES.company + ' — ' + esc(BID.meta.pm) + ', Project Manager', '✍ Sign as Yates PM')}
+        ${bidSigBlock('pm', MCCORVEY.company + ' — ' + esc(BID.meta.pm) + ', Project Manager', '✍ Sign as McCorvey PM')}
         ${ownS || sent
           ? bidSigBlock('owner', esc(BID.meta.owner) + ' — Owner / Authorized Agent', '✍ Customer e-Sign (via emailed link)')
-          : `<div class="sig"><div class="sig-cap" style="margin-top:6px">${esc(BID.meta.owner)} — Owner / Authorized Agent<br><span class="ynote">${pmS ? 'Ready to send for customer signature.' : 'Unlocks after the Yates PM signs.'}</span></div></div>`}
+          : `<div class="sig"><div class="sig-cap" style="margin-top:6px">${esc(BID.meta.owner)} — Owner / Authorized Agent<br><span class="ynote">${pmS ? 'Ready to send for customer signature.' : 'Unlocks after the McCorvey PM signs.'}</span></div></div>`}
       </div>
       <div class="ytoolrow no-print" style="margin-top:16px;margin-bottom:0">
         ${pmS && !ownS ? (sent
           ? `<span class="ypill blue">SENT FOR SIGNATURE</span><span class="ynote">to ${esc(sent.to)} · ${esc(sent.at)} — awaiting customer</span>`
           : `<button class="pa-btn primary" style="cursor:pointer" onclick="sendForSignature()">✉ Send to Customer for e-Signature</button>`) : ''}
         ${pmS && ownS ? `<span class="ypill green">FULLY EXECUTED</span><span class="ynote">both parties signed electronically — proposal is now a contract exhibit</span>` : ''}
-        ${!pmS ? `<span class="ynote">Signature flow: Yates PM signs → send to customer → customer e-signs from their inbox.</span>` : ''}
+        ${!pmS ? `<span class="ynote">Signature flow: McCorvey PM signs → send to customer → customer e-signs from their inbox.</span>` : ''}
         <div class="spacer"></div>
       </div>`;
       })()}
-      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
+      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${MCCORVEY.company} · ${MCCORVEY.hq} · ${MCCORVEY.phone} · ${MCCORVEY.email} · ${MCCORVEY.license}</p>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
 }

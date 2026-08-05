@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Every job, every tech, every dollar — one operating picture. QuickBooks and ServiceTitan wired into a single governed system: forecasting, bids, billing and the path to $500M.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Your estimators shouldn't be page-turners. AI reads every bid set — specs, drawings, addenda — extracts the quantities, flags the spec traps, and hands your estimators a reviewed set in 3.5 hours instead of 42. One source of truth: Viewpoint Vista + GTP STRATUS.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<title>YATES Company — Operations Portal · Endurance AI Labs</title>
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<title>McCorvey Sheet Metal — Operations Portal · Endurance AI Labs</title>
 <style>
 /* ============================================================
-   Welcome — institutional landing (Margins structure, Y8S navy)
-   One blue. System sans. Hairlines. Self-contained.
+   Welcome — institutional landing (Margins structure, MSM red/navy)
+   One accent. System sans. Hairlines. Self-contained.
    ============================================================ */
 :root{
   --ink:#14181f; --body:#3a4250; --muted:#737c8a; --hint:#9aa2ad;
-  --blue:#0d5aa7; --blue-soft:rgba(13,90,167,0.08); --blue-line:rgba(13,90,167,0.22);
-  --navy:#083d75; --bg:#fbfcfe; --bg2:#ffffff; --tint:#f3f5f9;
+  --blue:#c8102e; --blue-soft:rgba(200,16,46,0.08); --blue-line:rgba(200,16,46,0.22);
+  --navy:#14283c; --bg:#fbfcfe; --bg2:#ffffff; --tint:#f3f5f9;
   --line:#e7eaf0; --line-soft:#eff1f6;
   --sans:'Inter',ui-sans-serif,system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
 }
@@ -47,13 +47,13 @@ p.lede{font-size:16px;color:var(--muted);max-width:640px}
 .nav-links a:hover{color:var(--ink)}
 .btn{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:10px 20px;border-radius:8px;border:1px solid var(--line);color:var(--ink);background:var(--bg2);transition:all .15s;white-space:nowrap}
 .btn:hover{border-color:var(--blue);color:var(--blue)}
-.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 18px rgba(13,90,167,.25)}
+.btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 18px rgba(200,16,46,.25)}
 .btn.pri:hover{filter:brightness(1.07);color:#fff}
 @media(max-width:820px){.nav-links a:not(.btn){display:none}}
 
 /* hero */
 .hero{position:relative;padding:92px 0 70px;overflow:hidden}
-.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(13,90,167,.10) 1px,transparent 1px);background-size:26px 26px;mask-image:linear-gradient(180deg,transparent,#000 18%,#000 70%,transparent)}
+.hero::before{content:'';position:absolute;inset:0;background-image:radial-gradient(rgba(20,40,60,.10) 1px,transparent 1px);background-size:26px 26px;mask-image:linear-gradient(180deg,transparent,#000 18%,#000 70%,transparent)}
 .hero .wrap{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
 @media(max-width:960px){.hero .wrap{grid-template-columns:1fr}}
 .hero h1{font-size:clamp(38px,5.4vw,64px);font-weight:800;letter-spacing:-.03em;line-height:1.04;color:var(--ink);margin:18px 0 20px}
@@ -99,7 +99,7 @@ a.card:hover .go{opacity:1}
 .card ul li{font-size:12.5px;color:var(--muted);margin-bottom:4px}
 
 /* field photos */
-.shots{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:38px}
+.shots{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:38px}
 @media(max-width:960px){.shots{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.shots{grid-template-columns:1fr}}
 .shot{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--line);background:var(--bg2)}
@@ -138,175 +138,184 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 <body>
 
 <nav class="nav"><div class="wrap">
-  <div class="mark"><img src="/yates/assets/brand/y8s-logo.png" alt="Y8S"><span>YATES COMPANY, LLC<small>Operations Portal · <em>endurance</em> ai · prepared for executive review</small></span></div>
+  <div class="mark"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM"><span>MCCORVEY SHEET METAL WORKS, L.P.<small>Operations Portal · <em>endurance</em> ai · prepared for executive review</small></span></div>
   <div class="nav-links">
-    <a href="#platform">Platform</a><a href="#engine">Engine</a><a href="#governance">Governance</a><a href="#growth">Growth</a>
+    <a href="#bidreview">Bid Review</a><a href="#platform">Platform</a><a href="#fab">Fabrication</a><a href="#access">Access &amp; Brain</a>
     <a class="site-link-el" href="https://www.endurancelabs.ai" target="_blank" rel="noopener" style="font-weight:800;color:var(--muted)"><em style="font-style:normal;color:var(--blue)">endurance</em>labs.ai ↗</a>
-    <a class="btn" href="/yates/?enter=1" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
-    <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request access →</a>
+    <a class="btn" href="/mccorvey/?enter=1" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
+    <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=MSM%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20MCCORVEY%20operations%20portal.">Request access →</a>
   </div>
 </div></nav>
 
 <header class="hero"><div class="wrap">
   <div>
-    <span class="eyebrow">Endurance AI Labs × YATES Company, LLC</span>
-    <h1>Every job.<br>Every tech.<br><em>One operating picture.</em></h1>
-    <p>QuickBooks and ServiceTitan, wired into a single governed system of record — job costing, the monthly forecast workbook, manpower math, bids, AIA billing and the five-year growth model. No exports, no re-keying, no copy-forward spreadsheets. The number the PM sees is the number the CFO signs.</p>
+    <span class="eyebrow">Endurance AI Labs × McCorvey Sheet Metal Works, L.P.</span>
+    <h1>Your estimators<br>shouldn't be<br><em>page-turners.</em></h1>
+    <p>Roughly $3M a year goes to reviewing bid documents — 620 invitations to bid, some 1,420 pages each, about 42 estimator-hours per set. The portal's AI reads every page before anyone opens the set: quantities extracted, addenda tracked, spec traps flagged, an estimator sign-off in ~3.5 hours. Behind it, one source of truth — Viewpoint Vista and GTP STRATUS in a single governed system.</p>
     <div class="hero-ctas">
-      <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request a walkthrough</a>
-      <a class="btn" href="/yates/?enter=1">Enter the portal →</a>
-      <a class="btn" href="#platform">Read the tour ↓</a>
+      <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=MSM%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20MCCORVEY%20operations%20portal.">Request a walkthrough</a>
+      <a class="btn" href="/mccorvey/?enter=1">Enter the portal →</a>
+      <a class="btn" href="#bidreview">Read the tour ↓</a>
     </div>
   </div>
   <div class="hero-art">
-    <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Monthly revenue forecast">
+    <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Estimator review hours per bid set, before and after AI review">
       <defs>
         <linearGradient id="curve" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="#5f9bd8"/><stop offset="1" stop-color="#0d5aa7"/>
+          <stop offset="0" stop-color="#e05a6e"/><stop offset="1" stop-color="#c8102e"/>
         </linearGradient>
         <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="rgba(13,90,167,.16)"/><stop offset="1" stop-color="rgba(13,90,167,0)"/>
+          <stop offset="0" stop-color="rgba(200,16,46,.14)"/><stop offset="1" stop-color="rgba(200,16,46,0)"/>
         </linearGradient>
       </defs>
       <rect x="1" y="1" width="558" height="398" rx="14" fill="#ffffff" stroke="#e7eaf0"/>
       <g fill="#9aa2ad" font-family="Inter,system-ui" font-size="10" font-weight="700" letter-spacing="1.4">
-        <text x="26" y="34">YATES COMPANY · BOOKED + FACTORED REVENUE · 13-MO LIVE</text>
+        <text x="26" y="34">MCCORVEY SHEET METAL · ESTIMATOR HOURS PER BID SET · AI REVIEW</text>
       </g>
       <g stroke="#eff1f6"><line x1="26" y1="90" x2="534" y2="90"/><line x1="26" y1="160" x2="534" y2="160"/><line x1="26" y1="230" x2="534" y2="230"/><line x1="26" y1="300" x2="534" y2="300"/></g>
-      <path d="M26,318 C90,314 140,300 200,282 C270,260 320,238 390,200 C450,168 490,130 534,96 L534,360 L26,360 Z" fill="url(#fill)"/>
-      <path d="M26,318 C90,314 140,300 200,282 C270,260 320,238 390,200 C450,168 490,130 534,96" fill="none" stroke="url(#curve)" stroke-width="3.5" stroke-linecap="round"/>
-      <circle cx="534" cy="96" r="9" fill="#fff" stroke="#0d5aa7" stroke-width="3"/>
+      <path d="M26,96 C90,102 150,116 210,142 C280,172 340,230 410,278 C460,308 500,320 534,324 L534,360 L26,360 Z" fill="url(#fill)"/>
+      <path d="M26,96 C90,102 150,116 210,142 C280,172 340,230 410,278 C460,308 500,320 534,324" fill="none" stroke="url(#curve)" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="534" cy="324" r="9" fill="#fff" stroke="#c8102e" stroke-width="3"/>
       <g font-family="Inter,system-ui" font-size="11" font-weight="800">
-        <rect x="446" y="62" width="76" height="20" rx="4" fill="#083d75"/><text x="484" y="76" fill="#fff" text-anchor="middle">$2.0M/mo</text>
+        <rect x="60" y="76" width="88" height="20" rx="4" fill="#14283c"/><text x="104" y="90" fill="#fff" text-anchor="middle">42 h / set</text>
+        <rect x="440" y="292" width="82" height="20" rx="4" fill="#c8102e"/><text x="481" y="306" fill="#fff" text-anchor="middle">3.5 h / set</text>
       </g>
       <g font-family="Inter,system-ui" font-size="9.5" fill="#9aa2ad">
-        <text x="26" y="382">22 ACTIVE JOBS</text><text x="140" y="382">$25.4M BACKLOG</text><text x="266" y="382">QUICKBOOKS · SERVICETITAN</text><text x="510" y="382" text-anchor="end">LIVE</text>
+        <text x="26" y="382">620 ITB SETS / YR</text><text x="150" y="382">~1,420 PAGES / SET</text><text x="300" y="382">VIEWPOINT VISTA · GTP STRATUS</text><text x="534" y="382" text-anchor="end">LIVE</text>
       </g>
     </svg>
   </div>
 </div></header>
 
 <div class="stats"><div class="wrap">
-  <div class="stat"><div class="v">2011</div><div class="l">Building automation since</div></div>
-  <div class="stat"><div class="v">$25.4M</div><div class="l">Contract backlog (demo book)</div></div>
-  <div class="stat"><div class="v">22</div><div class="l">Active jobs on one screen</div></div>
-  <div class="stat"><div class="v">3×3</div><div class="l">Service lines × engagement types</div></div>
-  <div class="stat"><div class="v">$500M</div><div class="l">Five-year revenue goal, modeled</div></div>
-  <div class="stat"><div class="v"><em>LIVE</em></div><div class="l">From the systems of record</div></div>
+  <div class="stat"><div class="v">1925</div><div class="l">Established · Houston, TX</div></div>
+  <div class="stat"><div class="v">3,000+</div><div class="l">Major commercial projects</div></div>
+  <div class="stat"><div class="v">1,200</div><div class="l">Employees, shop &amp; field</div></div>
+  <div class="stat"><div class="v">620</div><div class="l">ITB sets reviewed per year</div></div>
+  <div class="stat"><div class="v"><em>$2.4M</em></div><div class="l">Run-rate review savings</div></div>
+  <div class="stat"><div class="v">3.5h</div><div class="l">Per bid set — down from 42h</div></div>
 </div></div>
 
 <div class="feeds"><div class="wrap">
   <span class="t">Systems of record &amp; data feeds</span>
-  <b>QuickBooks Desktop <i>financials</i></b><b>ServiceTitan <i>field service</i></b><b>Carrier i-Vu <i>BAS</i></b><b>Innotech / Lynxspring <i>controls</i></b><b>FRED / UST <i>rates</i></b><b>ERCOT <i>grid</i></b>
+  <b>Viewpoint Vista <i>financials &amp; job cost</i></b><b>GTP STRATUS <i>fabrication · spooling · field</i></b><b>ITB plan rooms <i>specs · drawings · addenda</i></b><b>Job register <i>contracts &amp; change orders</i></b><b>AIA G702/G703 <i>billing</i></b>
 </div></div>
 
-<section class="block" id="platform"><div class="wrap">
+<section class="block" id="bidreview"><div class="wrap">
+  <span class="eyebrow">The flagship · AI Bid &amp; Document Review</span>
+  <h2 class="sec">Three million dollars a year<br>goes to reading paper.</h2>
+  <p class="lede">Every set gets machine-read in minutes — the estimator reviews a finished brief instead of turning 1,420 pages. Nothing goes out without a named estimator sign-off, and the arithmetic behind every extracted quantity is one click away.</p>
+  <div class="steps">
+    <div class="step reveal"><div class="k">01</div><h4>Every page, ingested</h4><p>Spec books, drawing sets and every addendum land in the portal the moment they hit the plan room. The AI reads the full set — mechanical specs, gauge schedules, general conditions — before anyone opens a PDF.</p></div>
+    <div class="step reveal"><div class="k">02</div><h4>Quantities &amp; traps, extracted</h4><p>Pounds of rectangular duct, linear feet of spiral, damper and GRD counts — pulled with page-level citations. Spec traps get flagged in red: gauge-schedule swaps buried in Addendum 3, liquidated damages, leakage-testing scope shifts, closed substitution lists.</p></div>
+    <div class="step reveal"><div class="k">03</div><h4>Estimator sign-off</h4><p>A senior estimator confirms or corrects the brief in about 3.5 hours instead of 42 — every override recorded, every set stamped. Across ~620 sets a year, that's roughly $2.4M of review cost back on the table.</p></div>
+  </div>
+  <div class="grid g2">
+    <a class="card reveal" href="/mccorvey/bidreview/"><span class="go">→</span><h3>Addenda that can't hide</h3>
+      <p>Each addendum is diffed against the set it amends. When Addendum 3 quietly replaces the gauge schedule from Division 23, the change shows up as a red-line — with the old spec, the new spec, and the tonnage impact side by side.</p></a>
+    <a class="card reveal" href="/mccorvey/bidreview/"><span class="go">→</span><h3>From brief to bid</h3>
+      <p>The signed-off brief flows straight into the bid builder and the pipeline — extracted quantities become the takeoff baseline, flagged risks become bid qualifications, and the go/no-go call is made on a read set, not a skimmed one.</p></a>
+  </div>
+</div></section>
+
+<section class="block tint" id="platform"><div class="wrap">
   <span class="eyebrow">The platform · A to Z</span>
-  <h2 class="sec">Everything the front office and<br>the field touch, in one system.</h2>
+  <h2 class="sec">Everything the front office and<br>the shop floor touch, in one system.</h2>
   <p class="lede">Each module below is live in the portal behind this page — nothing here is a mock-up. Sign in with a role card and every number, chain and export works.</p>
 
   <div class="grid g3">
-    <a class="card reveal" href="/yates/"><span class="go">→</span><span class="n">01</span><h3>Executive Command</h3>
-      <p>The whole operation on one screen: backlog, earned, billed, margin, a focused KPI dashboard with labor utilization, budget-vs-actual and the five-year goal — per job or rolled up.</p>
-      <ul><li>Utilization split projects / service / overhead, weekly</li><li>Budget-vs-Actual and goal-path panels, live</li><li>QuickBooks &amp; ServiceTitan source chips on every figure</li></ul></a>
+    <a class="card reveal" href="/mccorvey/"><span class="go">→</span><span class="n">01</span><h3>Executive Command</h3>
+      <p>The whole operation on one screen: backlog, earned, billed, margin, shop throughput and the bid-review savings meter — per job or rolled up, with Vista and STRATUS source chips on every figure.</p>
+      <ul><li>Backlog, earned and billed, live from the job register</li><li>Plant 1 / Plant 2 throughput at a glance</li><li>Review-hours saved, tracked against the $2.4M run rate</li></ul></a>
 
-    <a class="card reveal" href="/yates/jobs/"><span class="go">→</span><span class="n">02</span><h3>Job Books</h3>
-      <p>A full dossier per job — budget &amp; forecast-at-completion, G702-style billing, schedule, engineering, submittal packages, live i-Vu-style graphics, photos and client-ready progress reports.</p>
-      <ul><li>Pre-Bid → Turnover → Delivery → Service lifecycle strip</li><li>Change orders priced, PM-signed, owner e-signed</li><li>Printable payment packages with waivers &amp; signatures</li></ul></a>
+    <a class="card reveal" href="/mccorvey/bidreview/"><span class="go">→</span><span class="n">02</span><h3>AI Bid &amp; Document Review</h3>
+      <p>The flagship. Machine-reads every ITB set, extracts duct poundage, spiral footage and damper/GRD counts, tracks addenda and flags spec traps — then routes the brief for estimator sign-off.</p>
+      <ul><li>Page-level citations behind every quantity</li><li>Spec-trap register: LDs, leakage testing, substitutions</li><li>~3.5 h to a signed-off set</li></ul></a>
 
-    <a class="card reveal" href="/yates/workbook/"><span class="go">→</span><span class="n">03</span><h3>Forecast Workbook</h3>
-      <p>The monthly forecast file — same tabs, same layout, same conventions — except every cell recomputes live. The service rows that sit empty in the spreadsheet fill themselves here.</p>
-      <ul><li>Job Est &amp; Act through Manpower, all linked</li><li>Green tie chips show where every number flows</li><li>"Enter yellow only" — and even the yellow computes</li></ul></a>
+    <a class="card reveal" href="/mccorvey/jobs/"><span class="go">→</span><span class="n">03</span><h3>Job Register</h3>
+      <p>A full dossier per project — contract value, budget and forecast-at-completion, BIM coordination status, fab release schedule, field install progress and client-ready reports.</p>
+      <ul><li>BIM Design → Pre-Fab → Installation → Turnkey lifecycle strip</li><li>Change orders priced, PM-signed, owner e-signed</li><li>Printable payment packages with waivers &amp; signatures</li></ul></a>
 
-    <a class="card reveal" href="/yates/budget/"><span class="go">→</span><span class="n">04</span><h3>Monthly Budget vs Actual</h3>
-      <p>Pick any month, see every line against budget with variance flags — and under each variance, exactly which items drove it, dollar for dollar against the month prior.</p></a>
+    <a class="card reveal" href="/mccorvey/pipeline/"><span class="go">→</span><span class="n">04</span><h3>Bid Pipeline &amp; Win/Loss</h3>
+      <p>Every open pursuit with factored value, hit rates by estimator, GC and sector, and win/loss history — the factored dollars flow straight into the manpower and shop-load forecasts.</p></a>
 
-    <a class="card reveal" href="/yates/forecast/"><span class="go">→</span><span class="n">05</span><h3>5-Year Growth Model</h3>
-      <p>Every growth lever is a control: organic, new clients, service attach, churn, margins, overhead scaling and a dynamic acquisition slate — find the mix that reaches $500M, then stress it.</p></a>
+    <a class="card reveal" href="/mccorvey/bids/"><span class="go">→</span><span class="n">05</span><h3>Bid Builder</h3>
+      <p>From signed-off review brief to institutional proposal — alternates, allowances, bond and GL lines, broken out the way GCs expect. Estimating keeps its takeoff; the portal does the assembly.</p></a>
 
-    <a class="card reveal" href="/yates/manpower/"><span class="go">→</span><span class="n">06</span><h3>Manpower &amp; EAC</h3>
-      <p>Booked curves plus factored sales landings become trade-mix hours and heads — the hiring gap in red, months ahead. Per-project EAC indicators, standard-vs-actual rates, hours-per-point.</p></a>
+    <a class="card reveal" href="/mccorvey/service/"><span class="go">→</span><span class="n">06</span><h3>Fab Shop Board &amp; Duct Direct</h3>
+      <p>Live load boards for both plants plus the Duct Direct order book — fabrication sold to other mechanical contractors, with account margins and ship dates next to internal job releases.</p></a>
 
-    <a class="card reveal" href="/yates/bids/"><span class="go">→</span><span class="n">07</span><h3>Bid Builder</h3>
-      <p>A reporting layer over estimating — import the estimate, price the levers, and produce a broken-out institutional proposal with alternates, allowances, bond &amp; GL lines.</p>
-      <ul><li>AI draft from a pasted RFP</li><li>PDF, e-mail, PM e-sign → customer e-sign</li><li>Estimating keeps its spreadsheet</li></ul></a>
+    <a class="card reveal" href="/mccorvey/workbook/"><span class="go">→</span><span class="n">07</span><h3>Forecast Workbook</h3>
+      <p>The monthly forecast file — same tabs, same layout, same conventions — except every cell recomputes live from Vista job cost and STRATUS production data. No copy-forward spreadsheets.</p></a>
 
-    <a class="card reveal" href="/yates/pipeline/"><span class="go">→</span><span class="n">08</span><h3>Bid Pipeline</h3>
-      <p>Every open pursuit with factored value, hit rates by estimator and sector, and win/loss history — the factored dollars flow straight into the manpower forecast.</p></a>
+    <a class="card reveal" href="/mccorvey/budget/"><span class="go">→</span><span class="n">08</span><h3>Monthly Budget vs Actual</h3>
+      <p>Pick any month, see every line against budget with variance flags — and under each variance, exactly which jobs and cost codes drove it, dollar for dollar against the month prior.</p></a>
 
-    <a class="card reveal" href="/yates/service/"><span class="go">→</span><span class="n">09</span><h3>Service Division</h3>
-      <p>Controls, HVAC and plumbing across PMA, on-demand and small projects — agreements, renewals, dispatch and the construction-to-service conversion pipeline that builds recurring revenue.</p></a>
+    <a class="card reveal" href="/mccorvey/forecast/"><span class="go">→</span><span class="n">09</span><h3>Growth Model</h3>
+      <p>Every lever is a control: install volume, plant capacity, Duct Direct growth, win rates, margin and overhead scaling — set the mix, then stress it and track the plan on the executive dashboard.</p></a>
 
-    <a class="card reveal" href="/yates/billing/"><span class="go">→</span><span class="n">10</span><h3>AIA Billing</h3>
+    <a class="card reveal" href="/mccorvey/manpower/"><span class="go">→</span><span class="n">10</span><h3>Manpower &amp; EAC</h3>
+      <p>Booked backlog plus factored pipeline becomes trade-mix hours and heads — detailers, shop crews and field installers, with the hiring gap in red, months ahead. Per-project EAC indicators throughout.</p></a>
+
+    <a class="card reveal" href="/mccorvey/billing/"><span class="go">→</span><span class="n">11</span><h3>AIA Billing</h3>
       <p>G702/G703-format applications with retention math, a close approval chain, and client payment packages — balances, payment history, waivers and certification pages, e-signable.</p></a>
 
-    <a class="card reveal" href="/yates/timesheets/"><span class="go">→</span><span class="n">11</span><h3>Timesheets</h3>
-      <p>Field entry plus ServiceTitan-locked rows, a Construction Manager → Office → Controller approval chain, and a QuickBooks export gate — Excel timesheets retired.</p></a>
-
-    <a class="card reveal" href="/yates/brain/"><span class="go">→</span><span class="n">12</span><h3>The Brain</h3>
-      <p>An AI layer over the entire book of record. Ask it about any job, margin, billing or schedule — it answers from the data, on every page, bottom-right.</p></a>
+    <a class="card reveal" href="/mccorvey/timesheets/"><span class="go">→</span><span class="n">12</span><h3>Timesheets</h3>
+      <p>Shop and field entry with STRATUS-tracked production rows, a Foreman → Office → Controller approval chain, and a Vista export gate — Excel timesheets retired.</p></a>
   </div>
 </div></section>
 
-<section class="block" id="field" style="padding-top:0"><div class="wrap">
-  <span class="eyebrow">From the field</span>
+<section class="block" id="field"><div class="wrap">
+  <span class="eyebrow">From the shop &amp; the field</span>
   <h2 class="sec">The work behind the numbers.</h2>
+  <p class="lede">A century of ductwork — detailed, fabricated and installed by the same company since 1925.</p>
   <div class="shots">
-    <div class="shot reveal"><img src="/yates/assets/photos/b01.jpg" alt="Controls panel build-out" loading="lazy"><span>DDC panel build-out</span></div>
-    <div class="shot reveal"><img src="/yates/assets/photos/b04.jpg" alt="Mechanical room integration" loading="lazy"><span>Mechanical room integration</span></div>
-    <div class="shot reveal"><img src="/yates/assets/photos/b07.jpg" alt="Rooftop unit controls" loading="lazy"><span>Rooftop &amp; air-side controls</span></div>
-    <div class="shot reveal"><img src="/yates/assets/photos/b10.jpg" alt="Commissioning and service" loading="lazy"><span>Commissioning &amp; service</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc01.jpg" alt="Fabricated rectangular ductwork" loading="lazy"><span>Rectangular &amp; welded — Plant 1</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc02.jpg" alt="Spiral duct fabrication" loading="lazy"><span>Spiral &amp; round — Plant 2</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc03.jpg" alt="BIM coordination and detailing" loading="lazy"><span>BIM design &amp; detailing</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc04.jpg" alt="Ductwork installation on site" loading="lazy"><span>HVAC installation</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc05.jpg" alt="Pre-fabricated duct assemblies staged for shipping" loading="lazy"><span>Pre-fab, staged &amp; shipped</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc06.jpg" alt="Completed mechanical installation" loading="lazy"><span>Turnkey delivery</span></div>
   </div>
 </div></section>
 
-<section class="block tint" id="engine"><div class="wrap">
-  <span class="eyebrow">How it works</span>
-  <h2 class="sec">Feed → Engine → Exhibit.</h2>
-  <p class="lede">No downloads, no uploads, no rebuilt workbooks. The number a foreman logs is the number the forecast carries and the number the owner sees.</p>
+<section class="block tint" id="fab"><div class="wrap">
+  <span class="eyebrow">The fabrication division</span>
+  <h2 class="sec">Two plants. One order book.</h2>
+  <p class="lede">Among the largest HVAC sheet metal detailers, fabricators and installers in the country — and the portal treats the shop like the profit center it is.</p>
   <div class="steps">
-    <div class="step reveal"><div class="k">01</div><h4>Live feeds in</h4><p>Financials stream from QuickBooks Desktop; tickets, timesheets and agreements from ServiceTitan. Rates and market context arrive from the public data complex — refreshed on schedule, stamped with provenance.</p></div>
-    <div class="step reveal"><div class="k">02</div><h4>One engine</h4><p>A single calculation layer builds the job forecasts, the monthly workbook, the manpower math and the five-year model. Hover any output and it shows its inputs — the arithmetic is never a black box.</p></div>
-    <div class="step reveal"><div class="k">03</div><h4>Institutional exhibits out</h4><p>Board-ready on screen, client-ready on export: G702 applications, payment packages with waivers, submittal packages, proposals with e-signatures, styled Excel and letterhead print.</p></div>
+    <div class="step reveal"><div class="k">P1</div><h4>Plant 1 — Wallisville Rd</h4><p>Rectangular and welded fabrication. The shop board sequences releases from BIM coordination through cut, weld, insulate and ship — load-levelled against booked install dates and STRATUS spool packages.</p></div>
+    <div class="step reveal"><div class="k">P2</div><h4>Plant 2 — Spiral &amp; round</h4><p>Spiral and round production runs on its own board with machine-level throughput, so a surge in Duct Direct orders never blindsides an internal job — the conflict shows up weeks out, not on the dock.</p></div>
+    <div class="step reveal"><div class="k">DD</div><h4>Duct Direct</h4><p>The fabrication sales arm — duct sold to other mechanical contractors — gets real account management: quotes, order status, ship dates and margin by account, in the same register as everything else.</p></div>
   </div>
 </div></section>
 
-<section class="block" id="governance"><div class="wrap">
-  <span class="eyebrow">Controls</span>
+<section class="block" id="access"><div class="wrap">
+  <span class="eyebrow">Access &amp; the Operating Brain</span>
   <h2 class="sec">Built for sign-off, not just display.</h2>
-  <p class="lede">Institutional control is a workflow, not a watermark. Every financial exhibit carries a maker-checker chain — and the chain chases itself.</p>
+  <p class="lede">Institutional control is a workflow, not a watermark. Every financial exhibit carries a maker-checker chain, every role sees exactly what it should — and an AI assistant rides along on every page.</p>
   <div class="gov">
-    <div class="g reveal"><h5>Sequential approvals</h5><p>Office → Controller → CFO on the forecast cycle and billing close; PM → Owner on change orders and proposals. A stage cannot sign before the one ahead of it.</p></div>
-    <div class="g reveal"><h5>Named, timestamped stamps</h5><p>Every sign-off records who, in what role, at what time — visible on the exhibit itself. Role-based access decides who sees margins at all.</p></div>
-    <div class="g reveal"><h5>E-signatures end to end</h5><p>Proposals and change orders are e-signed in role by the PM, then sent to the customer for a typed counter-signature — fully executed without a printer.</p></div>
-    <div class="g reveal"><h5>Slack-connected nudges</h5><p>Waiting on someone? One click messages them on Slack with the exact step, page and link — and the chain stamps when the reminder went out.</p></div>
-  </div>
-</div></section>
-
-<section class="block tint" id="growth"><div class="wrap">
-  <span class="eyebrow">The path to $500M</span>
-  <h2 class="sec">The forecast you already trust,<br>pointed at the goal.</h2>
-  <div class="grid g2">
-    <a class="card reveal" href="/yates/workbook/"><span class="go">→</span><h3>Your monthly file, alive</h3>
-      <p>The workbook keeps its shape — Job Est &amp; Act, Construction Summary with the 13-month spread, Construction Labor, Manpower — but the spreads fill from size-band curves, the labor percentages compute, and the tabs tie to each other cell for cell.</p></a>
-    <a class="card reveal" href="/yates/forecast/"><span class="go">→</span><h3>Five years, every lever</h3>
-      <p>New clients, new service engagements, acquisitions with timing and size, margin and overhead scaling — dialed with sliders and dropdowns until the plan clears the goal path, then tracked against it on the executive dashboard.</p></a>
+    <div class="g reveal"><h5>Role-based access</h5><p>Estimator, PM, shop foreman, controller, executive — each role card opens its own view. Margins, rates and Duct Direct account terms are visible only to the roles entitled to them.</p></div>
+    <div class="g reveal"><h5>Sequential approvals</h5><p>Office → Controller → CFO on the forecast cycle and billing close; estimator sign-off on every AI-reviewed bid set; PM → Owner on change orders. A stage cannot sign before the one ahead of it.</p></div>
+    <div class="g reveal"><h5>Named, timestamped stamps</h5><p>Every sign-off records who, in what role, at what time — visible on the exhibit itself, from a G702 application to a bid-review brief.</p></div>
+    <div class="g reveal"><h5>The Operating Brain</h5><p>Bottom-right on every page: ask it anything the book of record knows — a job's forecast-at-completion, which addendum changed the gauge schedule, Plant 2's load next month — and it answers from the data, with sources.</p></div>
   </div>
 </div></section>
 
 <section class="close"><div class="wrap">
   <span class="eyebrow">See it live</span>
-  <h2>Your company could<br>run like <em>this.</em></h2>
-  <p>The portal behind this page runs on a full demonstration book — 22 jobs, 14 service agreements, a live forecast workbook and a five-year model. Every module is interactive — chains, e-signatures, exports, the Brain. Open it, break it, ask it questions.</p>
+  <h2>A century of craft.<br>An operating system to <em>match.</em></h2>
+  <p>The portal behind this page runs on a full demonstration book — active jobs, a live bid-review queue, both plant boards, the forecast workbook and the growth model. Every module is interactive — chains, e-signatures, exports, the Brain. Open it, break it, ask it questions.</p>
   <div class="hero-ctas" style="justify-content:center">
-    <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=Y8S%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20YATES%20operations%20portal.">Request access →</a>
-    <a class="btn" href="/yates/?enter=1">Enter the portal →</a>
+    <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=MSM%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20MCCORVEY%20operations%20portal.">Request access →</a>
+    <a class="btn" href="/mccorvey/?enter=1">Enter the portal →</a>
     <a class="btn" href="https://endurancelabs.ai" target="_blank" rel="noopener">Endurance AI Labs ↗</a>
   </div>
 </div></section>
 
 <footer><div class="wrap">
   <span><b style="color:var(--ink)">Endurance AI Labs</b> — bespoke AI operating systems for the built environment.</span>
-  <span>Demonstration portal: all jobs, customers, figures and counterparties are fictional.</span>
+  <span>Demo environment · fictional data · concept build by Endurance AI Labs. All jobs, customers, figures and counterparties are illustrative.</span>
   <span>endurancelabs.ai</span>
 </div></footer>
 

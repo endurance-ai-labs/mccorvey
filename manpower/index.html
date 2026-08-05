@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Manpower &amp; EAC — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Manpower &amp; EAC — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM design, pre-fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 <style>
   .eac-chip { display: inline-block; font-size: 8.5px; font-weight: 800; letter-spacing: 0.06em; padding: 2px 7px; border-radius: 3px; margin: 1px 2px 1px 0; white-space: nowrap; }
   .eac-ok   { background: var(--color-green-bg); color: var(--color-green); }
@@ -29,13 +29,13 @@
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/vendor/chart.umd.min.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Manpower & EAC' });
+McCorveyNav.renderTopbar({ subtitle: 'Manpower & EAC' });
 const me = currentPersona();
 if (!me || me.perms.external) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
@@ -78,7 +78,7 @@ function render() {
   const factored = factoredMonthly();
   const total = booked.map((v, i) => v + factored[i]);
   const tradeRows = ['pm', 'eng', 'tech', 'material', 'install'].map(t => ({
-    t, label: { pm: 'Project Management', eng: 'Engineering', tech: 'Technical Labor', material: 'Material', install: 'Install Labor' }[t],
+    t, label: { pm: 'Project Management', eng: 'VDC / Detailing', tech: 'Shop Labor', material: 'Material', install: 'Field Install Labor' }[t],
     vals: total.map(v => v * MIX[t] / 100),
   }));
   const installHours = total.map(v => v * MIX.install / 100 / ENGINE.blendedRates.install);
@@ -97,15 +97,15 @@ function render() {
       const estGM = (j.contract - m.budget) / j.contract * 100;
       const actGM = m.earned ? (m.earned - m.cost) / m.earned * 100 : 0;
       const points = (j.eng && j.eng.equipment.length) ? j.eng.equipment.reduce((s, e) => s + e.points, 0) : 0;
-      const laborHrs = m.cost * (MIX.install + MIX.tech) / 90 / 88;
-      const hrsPerPt = points ? (laborHrs / points) : 0;
+      const laborHrs = m.cost * (MIX.install + MIX.tech) / 100 / 70;   /* blended field + shop $/hr */
+      const hrsPerPt = points ? (laborHrs / (points / 1000)) : 0;      /* hrs per 1,000 lbs fabricated */
       const chips = [
         m.overUnder < -20000 ? '<span class="eac-chip eac-bad">UNDER-BILLED</span>' : '<span class="eac-chip eac-ok">BILLINGS OK</span>',
         actGM < estGM - 2 ? '<span class="eac-chip eac-warn">GM Δ ' + (actGM - estGM).toFixed(1) + '</span>' : '<span class="eac-chip eac-ok">GM Δ +' + Math.max(0, actGM - estGM).toFixed(1) + '</span>',
         overUnderEAC < 0 ? '<span class="eac-chip eac-bad">OVER EAC</span>' : '<span class="eac-chip eac-ok">UNDER EAC</span>',
         (h % 4 === 0) ? '<span class="eac-chip eac-warn">RATE &gt; STD</span>' : '',
       ].join('');
-      return `<tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}#forecast'">
+      return `<tr class="yclick" onclick="location.href='/mccorvey/jobs/job/?id=${j.id}#forecast'">
         <td><b>${j.id}</b> · ${esc(j.name.split('—')[0].trim())}<div class="ynote">${esc(j.pm)}</div></td>
         <td style="text-align:right">${fmtPct(m.pct, 0)}</td>
         ${showMoney ? `
@@ -120,8 +120,8 @@ function render() {
     }).join('');
 
   const rates = [
-    ['Install Labor', 82, 84.6], ['Technical Labor', 96, 93.2],
-    ['Engineering', 112, 118.4], ['Project Management', 105, 104.1],
+    ['Field Install Labor', 78, 80.4], ['Shop Labor', 62, 60.9],
+    ['VDC / Detailing', 96, 101.3], ['Project Management', 104, 103.2],
   ];
 
   $('#app').innerHTML = `
@@ -129,7 +129,7 @@ function render() {
       <div>
         <div class="demo-eyebrow">OPERATIONS · REVENUE → HOURS → HEADS</div>
         <h1>Manpower &amp; <em>EAC</em></h1>
-        <div class="sub">The monthly forecast engine, automated: booked jobs spread on their curves, factored pipeline landings layered in, trade mix applied, and headcount computed — no typed percentages, no tab-hopping. Answers the monthly review's real question: <b>how many people do we need, and when?</b></div>
+        <div class="sub">The monthly forecast engine: booked ductwork packages spread on their curves, factored pipeline landings layered in, trade mix applied, and headcount computed — no typed percentages, no tab-hopping. Answers the monthly review's real question: <b>how many field installers do we need, and when?</b></div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> ${srcChipText()}</span>
@@ -139,27 +139,27 @@ function render() {
 
     <div class="ykpi-row">
       <div class="ykpi"><div class="l">Next-Month Revenue</div><div class="v">${fmtK(total[0])}</div><div class="s">booked ${fmtK(booked[0])} + factored ${fmtK(factored[0])}</div></div>
-      <div class="ykpi"><div class="l">Peak Install Heads</div><div class="v">${Math.round(peak)}</div><div class="s">${peakMonth} · vs ${headsCurrent} on staff</div></div>
-      <div class="ykpi ${gapNow ? 'red' : 'green'}"><div class="l">Hiring Gap (next 4 mo)</div><div class="v">${gapNow ? '+' + gapNow : '0'}</div><div class="s">${gapNow ? 'installers needed — start recruiting now' : 'current crew covers the plan'}</div></div>
+      <div class="ykpi"><div class="l">Peak Field Installers</div><div class="v">${Math.round(peak)}</div><div class="s">${peakMonth} · vs ${headsCurrent} on staff</div></div>
+      <div class="ykpi ${gapNow ? 'red' : 'green'}"><div class="l">Hiring Gap (next 4 mo)</div><div class="v">${gapNow ? '+' + gapNow : '0'}</div><div class="s">${gapNow ? 'journeymen/apprentices needed — start recruiting now' : 'current crews cover the plan'}</div></div>
       <div class="ykpi amber"><div class="l">Heads Divisor</div><div class="v">${hrsPerHead.toFixed(1)}</div><div class="s">${ENGINE.weeksPerMo} wks × ${ENGINE.hrsPerWk} hrs × ${Math.round(utilization * 100)}% util</div></div>
-      <div class="ykpi"><div class="l">Utilization Today</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">projects · ${UTILIZATION.current.service}% service · ${UTILIZATION.current.overhead}% overhead</div></div>
+      <div class="ykpi"><div class="l">Utilization Today</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">field · ${UTILIZATION.current.service}% shop · ${UTILIZATION.current.overhead}% overhead</div></div>
     </div>
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Install Heads Required — 13 Months</h2><span class="k">bar = required · line = current staff</span></div>
+        <div class="demo-panel-head"><h2>Field Installers Required — 13 Months</h2><span class="k">bar = required · line = current staff</span></div>
         <div class="demo-chart" style="height:260px"><canvas id="ch-heads"></canvas></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Engine Parameters</h2><span class="k">the yellow cells, as controls</span></div>
+        <div class="demo-panel-head"><h2>Engine Parameters</h2><span class="k">the yellow cells, as live inputs</span></div>
         <div class="fc-assumps" style="grid-template-columns:repeat(3,1fr)">
           ${['pm', 'eng', 'tech', 'material', 'install'].map(t => `
-            <div class="fc-assump"><label>${{ pm: 'PM', eng: 'Engineering', tech: 'Technical', material: 'Material', install: 'Install' }[t]} — % of revenue</label>
+            <div class="fc-assump"><label>${{ pm: 'PM', eng: 'VDC/Detailing', tech: 'Shop Labor', material: 'Material', install: 'Field Install' }[t]} — % of revenue</label>
             <div class="ip"><input data-mix="${t}" value="${MIX[t]}" inputmode="decimal"><span class="u">%</span></div></div>`).join('')}
           <div class="fc-assump"><label>Utilization</label><div class="ip"><input data-util value="${Math.round(utilization * 100)}" inputmode="numeric"><span class="u">%</span></div></div>
-          <div class="fc-assump"><label>Current install heads</label><div class="ip"><input data-heads value="${headsCurrent}" inputmode="numeric"></div></div>
+          <div class="fc-assump"><label>Current field installers</label><div class="ip"><input data-heads value="${headsCurrent}" inputmode="numeric"></div></div>
         </div>
-        <div class="ynote" style="margin-top:10px">Spread curves: 12-month band for mid-size jobs, 18-month band for district-scale work — applied automatically by job size instead of typed month-by-month.</div>
+        <div class="ynote" style="margin-top:10px">Spread curves: 12-month band for mid-size packages, 18-month band for tower- and district-scale work — applied automatically by job size instead of typed month-by-month.</div>
         <div class="demo-panel-head" style="margin-top:16px"><h2>Labor Rates — Actual vs Standard</h2></div>
         <table class="demo-tbl tbl-left">
           <thead><tr><th>Trade</th><th style="text-align:right">Standard $/hr</th><th style="text-align:right">Actual $/hr</th><th>Flag</th></tr></thead>
@@ -181,8 +181,8 @@ function render() {
             <tr class="head"><td colspan="14">REVENUE BY TRADE (mix applied)</td></tr>
             ${tradeRows.map(r => `<tr><td>${r.label} (${MIX[r.t]}%)</td>${r.vals.map(v => `<td>${'$' + Math.round(v).toLocaleString()}</td>`).join('')}</tr>`).join('')}
             <tr class="head"><td colspan="14">STAFFING</td></tr>
-            <tr><td>Install hours (@$${ENGINE.blendedRates.install}/hr)</td>${installHours.map(v => `<td>${Math.round(v).toLocaleString()}</td>`).join('')}</tr>
-            <tr class="sub"><td>Install heads required (÷${hrsPerHead.toFixed(1)})</td>${heads.map(v => `<td style="color:${v > headsCurrent ? 'var(--color-red)' : 'var(--color-cloud-whisper)'}">${v.toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Field install hours (@$${ENGINE.blendedRates.install}/hr)</td>${installHours.map(v => `<td>${Math.round(v).toLocaleString()}</td>`).join('')}</tr>
+            <tr class="sub"><td>Field installers required (÷${hrsPerHead.toFixed(1)})</td>${heads.map(v => `<td style="color:${v > headsCurrent ? 'var(--color-red)' : 'var(--color-cloud-whisper)'}">${v.toFixed(1)}</td>`).join('')}</tr>
           </tbody>
         </table>
       </div>
@@ -193,7 +193,7 @@ function render() {
       <div class="demo-panel-head"><h2>Estimate at Completion — Active Jobs</h2><span class="k">performance indicators per job · click through to the FAC detail</span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
       <table class="demo-tbl tbl-left">
-        <thead><tr><th>Job</th><th style="text-align:right">% Comp</th><th style="text-align:right">Budget</th><th style="text-align:right">ITD Cost</th><th style="text-align:right">EAC</th><th style="text-align:right">(Over)/Under</th><th style="text-align:right">GM Est / Act</th><th style="text-align:right">Hrs/Pt</th><th>Indicators</th></tr></thead>
+        <thead><tr><th>Job</th><th style="text-align:right">% Comp</th><th style="text-align:right">Budget</th><th style="text-align:right">ITD Cost</th><th style="text-align:right">EAC</th><th style="text-align:right">(Over)/Under</th><th style="text-align:right">GM Est / Act</th><th style="text-align:right">Hrs / 1k lbs</th><th>Indicators</th></tr></thead>
         <tbody>${eacRows}</tbody>
       </table>
       </div>

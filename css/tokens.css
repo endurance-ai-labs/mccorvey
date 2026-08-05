@@ -6,13 +6,13 @@
 
 :root {
   /* ---- Brand palette — Margins design system ----
-     charcoal rail / cool off-white / Margins blue #2766d6, muted statuses.
+     charcoal rail / cool off-white / Margins blue #c8102e, muted statuses.
      Variable NAMES are kept ("blue" = primary accent) so no page breaks. */
   --color-navy:        #223051;   /* rail-2 — dark-blue table-header band */
   --color-navy-deep:   #151d30;   /* rail — deep navy */
-  --color-blue:        #2766d6;   /* Margins primary blue */
-  --color-blue-light:  #5B8DEF;   /* blue accent text on charcoal */
-  --color-blue-pale:   rgba(39, 102, 214, 0.14);
+  --color-blue:        #c8102e;   /* Margins primary blue */
+  --color-blue-light:  #ef6a76;   /* blue accent text on charcoal */
+  --color-blue-pale:   rgba(200, 16, 46, 0.14);
 
   /* ---- Accent ---- */
   --color-deep-violet: #b1503f;   /* muted clay — secondary accent */
@@ -46,8 +46,8 @@
 
   /* ---- Endurance cosmic accents ---- */
   --color-steel-accent: #2b3552;
-  --gradient-cosmic-a:  radial-gradient(circle closest-corner at 10% 50%, rgba(39,102,214,0.50), rgba(0,0,0,0) 55%);
-  --gradient-cosmic-b:  linear-gradient(90deg, #1b3e63, #245489 50%, #2766d6);
+  --gradient-cosmic-a:  radial-gradient(circle closest-corner at 10% 50%, rgba(200,16,46,0.50), rgba(0,0,0,0) 55%);
+  --gradient-cosmic-b:  linear-gradient(90deg, #1c2c40, #7a1420 50%, #c8102e);
 
   /* ---- Typography — Endurance system ---- */
   --font-sans:  'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -154,9 +154,9 @@
   --color-border-soft: rgba(27,34,48,0.05);
 
   /* Brass darkens on light surfaces for contrast */
-  --color-blue:       #2766d6;
-  --color-blue-light: #1f54b8;
-  --color-blue-pale:  #eaf2fd;
+  --color-blue:       #c8102e;
+  --color-blue-light: #a30d26;
+  --color-blue-pale:  #fbeaec;
 
   /* Shadows — lighter for light bg */
   --shadow-xs: 0 1px 2px rgba(0,0,0,0.05);
@@ -168,7 +168,7 @@
   --topbar-bg:              rgba(247,248,250,0.94);
   --topbar-border:          rgba(27,34,48,0.09);
   --ticker-bg:              #1b1b20;  /* Margins rail strip */
-  --ticker-text:            #5B8DEF;  /* strip stays dark — light blue */
+  --ticker-text:            #ef6a76;  /* strip stays dark — light blue */
   --ticker-label-color:     rgba(255,255,255,0.55);
   --ticker-sep-color:       rgba(255,255,255,0.18);
   --ticker-change-color:    rgba(255,255,255,0.90);
@@ -191,7 +191,7 @@
   --nav-mobile-item-color:  rgba(27,34,48,0.72);
   --nav-mobile-item-border: rgba(27,34,48,0.07);
   --nav-mobile-dd-bg:       rgba(27,34,48,0.04);
-  --nav-mobile-dd-text:     #1f54b8;
+  --nav-mobile-dd-text:     #a30d26;
   --nav-toggle-bg:          rgba(247,248,250,0.96);
   --nav-scrim-bg:           rgba(27,34,48,0.45);
   --marquee-bg:             var(--color-bg);

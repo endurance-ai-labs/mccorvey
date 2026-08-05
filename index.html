@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Y8S — YATES Company Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>MSM — McCorvey Sheet Metal Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork fabrication & installation since 1925. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
@@ -25,17 +25,17 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/vendor/chart.umd.min.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
 /* Root-first landing: new visitors see the marketing page; “Enter the portal” (?enter=1) reaches the sign-in gate. */
-if (!isSignedIn() && !location.search.includes('enter')) location.replace('/yates/welcome/');
-YatesNav.renderTopbar({ subtitle: 'Operations Portal' });
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
+McCorveyNav.renderTopbar({ subtitle: 'Operations Portal' });
 const app = $('#app');
-const internal = YatesMode.isInternal() && can('margins');
+const internal = McCorveyMode.isInternal() && can('margins');
 
 const M = JOBS.map(j => ({ j, m: jobMetrics(j) }));
 const tot = f => M.reduce((s, x) => s + f(x), 0);
@@ -49,7 +49,7 @@ const overUnder = billed - earned;
 if (internal) {
   /* ================= CFO EXECUTIVE DASHBOARD (collective) ================= */
   const rows = M.map(({ j, m }) => `
-    <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}'">
+    <tr class="yclick" onclick="location.href='/mccorvey/jobs/job/?id=${j.id}'">
       <td><b>${j.id}</b></td>
       <td>${esc(j.name)}<div class="ynote">${esc(j.pm)} · ${esc(j.sector)}</div></td>
       <td>${statusPill(j.status)}</td>
@@ -62,38 +62,61 @@ if (internal) {
       <td style="text-align:right;color:${m.overUnder >= 0 ? 'var(--color-green)' : 'var(--color-amber)'}">${fmt$(m.overUnder)}</td>
     </tr>`).join('');
 
-  const watch = M.filter(({ m }) => m.overUnder < -20000 || (m.pct > 5 && m.marginToDate / Math.max(1, m.earned) < 0.08))
-    .map(({ j, m }) => `<li><a href="/yates/jobs/job/?id=${j.id}" style="color:var(--color-blue);font-weight:700">${j.id}</a> — ${
-      m.overUnder < -20000 ? 'under-billed ' + fmt$(Math.abs(m.overUnder)) + '; accelerate the next pay application' : 'margin-to-date thin at ' + fmtPct(m.marginToDate / Math.max(1, m.earned) * 100) }.</li>`).join('')
+  const watch = M.filter(({ m }) => m.overUnder < -250000 || (m.pct > 5 && m.marginToDate / Math.max(1, m.earned) < 0.08))
+    .map(({ j, m }) => `<li><a href="/mccorvey/jobs/job/?id=${j.id}" style="color:var(--color-blue);font-weight:700">${j.id}</a> — ${
+      m.overUnder < -250000 ? 'under-billed ' + fmt$(Math.abs(m.overUnder)) + '; accelerate the next pay application' : 'margin-to-date thin at ' + fmtPct(m.marginToDate / Math.max(1, m.earned) * 100) }.</li>`).join('')
     || '<li>No exceptions — all jobs inside billing and margin guardrails.</li>';
 
+  const worst = M.slice().sort((a, b) => a.m.overUnder - b.m.overUnder)[0];
+  const star = M.filter(x => x.m.pct < 100).slice().sort((a, b) => b.m.marginToDate - a.m.marginToDate)[0];
+  const drSave = window.DOCREVIEW ? DOCREVIEW.ytd.runRateSavings : 0;
+
   app.innerHTML = `
-    <div class="demo-hero">
-      <div>
-        <div class="demo-eyebrow">EXECUTIVE VIEW · ALL JOBS</div>
-        <h1>The whole operation.<br><em>One picture.</em></h1>
-        <div class="sub">One source of truth: QuickBooks financials, ServiceTitan field data, job costing and forecasting — no more exports, imports or spreadsheet rebuilds. Individual job drill-downs one click away.</div>
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM — PERIOD OPERATING REPORT · ALL JOBS</div>
+          <h1 class="cmd-title">Executive Command Center</h1>
+          <div class="cmd-sub">${JOBS.length} jobs in scope — one source of truth: Viewpoint Vista financials, STRATUS fab &amp; field production, job costing and forecasting. No exports, no spreadsheet rebuilds — drill-downs one click away.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+          <span class="demo-live"><span class="dot"></span> LIVE · SYNCED ${fmtDate(todayISO()).toUpperCase()}</span>
+          <div class="cmd-chips">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</div>
+        </div>
       </div>
-      <div class="demo-hero-right">
-        <span class="demo-live"><span class="dot"></span> LIVE · SYNCED ${fmtDate(todayISO()).toUpperCase()}</span>
-        <span class="demo-src">Prepared for <b>${currentPersona().name}, ${currentPersona().title}</b></span>
-        <span style="display:flex;gap:6px">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</span>
+      <div class="cmd-tiles">
+        <div class="cmd-tile"><div class="l">Contract Backlog</div><div class="v">${fmtK(backlog)}</div><span class="d up">▲ +2.4% vs P7</span><div class="s">${JOBS.length} active jobs</div>${sparkSVG('backlog', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><span class="d up">▲ ${fmtPct(earned / backlog * 100)} of backlog</span><div class="s">earned-value across the book</div>${sparkSVG('earned', { up: true })}</div>
+        <div class="cmd-tile ${overUnder >= 0 ? '' : 'hot'}"><div class="l">Billed to Date</div><div class="v">${fmtK(billed)}</div><span class="d ${overUnder >= 0 ? 'up' : 'down'}">${overUnder >= 0 ? '▲ over' : '▼ under'}-billed ${fmtK(Math.abs(overUnder))}</span><div class="s">certified AIA billings</div>${sparkSVG('billed', { up: overUnder >= 0, color: overUnder >= 0 ? '#2f9e6e' : '#c8102e' })}</div>
+        <div class="cmd-tile"><div class="l">Margin to Date</div><div class="v">${fmtK(earned - costTD)}</div><span class="d up">▲ ${fmtPct((earned - costTD) / Math.max(1, earned) * 100)} of earned</span><div class="s">cost to date ${fmtK(costTD)}</div>${sparkSVG('margintd', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><span class="d up">▲ ${fmtPct(projMargin / backlog * 100)} blended</span><div class="s">at completion, current EACs</div>${sparkSVG('projgm', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Doc Review Savings</div><div class="v">${fmtK(drSave)}</div><span class="d up">▲ run-rate vs $3M spend</span><div class="s"><a href="/mccorvey/bidreview/" style="color:#c8102e;font-weight:800;text-decoration:none">AI BID REVIEW →</a></div>${sparkSVG('drsave', { up: true })}</div>
       </div>
     </div>
 
-    <div class="ykpi-row">
-      <div class="ykpi"><div class="l">Active Contract Backlog</div><div class="v">${fmtK(backlog)}</div><div class="s">${JOBS.length} active jobs</div></div>
-      <div class="ykpi"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><div class="s">${fmtPct(earned / backlog * 100)} of backlog</div></div>
-      <div class="ykpi amber"><div class="l">Billed to Date</div><div class="v">${fmtK(billed)}</div><div class="s">${overUnder >= 0 ? 'over' : 'under'}-billed ${fmtK(Math.abs(overUnder))}</div></div>
-      <div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(earned - costTD)}</div><div class="s">cost to date ${fmtK(costTD)}</div></div>
-      <div class="ykpi red"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><div class="s">${fmtPct(projMargin / backlog * 100)} blended</div></div>
+    <div class="scope-bar">
+      <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+      <span class="scope-chip">Sector: <b>all</b></span>
+      <span class="scope-chip">GC: <b>all</b></span>
+      <span class="scope-chip">PM: <b>all</b></span>
+      <span class="scope-chip">Plant: <b>all</b></span>
+      <span class="scope-chip">vs <b>prior period</b></span>
+      <span class="scope-note">${JOBS.length} of ${JOBS.length} jobs in scope · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
+    </div>
+
+    <div class="headline-strip">
+      <div class="headline-cell"><div class="k">Headline</div><div class="t">${fmtK(backlog)} contract backlog</div><div class="n">${fmtK(earned)} earned · ${fmtPct(projMargin / backlog * 100)} blended projected margin</div></div>
+      <div class="headline-cell"><div class="k">Billing Position</div><div class="t">${overUnder >= 0 ? 'Over' : 'Under'}-billed ${fmtK(Math.abs(overUnder))}</div><div class="n">${overUnder >= 0 ? 'billings running ahead of production' : 'accelerate the next pay applications'}</div></div>
+      <div class="headline-cell"><div class="k">Biggest Single Issue</div><div class="t">${esc(worst.j.name.split('—')[0].trim())}</div><div class="n">under-billed ${fmtK(Math.abs(worst.m.overUnder))} against earned work</div></div>
+      <div class="headline-cell"><div class="k">Strongest Job</div><div class="t">${esc(star.j.name.split('—')[0].trim())}</div><div class="n">${fmtK(star.m.marginToDate)} margin to date at ${fmtPct(star.m.pct, 0)} complete</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Executive KPI Dashboard</h2><span class="k">a focused set — each tile is configurable per user</span></div>
       <div class="ykpi-row" style="margin-bottom:14px">
-        <div class="ykpi"><div class="l">Utilization — Projects</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">${UTILIZATION.current.service}% service · ${UTILIZATION.current.overhead}% overhead</div></div>
-        <div class="ykpi green"><div class="l">Service MRR</div><div class="v">${fmtK(SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((s, a) => s + a.monthly, 0))}</div><div class="s">recurring, from the agreement book</div></div>
+        <div class="ykpi"><div class="l">Utilization — Field</div><div class="v">${UTILIZATION.current.projects}%</div><div class="s">${UTILIZATION.current.service}% shop · ${UTILIZATION.current.overhead}% overhead</div></div>
+        <div class="ykpi green"><div class="l">External Fab Revenue</div><div class="v">${fmtK(SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((s, a) => s + a.monthly, 0))}</div><div class="s">/mo — Duct Direct account book</div></div>
         <div class="ykpi"><div class="l">Cash on Hand</div><div class="v">${fmtK(KPI_SNAPSHOT.cashOnHand)}</div><div class="s">AR ${KPI_SNAPSHOT.arDays} days · AP ${KPI_SNAPSHOT.apDays} days</div></div>
         <div class="ykpi amber"><div class="l">Backlog Coverage</div><div class="v">${KPI_SNAPSHOT.backlogMonths} mo</div><div class="s">at current run-rate</div></div>
         <div class="ykpi"><div class="l">Bid Hit Rate</div><div class="v">${(() => { const w = BID_PIPELINE.filter(b => b.status === 'Won').length, l = BID_PIPELINE.filter(b => b.status === 'Lost').length; return Math.round(w / (w + l) * 100); })()}%</div><div class="s">trailing 6 months</div></div>
@@ -103,12 +126,13 @@ if (internal) {
         <div class="demo-aging-row" style="grid-template-columns:70px 1fr 150px">
           <div class="lab">${t.wk}</div>
           <div class="bar" style="display:flex;overflow:hidden">
-            <i style="width:${t.projects}%;background:#083d75"></i><i style="width:${t.service}%;background:#2f9e6e"></i><i style="width:${t.overhead}%;background:#b98a36"></i>
+            <i style="width:${t.projects}%;background:#14283c"></i><i style="width:${t.service}%;background:#2f9e6e"></i><i style="width:${t.overhead}%;background:#b98a36"></i>
           </div>
           <div class="amt" style="font-size:10.5px">${t.projects}% / ${t.service}% / ${t.overhead}%</div>
         </div>`).join('')}
       </div>
-      <div class="ynote" style="margin-top:8px">Labor dollars costed to <b style="color:#4b86d1">projects</b> / <b style="color:#2f9e6e">service tickets</b> / <b style="color:#b98a36">overhead</b> — from timesheets + ServiceTitan, weekly.</div>
+      <div class="ynote" style="margin-top:8px">Labor dollars costed to <b style="color:#cf4a57">field installs</b> / <b style="color:#2f9e6e">fab shop</b> / <b style="color:#b98a36">overhead</b> — from timesheets + STRATUS, weekly.</div>
+      <div class="ynote" style="margin-top:4px">Bid pipeline feeding the hit rate above is pre-screened by <a href="/mccorvey/bidreview/" style="color:var(--color-blue);font-weight:700">AI Bid &amp; Document Review</a> — cuts the ~$3M/yr spent reading bid documents by roughly 80%.</div>
     </div>
 
     <div class="demo-two" style="margin-bottom:22px">
@@ -124,19 +148,19 @@ if (internal) {
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Monthly Budget vs Actual</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('qb')}<a href="/yates/budget/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">FULL REVIEW →</a></span></div>
+        <div class="demo-panel-head"><h2>Monthly Budget vs Actual</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('qb')}<a href="/mccorvey/budget/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">FULL REVIEW →</a></span></div>
         <div class="demo-chart" style="height:230px"><canvas id="ch-bva"></canvas></div>
         <div class="ynote" id="bva-note" style="margin-top:10px"></div>
       </div>
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>5-Year Growth Plan — Goals &amp; Hurdles</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('prop')}<a href="/yates/forecast/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">OPEN MODEL →</a></span></div>
+        <div class="demo-panel-head"><h2>5-Year Growth Plan — Goals &amp; Hurdles</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('prop')}<a href="/mccorvey/forecast/" style="font-size:10px;font-weight:800;letter-spacing:0.08em;color:var(--color-blue);text-decoration:none">OPEN MODEL →</a></span></div>
         <div class="demo-chart" style="height:128px"><canvas id="ch-goal"></canvas></div>
         <div id="goal-hurdles" style="margin-top:10px"></div>
       </div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>All Jobs — CFO Rollup</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">financials from QuickBooks · production from ServiceTitan</span></span></div>
+      <div class="demo-panel-head"><h2>All Jobs — CFO Rollup</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('st')}<span class="k">financials from Vista · production from STRATUS</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>Job #</th><th>Project</th><th>Status</th><th style="text-align:right">Contract</th><th style="text-align:right">Earned</th><th>% Complete</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin to Date</th><th style="text-align:right">Projected Margin</th><th style="text-align:right">Over / (Under) Billed</th></tr></thead>
@@ -156,13 +180,13 @@ if (internal) {
       <div class="demo-panel-head"><h2>Watch Items</h2><span class="k">auto-flagged</span></div>
       <ul style="font-size:13px;line-height:1.9;color:var(--color-cloud-whisper);padding-left:20px">${watch}</ul>
     </div>
-    <div class="demo-note">Y8S Operations Portal — demo environment, fictional data · concept build by Endurance AI Labs</div>`;
+    <div class="demo-note">MSM Operations Portal — demo environment, fictional data · concept build by Endurance AI Labs</div>`;
 
   /* charts — top 10 jobs by contract for readability */
   const TOP = M.slice().sort((a, b) => b.j.contract - a.j.contract).slice(0, 10);
   const labels = TOP.map(x => x.j.id);
   const css = getComputedStyle(document.documentElement);
-  const cBlue = css.getPropertyValue('--color-blue').trim() || '#005c97';
+  const cBlue = css.getPropertyValue('--color-blue').trim() || '#c8102e';
   const cGreen = css.getPropertyValue('--color-green').trim() || '#4f7d5d';
   new Chart($('#ch-jobs'), {
     type: 'bar',
@@ -178,7 +202,7 @@ if (internal) {
   new Chart($('#ch-margin'), {
     type: 'bar',
     data: { labels, datasets: [
-      { label: 'Budget Cost', data: M.map(x => x.m.budget / 1e3), backgroundColor: 'rgba(198,151,17,0.55)', stack: 's' },
+      { label: 'Budget Cost', data: TOP.map(x => x.m.budget / 1e3), backgroundColor: 'rgba(198,151,17,0.55)', stack: 's' },
       { label: 'Projected Margin', data: TOP.map(x => x.m.projMargin / 1e3), backgroundColor: cBlue, stack: 's' },
     ]},
     options: { responsive: true, maintainAspectRatio: false,
@@ -195,7 +219,7 @@ if (internal) {
     for (let i = 0; i < 24; i++) {
       const d = new Date(start); d.setMonth(d.getMonth() + i);
       const surge = (i >= 2 && i <= 4) ? 1.22 : 1;
-      series.push({ lbl: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), rev: 1880000 * season[d.getMonth() % 12] * surge * Math.pow(1.006, i) });
+      series.push({ lbl: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }), rev: 20500000 * season[d.getMonth() % 12] * surge * Math.pow(1.006, i) });
     }
     const last6 = series.slice(18, 24);
     /* budget = same month prior year + 7% planned growth (how the plan is actually set) */
@@ -219,11 +243,11 @@ if (internal) {
 
   /* ---------- 5-Year plan vs goal hurdles (reads the saved scenario) ---------- */
   (function () {
-    const BASE_C = 24.6e6;
+    const BASE_C = 248e6;
     const BASE_S = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
     let P;
-    try { P = JSON.parse(localStorage.getItem('yates-5yr') || 'null'); if (P && P.goal == 300) P.goal = 500; } catch (e) {}
-    P = P || { constrGrowth: 8, svcGrowth: 20, escalation: 3, newClientsY1: 4, newClientsRamp: 2, newClientSize: 850000, newClientRepeat: 70, newSvcPerYear: 12, newSvcMRR: 1800, churn: 6, attachPct: 60, attachMRR: 2400, gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85, goal: 500, acq: [{ year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 }, { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 }] };
+    try { P = JSON.parse(localStorage.getItem('msm-5yr') || 'null'); if (P && P.goal == 300) P.goal = 500; if (P && P.newClientSize < 1e6) P = null; /* pre-rescale scenario — reset */ } catch (e) {}
+    P = P || { constrGrowth: 5, svcGrowth: 15, escalation: 3, newClientsY1: 2, newClientsRamp: 0, newClientSize: 6.5e6, newClientRepeat: 70, newSvcPerYear: 4, newSvcMRR: 85000, churn: 6, attachPct: 40, attachMRR: 60000, gmConstr: 15, gmSvc: 28, ohPct: 8, ohScale: 0.85, goal: 500, acq: [{ year: 2, revenue: 30e6, gm: 16, rec: 20, growth: 10 }, { year: 4, revenue: 60e6, gm: 15, rec: 15, growth: 8 }] };
     const esc2 = P.escalation / 100;
     const R = [1, 2, 3, 4, 5].map(y => {
       const co = BASE_C * Math.pow(1 + P.constrGrowth / 100 + esc2, y);
@@ -235,7 +259,7 @@ if (internal) {
       let ar = 0, arec = 0;
       (P.acq || []).forEach(q => { if (y >= q.year) { const r2 = q.revenue * Math.pow(1 + q.growth / 100, y - q.year); ar += r2; arec += r2 * q.rec / 100; } });
       const total = co + nc + sb + sn + ar;
-      const gp = (co + nc) * P.gmConstr / 100 + (sb + sn) * P.gmSvc / 100 + ar * 0.24;
+      const gp = (co + nc) * P.gmConstr / 100 + (sb + sn) * P.gmSvc / 100 + ar * 0.155;
       const oh = total * (P.ohPct / 100) * Math.pow(P.ohScale, Math.log2(Math.max(1, total / (BASE_C + BASE_S))));
       return { y, total, recurring: sb + sn + arec, ebitda: gp - oh };
     });
@@ -254,8 +278,8 @@ if (internal) {
     const hurdles = [
       ['Year-1 revenue hurdle', fmtK(goalPath[0]), fmtK(R[0].total), R[0].total >= goalPath[0] * 0.95, R[0].total >= goalPath[0] * 0.8],
       ['Year-3 revenue hurdle', fmtK(goalPath[2]), fmtK(R[2].total), R[2].total >= goalPath[2] * 0.95, R[2].total >= goalPath[2] * 0.8],
-      ['Recurring ≥ 15% of revenue by Y3', '15%', fmtPct(R[2].recurring / R[2].total * 100, 1), R[2].recurring / R[2].total >= 0.15, R[2].recurring / R[2].total >= 0.11],
-      ['EBITDA ≥ 10% by Y5', '10%', fmtPct(R[4].ebitda / R[4].total * 100, 1), R[4].ebitda / R[4].total >= 0.10, R[4].ebitda / R[4].total >= 0.07],
+      ['External fab ≥ 10% of revenue by Y3', '10%', fmtPct(R[2].recurring / R[2].total * 100, 1), R[2].recurring / R[2].total >= 0.10, R[2].recurring / R[2].total >= 0.075],
+      ['EBITDA ≥ 8% by Y5', '8%', fmtPct(R[4].ebitda / R[4].total * 100, 1), R[4].ebitda / R[4].total >= 0.08, R[4].ebitda / R[4].total >= 0.06],
       ['Acquisitions closed by Y3', '≥ 2', String((P.acq || []).filter(q => q.year <= 3).length), (P.acq || []).filter(q => q.year <= 3).length >= 2, (P.acq || []).filter(q => q.year <= 3).length >= 1],
     ];
     $('#goal-hurdles').innerHTML = `<table class="demo-tbl tbl-left" style="font-size:11px">
@@ -268,8 +292,8 @@ if (internal) {
 } else {
   /* ================= CLIENT LANDING ================= */
   const cards = M.map(({ j, m }) => `
-    <a class="demo-prop" href="/yates/jobs/job/?id=${j.id}" style="text-decoration:none">
-      <div class="demo-prop-visual has-photo" style="background:${j.photos.length ? `url('${j.photos[Math.min(3, j.photos.length - 1)].src}') center/cover` : 'linear-gradient(135deg,#002944,#005c97)'};height:120px;position:relative">
+    <a class="demo-prop" href="/mccorvey/jobs/job/?id=${j.id}" style="text-decoration:none">
+      <div class="demo-prop-visual has-photo" style="background:${j.photos.length ? `url('${j.photos[Math.min(3, j.photos.length - 1)].src}') center/cover` : 'linear-gradient(135deg,#101c2b,#c8102e)'};height:120px;position:relative">
         <span class="demo-prop-state" style="position:absolute;top:10px;right:10px">${statusPill(j.status)}</span>
       </div>
       <div class="demo-prop-body">
@@ -286,14 +310,14 @@ if (internal) {
   app.innerHTML = `
     <div class="demo-hero">
       <div>
-        <div class="demo-eyebrow">CLIENT PORTAL</div>
-        <h1>Your projects,<br><em>fully transparent.</em></h1>
-        <div class="sub">Live progress, schedules, photo documentation and owner reports for every controls project YATES Company is delivering for you.</div>
+        <div class="demo-eyebrow">GC PARTNER PORTAL</div>
+        <h1>Your McCorvey packages,<br><em>fully transparent.</em></h1>
+        <div class="sub">Your McCorvey packages — live progress, fab &amp; install schedules, photo documentation and reports for every ductwork package McCorvey Sheet Metal is fabricating and installing on your projects.</div>
       </div>
       <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> LIVE</span></div>
     </div>
     <div class="demo-props" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">${cards}</div>
-    <div class="demo-note">YATES Company, LLC · Building Automation Systems Nurtured by Experience — demo environment, fictional data</div>`;
+    <div class="demo-note">McCorvey Sheet Metal Works, L.P. · Leaders in the HVAC Industry — demo environment, fictional data</div>`;
 }
 </script>
 </body>
