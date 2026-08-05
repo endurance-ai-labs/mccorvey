@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>5-Year Growth Model — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>5-Year Growth Model — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork fabrication & installation since 1925. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 <style>
   .drv { border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 14px 16px; background: var(--color-bg-2); }
   .drv h4 { font-size: 10.5px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-blue); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
@@ -37,14 +37,14 @@
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/vendor/chart.umd.min.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: '5-Year Growth Model' });
-if (!YatesMode.isInternal() || !can('margins')) {
+McCorveyNav.renderTopbar({ subtitle: '5-Year Growth Model' });
+if (!McCorveyMode.isInternal() || !can('margins')) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
     <div class="ynote">The 5-year growth model requires full financial access (Owner, CFO or Controller).</div></div>`;
 } else {
@@ -56,47 +56,47 @@ function boot5yr() {
 /* =========================================================
    THE DRIVER MODEL — every assumption is a control.
    Baseline auto-seeds from the live portal (jobs + agreements).
-   State persists in localStorage ('yates-5yr').
+   State persists in localStorage ('msm-5yr').
    ========================================================= */
-const BASE_CONSTR = 24.6e6;    /* current construction run-rate ($/yr, fictional) */
+const BASE_CONSTR = 248e6;     /* current construction/packages run-rate ($/yr, fictional) */
 const BASE_SVC_ARR = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
 
 const DEFAULTS = {
-  constrGrowth: 8, svcGrowth: 20, escalation: 3,
-  newClientsY1: 4, newClientsRamp: 2,
-  newClientSize: 850000, newClientRepeat: 70,
-  newSvcPerYear: 12, newSvcMRR: 1800, churn: 6,
-  attachPct: 60, attachMRR: 2400,
-  gmConstr: 24, gmSvc: 42, ohPct: 13, ohScale: 0.85,
+  constrGrowth: 5, svcGrowth: 15, escalation: 3,
+  newClientsY1: 2, newClientsRamp: 0,
+  newClientSize: 6.5e6, newClientRepeat: 70,
+  newSvcPerYear: 4, newSvcMRR: 85000, churn: 6,
+  attachPct: 40, attachMRR: 60000,
+  gmConstr: 15, gmSvc: 28, ohPct: 8, ohScale: 0.85,
   goal: 500,
   acq: [
-    { year: 2, revenue: 8e6, gm: 26, rec: 35, growth: 12 },
-    { year: 4, revenue: 20e6, gm: 24, rec: 30, growth: 10 },
+    { year: 2, revenue: 30e6, gm: 16, rec: 20, growth: 10 },
+    { year: 4, revenue: 60e6, gm: 15, rec: 15, growth: 8 },
   ],
 };
 const PRESETS = {
-  'Organic Only': Object.assign({}, DEFAULTS, { acq: [], newClientsY1: 3, newClientsRamp: 1, constrGrowth: 10 }),
+  'Organic Only': Object.assign({}, DEFAULTS, { acq: [], newClientsY1: 3, newClientsRamp: 1, constrGrowth: 7 }),
   'Balanced Growth': Object.assign({}, DEFAULTS),
-  'Acquisition-Led': Object.assign({}, DEFAULTS, { constrGrowth: 5, newClientsY1: 2, acq: [
-    { year: 1, revenue: 5e6, gm: 25, rec: 40, growth: 10 },
-    { year: 2, revenue: 12e6, gm: 24, rec: 30, growth: 10 },
-    { year: 3, revenue: 20e6, gm: 23, rec: 30, growth: 8 },
-    { year: 4, revenue: 35e6, gm: 22, rec: 25, growth: 8 },
-    { year: 5, revenue: 50e6, gm: 22, rec: 25, growth: 6 },
+  'Acquisition-Led': Object.assign({}, DEFAULTS, { constrGrowth: 3, newClientsY1: 1, acq: [
+    { year: 1, revenue: 20e6, gm: 16, rec: 25, growth: 10 },
+    { year: 2, revenue: 30e6, gm: 15, rec: 20, growth: 10 },
+    { year: 3, revenue: 45e6, gm: 15, rec: 20, growth: 8 },
+    { year: 4, revenue: 60e6, gm: 14, rec: 15, growth: 8 },
+    { year: 5, revenue: 80e6, gm: 14, rec: 15, growth: 5 },
   ] }),
-  'Founder Aggressive': Object.assign({}, DEFAULTS, { constrGrowth: 12, newClientsY1: 8, newClientsRamp: 4, newClientSize: 1500000, newSvcPerYear: 24, attachPct: 80, acq: [
-    { year: 2, revenue: 12e6, gm: 25, rec: 35, growth: 12 },
-    { year: 3, revenue: 20e6, gm: 24, rec: 30, growth: 10 },
-    { year: 5, revenue: 40e6, gm: 23, rec: 30, growth: 8 },
+  'Founder Aggressive': Object.assign({}, DEFAULTS, { constrGrowth: 8, newClientsY1: 4, newClientsRamp: 2, newClientSize: 12e6, newSvcPerYear: 8, attachPct: 70, acq: [
+    { year: 2, revenue: 45e6, gm: 16, rec: 20, growth: 12 },
+    { year: 3, revenue: 60e6, gm: 15, rec: 20, growth: 10 },
+    { year: 5, revenue: 80e6, gm: 15, rec: 15, growth: 8 },
   ] }),
 };
 
 let A = load();
 function load() {
-  try { const raw = localStorage.getItem('yates-5yr'); if (raw) { const st = JSON.parse(raw); if (st.goal == 300) st.goal = 500; /* goal raised to $500M */ return st; } } catch (e) {}
+  try { const raw = localStorage.getItem('msm-5yr'); if (raw) { const st = JSON.parse(raw); if (st.goal == 300) st.goal = 500; /* goal raised to $500M */ if (st.newClientSize < 1e6) return JSON.parse(JSON.stringify(DEFAULTS)); /* pre-rescale scenario — reset */ return st; } } catch (e) {}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
-function save() { try { localStorage.setItem('yates-5yr', JSON.stringify(A)); } catch (e) {} }
+function save() { try { localStorage.setItem('msm-5yr', JSON.stringify(A)); } catch (e) {} }
 
 /* ---------- the model ---------- */
 function model() {
@@ -133,7 +133,7 @@ function model() {
     const oh = total * (A.ohPct / 100) * scaleFactor;
     const ebitda = gp - oh;
     const recurring = svc + acqRec;
-    const installRev = constr * ENGINE.tradeMix.install / 90;
+    const installRev = constr * ENGINE.tradeMix.install / 97;
     const heads = installRev / 12 / ENGINE.blendedRates.install / ENGINE.hrsPerHead;
     return { y, constrOrganic, newClientRev, clientCount, svc, acqRev, total, gp, oh, ebitda, recurring, heads };
   });
@@ -150,15 +150,15 @@ function render() {
   const acqY5 = A.acq.filter(q => 5 >= q.year).reduce((s, q) => s + q.revenue * Math.pow(1 + q.growth / 100, 5 - q.year), 0);
   const hitYear = R.findIndex(r => r.total >= goal);
   const suggestion = gap > 0
-    ? `Gap to goal: <b>${fmtK(gap)}</b>. Closing options: ~${Math.ceil(gap / 20e6)} more $20M acquisitions, or +${Math.ceil(gap / (A.newClientSize * 3))} new clients per year, or lift service growth to ${Math.min(60, Math.round(A.svcGrowth + gap / Math.max(1, BASE_SVC_ARR) * 1.4))}%.`
+    ? `Gap to goal: <b>${fmtK(gap)}</b>. Closing options: ~${Math.ceil(gap / 60e6)} more $60M acquisitions, or +${Math.ceil(gap / (A.newClientSize * 3))} new GC relationships per year, or lift external fab growth to ${Math.min(60, Math.round(A.svcGrowth + gap / Math.max(1, BASE_SVC_ARR) * 1.4))}%.`
     : `Goal exceeded by <b>${fmtK(-gap)}</b> — this mix reaches $${A.goal}M in year ${hitYear + 1}.`;
 
   const acqRows = A.acq.map((q, i) => `
     <div class="acq-row">
       <select onchange="updAcq(${i},'year',this.value)">${[1, 2, 3, 4, 5].map(y => `<option value="${y}" ${q.year === y ? 'selected' : ''}>Year ${y}</option>`).join('')}</select>
-      <select onchange="updAcq(${i},'revenue',this.value)">${[2e6, 5e6, 8e6, 12e6, 20e6, 35e6, 50e6].map(v => `<option value="${v}" ${q.revenue === v ? 'selected' : ''}>${fmtK(v)} rev</option>`).join('')}</select>
-      <select onchange="updAcq(${i},'gm',this.value)">${[20, 22, 24, 26, 28, 30].map(v => `<option value="${v}" ${q.gm === v ? 'selected' : ''}>${v}% GM</option>`).join('')}</select>
-      <select onchange="updAcq(${i},'rec',this.value)">${[10, 25, 30, 35, 50, 70].map(v => `<option value="${v}" ${q.rec === v ? 'selected' : ''}>${v}% recurring</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'revenue',this.value)">${[10e6, 20e6, 30e6, 45e6, 60e6, 80e6, 100e6].map(v => `<option value="${v}" ${q.revenue === v ? 'selected' : ''}>${fmtK(v)} rev</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'gm',this.value)">${[12, 14, 15, 16, 18, 20].map(v => `<option value="${v}" ${q.gm === v ? 'selected' : ''}>${v}% GM</option>`).join('')}</select>
+      <select onchange="updAcq(${i},'rec',this.value)">${[10, 15, 20, 25, 35, 50].map(v => `<option value="${v}" ${q.rec === v ? 'selected' : ''}>${v}% fab mix</option>`).join('')}</select>
       <select onchange="updAcq(${i},'growth',this.value)">${[0, 5, 8, 10, 12, 15].map(v => `<option value="${v}" ${q.growth === v ? 'selected' : ''}>+${v}%/yr</option>`).join('')}</select>
       <button class="pa-btn" style="cursor:pointer" onclick="delAcq(${i})">✕</button>
     </div>`).join('');
@@ -168,7 +168,7 @@ function render() {
       <div>
         <div class="demo-eyebrow">CFO CONSOLE · PATH TO $${A.goal}M</div>
         <h1>5-Year <em>Growth Model</em></h1>
-        <div class="sub">Every growth lever is a control: organic, new clients, service engagements, construction-to-service attach, and acquisitions — with margins, overhead scaling and headcount computed live. Find the mix that reaches the goal, then stress it. Monthly execution lives in <a href="/yates/budget/" style="color:var(--color-blue)">Budget vs Actual</a>.</div>
+        <div class="sub">Every growth lever is a control: organic package growth, new GC relationships, external fab accounts (Duct Direct), construction-to-fab attach, and acquisitions — with margins, overhead scaling and field headcount computed live. Find the mix that reaches the goal, then stress it. Monthly execution lives in <a href="/mccorvey/budget/" style="color:var(--color-blue)">Budget vs Actual</a>.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> BASELINE ${fmtK(BASE_CONSTR + BASE_SVC_ARR)}/yr</span>
@@ -187,9 +187,9 @@ function render() {
     <div class="ykpi-row">
       <div class="ykpi"><div class="l">Year-5 Revenue</div><div class="v">${fmtK(y5.total)}</div><div class="s">${fmtPct(cagr, 1)} CAGR from ${fmtK(BASE_CONSTR + BASE_SVC_ARR)}</div></div>
       <div class="ykpi green"><div class="l">Year-5 EBITDA</div><div class="v">${fmtK(y5.ebitda)}</div><div class="s">${fmtPct(y5.ebitda / y5.total * 100, 1)} margin</div></div>
-      <div class="ykpi amber"><div class="l">Recurring Revenue Y5</div><div class="v">${fmtK(y5.recurring)}</div><div class="s">${fmtPct(y5.recurring / y5.total * 100, 1)} of revenue</div></div>
+      <div class="ykpi amber"><div class="l">External Fab Revenue Y5</div><div class="v">${fmtK(y5.recurring)}</div><div class="s">${fmtPct(y5.recurring / y5.total * 100, 1)} of revenue</div></div>
       <div class="ykpi"><div class="l">Acquired Revenue Y5</div><div class="v">${fmtK(acqY5)}</div><div class="s">${A.acq.length} acquisition(s) modeled</div></div>
-      <div class="ykpi red"><div class="l">Install Headcount Y5</div><div class="v">${Math.round(y5.heads)}</div><div class="s">vs ${ENGINE.installHeadsCurrent} today — see Manpower &amp; EAC</div></div>
+      <div class="ykpi red"><div class="l">Field Headcount Y5</div><div class="v">${Math.round(y5.heads)}</div><div class="s">vs ${ENGINE.installHeadsCurrent} today — see Manpower &amp; EAC</div></div>
     </div>
 
     <div class="demo-two" style="margin-bottom:22px">
@@ -202,13 +202,13 @@ function render() {
         <table class="demo-tbl tbl-left">
           <thead><tr><th>Category</th>${R.map(r => `<th style="text-align:right">Y${r.y}</th>`).join('')}</tr></thead>
           <tbody>
-            <tr><td>Construction — organic</td>${R.map(r => `<td style="text-align:right">${(r.constrOrganic / 1e6).toFixed(1)}</td>`).join('')}</tr>
-            <tr><td>Construction — new clients (${R[4].clientCount} by Y5)</td>${R.map(r => `<td style="text-align:right">${(r.newClientRev / 1e6).toFixed(1)}</td>`).join('')}</tr>
-            <tr><td>Service (PMA · On-Demand · attach)</td>${R.map(r => `<td style="text-align:right">${(r.svc / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Construction packages — organic</td>${R.map(r => `<td style="text-align:right">${(r.constrOrganic / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>Construction — new GC relationships (${R[4].clientCount} by Y5)</td>${R.map(r => `<td style="text-align:right">${(r.newClientRev / 1e6).toFixed(1)}</td>`).join('')}</tr>
+            <tr><td>External fab (Duct Direct · partner programs · attach)</td>${R.map(r => `<td style="text-align:right">${(r.svc / 1e6).toFixed(1)}</td>`).join('')}</tr>
             <tr><td>Acquisitions</td>${R.map(r => `<td style="text-align:right">${(r.acqRev / 1e6).toFixed(1)}</td>`).join('')}</tr>
             <tr class="demo-noi"><td>Total revenue</td>${R.map(r => `<td style="text-align:right">${(r.total / 1e6).toFixed(1)}</td>`).join('')}</tr>
             <tr><td>EBITDA</td>${R.map(r => `<td style="text-align:right">${(r.ebitda / 1e6).toFixed(1)}</td>`).join('')}</tr>
-            <tr><td>Install heads required</td>${R.map(r => `<td style="text-align:right">${Math.round(r.heads)}</td>`).join('')}</tr>
+            <tr><td>Field install heads required</td>${R.map(r => `<td style="text-align:right">${Math.round(r.heads)}</td>`).join('')}</tr>
           </tbody>
         </table>
       </div>
@@ -220,38 +220,38 @@ function render() {
         <div class="drv">
           <h4>Organic Engine <span class="rule"></span></h4>
           <div class="row"><label>Construction growth /yr</label><input type="range" min="0" max="25" value="${A.constrGrowth}" oninput="upd('constrGrowth',this.value)"><span class="val">${A.constrGrowth}%</span></div>
-          <div class="row"><label>Service growth /yr</label><input type="range" min="0" max="60" value="${A.svcGrowth}" oninput="upd('svcGrowth',this.value)"><span class="val">${A.svcGrowth}%</span></div>
+          <div class="row"><label>External fab growth /yr</label><input type="range" min="0" max="60" value="${A.svcGrowth}" oninput="upd('svcGrowth',this.value)"><span class="val">${A.svcGrowth}%</span></div>
           <div class="row"><label>Price escalation</label><input type="range" min="0" max="8" value="${A.escalation}" oninput="upd('escalation',this.value)"><span class="val">${A.escalation}%</span></div>
         </div>
         <div class="drv">
-          <h4>New Construction Clients <span class="rule"></span></h4>
-          <div class="row"><label>New clients — Year 1</label><input type="range" min="0" max="20" value="${A.newClientsY1}" oninput="upd('newClientsY1',this.value)"><span class="val">${A.newClientsY1}/yr</span></div>
+          <h4>New GC Relationships <span class="rule"></span></h4>
+          <div class="row"><label>New GC clients — Year 1</label><input type="range" min="0" max="20" value="${A.newClientsY1}" oninput="upd('newClientsY1',this.value)"><span class="val">${A.newClientsY1}/yr</span></div>
           <div class="row"><label>Acceleration (+/yr each year)</label><input type="range" min="0" max="6" value="${A.newClientsRamp}" oninput="upd('newClientsRamp',this.value)"><span class="val">+${A.newClientsRamp}</span></div>
-          <div class="row"><label>Avg client size</label>
-            <select onchange="upd('newClientSize',this.value)">${[250000, 500000, 850000, 1500000, 3000000, 6000000].map(v => `<option value="${v}" ${A.newClientSize == v ? 'selected' : ''}>${fmtK(v)}/yr</option>`).join('')}</select></div>
+          <div class="row"><label>Avg annual package volume</label>
+            <select onchange="upd('newClientSize',this.value)">${[2000000, 4000000, 6500000, 10000000, 15000000, 25000000].map(v => `<option value="${v}" ${A.newClientSize == v ? 'selected' : ''}>${fmtK(v)}/yr</option>`).join('')}</select></div>
           <div class="row"><label>Repeat rate (annual)</label><input type="range" min="30" max="95" value="${A.newClientRepeat}" oninput="upd('newClientRepeat',this.value)"><span class="val">${A.newClientRepeat}%</span></div>
         </div>
         <div class="drv">
-          <h4>Service Engine <span class="rule"></span></h4>
-          <div class="row"><label>New service clients /yr</label><input type="range" min="0" max="50" value="${A.newSvcPerYear}" oninput="upd('newSvcPerYear',this.value)"><span class="val">${A.newSvcPerYear}</span></div>
-          <div class="row"><label>Avg new-client MRR</label>
-            <select onchange="upd('newSvcMRR',this.value)">${[600, 1200, 1800, 2800, 4200].map(v => `<option value="${v}" ${A.newSvcMRR == v ? 'selected' : ''}>${fmt$(v)}/mo</option>`).join('')}</select></div>
-          <div class="row"><label>Construction→PMA attach</label><input type="range" min="0" max="100" value="${A.attachPct}" oninput="upd('attachPct',this.value)"><span class="val">${A.attachPct}%</span></div>
+          <h4>External Fab Engine (Duct Direct) <span class="rule"></span></h4>
+          <div class="row"><label>New fab accounts /yr</label><input type="range" min="0" max="50" value="${A.newSvcPerYear}" oninput="upd('newSvcPerYear',this.value)"><span class="val">${A.newSvcPerYear}</span></div>
+          <div class="row"><label>Avg account volume /mo</label>
+            <select onchange="upd('newSvcMRR',this.value)">${[40000, 60000, 85000, 125000, 200000].map(v => `<option value="${v}" ${A.newSvcMRR == v ? 'selected' : ''}>${fmt$(v)}/mo</option>`).join('')}</select></div>
+          <div class="row"><label>GC → Duct Direct attach</label><input type="range" min="0" max="100" value="${A.attachPct}" oninput="upd('attachPct',this.value)"><span class="val">${A.attachPct}%</span></div>
           <div class="row"><label>Churn</label><input type="range" min="0" max="20" value="${A.churn}" oninput="upd('churn',this.value)"><span class="val">${A.churn}%</span></div>
         </div>
         <div class="drv">
           <h4>Margins &amp; Overhead <span class="rule"></span></h4>
-          <div class="row"><label>Construction GM</label><input type="range" min="15" max="35" value="${A.gmConstr}" oninput="upd('gmConstr',this.value)"><span class="val">${A.gmConstr}%</span></div>
-          <div class="row"><label>Service GM</label><input type="range" min="30" max="60" value="${A.gmSvc}" oninput="upd('gmSvc',this.value)"><span class="val">${A.gmSvc}%</span></div>
-          <div class="row"><label>Overhead (today)</label><input type="range" min="8" max="20" value="${A.ohPct}" oninput="upd('ohPct',this.value)"><span class="val">${A.ohPct}%</span></div>
+          <div class="row"><label>Construction GM</label><input type="range" min="10" max="25" value="${A.gmConstr}" oninput="upd('gmConstr',this.value)"><span class="val">${A.gmConstr}%</span></div>
+          <div class="row"><label>External fab GM</label><input type="range" min="18" max="40" value="${A.gmSvc}" oninput="upd('gmSvc',this.value)"><span class="val">${A.gmSvc}%</span></div>
+          <div class="row"><label>Overhead (today)</label><input type="range" min="5" max="15" value="${A.ohPct}" oninput="upd('ohPct',this.value)"><span class="val">${A.ohPct}%</span></div>
           <div class="row"><label>Overhead scale factor</label><input type="range" min="70" max="100" value="${Math.round(A.ohScale * 100)}" oninput="upd('ohScale',this.value/100)"><span class="val">${Math.round(A.ohScale * 100)}%</span></div>
         </div>
         <div class="drv" style="grid-column:span 2">
           <h4>Acquisitions <span class="rule"></span><button class="pa-btn" style="cursor:pointer" onclick="addAcq()">＋ Add acquisition</button></h4>
-          <div class="acq-row" style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)"><span>Close</span><span>Size</span><span>Gross margin</span><span>Recurring mix</span><span>Post-close growth</span><span></span></div>
+          <div class="acq-row" style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)"><span>Close</span><span>Size</span><span>Gross margin</span><span>External fab mix</span><span>Post-close growth</span><span></span></div>
           ${acqRows || '<div class="ynote">No acquisitions modeled — organic only.</div>'}
           <div class="row" style="margin-top:6px"><label>Revenue goal</label>
-            <select onchange="upd('goal',this.value)">${[200, 250, 300, 400, 500, 600, 750].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
+            <select onchange="upd('goal',this.value)">${[300, 400, 500, 600, 750, 1000].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
             <span class="ynote">Build the scenario live with the leadership team — every control persists.</span></div>
         </div>
       </div>
@@ -267,8 +267,8 @@ function drawChart(R, goal) {
       labels: R.map(r => 'Year ' + r.y),
       datasets: [
         { type: 'bar', label: 'Construction — organic', data: R.map(r => r.constrOrganic / 1e6), backgroundColor: 'rgba(8,61,117,0.75)', stack: 's' },
-        { type: 'bar', label: 'New clients', data: R.map(r => r.newClientRev / 1e6), backgroundColor: 'rgba(13,90,167,0.55)', stack: 's' },
-        { type: 'bar', label: 'Service', data: R.map(r => r.svc / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
+        { type: 'bar', label: 'New GC clients', data: R.map(r => r.newClientRev / 1e6), backgroundColor: 'rgba(13,90,167,0.55)', stack: 's' },
+        { type: 'bar', label: 'External fab', data: R.map(r => r.svc / 1e6), backgroundColor: '#2f9e6e', stack: 's' },
         { type: 'bar', label: 'Acquisitions', data: R.map(r => r.acqRev / 1e6), backgroundColor: '#b98a36', stack: 's' },
         { type: 'line', label: 'Goal', data: R.map(() => goal / 1e6), borderColor: 'rgba(200,80,60,0.9)', borderDash: [6, 5], pointRadius: 0 },
       ],
@@ -282,7 +282,7 @@ function drawChart(R, goal) {
 /* ---------- control handlers ---------- */
 window.upd = (k, v) => { A[k] = parseFloat(v); render(); };
 window.updAcq = (i, k, v) => { A.acq[i][k] = parseFloat(v); render(); };
-window.addAcq = () => { A.acq.push({ year: Math.min(5, A.acq.length + 1), revenue: 8e6, gm: 24, rec: 30, growth: 10 }); render(); };
+window.addAcq = () => { A.acq.push({ year: Math.min(5, A.acq.length + 1), revenue: 30e6, gm: 15, rec: 20, growth: 10 }); render(); };
 window.delAcq = (i) => { A.acq.splice(i, 1); render(); };
 window.applyPreset = (name) => { if (PRESETS[name]) { A = JSON.parse(JSON.stringify(PRESETS[name])); render(); } };
 window.resetModel = () => { A = JSON.parse(JSON.stringify(DEFAULTS)); render(); };

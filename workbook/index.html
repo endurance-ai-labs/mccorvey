@@ -3,33 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Forecast Workbook — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Forecast Workbook — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork fabrication & installation since 1925. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Forecast Workbook' });
-if (!YatesMode.isInternal() || !can('fin')) {
+McCorveyNav.renderTopbar({ subtitle: 'Forecast Workbook' });
+if (!McCorveyMode.isInternal() || !can('fin')) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
     <div class="ynote">The forecast workbook requires financial access.</div></div>`;
 } else {
@@ -71,11 +71,11 @@ const MODEL = (() => {
     const p = PROB[b.status];
     const land = Math.max(0, Math.round((new Date(b.due + 'T12:00:00') - now) / (30.44 * 864e5)) + 1);
     if (land < 13) landings.push({ b, land, amt: b.amount * p });
-    const curve = b.amount > 900000 ? ENGINE.curve18 : ENGINE.curve12;
+    const curve = b.amount > 7000000 ? ENGINE.curve18 : ENGINE.curve12;
     curve.forEach((pct, mi) => { const idx = land + mi; if (idx < 13) factored13[idx] += b.amount * p * pct / 100; });
   });
   const svcOf = (t) => SERVICE_AGREEMENTS.filter(a => a.svcType === t && a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0);
-  const svc = { pma: svcOf('PMA'), onDemand: svcOf('On-Demand'), small: svcOf('Small Project'),
+  const svc = { pma: svcOf('Duct Direct'), onDemand: svcOf('Fab Partner'), small: svcOf('OEM Program'),
     pending: SERVICE_AGREEMENTS.filter(a => a.status === 'Proposed').reduce((x, a) => x + a.monthly, 0) };
   const tot = jobs.reduce((x, r) => ({ ec: x.ec + r.m.budget, ac: x.ac + r.m.cost, er: x.er + r.j.contract, ar: x.ar + r.m.earned }), { ec: 0, ac: 0, er: 0, ar: 0 });
   const factoredOpen = BID_PIPELINE.filter(b => PROB[b.status]).reduce((x, b) => x + b.amount * PROB[b.status], 0);
@@ -103,7 +103,7 @@ function tabEstAct() {
   });
   const html = tabEstAct._acc; tabEstAct._acc = '';
   const T = MODEL.tot;
-  return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · synced from QuickBooks — the manual export this replaces took Tips-tab instructions to run</span></div>
+  return `<div class="wb-stamp">Actuals as of <span>7/03/2026 · synced from Viewpoint Vista — the manual export this replaces took Tips-tab instructions to run</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Customer / Job</th><th>Est. Cost</th><th>Act. Cost</th><th>($) Diff.</th><th>Est. Revenue</th><th>Act. Revenue</th><th>($) Diff.</th></tr></thead>
       <tbody>${html}
@@ -120,24 +120,23 @@ function tabTotal() {
   const S = MODEL.svc;
   const row = (label, vals, cls) => `<tr class="${cls || ''}"><td class="l">${label}</td>${vals.map(v => v === null ? '<td>-</td>' : dcell(v)).join('')}</tr>`;
   const booked = mos.map((m, i) => constr[i] + S.onDemand + S.pma + S.small);
-  return `<div class="wb-stamp">Yates Company <span>4 Month Forecast — the service rows fill themselves here</span></div>
+  return `<div class="wb-stamp">McCorvey Company <span>4 Month Forecast — the external-fab rows fill themselves here</span></div>
     <table class="wb" style="max-width:760px">
       <thead><tr><th class="l"></th>${mos.map(m => `<th>${m}</th>`).join('')}</tr></thead>
       <tbody>
         <tr class="wb-group"><td class="l">Booked Jobs</td><td colspan="4"></td></tr>
         ${row('Construction Jobs Forecast', constr)}
-        ${row('On Demand Service', mos.map(() => S.onDemand))}
-        ${row('Active PMA Contracts — Monthly', mos.map(() => S.pma * 0.72))}
-        ${row('Active PMA Contracts — Qtrly', mos.map(() => S.pma * 0.28))}
-        ${row('Small Projects — Service', mos.map(() => S.small))}
+        ${row('External Fab — Duct Direct accounts', mos.map(() => S.pma))}
+        ${row('External Fab — Fab Partner programs', mos.map(() => S.onDemand))}
+        ${row('External Fab — OEM programs', mos.map(() => S.small))}
         ${row('Total Booked Jobs', booked, 'wb-total')}
         <tr><td class="l" colspan="5"></td></tr>
         <tr class="wb-group"><td class="l">Pending Jobs</td><td colspan="4"></td></tr>
         ${row('Construction Sales Forecast (factored, curve-spread)', factored)}
-        ${row('Service Pending Proposals', mos.map(() => S.pending))}
+        ${row('External Fab — Pending Proposals', mos.map(() => S.pending))}
         ${row('Total Booked + Pending', mos.map((m, i) => booked[i] + factored[i] + S.pending), 'wb-total')}
       </tbody></table>
-    <div class="wb-ties">${tie('Construction Jobs Forecast = Construction Summary monthly total, same cells', '#csummary')}${tie('Factored sales rows spread from → Sales Summary', '#sales')}${tie('Service rows = the live agreement book', '/yates/service/')}</div>`;
+    <div class="wb-ties">${tie('Construction Jobs Forecast = Construction Summary monthly total, same cells', '#csummary')}${tie('Factored sales rows spread from → Sales Summary', '#sales')}${tie('External fab rows = the live Duct Direct account book', '/mccorvey/service/')}</div>`;
 }
 
 /* ---------- 3. Sales Summary ---------- */
@@ -153,12 +152,12 @@ function tabSales() {
   const openAll = BID_PIPELINE.filter(b => ['Draft', 'Submitted', 'Pending Award'].includes(b.status));
   return `<div class="wb-stamp">Sales Tracker <span>factored landings feed the Manpower Forecast tab automatically</span></div>
     <table class="wb" style="max-width:860px">
-      <thead><tr><th class="l">Salesperson</th><th>Open Bids</th><th>Open $</th><th>Factored $</th><th>Won (T-6)</th><th>Lost (T-6)</th><th>Hit Rate</th></tr></thead>
+      <thead><tr><th class="l">Estimator</th><th>Open Bids</th><th>Open $</th><th>Factored $</th><th>Won (T-6)</th><th>Lost (T-6)</th><th>Hit Rate</th></tr></thead>
       <tbody>${rows}
         <tr class="wb-total"><td class="l">Total</td><td>${openAll.length}</td>${dcell(openAll.reduce((x, b) => x + b.amount, 0))}${dcell(MODEL.factoredOpen)}<td>${BID_PIPELINE.filter(b => b.status === 'Won').length}</td><td>${BID_PIPELINE.filter(b => b.status === 'Lost').length}</td><td></td></tr>
       </tbody></table>
     <div class="wb-ties">${tie('Factored $ ' + fmtK(MODEL.factoredOpen) + ' lands on the size-band curves in → Manpower Forecast', '#manpower')}${tie('and appears as the Pending rows in → Total Summary', '#total')}</div>
-    <div class="ynote" style="margin-top:10px">Full detail with win/loss notes lives in the <a class="wb-link" href="/yates/pipeline/">Bid Pipeline</a>.</div>`;
+    <div class="ynote" style="margin-top:10px">Full detail with win/loss notes lives in the <a class="wb-link" href="/mccorvey/pipeline/">Bid Pipeline</a>.</div>`;
 }
 
 /* ---------- 4. Construction Summary (their signature sheet) ---------- */
@@ -172,7 +171,7 @@ function tabCSummary() {
       const billPct = j.contract ? m.billedAll / j.contract * 100 : 0;
       return `<tr>
         <td class="l">${esc(j.owner.length > 30 ? j.owner.slice(0, 30) + '…' : j.owner)}</td>
-        <td class="l"><a class="wb-link" href="/yates/jobs/job/?id=${j.id}">${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : j.name)}</a></td>
+        <td class="l"><a class="wb-link" href="/mccorvey/jobs/job/?id=${j.id}">${esc(j.name.split('—')[1] ? j.name.split('—')[1].trim() : j.name)}</a></td>
         <td class="l">${esc(j.pm.split(' ').map(w => w[0]).join(''))}</td>
         ${dcell(m.marginToDate)}
         <td>${estGM.toFixed(1)}%</td>
@@ -211,13 +210,13 @@ function tabCForecast() {
 
 /* ---------- 6. Construction Labor ---------- */
 function tabCLabor() {
-  const CODES = [['100-000-00', 'Engineering', 'eng'], ['100-002-00', 'Technical Labor', 'tech'], ['100-004-00', 'Project Management', 'pm'], ['100-006-00', 'Electrical Install Labor', 'install']];
+  const CODES = [['100-000-00', 'Detailing / BIM Coordination', 'eng'], ['100-002-00', 'Shop Fabrication Labor', 'tech'], ['100-004-00', 'Project Management', 'pm'], ['100-006-00', 'Field Install Labor', 'install']];
   const rows = ACTIVE().filter(({ m }) => m.pct > 0 && m.pct < 100).sort((a, b) => b.j.contract - a.j.contract).slice(0, 5).map(({ j, m }) => {
     const spread = jobMonthlySpread(j, 3);
     const tot = spread.reduce((a, b) => a + b, 0) || 1;
     let te = 0, ta = 0, th = 0, tah = 0;
     const detail = CODES.map(c => {
-      const mixPct = ENGINE.tradeMix[c[2]] / 90;
+      const mixPct = ENGINE.tradeMix[c[2]] / 97;
       const estC = m.budget * mixPct * 0.55;
       const actC = m.cost * mixPct * 0.55;
       const rate = ENGINE.blendedRates[c[2]];
@@ -249,26 +248,26 @@ function tabManpower() {
   const installHrs = total.map(v => v * WMIX.install / 100 / ENGINE.blendedRates.install);
   const heads = installHrs.map(h => h / ENGINE.hrsPerHead);
   const mixRow = (k, label) => `<tr><td class="l">${label}</td><td class="wb-yellow"><input class="wb-in" data-wmix="${k}" value="${WMIX[k]}">%</td>${total.map(v => dcell(v * WMIX[k] / 100).replace('<td>', '<td>')).join('')}</tr>`;
-  return `<div class="wb-stamp">Enter Yellow Only <span>— every other cell computes. Mix currently ${mixSum}% of revenue (remainder = mileage & incentive)</span></div>
+  return `<div class="wb-stamp">Enter Yellow Only <span>— every other cell computes. Mix currently ${mixSum}% of revenue (remainder = freight & other)</span></div>
     <div class="wb-scroll"><table class="wb">
       <thead><tr><th class="l">Line</th><th>Mix %</th>${M13.map(m => `<th>${m}</th>`).join('')}</tr></thead>
       <tbody>
         <tr class="wb-total"><td class="l">TOTAL REV (booked + factored)</td><td></td>${total.map(v => dcell(v)).join('')}</tr>
         <tr><td class="l wb-indent">Booked jobs (curve spreads)</td><td></td>${booked.map(v => dcell(v)).join('')}</tr>
         <tr><td class="l wb-indent">Rev from factored sales</td><td></td>${factored.map(v => dcell(v)).join('')}</tr>
-        <tr class="wb-redband"><td class="l" colspan="2">$350,000 – $900,000 → 12-MO CURVE · &gt;$900,000 → 18-MO CURVE</td><td colspan="13">factored landings: ${landings.slice(0, 4).map(l => l.b.id + ' ' + M13[Math.min(12, l.land)] + ' (' + fmtK(l.amt) + ')').join(' · ') || 'none'}</td></tr>
+        <tr class="wb-redband"><td class="l" colspan="2">$2M – $7M PACKAGES → 12-MO CURVE · &gt;$7M → 18-MO CURVE</td><td colspan="13">factored landings: ${landings.slice(0, 4).map(l => l.b.id + ' ' + M13[Math.min(12, l.land)] + ' (' + fmtK(l.amt) + ')').join(' · ') || 'none'}</td></tr>
         <tr class="wb-group"><td class="l" colspan="15">Revenue by Trade</td></tr>
         ${mixRow('pm', 'PM')}
-        ${mixRow('eng', 'Eng')}
-        ${mixRow('tech', 'Tech')}
+        ${mixRow('eng', 'Detailing / VDC')}
+        ${mixRow('tech', 'Shop Labor')}
         ${mixRow('material', 'Material')}
-        ${mixRow('install', 'Install')}
+        ${mixRow('install', 'Field Install')}
         <tr class="wb-group"><td class="l" colspan="15">Staffing</td></tr>
-        <tr><td class="l">Manpower Hrs (Install)</td><td></td>${installHrs.map(v => `<td>${$$$(v)}</td>`).join('')}</tr>
-        <tr class="wb-total"><td class="l"># Heads Install (${ENGINE.weeksPerMo}×${ENGINE.hrsPerWk}×${ENGINE.utilization}=${ENGINE.hrsPerHead.toFixed(1)})</td><td></td>${heads.map(v => `<td class="${v > ENGINE.installHeadsCurrent ? 'wb-neg' : ''}">${v.toFixed(1)}</td>`).join('')}</tr>
+        <tr><td class="l">Manpower Hrs (Field Install)</td><td></td>${installHrs.map(v => `<td>${$$$(v)}</td>`).join('')}</tr>
+        <tr class="wb-total"><td class="l"># Field Installers (${ENGINE.weeksPerMo}×${ENGINE.hrsPerWk}×${ENGINE.utilization}=${ENGINE.hrsPerHead.toFixed(1)})</td><td></td>${heads.map(v => `<td class="${v > ENGINE.installHeadsCurrent ? 'wb-neg' : ''}">${v.toFixed(1)}</td>`).join('')}</tr>
       </tbody></table></div>
     <div class="wb-ties">${tie('Booked-jobs row = Construction Summary monthly total, cell for cell', '#csummary')}${tie('Factored-sales row = Sales Summary factored $, curve-spread', '#sales')}</div>
-    <div class="ynote" style="margin-top:10px">Red months exceed the current crew of ${ENGINE.installHeadsCurrent} — the hiring plan lives in <a class="wb-link" href="/yates/manpower/">Manpower &amp; EAC</a>.</div>`;
+    <div class="ynote" style="margin-top:10px">Red months exceed the current crew of ${ENGINE.installHeadsCurrent} — the hiring plan lives in <a class="wb-link" href="/mccorvey/manpower/">Manpower &amp; EAC</a>.</div>`;
 }
 
 /* ---------- shell ---------- */
@@ -279,7 +278,7 @@ function render() {
       <div>
         <div class="demo-eyebrow">FINANCIAL · THE MONTHLY WORKBOOK, ALIVE</div>
         <h1>Forecast <em>Workbook</em></h1>
-        <div class="sub">The same tabs, the same layout, the same conventions as the monthly forecast file — except nothing is exported, copied forward, or typed by hand. Every cell recomputes from QuickBooks, ServiceTitan and the job register.</div>
+        <div class="sub">The same tabs, the same layout, the same conventions as the monthly forecast file — except nothing is exported, copied forward, or typed by hand. Every cell recomputes from Viewpoint Vista, GTP STRATUS and the job register.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> ACTUALS AS OF 7/03/2026</span>

@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Y8S Brain — YATES Company</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>MSM Brain — McCorvey Sheet Metal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM detailing, fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 <style>
   .brain-wrap { max-width: 900px; margin: 0 auto; padding: 8px 0 32px; }
   .brain-sub { color: var(--color-text-muted); font-size: 12.5px; letter-spacing: 0.3px; margin: 6px 0 18px; }
@@ -35,7 +35,7 @@
        border: 1px solid var(--color-border); color: var(--color-cloud-whisper); font: inherit; font-size: 15px; }
   #q:focus { outline: none; border-color: var(--color-blue); }
   #send { padding: 0 24px; border-radius: 13px; border: none; cursor: pointer; font-weight: 700; color: #fff;
-          background: linear-gradient(135deg, #005c97, #00385c); }
+          background: linear-gradient(135deg, #c8102e, #14283c); }
   .brain-disc { font-size: 10.5px; color: var(--color-amber); margin-bottom: 14px; }
 </style>
 </head>
@@ -45,14 +45,15 @@
   <div class="demo-wrap">
     <div class="brain-wrap">
       <div class="demo-eyebrow" style="margin-top:30px">OPERATING INTELLIGENCE</div>
-      <h1 class="page-hero-title" style="font-weight:800;letter-spacing:-0.02em;font-size:clamp(30px,3.6vw,46px);color:var(--color-cloud-whisper);margin:8px 0 0">Yates <span style="color:var(--color-blue)">Brain</span></h1>
-      <div class="brain-sub">Ask anything about Y8S jobs, bids, billing and schedules — synthesized live from the operating data.</div>
+      <h1 class="page-hero-title" style="font-weight:800;letter-spacing:-0.02em;font-size:clamp(30px,3.6vw,46px);color:var(--color-cloud-whisper);margin:8px 0 0">McCorvey <span style="color:var(--color-blue)">Brain</span></h1>
+      <div class="brain-sub">The Brain watches every job, bid set, pay app and plant release across MSM — ask anything and it answers live from the operating data. It also reads every incoming bid set on the <a href="/mccorvey/bidreview/" style="color:var(--color-blue);font-weight:700;text-decoration:none">AI Bid &amp; Document Review</a> page.</div>
       <div class="brain-disc">⚠ Demo assistant — responses are illustrative and entirely fictional.</div>
 
       <div class="brain-examples" id="examples">
+        <span class="ex">What did document review catch this week?</span>
         <span class="ex">Which jobs need attention this week?</span>
-        <span class="ex">Status of the Central Texas ISD job?</span>
-        <span class="ex">How much retention are owners holding?</span>
+        <span class="ex">Status of the Convention Center job?</span>
+        <span class="ex">How much retention are GCs holding?</span>
         <span class="ex">Where is margin trending across the book?</span>
         <span class="ex">How is billing tracking against production?</span>
       </div>
@@ -67,12 +68,12 @@
   </div>
 </main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js"></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js"></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Brain' });
+McCorveyNav.renderTopbar({ subtitle: 'Brain' });
 (function () {
   const thread = document.getElementById('thread');
   const input = document.getElementById('q');
@@ -95,7 +96,7 @@ YatesNav.renderTopbar({ subtitle: 'Brain' });
       try {
         const fabBody = document.getElementById('bw-body');
         // call the engine directly through the exposed hook
-        out.innerHTML = window.__yatesBrainAnswer ? window.__yatesBrainAnswer(text) : fallback(text);
+        out.innerHTML = window.__mccorveyBrainAnswer ? window.__mccorveyBrainAnswer(text) : fallback(text);
       } catch (e) { out.innerHTML = fallback(text); }
     }, 500 + Math.random() * 400);
   }

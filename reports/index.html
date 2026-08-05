@@ -3,37 +3,37 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Progress Reports — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Progress Reports — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM detailing, fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Progress Reports' });
-let jobId = qs('id') || 'CTX-2410';
+McCorveyNav.renderTopbar({ subtitle: 'Progress Reports' });
+let jobId = qs('id') || 'GCM-2410';
 
 
 /* ---------- e-signature engine (localStorage, role-matched) ---------- */
-function sigState(key) { try { return JSON.parse(localStorage.getItem('yates-sign:' + key) || 'null'); } catch (e) { return null; } }
+function sigState(key) { try { return JSON.parse(localStorage.getItem('msm-sign:' + key) || 'null'); } catch (e) { return null; } }
 function signDoc(key, roles) {
   roles = roles.split('|');
   const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
@@ -52,10 +52,10 @@ function signDoc(key, roles) {
     }
     rec = { name: me.name, title: me.title, at: now };
   }
-  try { localStorage.setItem('yates-sign:' + key, JSON.stringify(rec)); } catch (e) {}
+  try { localStorage.setItem('msm-sign:' + key, JSON.stringify(rec)); } catch (e) {}
   render();
 }
-function clearSig(key) { try { localStorage.removeItem('yates-sign:' + key); } catch (e) {} render(); }
+function clearSig(key) { try { localStorage.removeItem('msm-sign:' + key); } catch (e) {} render(); }
 function sigBlock(key, cap, roles) {
   const s = sigState(key);
   if (s) return `<div class="sig signed"><span class="sig-script">${esc(s.name)}</span><div class="sig-meta">Digitally signed — ${esc(s.title)} · ${esc(s.at)} <a href="#" class="no-print" style="color:#97a0ad;font-weight:400" onclick="event.preventDefault();clearSig('${key}')" title="Clear signature (demo)">↺</a></div><div class="sig-cap">${cap}</div></div>`;
@@ -114,7 +114,7 @@ function render() {
     </div>
 
     <div class="demo-panel no-print" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from ServiceTitan</span></span></div>
+      <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from STRATUS</span></span></div>
       <table class="demo-tbl tbl-left">
         <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
         <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
@@ -124,7 +124,7 @@ function render() {
     <!-- ============ owner progress report document ============ -->
     <div class="ydoc">
       <div class="ydoc-head">
-        <div><img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="y8s-logo"><div class="sub" style="margin-top:8px">YATES Company, LLC · Building Automation &amp; Energy Solutions</div></div>
+        <div><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo"><div class="sub" style="margin-top:8px">McCorvey Sheet Metal Works, L.P. · HVAC Sheet Metal — BIM Detailing, Fabrication &amp; Installation</div></div>
         <div class="right"><b>Owner Progress Report</b><br>Report date: ${fmtDate(todayISO())}<br>Job #: ${j.id}<br>Prepared by: ${esc(j.pm)}, Project Manager</div>
       </div>
 
@@ -187,7 +187,7 @@ function render() {
 
 <!-- ============ page: confirmation of payments received ============ -->
       <h3 class="sect page-break">Confirmation of Payments Received</h3>
-      <p>${YATES.company} confirms receipt of the following payments from <b>${esc(j.owner)}</b> for the project referenced above. Each payment has been applied against the corresponding application for payment, and all amounts received have been or will be used to promptly pay in full all laborers, subcontractors and suppliers for work performed on this project.</p>
+      <p>${MCCORVEY.company} confirms receipt of the following payments from <b>${esc(j.owner)}</b> for the project referenced above. Each payment has been applied against the corresponding application for payment, and all amounts received have been or will be used to promptly pay in full all laborers, subcontractors and suppliers for work performed on this project.</p>
       <table>
         <thead><tr><th>App #</th><th>Payment Reference</th><th>Date Applied</th><th class="num">Amount Received</th></tr></thead>
         <tbody>${paidApps.map((p, i) => `<tr><td><b>${esc(p.num)}</b></td><td>${payRef(p, i)}</td><td>${fmtDate(p.period)}</td><td class="num">${fmt$2(p.certified)}</td></tr>`).join('') || '<tr><td colspan="4">No payments received to date.</td></tr>'}</tbody>
@@ -195,17 +195,17 @@ function render() {
       </table>
       ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(currentDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
       <div class="sig-row">
-        ${sigBlock(j.id + ':conf:office', 'Claudia Chavez — Office Manager, Billing &amp; Payroll, ' + YATES.company, 'office')}
-        ${sigBlock(j.id + ':conf:cfo', 'Lisa Jilek — Chief Financial Officer, ' + YATES.company, 'cfo')}
+        ${sigBlock(j.id + ':conf:office', 'Gloria Simmons — Office Manager, Billing &amp; Payroll, ' + MCCORVEY.company, 'office')}
+        ${sigBlock(j.id + ':conf:cfo', 'Elena Vasquez — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
       </div>
 
 <!-- ============ page: conditional waiver & release ============ -->
       <h3 class="sect page-break">Conditional Waiver and Release on ${waiverFinal ? 'Final' : 'Progress'} Payment</h3>
-      <p>On receipt by the signer of this document of a check from <b>${esc(j.owner)}</b> (maker of check) in the sum of <b>${fmt$2(waiverAmount)}</b> payable to <b>${YATES.company}</b> (payee), and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document becomes effective to release any mechanic's lien right, any right arising from a payment bond that complies with a state or federal statute, any common-law payment bond right, any claim for payment, and any rights under any similar ordinance, rule, or statute related to claim or payment rights for persons in the signer's position, that the signer has on the property of <b>${esc(j.owner)}</b> located at <b>${esc(j.address)}</b>, to the following extent: <b>building automation and controls work per the contract dated ${fmtDate(j.contractDate)}</b>.</p>
+      <p>On receipt by the signer of this document of a check from <b>${esc(j.owner)}</b> (maker of check) in the sum of <b>${fmt$2(waiverAmount)}</b> payable to <b>${MCCORVEY.company}</b> (payee), and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document becomes effective to release any mechanic's lien right, any right arising from a payment bond that complies with a state or federal statute, any common-law payment bond right, any claim for payment, and any rights under any similar ordinance, rule, or statute related to claim or payment rights for persons in the signer's position, that the signer has on the property of <b>${esc(j.owner)}</b> located at <b>${esc(j.address)}</b>, to the following extent: <b>HVAC sheet metal and ductwork per the contract dated ${fmtDate(j.contractDate)}</b>.</p>
       <p>This release covers a ${waiverFinal ? 'final' : 'progress'} payment for all labor, services, equipment, or materials furnished to the property${waiverFinal ? '' : ', except for unpaid retention, pending modifications and changes, or other items furnished'}. Before any recipient of this document relies on it, the recipient should verify evidence of payment to the signer.</p>
       <p>The signer warrants that the signer has already paid, or will use the funds received from this payment to promptly pay in full, all of the signer's laborers, subcontractors, materialmen and suppliers for all work, materials, equipment, or services provided for or to the above-referenced project.</p>
       <div class="sig-row">
-        <div class="sig">${YATES.company} ( Company Name )</div>
+        <div class="sig">${MCCORVEY.company} ( Company Name )</div>
         ${sigBlock(j.id + ':waiver:co', 'By ( Signature — Owner, CFO or Controller )', 'owner|cfo|controller')}
       </div>
       <div class="sig-row" style="margin-top:30px">
@@ -217,16 +217,16 @@ function render() {
       <h3 class="sect page-break">Certification &amp; Owner Acceptance</h3>
       <p><b>Contractor's certification.</b> The undersigned certifies that the work described in this report has been completed in accordance with the contract documents, that quantities, percentages and amounts reported are accurate to the best of their knowledge, that all amounts have been paid by the contractor for work for which previous certificates for payment were issued and payments received, and that the current payment shown herein is now due.</p>
       <div class="sig-row">
-        ${sigBlock(j.id + ':cert:pm', esc(j.pm) + ' — Project Manager, ' + YATES.company, 'conmgr|eng|svcmgr')}
-        ${sigBlock(j.id + ':cert:cfo', 'Lisa Jilek — Chief Financial Officer, ' + YATES.company, 'cfo')}
+        ${sigBlock(j.id + ':cert:pm', esc(j.pm) + ' — Project Manager, ' + MCCORVEY.company, 'conmgr|eng|svcmgr')}
+        ${sigBlock(j.id + ':cert:cfo', 'Elena Vasquez — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
       </div>
-      <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${YATES.email}</b>.</p>
+      <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${MCCORVEY.email}</b>.</p>
       <div class="sig-row">
         ${sigBlock(j.id + ':accept:owner', esc(j.owner) + ' — Owner / Authorized Agent', 'ownerext')}
         <div class="sig">${(sigState(j.id + ':accept:owner') || {}).at || 'Date'}</div>
       </div>
       <p class="ynote no-print" style="margin-top:14px">Electronic signatures are recorded with name, title and timestamp (demo: stored locally). The printed package preserves executed signatures; unsigned lines print blank for wet-ink execution.</p>
-      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${YATES.company} · ${YATES.hq} · ${YATES.phone} · ${YATES.email} · ${YATES.license}</p>
+      <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${MCCORVEY.company} · ${MCCORVEY.hq} · ${MCCORVEY.phone} · ${MCCORVEY.email} · ${MCCORVEY.license}</p>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
 

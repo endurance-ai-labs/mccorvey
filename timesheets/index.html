@@ -3,21 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Timesheets — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>Timesheets — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM design, pre-fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 <style>
   .ts-grid input { width: 52px; text-align: center; }
   .ts-src { font-size: 8.5px; font-weight: 800; letter-spacing: 0.08em; padding: 1px 6px; border-radius: 3px; }
@@ -29,13 +29,13 @@
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'Timesheets' });
-if (!YatesMode.isInternal() || !can('fin')) {
+McCorveyNav.renderTopbar({ subtitle: 'Timesheets' });
+if (!McCorveyMode.isInternal() || !can('fin')) {
   if (isSignedIn()) $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Restricted module</h2></div>
     <div class="ynote">Timesheets & payroll require financial access (Owner, CFO, Controller or Office Manager). Your current user does not have rights to this module.</div></div>`;
 } else {
@@ -43,20 +43,20 @@ if (!YatesMode.isInternal() || !can('fin')) {
 }
 
 function buildTimesheets() {
-/* Week of Jul 20–26, 2026 — construction crews entered in the field app
-   (replacing the old Excel sheets); service techs flow in from ServiceTitan. */
+/* Week of Jul 20–26, 2026 — field install crews entered in the field app
+   (replacing the old Excel sheets); shop fabricators flow in from STRATUS. */
 const DAYS = ['Mon 7/20', 'Tue 7/21', 'Wed 7/22', 'Thu 7/23', 'Fri 7/24', 'Sat 7/25'];
 const CREW = [
-  { name: 'R. Trejo',        role: 'Field Lead',        job: 'HMP-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 4] },
-  { name: 'D. Vasquez',      role: 'Controls Tech II',  job: 'HMP-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
-  { name: 'K. Nguyen',       role: 'Controls Tech I',   job: 'HMP-2502', src: 'fld', hrs: [8, 8, 6, 8, 8, 0] },
-  { name: 'C. Delgado',      role: 'Field Lead',        job: 'HPL-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
-  { name: 'J. Barnes',       role: 'Controls Tech II',  job: 'HPL-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
-  { name: 'A. Osei',         role: 'Apprentice',        job: 'HPL-2506', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
-  { name: 'S. Whitmore',     role: 'Field Lead',        job: 'RCI-2507', src: 'fld', hrs: [8, 6, 8, 8, 8, 0] },
-  { name: 'M. Ibarra',       role: 'Service Tech III',  job: 'SERVICE',  src: 'st',  hrs: [8, 9, 8, 10, 8, 0] },
-  { name: 'T. Coleman',      role: 'Service Tech II',   job: 'SERVICE',  src: 'st',  hrs: [8, 8, 8, 8, 9, 4] },
-  { name: 'L. Fuentes',      role: 'Service Tech I',    job: 'SERVICE',  src: 'st',  hrs: [8, 8, 8, 8, 8, 0] },
+  { name: 'R. Trejo',        role: 'Foreman',              code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 4] },
+  { name: 'D. Vasquez',      role: 'Journeyman Installer', code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
+  { name: 'K. Nguyen',       role: 'Apprentice',           code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 6, 8, 8, 0] },
+  { name: 'C. Delgado',      role: 'Foreman',              code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
+  { name: 'J. Barnes',       role: 'Journeyman Installer', code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
+  { name: 'A. Osei',         role: 'Apprentice',           code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
+  { name: 'S. Whitmore',     role: 'Detailer',             code: '23-050 · BIM / Detailing', job: 'ADC-2507', src: 'fld', hrs: [8, 6, 8, 8, 8, 0] },
+  { name: 'M. Ibarra',       role: 'Welder',               code: '23-200 · Duct Fab',       job: 'SHOP',     src: 'st',  hrs: [8, 9, 8, 10, 8, 0] },
+  { name: 'T. Coleman',      role: 'Plasma Operator',      code: '23-200 · Duct Fab',       job: 'SHOP',     src: 'st',  hrs: [8, 8, 8, 8, 9, 4] },
+  { name: 'L. Fuentes',      role: 'Welder',               code: '23-200 · Duct Fab',       job: 'SHOP',     src: 'st',  hrs: [8, 8, 8, 8, 8, 0] },
 ];
 
 function render() {
@@ -65,9 +65,9 @@ function render() {
     const ot = Math.max(0, tot - 40);
     return `
       <tr>
-        <td><b>${esc(c.name)}</b><div class="ynote">${esc(c.role)}</div></td>
-        <td>${c.job === 'SERVICE' ? '<span class="ypill blue">Service Division</span>' : `<a href="/yates/jobs/job/?id=${c.job}" style="color:var(--color-blue);font-weight:700">${c.job}</a>`}</td>
-        <td><span class="ts-src ${c.src}">${c.src === 'st' ? 'SERVICETITAN' : 'FIELD APP'}</span></td>
+        <td><b>${esc(c.name)}</b><div class="ynote">${esc(c.role)} · ${esc(c.code)}</div></td>
+        <td>${c.job === 'SHOP' ? '<span class="ypill blue">Fab Shop</span>' : `<a href="/mccorvey/jobs/job/?id=${c.job}" style="color:var(--color-blue);font-weight:700">${c.job}</a>`}</td>
+        <td><span class="ts-src ${c.src}">${c.src === 'st' ? 'STRATUS' : 'FIELD APP'}</span></td>
         ${c.hrs.map((h, di) => `<td class="ts-grid" style="text-align:center">${c.src === 'st'
           ? `<span style="font-variant-numeric:tabular-nums">${h}</span>`
           : `<input class="yin num" type="number" min="0" max="16" value="${h}" onchange="updHr(${ci},${di},this.value)">`}</td>`).join('')}
@@ -80,14 +80,14 @@ function render() {
   const otHrs = CREW.reduce((a, c) => a + Math.max(0, c.hrs.reduce((x, y) => x + y, 0) - 40), 0);
   const byJob = {};
   CREW.forEach(c => { byJob[c.job] = (byJob[c.job] || 0) + c.hrs.reduce((x, y) => x + y, 0); });
-  const svcHrs = byJob['SERVICE'] || 0;
+  const svcHrs = byJob['SHOP'] || 0;
 
   $('#app').innerHTML = `
     <div class="demo-hero" style="padding-bottom:16px">
       <div>
         <div class="demo-eyebrow">PAYROLL · WEEK OF JUL 20, 2026</div>
         <h1>Time<em>sheets</em></h1>
-        <div class="sub">Construction crews enter time in the field app; service techs flow in automatically from ServiceTitan dispatch. One approval chain, one export to payroll — the Excel timesheet is retired.</div>
+        <div class="sub">Field install crews enter time in the field app; shop fabricators flow in automatically from STRATUS production tracking. One approval chain, one export to payroll — the Excel timesheet is retired.</div>
       </div>
       <div class="demo-hero-right">
         <span class="demo-live"><span class="dot"></span> ${CREW.length} EMPLOYEES · ${totalHrs} HRS</span>
@@ -98,8 +98,8 @@ function render() {
     <div class="ykpi-row">
       <div class="ykpi"><div class="l">Total Hours</div><div class="v">${totalHrs}</div><div class="s">week of Jul 20</div></div>
       <div class="ykpi amber"><div class="l">Overtime Hours</div><div class="v">${otHrs}</div><div class="s">auto-flagged over 40</div></div>
-      <div class="ykpi"><div class="l">Construction Hours</div><div class="v">${totalHrs - svcHrs}</div><div class="s">job-costed to ${Object.keys(byJob).length - 1} jobs</div></div>
-      <div class="ykpi green"><div class="l">Service Hours</div><div class="v">${svcHrs}</div><div class="s">synced from ServiceTitan</div></div>
+      <div class="ykpi"><div class="l">Field Hours</div><div class="v">${totalHrs - svcHrs}</div><div class="s">job-costed to ${Object.keys(byJob).length - 1} jobs</div></div>
+      <div class="ykpi green"><div class="l">Shop Hours</div><div class="v">${svcHrs}</div><div class="s">synced from STRATUS</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
@@ -107,17 +107,17 @@ function render() {
       ${approvalChain('ts-2026-07-20', [
         { role: 'conmgr',     label: 'Construction Manager — Certify Crew Time', doneLabel: 'Crew Time Certified' },
         { role: 'office',     label: 'Office Manager — Payroll Prepared',        doneLabel: 'Payroll Prepared' },
-        { role: 'controller', label: 'Controller — Post to QuickBooks',          doneLabel: 'Posted to QuickBooks' },
+        { role: 'controller', label: 'Controller — Post to Viewpoint Vista',     doneLabel: 'Posted to Vista' },
       ])}
       <div class="ytoolrow" style="margin-top:12px;margin-bottom:0">
         <span class="ynote">${apprComplete('ts-2026-07-20', 3) ? 'Approved — payroll batch ready.' : 'Export locks until the approval chain is complete.'}</span>
         <div class="spacer"></div>
-        <button class="pa-btn primary" style="cursor:pointer;${apprComplete('ts-2026-07-20', 3) ? '' : 'opacity:.45;pointer-events:none'}" onclick="alert('Demo: payroll batch exported to QuickBooks (IIF/API).')">⇪ Export Payroll Batch to QuickBooks</button>
+        <button class="pa-btn primary" style="cursor:pointer;${apprComplete('ts-2026-07-20', 3) ? '' : 'opacity:.45;pointer-events:none'}" onclick="alert('Demo: payroll batch exported to Viewpoint Vista (API).')">⇪ Export Payroll Batch to Viewpoint Vista</button>
       </div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Weekly Time Grid</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">service rows locked (system of record: ServiceTitan) · field rows editable</span></span></div>
+      <div class="demo-panel-head"><h2>Weekly Time Grid</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">shop rows locked (system of record: STRATUS) · field rows editable</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>Employee</th><th>Job / Division</th><th>Source</th>${DAYS.map(d => `<th style="text-align:center">${d}</th>`).join('')}<th style="text-align:right">Total</th><th style="text-align:right">OT</th></tr></thead>
@@ -137,7 +137,7 @@ function render() {
       <table class="demo-tbl">
         <thead><tr><th>Job / Division</th><th style="text-align:right">Hours</th><th style="text-align:right">Burdened Labor @ $68/hr</th></tr></thead>
         <tbody>${Object.entries(byJob).map(([j, h]) => `
-          <tr><td>${j === 'SERVICE' ? 'Service Division (ServiceTitan)' : j + ' · ' + esc((JOBS.find(x => x.id === j) || { name: '' }).name.split('—')[0].trim())}</td>
+          <tr><td>${j === 'SHOP' ? 'Fab Shop — Plants 1 &amp; 2 (STRATUS)' : j + ' · ' + esc((JOBS.find(x => x.id === j) || { name: '' }).name.split('—')[0].trim())}</td>
           <td style="text-align:right">${h}</td><td style="text-align:right">${fmt$(h * 68)}</td></tr>`).join('')}</tbody>
       </table>
     </div>

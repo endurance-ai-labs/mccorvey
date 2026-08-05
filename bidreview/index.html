@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Bid & Document Review — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal — AI document review. Every spec, drawing set and addendum machine-read before an estimator opens the set. Demo environment, fictional data.">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
+<style>
+  .dr-risk { display:flex; align-items:center; gap:8px; }
+  .dr-risk .bar { width:64px; height:6px; border-radius:99px; background:var(--color-bg-3); overflow:hidden; }
+  .dr-risk .bar i { display:block; height:100%; border-radius:99px; }
+  .dr-doc { display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--color-border); border-radius:9px; margin-bottom:8px; background:var(--color-bg-2); }
+  .dr-doc .ic { font-size:16px; }
+  .dr-doc .nm { flex:1; min-width:0; }
+  .dr-doc .nm b { display:block; font-size:12.5px; color:var(--color-cloud-whisper); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .dr-doc .nm span { font-size:10.5px; color:var(--color-text-muted); }
+  .dr-find { border:1px solid var(--color-border); border-left-width:4px; border-radius:9px; padding:11px 13px; margin-bottom:9px; background:var(--color-bg-2); }
+  .dr-find .fh { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+  .dr-find .fh b { font-size:12.8px; color:var(--color-cloud-whisper); }
+  .dr-find .cl { font-size:10px; font-weight:800; letter-spacing:.05em; color:var(--color-blue); background:var(--color-blue-pale); border-radius:4px; padding:2px 7px; white-space:nowrap; }
+  .dr-find .dt { font-size:12px; line-height:1.55; color:var(--color-text-muted); }
+  .dr-sev { font-size:9px; font-weight:800; letter-spacing:.09em; padding:2px 8px; border-radius:999px; }
+  .dr-sev.high { color:#fff; background:var(--color-blue); }
+  .dr-sev.med  { color:var(--color-amber); background:var(--color-amber-bg); border:1px solid var(--color-amber); }
+  .dr-sev.info { color:var(--color-text-muted); background:var(--color-bg-3); border:1px solid var(--color-border); }
+  .dr-reco { border:1px solid var(--color-blue); border-radius:10px; padding:13px 15px; background:var(--color-blue-pale); font-size:12.8px; line-height:1.6; color:var(--color-cloud-whisper); }
+  .dr-step { text-align:center; padding:14px 10px; }
+  .dr-step .n { width:30px; height:30px; margin:0 auto 8px; border-radius:99px; background:var(--color-blue); color:#fff; font-weight:800; display:flex; align-items:center; justify-content:center; font-size:13px; }
+  .dr-step b { display:block; font-size:12.5px; color:var(--color-cloud-whisper); margin-bottom:3px; }
+  .dr-step span { font-size:11px; color:var(--color-text-muted); line-height:1.45; display:block; }
+  .dr-conf { font-size:10px; color:var(--color-green); font-weight:700; }
+  tr.dr-sel td { background: var(--color-blue-pale) !important; }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
+<script>
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
+McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — AI Document Review' });
+const app = $('#app');
+const DR = window.DOCREVIEW;
+const B = DR.baseline, Y = DR.ytd;
+
+const fmtM = n => '$' + (n / 1e6).toFixed(2) + 'M';
+const sevOrder = { high: 0, med: 1, info: 2 };
+const riskColor = r => r == null ? 'var(--color-slate-hint)' : r >= 65 ? 'var(--color-blue)' : r >= 45 ? 'var(--color-amber)' : 'var(--color-green)';
+const drStatusPill = s => {
+  const map = { 'Review Complete': 'green', 'Reviewing': 'blue', 'Queued': 'gray' };
+  return `<span class="ypill ${map[s] || 'gray'}">${s}</span>`;
+};
+const pagesOf = q => q.docs.reduce((s, d) => s + d.pages, 0);
+
+let selected = DR.queue.findIndex(q => q.status === 'Review Complete');
+if (selected < 0) selected = 0;
+
+function render() {
+  const manualCost = B.itbPerYear * B.avgHoursManual * B.loadedRate;
+  const aiCost = B.itbPerYear * B.avgHoursAI * B.loadedRate;
+
+  const rows = DR.queue.map((q, i) => `
+    <tr class="yclick ${i === selected ? 'dr-sel' : ''}" onclick="selectBid(${i})">
+      <td><b>${q.bid}</b></td>
+      <td>${esc(q.project)}<div class="ynote">${esc(q.gc)} · due ${fmtDate(q.due)}</div></td>
+      <td>${drStatusPill(q.status)}</td>
+      <td style="text-align:right">${q.docs.length} docs · ${pagesOf(q).toLocaleString()} pgs</td>
+      <td>
+        <div class="dr-risk">
+          <div class="bar"><i style="width:${q.risk || 0}%;background:${riskColor(q.risk)}"></i></div>
+          <span style="font-size:11px;font-weight:700;color:${riskColor(q.risk)}">${q.risk == null ? '—' : q.risk}</span>
+        </div>
+      </td>
+      <td style="text-align:right">${q.findings.filter(f => f.sev === 'high').length || '—'}</td>
+      <td style="text-align:right">${q.hoursManual}h → <b style="color:var(--color-green)">${q.hoursAI == null ? '—' : q.hoursAI + 'h'}</b></td>
+    </tr>`).join('');
+
+  const q = DR.queue[selected];
+  const docIcon = { Spec: '📕', Drawings: '📐', Addendum: '📎', Contract: '📄' };
+  const docs = q.docs.map(d => `
+    <div class="dr-doc">
+      <span class="ic">${docIcon[d.type] || '📄'}</span>
+      <span class="nm"><b>${esc(d.name)}</b><span>${d.type} · ${d.pages.toLocaleString()} pages</span></span>
+      <span class="ypill ${d.status === 'Read' ? 'green' : d.status === 'Reading' ? 'blue' : 'gray'}">${d.status}</span>
+    </div>`).join('');
+
+  const findings = q.findings.slice().sort((a, b) => sevOrder[a.sev] - sevOrder[b.sev]).map(f => `
+    <div class="dr-find" style="border-left-color:${f.sev === 'high' ? 'var(--color-blue)' : f.sev === 'med' ? 'var(--color-amber)' : 'var(--color-border)'}">
+      <div class="fh"><span class="dr-sev ${f.sev}">${f.sev === 'high' ? 'HIGH' : f.sev === 'med' ? 'MEDIUM' : 'INFO'}</span><b>${esc(f.title)}</b><span class="cl">${esc(f.clause)}</span></div>
+      <div class="dt">${esc(f.detail)}</div>
+    </div>`).join('') || '<div class="ynote">Review has not started — findings will appear as the set is read.</div>';
+
+  const qtys = q.quantities.length ? `
+    <table class="demo-tbl tbl-left" style="font-size:12px">
+      <thead><tr><th>Extracted Quantity</th><th style="text-align:right">Qty</th><th>Unit</th><th style="text-align:right">Confidence</th></tr></thead>
+      <tbody>${q.quantities.map(x => `<tr><td>${esc(x.item)}</td><td style="text-align:right;font-weight:700">${x.qty}</td><td>${x.unit}</td><td style="text-align:right" class="dr-conf">${x.conf}%</td></tr>`).join('')}</tbody>
+    </table>` : '<div class="ynote">Quantities extract automatically once the drawing set is read.</div>';
+
+  const topRisk = DR.queue.filter(x => x.risk != null).sort((a, b) => b.risk - a.risk)[0];
+  const dueNext = DR.queue.slice().sort((a, b) => a.due.localeCompare(b.due))[0];
+  const highOpen = DR.queue.reduce((s, x) => s + x.findings.filter(f => f.sev === 'high').length, 0);
+  const hrsUnlocked = B.itbPerYear * (B.avgHoursManual - B.avgHoursAI);
+
+  app.innerHTML = `
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM BRAIN — AI DOCUMENT REVIEW · PRECONSTRUCTION</div>
+          <h1 class="cmd-title">Bid Review Command Center</h1>
+          <div class="cmd-sub">~${B.itbPerYear} invitations to bid a year · ~${B.avgPagesPerSet.toLocaleString()} pages a set · <b style="color:#fff">$${(B.annualSpend / 1e6).toFixed(1)}M a year in review labor</b>. The Brain machine-reads every set, extracts quantities, tracks addenda and flags the spec traps that sink margins — estimators start at the answer.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+          <span class="demo-live"><span class="dot"></span> LIVE · ${Y.itbProcessed} SETS READ YTD</span>
+          <div class="cmd-chips">${srcChip('brain')} ${srcChip('st')}</div>
+        </div>
+      </div>
+      <div class="cmd-tiles">
+        <div class="cmd-tile hot"><div class="l">Review Spend (Before)</div><div class="v">${fmtM(B.annualSpend)}</div><span class="d down">▼ being retired</span><div class="s">${B.itbPerYear} ITBs × ${B.avgHoursManual}h × $${B.loadedRate}/h</div>${sparkSVG('spend', { up: false, color: '#c8102e' })}</div>
+        <div class="cmd-tile"><div class="l">Run-Rate Savings</div><div class="v">${fmtM(Y.runRateSavings)}</div><span class="d up">▲ +$212K vs P7</span><div class="s">hours down ${Math.round((1 - B.avgHoursAI / B.avgHoursManual) * 100)}% per set</div>${sparkSVG('savings', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Pages Read YTD</div><div class="v">${(Y.pagesRead / 1000).toFixed(0)}K</div><span class="d up">▲ ${Y.itbProcessed} sets</span><div class="s">${Y.addendaTracked} addenda tracked</div>${sparkSVG('pages', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Spec Traps Caught</div><div class="v">${Y.specTrapsCaught}</div><span class="d up">▲ 8 this period</span><div class="s">${Y.flagsRaised.toLocaleString()} total flags raised</div>${sparkSVG('traps', { up: true, color: '#b98a36' })}</div>
+        <div class="cmd-tile"><div class="l">Turnaround / Set</div><div class="v">${B.avgHoursManual}h → ${B.avgHoursAI}h</div><span class="d up">▲ ${Math.round((1 - B.avgHoursAI / B.avgHoursManual) * 100)}% faster</span><div class="s">machine-read + sign-off</div>${sparkSVG('turn', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">High Flags in Queue</div><div class="v">${highOpen}</div><span class="d down">▼ awaiting sign-off</span><div class="s">${DR.queue.length} bid sets in review</div>${sparkSVG('flags', { up: false, color: '#c8102e' })}</div>
+      </div>
+    </div>
+
+    <div class="scope-bar">
+      <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+      <span class="scope-chip">Sector: <b>all</b></span>
+      <span class="scope-chip">GC: <b>all</b></span>
+      <span class="scope-chip">Estimator: <b>all</b></span>
+      <span class="scope-chip">Status: <b>all</b></span>
+      <span class="scope-chip">vs <b>prior period</b></span>
+      <span class="scope-note">${DR.queue.length} bid sets in scope · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
+    </div>
+
+    <div class="headline-strip">
+      <div class="headline-cell"><div class="k">Headline</div><div class="t">${fmtM(Y.runRateSavings)} run-rate savings</div><div class="n">against the ${fmtM(B.annualSpend)} annual review spend</div></div>
+      <div class="headline-cell"><div class="k">Biggest Risk in Queue</div><div class="t">${topRisk ? esc(topRisk.project.split('—')[0].trim()) : '—'}</div><div class="n">${topRisk ? 'risk ' + topRisk.risk + '/100 — ' + esc((topRisk.findings[0] || {}).title || '') : ''}</div></div>
+      <div class="headline-cell"><div class="k">Due Next</div><div class="t">${esc(dueNext.project.split('—')[0].trim())}</div><div class="n">${esc(dueNext.gc)} · due ${fmtDate(dueNext.due)} · ${dueNext.status}</div></div>
+      <div class="headline-cell"><div class="k">Capacity Unlocked</div><div class="t">${hrsUnlocked.toLocaleString()} est. hours / yr</div><div class="n">review every ITB instead of triaging — chase more of the right work</div></div>
+    </div>
+
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>The Review Economics</h2><span class="k">$ per year, ${B.itbPerYear} bid sets</span></div>
+        <div class="demo-chart" style="height:210px"><canvas id="dr-cost"></canvas></div>
+        <div class="ynote" style="margin-top:10px">Manual: ${B.itbPerYear} sets × ${B.avgHoursManual}h = ${(B.itbPerYear * B.avgHoursManual).toLocaleString()} estimator-hours (${fmtM(manualCost)}). With AI first-pass: ${(B.itbPerYear * B.avgHoursAI).toLocaleString()} hours (${fmtM(aiCost)}) — capacity to <b>review every ITB instead of triaging</b>, and chase more of the right work.</div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>What the Machine Reads For</h2><span class="k">every set, every time</span></div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px">
+          <div class="dr-step"><div class="n">1</div><b>Ingest & Classify</b><span>Specs, drawings, addenda and contract exhibits auto-filed from the ITB</span></div>
+          <div class="dr-step"><div class="n">2</div><b>Scope Extraction</b><span>Div 23 scope, gauge schedules, material specs, leakage classes</span></div>
+          <div class="dr-step"><div class="n">3</div><b>Quantity Takeoff</b><span>Pounds, LF, damper and GRD counts with confidence scores</span></div>
+          <div class="dr-step"><div class="n">4</div><b>Trap Detection</b><span>LDs, scope shifts, closed substitutions, late addenda changes</span></div>
+          <div class="dr-step" style="grid-column:1 / -1"><div class="n">5</div><b>Estimator Sign-Off</b><span>Every flag traced to its clause — the estimator verifies in hours, not days. Nothing goes out without human review.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Bid Set Queue</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('brain')}<span class="k">click a row to open the review console</span></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th>Bid #</th><th>Project</th><th>Status</th><th style="text-align:right">Document Set</th><th>Risk Score</th><th style="text-align:right">High Flags</th><th style="text-align:right">Review Hours</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Review Console — ${esc(q.project)}</h2><span style="display:flex;gap:8px;align-items:center">${drStatusPill(q.status)}<span class="k">${q.bid} · ${esc(q.gc)} · due ${fmtDate(q.due)}</span></span></div>
+      <div class="demo-two">
+        <div>
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:9px">DOCUMENT SET — ${pagesOf(q).toLocaleString()} PAGES</div>
+          ${docs}
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:16px 0 9px">EXTRACTED QUANTITIES</div>
+          ${qtys}
+        </div>
+        <div>
+          <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:9px">AI FINDINGS — ${q.findings.length} FLAGS${q.risk != null ? ' · RISK ' + q.risk + '/100' : ''}</div>
+          ${findings}
+          ${q.recommendation ? `<div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:16px 0 9px">RECOMMENDATION</div><div class="dr-reco">🧠 ${esc(q.recommendation)}</div>` : ''}
+          ${q.status === 'Review Complete' ? `<div class="ynote" style="margin-top:10px">Review time: <b>${q.hoursAI}h</b> with AI first-pass vs. an estimated ${q.hoursManual}h manual — ${Math.round((1 - q.hoursAI / q.hoursManual) * 100)}% less. Sign-off recorded to the bid file.</div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="demo-note">MSM Operations Portal — demo environment, fictional data · AI output is illustrative and always subject to estimator sign-off · concept build by Endurance AI Labs</div>`;
+
+  const css = getComputedStyle(document.documentElement);
+  const cAccent = css.getPropertyValue('--color-blue').trim() || '#c8102e';
+  new Chart($('#dr-cost'), {
+    type: 'bar',
+    data: {
+      labels: ['Manual review', 'AI first-pass + sign-off'],
+      datasets: [
+        { label: 'Estimating labor', data: [manualCost / 1e6, aiCost / 1e6], backgroundColor: [cAccent, '#2f9e6e'], borderRadius: 6, barThickness: 54 },
+      ],
+    },
+    options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { ticks: { callback: v => '$' + v.toFixed(1) + 'M', font: { size: 10 } } }, y: { ticks: { font: { size: 11 } } } } }
+  });
+}
+
+function selectBid(i) { selected = i; render(); }
+render();
+</script>
+</body>
+</html>

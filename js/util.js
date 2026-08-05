@@ -1,4 +1,4 @@
-/* ============ Yates portal — shared helpers & job math ============ */
+/* ============ McCorvey portal — shared helpers & job math ============ */
 
 const $ = (sel, el = document) => el.querySelector(sel);
 const $$ = (sel, el = document) => [...el.querySelectorAll(sel)];
@@ -77,6 +77,30 @@ function ganttHTML(phases) {
   }).join("");
 }
 
+/* ---- sparkline SVG: deterministic pseudo-trend seeded by label ---- */
+function sparkSVG(seed, opts = {}) {
+  const w = opts.w || 120, h = opts.h || 26, n = opts.n || 14;
+  const up = opts.up !== false;
+  let s = 0; for (let i = 0; i < seed.length; i++) s = (s * 31 + seed.charCodeAt(i)) % 9973;
+  const pts = [];
+  let v = 0.45 + (s % 20) / 100;
+  for (let i = 0; i < n; i++) {
+    s = (s * 137 + 71) % 9973;
+    v += ((s % 100) / 100 - (up ? 0.42 : 0.58)) * 0.16;
+    v = Math.max(0.08, Math.min(0.95, v));
+    pts.push(v);
+  }
+  const step = w / (n - 1);
+  const line = pts.map((p, i) => `${(i * step).toFixed(1)},${(h - p * h).toFixed(1)}`).join(' ');
+  const col = opts.color || (up ? '#2f9e6e' : '#c8102e');
+  const fill = pts.map((p, i) => `${(i * step).toFixed(1)},${(h - p * h).toFixed(1)}`).join(' ') + ` ${w},${h} 0,${h}`;
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="${fill}" fill="${col}18"></polygon>
+    <polyline points="${line}" fill="none" stroke="${col}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    <circle cx="${w}" cy="${(h - pts[n - 1] * h).toFixed(1)}" r="2.2" fill="${col}"></circle>
+  </svg>`;
+}
+
 /* photo card */
 const photoCard = (p) => `
   <div class="yphoto"><img src="${p.src}" alt="${esc(p.cap)}" loading="lazy">
@@ -86,31 +110,31 @@ const photoCard = (p) => `
    INSTITUTIONAL CONTROLS — personas, approval chains, data-source chips
    ========================================================= */
 
-/* ---- Y8S user directory (user-based role access, demo) ---- */
+/* ---- MSM user directory (user-based role access, demo) ---- */
 const PERSONAS = [
-  { id: 'owner',      name: 'Brett Yates',      title: 'Owner',                       perms: { fin: 1, margins: 1, bids: 1 } },
-  { id: 'cfo',        name: 'Lisa Jilek',       title: 'Chief Financial Officer',     perms: { fin: 1, margins: 1, bids: 1 } },
-  { id: 'controller', name: 'Lonnie Saylors',   title: 'Controller',                  perms: { fin: 1, margins: 1, bids: 1 } },
-  { id: 'office',     name: 'Claudia Chavez',   title: 'Office Manager — Billing & Payroll', perms: { fin: 1, margins: 0, bids: 0 } },
-  { id: 'conmgr',     name: 'Tyler Reidhead',   title: 'Construction Manager',        perms: { fin: 0, margins: 0, bids: 1 } },
-  { id: 'svcmgr',     name: 'Brandon Yates',    title: 'Service Operations Manager',  perms: { fin: 0, margins: 0, bids: 0 } },
-  { id: 'eng',        name: 'Jordan Felps, P.E.', title: 'Engineering Manager',       perms: { fin: 0, margins: 0, bids: 1 } },
-  { id: 'est',        name: 'David Glenney',    title: 'Sales Estimating',            perms: { fin: 0, margins: 0, bids: 1 } },
-  { id: 'client',     name: 'Owner Rep',        title: 'Client — External View',      perms: { fin: 0, margins: 0, bids: 0, external: 1 } },
+  { id: 'owner',      name: 'Tony McCorvey Sr.', title: 'Chief Executive Officer & Owner', perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'cfo',        name: 'Elena Vasquez',     title: 'Chief Financial Officer',     perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'controller', name: 'Sam Whitaker',      title: 'Controller',                  perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'office',     name: 'Gloria Simmons',    title: 'Office Manager — Billing & Payroll', perms: { fin: 1, margins: 0, bids: 0 } },
+  { id: 'conmgr',     name: 'Travis Boone',      title: 'Senior Project Manager',      perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'svcmgr',     name: 'Hector Ruiz',       title: 'Fabrication Plant Manager',   perms: { fin: 0, margins: 0, bids: 0 } },
+  { id: 'eng',        name: 'Sam Nguyen',        title: 'VDC / BIM Manager',           perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'est',        name: 'Rick Alvarez',      title: 'Chief Estimator',             perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'client',     name: 'GC Partner',        title: 'General Contractor — External View', perms: { fin: 0, margins: 0, bids: 0, external: 1 } },
 ];
-function currentRole() { try { return localStorage.getItem('yates-role') || ''; } catch (e) { return ''; } }
+function currentRole() { try { return localStorage.getItem('msm-role') || ''; } catch (e) { return ''; } }
 function currentPersona() { return PERSONAS.find(p => p.id === currentRole()) || null; }
 function can(perm) { const p = currentPersona(); return !!(p && p.perms[perm]); }
 function isSignedIn() { return !!currentPersona(); }
 function setRole(id) {
   try {
-    localStorage.setItem('yates-role', id);
+    localStorage.setItem('msm-role', id);
     const p = PERSONAS.find(x => x.id === id);
-    localStorage.setItem('yates-mode', p && p.perms.external ? 'client' : 'internal');
+    localStorage.setItem('msm-mode', p && p.perms.external ? 'client' : 'internal');
   } catch (e) {}
   window.location.reload();
 }
-function signOutUser() { try { localStorage.removeItem('yates-role'); } catch (e) {} window.location.reload(); }
+function signOutUser() { try { localStorage.removeItem('msm-role'); } catch (e) {} window.location.reload(); }
 
 /* ---- sign-in overlay: pick your user (permissions flow from role) ---- */
 function renderSignIn() {
@@ -124,13 +148,13 @@ function renderSignIn() {
   ov.className = 'login-overlay';
   ov.innerHTML = `
     <div class="login-box">
-      <img src="/yates/assets/brand/y8s-logo.png" alt="Y8S — YATES Company, LLC" class="login-logo">
+      <img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="login-logo">
       <div class="login-title">Operations Portal</div>
-      <div class="login-sub">Building Automation Systems Nurtured by Experience · single source of truth demo</div>
+      <div class="login-sub">Leaders in the HVAC Industry · single source of truth demo</div>
       <div class="login-note">Select your user — every module, approval right and financial view is scoped to your role.</div>
       <div class="login-grid">${cards}</div>
       <div class="login-foot">Demo environment · fictional data · concept build by Endurance AI Labs<br>
-        <a href="/yates/welcome/" style="color:var(--color-blue);font-weight:700;text-decoration:none">New here? Read about the platform →</a></div>
+        <a href="/mccorvey/welcome/" style="color:var(--color-blue);font-weight:700;text-decoration:none">New here? Read about the platform →</a></div>
     </div>`;
   document.body.appendChild(ov);
 }
@@ -138,9 +162,10 @@ function renderSignIn() {
 /* ---- data-source chips (integration attribution) ---- */
 function srcChip(kind) {
   const map = {
-    qb:   ['QUICKBOOKS API', '#2ca01c', 'Financial actuals synced from QuickBooks Online via API'],
-    st:   ['SERVICETITAN API', '#f04e23', 'Field production, schedules & photos synced from ServiceTitan via API'],
-    prop: ['Y8S PROPRIETARY', '#005c97', 'Proprietary Yates modeling engine — internal only'],
+    qb:   ['VIEWPOINT VISTA', '#0e7a4f', 'Financial actuals synced from Viewpoint Vista via API'],
+    st:   ['GTP STRATUS', '#f04e23', 'Fabrication, spooling & field production synced from STRATUS via API'],
+    prop: ['MSM PROPRIETARY', '#c8102e', 'Proprietary McCorvey modeling engine — internal only'],
+    brain: ['MSM BRAIN — AI DOC REVIEW', '#c8102e', 'Machine-read specs, drawings & addenda — AI extraction with estimator sign-off'],
   };
   const m = map[kind]; if (!m) return '';
   return `<span title="${m[2]}" style="display:inline-flex;align-items:center;gap:5px;font-size:8.5px;font-weight:800;letter-spacing:0.1em;padding:2px 8px;border-radius:3px;border:1px solid ${m[1]}44;color:${m[1]};background:${m[1]}12;white-space:nowrap"><span style="width:5px;height:5px;border-radius:99px;background:${m[1]}"></span>${m[0]}</span>`;
@@ -149,16 +174,16 @@ function srcChip(kind) {
 /* ---- approval chains ----
    key: artifact id ("fc-division", "bid-Y-2024-0418", "pa-LKV-2410-410-03", ...)
    steps: [{ role, label, doneLabel }] — sequential; a step unlocks when the prior is approved.
-   State in localStorage "yates-appr:<key>" = [{ by, title, at } | null, ...]           */
+   State in localStorage "msm-appr:<key>" = [{ by, title, at } | null, ...]           */
 function apprState(key, n) {
   try {
-    const raw = localStorage.getItem('yates-appr:' + key);
+    const raw = localStorage.getItem('msm-appr:' + key);
     const arr = raw ? JSON.parse(raw) : [];
     while (arr.length < n) arr.push(null);
     return arr;
   } catch (e) { return new Array(n).fill(null); }
 }
-function apprSave(key, arr) { try { localStorage.setItem('yates-appr:' + key, JSON.stringify(arr)); } catch (e) {} }
+function apprSave(key, arr) { try { localStorage.setItem('msm-appr:' + key, JSON.stringify(arr)); } catch (e) {} }
 window.__apprDefs = window.__apprDefs || {};
 
 function approvalChain(key, steps, opts = {}) {
@@ -181,7 +206,7 @@ function approvalChain(key, steps, opts = {}) {
         <span>signing as ${esc(me.name)}, ${esc(me.title)}</span>
       </div>`;
     }
-    const nudgedAt = (() => { try { return localStorage.getItem('yates-nudge:' + key + ':' + i); } catch (e) { return null; } })();
+    const nudgedAt = (() => { try { return localStorage.getItem('msm-nudge:' + key + ':' + i); } catch (e) { return null; } })();
     return `<div class="appr-step locked">
       <span class="dot"></span>
       <div><b>${esc(s.label)}</b><span class="appr-wait">${prevDone ? 'awaiting ' + esc(persona ? persona.title : s.role) : 'locked — prior approval required'}${nudgedAt ? ' · <i class="appr-nudged">⌲ Slack reminder sent ' + esc(nudgedAt) + '</i>' : ''}</span></div>
@@ -206,7 +231,7 @@ function approveStep(key, idx) {
   if (typeof render === 'function') render(); else window.location.reload();
 }
 function resetChain(key) {
-  try { localStorage.removeItem('yates-appr:' + key); } catch (e) {}
+  try { localStorage.removeItem('msm-appr:' + key); } catch (e) {}
   if (typeof render === 'function') render(); else window.location.reload();
 }
 function apprComplete(key, n) { return apprState(key, n).every(Boolean); }
@@ -249,13 +274,13 @@ function slackNudge(key, idx) {
   const steps = window.__apprDefs[key] || [];
   const s = steps[idx]; if (!s) return;
   const p = PERSONAS.find(x => x.id === s.role); if (!p) return;
-  const me = currentPersona() || { name: 'Y8S Portal', title: 'Automated reminder' };
+  const me = currentPersona() || { name: 'MSM Portal', title: 'Automated reminder' };
   const first = p.name.split(' ')[0];
   const init = (n) => n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
-  const page = (document.title || 'Y8S Portal').split('—')[0].trim();
+  const page = (document.title || 'MSM Portal').split('—')[0].trim();
   const link = location.pathname;
   const now = new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-  const msg = `Hi ${first} — “${s.label.replace(/["“”]/g, '')}” is next in the queue and waiting on you in the Y8S Operations Portal (${page}). Everything ahead of it is signed off. One click when you're ready: ${link}`;
+  const msg = `Hi ${first} — “${s.label.replace(/["“”]/g, '')}” is next in the queue and waiting on you in the MSM Operations Portal (${page}). Everything ahead of it is signed off. One click when you're ready: ${link}`;
 
   const ov = document.createElement('div');
   ov.className = 'slk-ov';
@@ -264,21 +289,21 @@ function slackNudge(key, idx) {
       <div class="slk-head">${SLACK_MARK}<b>Slack</b><span class="slk-dm-label">Direct message</span><button class="slk-x" aria-label="Close">✕</button></div>
       <div class="slk-peer">
         <span class="slk-ava peer">${init(p.name)}</span>
-        <div><b>${esc(p.name)}</b><span class="slk-pres"><i></i> Active</span><div class="slk-title">${esc(p.title)} · YATES Company</div></div>
+        <div><b>${esc(p.name)}</b><span class="slk-pres"><i></i> Active</span><div class="slk-title">${esc(p.title)} · McCorvey Sheet Metal</div></div>
       </div>
       <div class="slk-body">
         <div class="slk-day"><span>Today</span></div>
         <div class="slk-msg">
           <span class="slk-ava me">${init(me.name)}</span>
           <div class="slk-msg-main">
-            <div class="slk-msg-head"><b>${esc(me.name)}</b><span class="slk-app">APP · Y8S Portal</span><span class="slk-time">${now}</span></div>
+            <div class="slk-msg-head"><b>${esc(me.name)}</b><span class="slk-app">APP · MSM Portal</span><span class="slk-time">${now}</span></div>
             <div class="slk-text">${esc(msg)}</div>
             <div class="slk-reacts" style="display:none"><span class="slk-react">👀 1</span></div>
           </div>
         </div>
         <div class="slk-status sending"><span class="slk-spin"></span> Sending via Slack…</div>
       </div>
-      <div class="slk-composer"><span>Sent automatically by the Y8S Operations Portal</span></div>
+      <div class="slk-composer"><span>Sent automatically by the MSM Operations Portal</span></div>
     </div>`;
   const close = () => ov.remove();
   ov.addEventListener('click', close);
@@ -289,7 +314,7 @@ function slackNudge(key, idx) {
     const stEl = ov.querySelector('.slk-status');
     if (stEl) { stEl.className = 'slk-status ok'; stEl.innerHTML = '✓ Delivered to ' + esc(first) + ' · just now'; }
     const stamp = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    try { localStorage.setItem('yates-nudge:' + key + ':' + idx, stamp); } catch (e) {}
+    try { localStorage.setItem('msm-nudge:' + key + ':' + idx, stamp); } catch (e) {}
     /* stamp the chain in place — no page re-render needed */
     document.querySelectorAll('[data-appr="' + key + '"] .appr-step').forEach((el, j) => {
       if (j === idx) {

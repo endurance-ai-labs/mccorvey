@@ -3,34 +3,34 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AIA Billing — Y8S Operations Portal</title>
-<meta name="description" content="YATES Company, LLC (Y8S) — building automation & energy solutions. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
-<meta property="og:site_name" content="Y8S Operations Portal">
-<meta property="og:title" content="YATES Company, LLC — Operations Portal">
-<meta property="og:description" content="Building Automation Systems Nurtured by Experience — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
-<meta property="og:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
+<title>AIA Billing — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal Works, L.P. (MSM) — HVAC sheet metal ductwork: BIM design, pre-fabrication & installation. Jobs, billing, timesheets and forecasting in one operations portal. Demo environment.">
+<meta property="og:site_name" content="MSM Operations Portal">
+<meta property="og:title" content="McCorvey Sheet Metal Works, L.P. — Operations Portal">
+<meta property="og:description" content="Leaders in the HVAC Industry — jobs, billing, timesheets and forecasting in one place. Demo environment, fictional data.">
+<meta property="og:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://endurance-ai-labs.github.io/yates/assets/brand/og-cover.png">
-<link rel="icon" type="image/png" href="/yates/assets/brand/y8s-logo-transparent.png">
-<link rel="stylesheet" href="/yates/css/theme.css">
-<link rel="stylesheet" href="/yates/css/demo.css">
-<link rel="stylesheet" href="/yates/css/yates.css">
+<meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/yates/js/data.js"></script>
-<script src="/yates/js/util.js"></script>
-<script src="/yates/js/nav.js"></script>
-<script src="/yates/js/yates-brain.js" defer></script>
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
 <script>
-YatesNav.renderTopbar({ subtitle: 'AIA Billing' });
+McCorveyNav.renderTopbar({ subtitle: 'AIA Billing' });
 var BFILT = { job: 'all', status: 'all' };
-if (!YatesMode.isInternal() || !can('fin')) {
+if (!McCorveyMode.isInternal() || !can('fin')) {
   $('#app').innerHTML = `<div class="demo-panel" style="margin-top:40px"><div class="demo-panel-head"><h2>Internal module</h2></div>
     <div class="ynote">The billing register requires financial access (Owner, CFO, Controller or Office Manager). Your current user does not have rights to this module.</div></div>`;
 } else {
@@ -49,7 +49,7 @@ function renderBilling() {
 
   const regApps = APPS.filter(({ j, p }) => (BFILT.job === 'all' || j.id === BFILT.job) && (BFILT.status === 'all' || p.status === BFILT.status));
   const rows = regApps.map(({ j, p }) => `
-    <tr class="yclick" onclick="location.href='/yates/jobs/job/?id=${j.id}#billing'">
+    <tr class="yclick" onclick="location.href='/mccorvey/jobs/job/?id=${j.id}#billing'">
       <td><b>${p.num}</b></td>
       <td>${j.id} · ${esc(j.name.split('—')[0].trim())}</td>
       <td>${esc(p.label)}</td>
@@ -71,7 +71,7 @@ function renderBilling() {
       <div>
         <div class="demo-eyebrow">FINANCIAL · BILLING REGISTER</div>
         <h1>AIA <em>Billing</em></h1>
-        <div class="sub">Every G702/G703 application across the division — status, aging and retention in one register.</div>
+        <div class="sub">Every G702/G703 application across the construction division — status, aging and retention held by GCs in one register.</div>
       </div>
       <div class="demo-hero-right"><span class="demo-live"><span class="dot"></span> ${APPS.length} APPLICATIONS</span></div>
     </div>
@@ -80,7 +80,7 @@ function renderBilling() {
       <div class="ykpi"><div class="l">Total Certified</div><div class="v">${fmtK(tot)}</div><div class="s">across ${JOBS.length} jobs</div></div>
       <div class="ykpi green"><div class="l">Collected</div><div class="v">${fmtK(paid)}</div><div class="s">${fmtPct(paid / tot * 100, 0)} of certified</div></div>
       <div class="ykpi amber"><div class="l">Open Receivable</div><div class="v">${fmtK(open)}</div><div class="s">submitted + pending + draft</div></div>
-      <div class="ykpi red"><div class="l">Retention Held by Owners</div><div class="v">${fmtK(retHeld)}</div><div class="s">releases at final completion</div></div>
+      <div class="ykpi red"><div class="l">Retention Held by GCs</div><div class="v">${fmtK(retHeld)}</div><div class="s">releases at final completion</div></div>
     </div>
 
     <div class="demo-panel" style="margin-bottom:22px">
