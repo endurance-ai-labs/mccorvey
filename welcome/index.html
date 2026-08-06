@@ -35,6 +35,31 @@ a{color:var(--blue);text-decoration:none}
 h2.sec{font-size:clamp(26px,3.2vw,38px);font-weight:800;letter-spacing:-.025em;color:var(--ink);line-height:1.12;margin:10px 0 14px}
 p.lede{font-size:16px;color:var(--muted);max-width:640px}
 
+/* Operating Brain showcase */
+.brainx{background:linear-gradient(135deg,#0d1826 0%,#14283c 58%,#1a3350 100%);border-radius:20px;padding:40px 42px 36px;position:relative;overflow:hidden;box-shadow:0 22px 54px rgba(10,22,38,.34)}
+.brainx::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,#c8102e,rgba(200,16,46,0) 65%)}
+.brainx::after{content:"";position:absolute;right:-140px;top:-140px;width:420px;height:420px;border-radius:50%;background:radial-gradient(circle,rgba(200,16,46,.18),rgba(200,16,46,0) 70%);pointer-events:none}
+.brainx-head{display:grid;grid-template-columns:1.15fr .85fr;gap:34px;align-items:start;position:relative;margin-bottom:30px}
+.brainx-eyebrow{font-size:10.5px;font-weight:800;letter-spacing:.16em;color:#e8b23a;display:block;margin-bottom:14px}
+.brainx-h2{font-size:clamp(26px,3.4vw,38px);font-weight:800;letter-spacing:-.02em;line-height:1.12;color:#fff;margin:0 0 14px}
+.brainx-h2 em{font-style:normal;color:#ef6a76}
+.brainx-lede{font-size:14px;line-height:1.7;color:rgba(255,255,255,.68);max-width:56ch}
+.brainx-chat{background:#fff;border-radius:14px;padding:16px 18px;box-shadow:0 12px 32px rgba(8,18,32,.35);position:relative}
+.bxc-head{display:flex;align-items:center;gap:8px;font-size:10px;font-weight:800;letter-spacing:.1em;color:#14283c;margin-bottom:12px}
+.bxc-dot{width:8px;height:8px;border-radius:50%;background:#c8102e;box-shadow:0 0 0 3px rgba(200,16,46,.18);animation:bxpulse 2.2s ease-in-out infinite}
+.bxc-live{margin-left:auto;font-size:8.5px;color:#2f9e6e;background:#eaf5ee;border-radius:999px;padding:3px 8px}
+.bxc-q{background:#c8102e;color:#fff;font-size:12.5px;line-height:1.5;padding:9px 12px;border-radius:11px 11px 3px 11px;margin:0 0 10px auto;max-width:88%;width:fit-content}
+.bxc-a{background:#f4f6f9;color:#1b2230;font-size:12.5px;line-height:1.6;padding:11px 13px;border-radius:11px 11px 11px 3px;max-width:95%}
+.bxc-a b{color:#14283c}
+.bxc-src{display:block;margin-top:7px;font-size:9.5px;font-weight:700;letter-spacing:.06em;color:#97a0ad}
+@keyframes bxpulse{0%,100%{opacity:1}50%{opacity:.35}}
+.brainx-loop{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:12px;position:relative}
+.bxl{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:13px;padding:16px 17px;backdrop-filter:blur(6px)}
+.bxl .n{display:inline-block;font-size:9px;font-weight:800;letter-spacing:.14em;color:#e8b23a;margin-bottom:9px}
+.bxl b{display:block;font-size:14px;color:#fff;letter-spacing:-.01em;margin-bottom:7px}
+.bxl p{font-size:11.5px;line-height:1.6;color:rgba(255,255,255,.6);margin:0}
+.bxl:hover{background:rgba(255,255,255,.085);border-color:rgba(239,106,118,.45)}
+@media(max-width:920px){.brainx{padding:26px 20px 24px}.brainx-head{grid-template-columns:1fr;gap:22px}}
 /* nav */
 .nav{position:sticky;top:0;z-index:100;background:rgba(251,252,254,.85);backdrop-filter:blur(18px) saturate(160%);border-bottom:1px solid var(--line)}
 .nav .wrap{display:flex;align-items:center;gap:14px;height:62px}
@@ -389,14 +414,34 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 </div></section>
 
 <section class="block" id="access"><div class="wrap">
-  <span class="eyebrow">Access &amp; the Operating Brain</span>
+  <div class="brainx reveal">
+    <div class="brainx-head">
+      <div>
+        <span class="brainx-eyebrow">◉ THE OPERATING BRAIN · AN LLM-POWERED OPERATING SYSTEM</span>
+        <h2 class="brainx-h2">An operating system that <em>learns your business</em> — and keeps getting smarter.</h2>
+        <p class="brainx-lede">The Brain is a large-language-model core wired into everything that flows through the portal — every bid set, addendum, RFI, pay application, plant release, timesheet and sign-off, across all nine offices and both plants. It doesn't just answer questions about your data; it studies how McCorvey actually runs, day to day, and compounds that knowledge with every cycle.</p>
+      </div>
+      <div class="brainx-chat">
+        <div class="bxc-head"><span class="bxc-dot"></span> MSM — Operating Brain <span class="bxc-live">LIVE ON EVERY PAGE</span></div>
+        <div class="bxc-q">Which GC's addenda historically move our tonnage the most?</div>
+        <div class="bxc-a"><b>Harmon Construction</b> — across your last 14 sets, their addenda shifted takeoff tonnage an average of <b>+4.1%</b> (gauge-schedule replacements in 5 of 14). Recommend holding the estimate open until final addendum on their bids; the Memorial City set is the live example. <span class="bxc-src">sources: 14 bid files · doc-review flags</span></div>
+      </div>
+    </div>
+    <div class="brainx-loop">
+      <div class="bxl reveal"><span class="n">DAY 1</span><b>Knows the book of record</b><p>Every job, SOV, pay app, bid set and account — connected to Vista and STRATUS, answering with sources from the first sign-in.</p></div>
+      <div class="bxl reveal"><span class="n">MONTH 1</span><b>Learns your patterns</b><p>Your real unit costs by building type, each GC's addenda behavior, crew install velocities, plant loading rhythms, which specs hide traps.</p></div>
+      <div class="bxl reveal"><span class="n">QUARTER 1</span><b>Starts seeing ahead</b><p>Flags margin fade before the EAC moves, predicts shop capacity crunches, prices schedule risk from your own history — not industry averages.</p></div>
+      <div class="bxl reveal"><span class="n">EVERY DAY AFTER</span><b>Compounds</b><p>Every estimator override, PM correction and executive sign-off is a training signal. The Brain your team uses next year is smarter than today's — because it learned from them.</p></div>
+    </div>
+  </div>
+
+  <span class="eyebrow" style="margin-top:34px;display:inline-block">Institutional control</span>
   <h2 class="sec">Built for sign-off, not just display.</h2>
-  <p class="lede">Institutional control is a workflow, not a watermark. Every financial exhibit carries a maker-checker chain, every role sees exactly what it should — and an AI assistant rides along on every page.</p>
+  <p class="lede">Institutional control is a workflow, not a watermark. Every financial exhibit carries a maker-checker chain, and every role sees exactly what it should — the Brain rides along inside those guardrails.</p>
   <div class="gov">
     <div class="g reveal"><h5>Role-based access</h5><p>Estimator, PM, shop foreman, controller, executive — each role card opens its own view. Margins, rates and Duct Direct account terms are visible only to the roles entitled to them.</p></div>
     <div class="g reveal"><h5>Sequential approvals</h5><p>Office → Controller → CFO on the forecast cycle and billing close; estimator sign-off on every AI-reviewed bid set; PM → Owner on change orders. A stage cannot sign before the one ahead of it.</p></div>
     <div class="g reveal"><h5>Named, timestamped stamps</h5><p>Every sign-off records who, in what role, at what time — visible on the exhibit itself, from a G702 application to a bid-review brief.</p></div>
-    <div class="g reveal"><h5>The Operating Brain</h5><p>Bottom-right on every page: ask it anything the book of record knows — a job's forecast-at-completion, which addendum changed the gauge schedule, the Orlando plant’s load next month — and it answers from the data, with sources.</p></div>
   </div>
 </div></section>
 
