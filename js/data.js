@@ -17,7 +17,7 @@ const MCCORVEY = {
   address: "8610 Wallisville Road, Houston, TX 77029",
   phone: "(713) 672-7545",
   email: "info@mccorvey.com",
-  award: "3,000+ major commercial projects completed · 1,200 employees",
+  award: "3,000+ major commercial projects · 1,200 employees · 9 offices · 300,000+ sf of manufacturing",
   lines: "BIM Design · Pre-Fabrication · HVAC Installation · Turnkey",
   /* compat fields used by document footers */
   legal: "McCorvey Sheet Metal Works, L.P.",
@@ -28,6 +28,65 @@ const MCCORVEY = {
 /* legacy alias */
 const MCC = MCCORVEY;
 
+/* ---- real public company facts (mccorvey.com) — offices, plants, history, values ---- */
+const OFFICES = [
+  { city: "Houston", addr: "8610 Wallisville Rd., Houston, TX 77029", phone: "(713) 672-7545", hq: true, plant: true },
+  { city: "Dallas", addr: "7640 Esters Blvd., Irving, TX 75063", phone: "(972) 621-0001" },
+  { city: "Austin", addr: "2701 Gattis School Rd., Round Rock, TX 78664", phone: "(512) 384-1700" },
+  { city: "San Antonio", addr: "1077 Central Pkwy. S., San Antonio, TX 78232", phone: "(210) 920-9400" },
+  { city: "Orlando", addr: "10221 Rocket Blvd., Orlando, FL 32824", phone: "(321) 800-2050", plant: true },
+  { city: "Nashville", addr: "5211 Linbar Dr., Nashville, TN 37211", phone: "(629) 257-8690" },
+  { city: "Charlotte", addr: "8848 Red Oak Blvd., Charlotte, NC 28217", phone: "(980) 289-4390" },
+  { city: "Durham", addr: "2430 Riddle Rd., Durham, NC 27703", phone: "(919) 787-4862" },
+  { city: "Charleston", addr: "2390 Air Park Rd., Charleston, SC 29406", phone: "(919) 787-4862" },
+];
+const PLANT_STATS = [
+  { name: "Houston Plant — Wallisville Rd", sqft: 214000, employees: 300,
+    equipment: ["Custom 20-station coil line", "2× Iowa Precision Pro-Fabriduct HVAC coil lines", "7 plasma tables (10'×20', to 1½\")", "Laser cutter (5'×16', to 5/8\")", "12 welding stations", "8 press brakes", "4 seam welders", "3 spiral pipe machines + ovalizer", "3 overhead cranes + conveyor"] },
+  { name: "Orlando Plant — Rocket Blvd", sqft: 93000, employees: 80,
+    equipment: ["Custom 12-station coil line", "3 plasma tables", "5 press brakes", "4 welding stations", "2 seam welders", "2 spiral pipe machines", "2 overhead cranes + conveyor"] },
+];
+const PLANT_TOTALS = { sqft: 307000, employees: 580, piecesPerDay: 4465, pmVdc: 50, activeProjects: 250, officeSqft: 59000 };
+const HISTORY = [
+  ["1925", "Willis \"Pop\" Eagleton McCorvey founds McCorvey Sheet Metal Works in Macon, GA"],
+  ["1946", "Willis and apprentice Raymond McCorvey re-establish the shop in Houston's Galena Park"],
+  ["1950", "Ductwork manufacturing begins"],
+  ["1962", "Raymond designs — and Elwood builds — the first straight duct machine; competitors copy it"],
+  ["1973", "Shop expands past 100,000 sq ft"],
+  ["1974", "First multi-million-dollar project: Memorial Baptist Hospital"],
+  ["1983", "Tony McCorvey Sr. becomes President"],
+  ["1998", "Full family ownership · Minute Maid Park"],
+  ["2007", "Relocation to 8610 Wallisville Rd"],
+  ["2009", "Dallas office & warehouse"],
+  ["2011", "Orlando manufacturing facility"],
+  ["2019", "Raleigh-Durham offices — Carolinas expansion"],
+];
+const CORE_VALUES = [
+  ["Employees Are Family", "Our greatest asset is our people."],
+  ["Productivity", "We don't use the word 'busy'; we remain productive."],
+  ["Safety", "Produce safely, go home in the same health you arrived."],
+  ["Excellence", "The best quality product in the industry."],
+  ["One Crew Attitude", "Teamwork is key to success on the jobsites."],
+  ["Continuous Improvement", "We invest heavily in research and development."],
+  ["Humility", "Actions are far superior to empty words."],
+  ["Customization", "Every piece we detail and fabricate is customized."],
+];
+const WORKFORCE = {
+  apprenticeship: { years: 4, semesters: 8, cohorts: [
+    { sem: 1, heads: 22 }, { sem: 2, heads: 19 }, { sem: 3, heads: 17 }, { sem: 4, heads: 16 },
+    { sem: 5, heads: 14 }, { sem: 6, heads: 12 }, { sem: 7, heads: 11 }, { sem: 8, heads: 10 },
+  ], note: "Tuition + books covered · paid wages with step-ups each completed semester · virtual classroom beyond 70 miles" },
+  keyman: { active: 34, promotedYTD: 9, note: "Personalized leadership tracks — virtually all MSM leaders started in the shop or the field" },
+  interns: 12,
+  awards: ["ABC STEP Safety Awards", "ABC Excellence in Construction", "Houston Chronicle Top Workplaces", "HBJ Best Places to Work"],
+};
+window.OFFICES = OFFICES;
+window.PLANT_STATS = PLANT_STATS;
+window.PLANT_TOTALS = PLANT_TOTALS;
+window.HISTORY = HISTORY;
+window.CORE_VALUES = CORE_VALUES;
+window.WORKFORCE = WORKFORCE;
+
 /* ---- demo org (fictional personas except public leadership) ---- */
 const PEOPLE = {
   pms: ["Travis Boone", "Alicia Grant", "Marcus Webb"],
@@ -36,8 +95,8 @@ const PEOPLE = {
 
 const SUBS = [
   "MSM Field Crew — Self-Perform",
-  "MSM Fab — Plant 1 (Wallisville)",
-  "MSM Fab — Plant 2 (Spiral & Round)",
+  "MSM Fab — Houston Plant (Wallisville)",
+  "MSM Fab — Orlando Plant (Rocket Blvd)",
   "Gulf Coast Insulation Partners",
   "Lone Star TAB & Balancing",
   "Bayou City Crane & Rigging",
@@ -86,8 +145,8 @@ const JOBS = [
     ],
     phases: [
       { name: "BIM Coordination & Clash Sign-Off", start: "2024-09-09", finish: "2024-10-18", value: 205000, pct: 100 },
-      { name: "Plant 1 Fabrication — Levels 1-6", start: "2024-10-14", finish: "2024-12-20", value: 1580000, pct: 100 },
-      { name: "Plant 1 Fabrication — Levels 7-12", start: "2024-12-02", finish: "2025-02-14", value: 1564000, pct: 100 },
+      { name: "Houston Plant Fabrication — Levels 1-6", start: "2024-10-14", finish: "2024-12-20", value: 1580000, pct: 100 },
+      { name: "Houston Plant Fabrication — Levels 7-12", start: "2024-12-02", finish: "2025-02-14", value: 1564000, pct: 100 },
       { name: "Field Rough-In — Risers & Mains", start: "2024-11-04", finish: "2025-02-28", value: 1140000, pct: 100 },
       { name: "Field Rough-In — Branch & Runouts", start: "2025-01-13", finish: "2025-04-18", value: 970000, pct: 100 },
       { name: "Kitchen & Lab Exhaust — Welded", start: "2025-02-03", finish: "2025-04-25", value: 380000, pct: 100 },
@@ -115,7 +174,7 @@ const JOBS = [
     sector: "Convention / Public Assembly — Exposed Architectural Duct",
     pm: "Alicia Grant",
     super: "R. Salinas",
-    sub: "MSM Fab — Plant 2 (Spiral & Round)",
+    sub: "MSM Fab — Orlando Plant (Rocket Blvd)",
     status: "In Progress",
     contractDate: "2025-01-17",
     start: "2025-02-10",
@@ -212,7 +271,7 @@ const JOBS = [
     sector: "Mission Critical — Data Hall Air Distribution",
     pm: "Marcus Webb",
     super: "T. Nguyen",
-    sub: "MSM Fab — Plant 1 (Wallisville)",
+    sub: "MSM Fab — Houston Plant (Wallisville)",
     status: "Just Started",
     contractDate: "2025-06-27",
     start: "2025-07-14",
@@ -247,7 +306,7 @@ const JOBS = [
 JOBS[0].photos = [
   { src: "/mccorvey/assets/photos/mc01.jpg", cap: "Overhead rectangular mains — patient tower level 6", date: "2025-01-17", tag: "Install" },
   { src: "/mccorvey/assets/photos/mc02.jpg", cap: "Riser install — mechanical shaft B", date: "2024-12-06", tag: "Install" },
-  { src: "/mccorvey/assets/photos/b03.jpg", cap: "Plant 1 — coil line run, 22ga galvanized", date: "2024-11-08", tag: "Fabrication" },
+  { src: "/mccorvey/assets/photos/b03.jpg", cap: "Houston plant — coil line run, 22ga galvanized", date: "2024-11-08", tag: "Fabrication" },
   { src: "/mccorvey/assets/photos/b06.jpg", cap: "Welded stainless lab exhaust — spool assembly", date: "2025-02-21", tag: "Welded" },
   { src: "/mccorvey/assets/photos/mc03.jpg", cap: "Branch duct & VAV connections — level 9", date: "2025-03-14", tag: "Install" },
   { src: "/mccorvey/assets/photos/b10.jpg", cap: "TAB support walk with commissioning team", date: "2025-06-13", tag: "Closeout" },
@@ -255,7 +314,7 @@ JOBS[0].photos = [
 JOBS[1].photos = [
   { src: "/mccorvey/assets/photos/mc04.jpg", cap: "Exhibit hall mains — 84x40 trunk sections", date: "2025-06-20", tag: "Install" },
   { src: "/mccorvey/assets/photos/mc05.jpg", cap: "Exposed architectural spiral — concourse mockup", date: "2025-07-03", tag: "Spiral" },
-  { src: "/mccorvey/assets/photos/b13.jpg", cap: "Plant 2 spiral line — paint-grade run", date: "2025-06-06", tag: "Fabrication" },
+  { src: "/mccorvey/assets/photos/b13.jpg", cap: "Orlando spiral line — paint-grade run", date: "2025-06-06", tag: "Fabrication" },
 ];
 JOBS[2].photos = [
   { src: "/mccorvey/assets/photos/mc06.jpg", cap: "Dock zone duct — insulated supply mains", date: "2025-07-18", tag: "Install" },
@@ -286,13 +345,13 @@ const BID_DEFAULTS = {
   },
   levers: { overheadPct: 6.0, profitPct: 9.0, contingencyPct: 0.0, retainagePct: 5.0, taxPct: 0.0, bondPct: 1.0, glPct: 0.85, escalationPct: 0.0 },
   lines: [
-    { trade: "Rectangular Duct", csi: "23 31 13", desc: "Galvanized rectangular duct per SMACNA — fab & deliver, 1.42M lbs", qty: 1420000, unit: "lbs", unitCost: cost(2460000.00) / 1420000, sub: "MSM Fab — Plant 1 (Wallisville)", offset: 35, dur: 120 },
-    { trade: "Spiral & Round Duct", csi: "23 31 13", desc: "Spiral & round duct — exposed and concealed runs", qty: 38000, unit: "LF", unitCost: cost(684000.00) / 38000, sub: "MSM Fab — Plant 2 (Spiral & Round)", offset: 45, dur: 100 },
+    { trade: "Rectangular Duct", csi: "23 31 13", desc: "Galvanized rectangular duct per SMACNA — fab & deliver, 1.42M lbs", qty: 1420000, unit: "lbs", unitCost: cost(2460000.00) / 1420000, sub: "MSM Fab — Houston Plant (Wallisville)", offset: 35, dur: 120 },
+    { trade: "Spiral & Round Duct", csi: "23 31 13", desc: "Spiral & round duct — exposed and concealed runs", qty: 38000, unit: "LF", unitCost: cost(684000.00) / 38000, sub: "MSM Fab — Orlando Plant (Rocket Blvd)", offset: 45, dur: 100 },
     { trade: "Field Installation", csi: "23 31 13", desc: "Field installation labor — mains, risers, branches & runouts", qty: 1, unit: "LS", unitCost: cost(1710000.00), sub: "MSM Field Crew — Self-Perform", offset: 56, dur: 170 },
     { trade: "Duct Liner & Wrap", csi: "23 07 13", desc: "Duct liner and external wrap coordination w/ insulation partner", qty: 1, unit: "LS", unitCost: cost(342000.00), sub: "Gulf Coast Insulation Partners", offset: 70, dur: 120 },
     { trade: "Dampers & Accessories", csi: "23 33 00", desc: "Fire/smoke dampers, volume dampers, access doors & flex connections", qty: 1, unit: "LS", unitCost: cost(478000.00), sub: "MSM Field Crew — Self-Perform", offset: 84, dur: 110 },
     { trade: "Air Devices", csi: "23 37 13", desc: "Diffusers, registers & grilles per GRD schedule", qty: 2140, unit: "GRD", unitCost: cost(274000.00) / 2140, sub: "MSM Field Crew — Self-Perform", offset: 150, dur: 60 },
-    { trade: "Welded Exhaust", csi: "23 38 13", desc: "Kitchen & lab exhaust — welded stainless, liquid-tight per NFPA 96", qty: 1, unit: "LS", unitCost: cost(380000.00), sub: "MSM Fab — Plant 1 (Wallisville)", offset: 100, dur: 80 },
+    { trade: "Welded Exhaust", csi: "23 38 13", desc: "Kitchen & lab exhaust — welded stainless, liquid-tight per NFPA 96", qty: 1, unit: "LS", unitCost: cost(380000.00), sub: "MSM Fab — Houston Plant (Wallisville)", offset: 100, dur: 80 },
     { trade: "BIM & Shop Drawings", csi: "23 05 00", desc: "LOD 400 coordination model, clash resolution & sign-off drawings", qty: 1, unit: "LS", unitCost: cost(205000.00), sub: "MSM Field Crew — Self-Perform", offset: 0, dur: 40 },
     { trade: "General Conditions", csi: "01 31 00", desc: "Hoisting, lifts, badging, protection and daily coordination", qty: 1, unit: "LS", unitCost: cost(171000.00), sub: "MSM Field Crew — Self-Perform", offset: 0, dur: 290 },
     { trade: "PM & Engineering", csi: "01 31 13", desc: "Project management, engineering, submittals and closeout documentation", qty: 1, unit: "LS", unitCost: cost(136000.00), sub: "MSM Field Crew — Self-Perform", offset: 0, dur: 290 },
@@ -348,14 +407,16 @@ window.BID_DEFAULTS = BID_DEFAULTS;
   const CATALOG = [
     ["HIA-2318", "Houston Intercontinental — Concourse D Ductwork", "Houston Airport System (GC: Archer-Gray JV)", "2800 N Terminal Rd, Houston, TX", "Aviation — Concourse Air Distribution", "Alicia Grant", "R. Salinas", 0, "Complete", "2023-10-02", "2025-01-31", 18600000, 5, 100, 0.97],
     ["SAM-2402", "St. Anne's Medical Pavilion — Ductwork Package", "St. Anne's Health System (GC: Harmon Construction)", "9200 Medical Plaza Dr, Houston, TX", "Healthcare — Patient Tower Ductwork", "Travis Boone", "J. Carter", 1, "In Progress", "2024-03-04", "2026-02-27", 8400000, 10, 62, 0.98],
-    ["UTL-2405", "University Research Lab Building — Exhaust & Supply", "Texas University System (CM: Vaughn CM)", "Research Park Blvd, Austin, TX", "Higher Ed — Lab Exhaust (Welded)", "Marcus Webb", "T. Nguyen", 1, "Complete", "2024-05-06", "2025-06-27", 5200000, 5, 100, 0.96],
+    ["UTL-2405", "Triangle Research Labs Building — Exhaust & Supply", "Triangle Research University (CM: Vaughn CM)", "Research Triangle Park, Durham, NC", "Higher Ed — Lab Exhaust (Welded)", "Marcus Webb", "T. Nguyen", 1, "Complete", "2024-05-06", "2025-06-27", 5200000, 5, 100, 0.96],
     ["CTE-2408", "Cypress CTE Center — HVAC Ductwork", "Cypress Ridge ISD (GC: Meridian Design-Build)", "12800 Cypress Ridge Dr, Cypress, TX", "K-12 — CTE / Shop Ventilation", "Marcus Webb", "D. Okafor", 0, "Complete", "2024-08-12", "2025-05-30", 2400000, 5, 100, 0.95],
-    ["OTW-2411", "One Twelve Tower — TI Floors 18-24 Ductwork", "Landmark Property Trust (GC: Corestone)", "112 Main St, Houston, TX", "Commercial — Tenant Improvement", "Alicia Grant", "R. Salinas", 0, "Complete", "2024-11-04", "2025-04-25", 1900000, 5, 100, 0.94],
+    ["OTW-2411", "One Tryon Tower — TI Floors 18-24 Ductwork", "Landmark Property Trust (GC: Corestone)", "112 S Tryon St, Charlotte, NC", "Commercial — Tenant Improvement", "Alicia Grant", "R. Salinas", 0, "Complete", "2024-11-04", "2025-04-25", 1900000, 5, 100, 0.94],
     ["HRT-2501", "Hill Country Resort & Spa — Ductwork Package", "Hill Country Hospitality Group (GC: Titan Builders)", "18400 Resort Ranch Rd, San Antonio, TX", "Hospitality — Resort & Conference", "Alicia Grant", "D. Okafor", 2, "In Progress", "2025-01-13", "2026-03-27", 6300000, 10, 28, 0.99],
     ["PCA-2502", "Petrochem Admin & Control Complex — HVAC Sheet Metal", "Gulf Coast Energy Partners (EPC: Sterling)", "1400 Battleground Rd, Deer Park, TX", "Industrial — Pressurized Control Rooms", "Travis Boone", "J. Carter", 1, "In Progress", "2025-02-17", "2025-12-19", 3800000, 10, 51, 0.96],
     ["STD-2503", "Memorial Stadium Club Level — Renovation Ductwork", "Memorial Athletics Authority (GC: Archer-Gray)", "1 Stadium Dr, Houston, TX", "Public Assembly — Club & Suites Reno", "Marcus Webb", "R. Salinas", 0, "Closeout", "2025-03-03", "2025-08-15", 4500000, 5, 100, 1.03],
     ["SFB-2504", "Silicon Ranch Fab Support Building — Cleanroom Duct", "Silicon Ranch Semiconductor (GC: Corestone)", "5600 Chip Plant Rd, Taylor, TX", "Mission Critical — Cleanroom Stainless", "Travis Boone", "T. Nguyen", 2, "In Progress", "2025-04-07", "2026-06-26", 14200000, 10, 33, 1.01],
-    ["WSS-2505", "Westport Spec Shells (3 Bldgs) — Ductwork", "Westport Industrial Partners (GC: Meridian)", "8800 Westport Pkwy, Katy, TX", "Industrial — Spec Warehouse", "Marcus Webb", "D. Okafor", 0, "Complete", "2025-05-05", "2025-10-17", 2700000, 5, 100, 0.93],
+    ["WSS-2505", "Westport Spec Shells (3 Bldgs) — Ductwork", "Westport Industrial Partners (GC: Meridian)", "8800 Centennial Blvd, Nashville, TN", "Industrial — Spec Warehouse", "Marcus Webb", "D. Okafor", 0, "Complete", "2025-05-05", "2025-10-17", 2700000, 5, 100, 0.93],
+    ["OEC-2505", "Orlando Entertainment District — Ductwork & Kitchen Exhaust", "Sunbelt Resorts Group (GC: Titan Builders)", "6000 Destination Pkwy, Orlando, FL", "Entertainment — Resort, Venues & F&B", "Alicia Grant", "D. Okafor", 2, "In Progress", "2025-04-14", "2026-05-29", 5400000, 10, 45, 0.97],
+    ["NMV-2506", "Nashville Music Venue & Hotel — Sheet Metal Package", "Music Row Hospitality (GC: Archer-Gray)", "400 Rep. John Lewis Way, Nashville, TN", "Entertainment — Venue & Hotel Tower", "Marcus Webb", "T. Nguyen", 1, "In Progress", "2025-05-12", "2026-08-28", 6800000, 10, 24, 0.99],
     ["GDC-2506", "Gulfway Grocery Distribution Center — Ductwork & Exhaust", "Gulfway Grocers, Inc. (GC: Titan Builders)", "10200 Gulfway Dr, Baytown, TX", "Industrial — Distribution & Cold Dock", "Travis Boone", "J. Carter", 0, "In Progress", "2025-05-19", "2025-12-05", 3400000, 10, 68, 0.95],
     ["HCC-2507", "Harris County Courthouse Annex — Renovation Ductwork", "Harris County Facilities (CM: Vaughn CM)", "1201 Congress St, Houston, TX", "Municipal — Historic Renovation", "Alicia Grant", "R. Salinas", 0, "Just Started", "2025-07-07", "2026-03-20", 2200000, 5, 8, 0.97],
     ["KSD-2508", "Katy ISD — CUP & Two Campus Additions", "Katy Springs ISD (GC: Harmon Construction)", "Districtwide · Katy, TX", "K-12 — Central Utility Plant & Additions", "Marcus Webb", "D. Okafor", 1, "In Progress", "2025-03-10", "2026-07-31", 7600000, 5, 39, 0.98],
@@ -557,10 +618,10 @@ window.TRADE_CATALOG = TRADE_CATALOG;
 const DESIGN_PROCESS = [
   "Estimating-to-VDC turnover — award package & scope review",
   "Existing conditions capture & model setup (LOD 400)",
-  "BIM coordination — clash detection with all MEP trades",
+  "BIM coordination — clash detection with all MEP trades (Revit + Navisworks)",
   "Signed-off shop & spool drawings released to plant (STRATUS)",
-  "Plant release — plasma, coil line & spiral scheduling",
-  "Field release — spool maps, hanger drawings & install packages",
+  "Plant release — coil line, plasma & spiral scheduling",
+  "Field release — spool maps, hanger layout (Trimble) & install packages",
 ];
 const SERVICE_TIERS = {
   "Standing PO": ["Reserved weekly plant capacity", "Dedicated account detailer", "Same-week shipping on stock fittings"],
@@ -669,33 +730,33 @@ window.SERVICE_TIERS = SERVICE_TIERS;
 
 /* =========================================================
    FABRICATION DIVISION — Duct Direct accounts + shop floor board.
-   Plants: Wallisville Rd (Plant 1), Spiral & Round (Plant 2).
+   Plants: Houston 214,000 sf (Wallisville Rd), Orlando 93,000 sf (Rocket Blvd).
    ========================================================= */
 const SERVICE_AGREEMENTS = [
-  { client: "Lone Star Mechanical", line: "Rect", svcType: "Duct Direct", site: "Houston metro projects", tier: "Standing PO", monthly: 148000, start: "2025-01-01", renewal: "2026-12-31", status: "Active", tech: "Plant 1 — Bay 3" },
-  { client: "Gulf Coast Mechanical Group", line: "Rect + Spiral", svcType: "Duct Direct", site: "TX Gulf Coast", tier: "Weekly Release", monthly: 212000, start: "2025-02-01", renewal: "2027-01-31", status: "Active", tech: "Plant 1 — Bay 1" },
-  { client: "Alamo Air Systems", line: "Spiral", svcType: "Duct Direct", site: "San Antonio", tier: "Weekly Release", monthly: 96000, start: "2024-03-01", renewal: "2026-08-31", status: "Expiring", tech: "Plant 2 — Spiral" },
-  { client: "Hill Country HVAC", line: "Rect", svcType: "Duct Direct", site: "Austin metro", tier: "On-Demand", monthly: 44000, start: "2024-04-01", renewal: "2027-03-31", status: "Active", tech: "Plant 1 — Bay 2" },
-  { client: "Bayou Mechanical", line: "Welded", svcType: "Fab Partner", site: "Petrochem corridor", tier: "Standing PO", monthly: 118000, start: "2024-08-01", renewal: "2026-09-30", status: "Expiring", tech: "Plant 1 — Weld Shop" },
-  { client: "Piney Woods Mech", line: "Rect", svcType: "Duct Direct", site: "East TX", tier: "On-Demand", monthly: 31000, start: "2024-05-01", renewal: "2027-04-30", status: "Active", tech: "Plant 1 — Bay 2" },
-  { client: "Metroplex Air", line: "Rect + Spiral", svcType: "Duct Direct", site: "DFW", tier: "Weekly Release", monthly: 164000, start: "2025-03-01", renewal: "2027-02-28", status: "Active", tech: "Plant 1 — Bay 3" },
-  { client: "Way Mechanical (affiliate)", line: "Rect", svcType: "Fab Partner", site: "TX + Southeast", tier: "Standing PO", monthly: 385000, start: "2025-06-01", renewal: "2027-05-31", status: "Active", tech: "Plant 1 — Bay 1" },
-  { client: "Coastal Commercial HVAC", line: "Spiral", svcType: "Duct Direct", site: "Corpus Christi", tier: "On-Demand", monthly: 27000, start: "2024-10-01", renewal: "2026-09-30", status: "Expiring", tech: "Plant 2 — Spiral" },
-  { client: "Summit Mechanical Partners", line: "Rect", svcType: "Duct Direct", site: "OK + North TX", tier: "Custom", monthly: 88000, start: "2025-07-01", renewal: "2027-06-30", status: "Active", tech: "Plant 1 — Bay 2" },
-  { client: "Kirlin Way (affiliate)", line: "Welded", svcType: "Fab Partner", site: "Mid-Atlantic", tier: "Custom", monthly: 142000, start: "2025-01-15", renewal: "2027-01-14", status: "Active", tech: "Plant 1 — Weld Shop" },
+  { client: "Lone Star Mechanical", line: "Rect", svcType: "Duct Direct", site: "Houston metro projects", tier: "Standing PO", monthly: 148000, start: "2025-01-01", renewal: "2026-12-31", status: "Active", tech: "Houston — Pro-Fabriduct 1" },
+  { client: "Gulf Coast Mechanical Group", line: "Rect + Spiral", svcType: "Duct Direct", site: "TX Gulf Coast", tier: "Weekly Release", monthly: 212000, start: "2025-02-01", renewal: "2027-01-31", status: "Active", tech: "Houston — Coil Line 1" },
+  { client: "Alamo Air Systems", line: "Spiral", svcType: "Duct Direct", site: "San Antonio", tier: "Weekly Release", monthly: 96000, start: "2024-03-01", renewal: "2026-08-31", status: "Expiring", tech: "Orlando — Spiral Line" },
+  { client: "Hill Country HVAC", line: "Rect", svcType: "Duct Direct", site: "Austin metro", tier: "On-Demand", monthly: 44000, start: "2024-04-01", renewal: "2027-03-31", status: "Active", tech: "Houston — Coil Line 2" },
+  { client: "Bayou Mechanical", line: "Welded", svcType: "Fab Partner", site: "Petrochem corridor", tier: "Standing PO", monthly: 118000, start: "2024-08-01", renewal: "2026-09-30", status: "Expiring", tech: "Houston — Weld Shop" },
+  { client: "Piney Woods Mech", line: "Rect", svcType: "Duct Direct", site: "East TX", tier: "On-Demand", monthly: 31000, start: "2024-05-01", renewal: "2027-04-30", status: "Active", tech: "Houston — Coil Line 2" },
+  { client: "Metroplex Air", line: "Rect + Spiral", svcType: "Duct Direct", site: "DFW", tier: "Weekly Release", monthly: 164000, start: "2025-03-01", renewal: "2027-02-28", status: "Active", tech: "Houston — Pro-Fabriduct 1" },
+  { client: "Way Mechanical (affiliate)", line: "Rect", svcType: "Fab Partner", site: "TX + Southeast", tier: "Standing PO", monthly: 385000, start: "2025-06-01", renewal: "2027-05-31", status: "Active", tech: "Houston — Coil Line 1" },
+  { client: "Coastal Commercial HVAC", line: "Spiral", svcType: "Duct Direct", site: "Corpus Christi", tier: "On-Demand", monthly: 27000, start: "2024-10-01", renewal: "2026-09-30", status: "Expiring", tech: "Orlando — Spiral Line" },
+  { client: "Summit Mechanical Partners", line: "Rect", svcType: "Duct Direct", site: "OK + North TX", tier: "Custom", monthly: 88000, start: "2025-07-01", renewal: "2027-06-30", status: "Active", tech: "Houston — Coil Line 2" },
+  { client: "Kirlin Way (affiliate)", line: "Welded", svcType: "Fab Partner", site: "Mid-Atlantic", tier: "Custom", monthly: 142000, start: "2025-01-15", renewal: "2027-01-14", status: "Active", tech: "Houston — Weld Shop" },
   { client: "Rio Grande Air Conditioning", line: "Rect", svcType: "Duct Direct", site: "RGV", tier: "On-Demand", monthly: 39000, start: "2025-09-01", renewal: "2026-10-15", status: "Proposed", tech: "—" },
   { client: "Silverline DC Facilities", line: "Rect", svcType: "OEM Program", site: "Data center campuses", tier: "Standing PO", monthly: 205000, start: "2026-02-01", renewal: "2027-01-31", status: "Proposed", tech: "—" },
   { client: "Trinity Commercial Services", line: "Spiral", svcType: "Duct Direct", site: "Dallas", tier: "Weekly Release", monthly: 71000, start: "2025-12-01", renewal: "2026-11-30", status: "Proposed", tech: "—" },
 ];
 const SERVICE_CALLS = [
-  { num: "WO-8211", client: "SJC-2502 Convention Center", issue: "Exposed spiral rerun — 620 LF paint-grade 26ga, ballroom rev ASI-014", priority: "Emergency", tech: "Plant 2 — Spiral", status: "In Fabrication", opened: "2026-07-27" },
-  { num: "WO-8209", client: "Way Mechanical (affiliate)", issue: "Hospital package release 14 — 38,000 lbs rect, TDC, liner installed at plant", priority: "High", tech: "Plant 1 — Bay 1", status: "In Fabrication", opened: "2026-07-27" },
-  { num: "WO-8206", client: "Lone Star Mechanical", issue: "Stock fitting order — 240 ea 90° elbows w/ vanes, mixed sizes", priority: "Standard", tech: "Plant 1 — Bay 3", status: "Queued", opened: "2026-07-26" },
-  { num: "WO-8204", client: "GPM-2503 Medical City", issue: "Central plant welded exhaust spools — 304SS, 11 assemblies", priority: "Standard", tech: "Plant 1 — Weld Shop", status: "Cutting", opened: "2026-07-26" },
-  { num: "WO-8199", client: "Gulf Coast Mechanical Group", issue: "Weekly release — 22,400 lbs rect + 1,800 LF spiral, JIT Thursday", priority: "High", tech: "Plant 1 — Bay 1", status: "QC Hold", opened: "2026-07-24" },
-  { num: "WO-8195", client: "SFB-2504 Silicon Ranch", issue: "Cleanroom stainless duct — orbital weld batch 6, bagged & tagged", priority: "Standard", tech: "Plant 1 — Weld Shop", status: "In Fabrication", opened: "2026-07-24" },
-  { num: "WO-8192", client: "Metroplex Air", issue: "Spiral order — 3,400 LF 24ga w/ gasketed fittings, freight to DFW", priority: "High", tech: "Plant 2 — Spiral", status: "Shipped", opened: "2026-07-23" },
-  { num: "WO-8188", client: "CVH-2509 Hotel Tower", issue: "Tower floors 18-24 spool release — 41,200 lbs, hoist windows booked", priority: "Standard", tech: "Plant 1 — Bay 2", status: "Queued", opened: "2026-07-22" },
+  { num: "WO-8211", client: "SJC-2502 Convention Center", issue: "Exposed spiral rerun — 620 LF paint-grade 26ga, ballroom rev ASI-014", priority: "Emergency", tech: "Orlando — Spiral Line", status: "In Fabrication", opened: "2026-07-27" },
+  { num: "WO-8209", client: "Way Mechanical (affiliate)", issue: "Hospital package release 14 — 38,000 lbs rect, TDC, liner installed at plant", priority: "High", tech: "Houston — Coil Line 1", status: "In Fabrication", opened: "2026-07-27" },
+  { num: "WO-8206", client: "Lone Star Mechanical", issue: "Stock fitting order — 240 ea 90° elbows w/ vanes, mixed sizes", priority: "Standard", tech: "Houston — Pro-Fabriduct 1", status: "Queued", opened: "2026-07-26" },
+  { num: "WO-8204", client: "GPM-2503 Medical City", issue: "Central plant welded exhaust spools — 304SS, 11 assemblies", priority: "Standard", tech: "Houston — Weld Shop", status: "Cutting", opened: "2026-07-26" },
+  { num: "WO-8199", client: "Gulf Coast Mechanical Group", issue: "Weekly release — 22,400 lbs rect + 1,800 LF spiral, JIT Thursday", priority: "High", tech: "Houston — Coil Line 1", status: "QC Hold", opened: "2026-07-24" },
+  { num: "WO-8195", client: "SFB-2504 Silicon Ranch", issue: "Cleanroom stainless duct — orbital weld batch 6, bagged & tagged", priority: "Standard", tech: "Houston — Weld Shop", status: "In Fabrication", opened: "2026-07-24" },
+  { num: "WO-8192", client: "Metroplex Air", issue: "Spiral order — 3,400 LF 24ga w/ gasketed fittings, freight to DFW", priority: "High", tech: "Orlando — Spiral Line", status: "Shipped", opened: "2026-07-23" },
+  { num: "WO-8188", client: "CVH-2509 Hotel Tower", issue: "Tower floors 18-24 spool release — 41,200 lbs, hoist windows booked", priority: "Standard", tech: "Houston — Coil Line 2", status: "Queued", opened: "2026-07-22" },
 ];
 window.SERVICE_AGREEMENTS = SERVICE_AGREEMENTS;
 window.SERVICE_CALLS = SERVICE_CALLS;
@@ -709,14 +770,14 @@ const BID_PIPELINE = [
   { id: "B-2601", project: "Memorial City Medical Office Tower — Ductwork", owner: "GC: Harmon Construction", sector: "Healthcare", est: "Rick Alvarez", due: "2026-08-14", amount: 6900000, marginPct: 14.8, status: "Submitted" },
   { id: "B-2602", project: "DFW Logistics Air Cargo Facility — Sheet Metal", owner: "GC: Meridian Design-Build", sector: "Aviation", est: "Dana Kowalski", due: "2026-08-21", amount: 8400000, marginPct: 15.6, status: "Draft" },
   { id: "B-2603", project: "Baylor Research Annex — Lab Exhaust & Supply", owner: "CM: Vaughn CM", sector: "Higher Ed", est: "Priya Shah", due: "2026-08-08", amount: 4200000, marginPct: 13.9, status: "Submitted" },
-  { id: "B-2604", project: "Frisco Performing Arts Center — Exposed Duct", owner: "GC: Titan Builders", sector: "Public Assembly", est: "Rick Alvarez", due: "2026-09-04", amount: 3600000, marginPct: 14.2, status: "Draft" },
+  { id: "B-2604", project: "Nashville Performing Arts Center — Exposed Duct", owner: "GC: Titan Builders", sector: "Public Assembly", est: "Rick Alvarez", due: "2026-09-04", amount: 3600000, marginPct: 14.2, status: "Draft" },
   { id: "B-2605", project: "Galveston Convention Hotel — Ductwork Package", owner: "GC: Titan Builders JV", sector: "Hospitality", est: "Dana Kowalski", due: "2026-08-28", amount: 7800000, marginPct: 16.1, status: "Pending Award" },
   { id: "B-2598", project: "Pearland ISD CUP & Additions — Ductwork", owner: "GC: Harmon Construction", sector: "K-12", est: "Joe Herrera", due: "2026-07-10", amount: 2980000, marginPct: 13.5, status: "Pending Award" },
   { id: "B-2594", project: "Austin Data Center DC-4 — Ductwork Package", owner: "GC: Corestone Constructors", sector: "Mission Critical", est: "Dana Kowalski", due: "2026-06-19", amount: 11800000, marginPct: 15.2, status: "Won", jobId: "DC4-2510" },
   { id: "B-2593", project: "Children's Hospital Expansion — Ductwork", owner: "GC: Harmon Construction", sector: "Healthcare", est: "Rick Alvarez", due: "2026-06-12", amount: 9700000, marginPct: 14.6, status: "Won", jobId: "CHE-2511" },
   { id: "B-2590", project: "Convention District Hotel Tower — Sheet Metal", owner: "GC: Titan Builders JV", sector: "Hospitality", est: "Dana Kowalski", due: "2026-05-29", amount: 16400000, marginPct: 15.9, status: "Won", jobId: "CVH-2509" },
   { id: "B-2588", project: "Austin Data Center DC-3 — Ductwork Package", owner: "GC: Corestone Constructors", sector: "Mission Critical", est: "Priya Shah", due: "2026-05-15", amount: 9150000, marginPct: 15.1, status: "Won", jobId: "ADC-2507" },
-  { id: "B-2586", project: "Sugar Land Office Campus — Ductwork (3 bldgs)", owner: "GC: Corestone Constructors", sector: "Commercial", est: "Rick Alvarez", due: "2026-05-08", amount: 5120000, marginPct: 12.4, status: "Lost", note: "Price — regional shop 8% under; their number missed the Addendum 2 welded-exhaust upgrade" },
+  { id: "B-2586", project: "Ballantyne Office Campus (Charlotte) — Ductwork (3 bldgs)", owner: "GC: Corestone Constructors", sector: "Commercial", est: "Rick Alvarez", due: "2026-05-08", amount: 5120000, marginPct: 12.4, status: "Lost", note: "Price — regional shop 8% under; their number missed the Addendum 2 welded-exhaust upgrade" },
   { id: "B-2583", project: "Med Center Proton Therapy Bldg — Ductwork", owner: "GC: Archer-Gray JV", sector: "Healthcare", est: "Dana Kowalski", due: "2026-04-24", amount: 11200000, marginPct: 16.8, status: "Lost", note: "Owner deferred capital to 2027" },
   { id: "B-2580", project: "Katy ISD CUP & Two Campus Additions", owner: "GC: Harmon Construction", sector: "K-12", est: "Joe Herrera", due: "2026-04-10", amount: 7600000, marginPct: 14.0, status: "Won", jobId: "KSD-2508" },
   { id: "B-2577", project: "Woodlands Surgical Pavilion — Ductwork", owner: "GC: Harmon Construction", sector: "Healthcare", est: "Priya Shah", due: "2026-03-27", amount: 3880000, marginPct: 15.4, status: "Won" },

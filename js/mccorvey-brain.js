@@ -152,7 +152,7 @@
 
     if (/backlog|pipeline|revenue|book/.test(s)) {
       var remaining = all.reduce(function (a, x) { return a + x.m.remaining; }, 0);
-      return 'Active contract backlog is <b>' + moneyK(backlog) + '</b> across ' + all.length + ' jobs, with ' + moneyK(remaining) + ' still unearned. That covers a meaningful share of the Year-1 revenue forecast — the CFO forecast console shows the coverage math and the new-award growth needed to close the gap.';
+      return 'Active contract backlog is <b>' + moneyK(backlog) + '</b> across the top ' + all.length + ' packages (of ~250 active projects company-wide), with ' + moneyK(remaining) + ' still unearned. That covers a meaningful share of the Year-1 revenue forecast — the CFO forecast console shows the coverage math and the new-award growth needed to close the gap.';
     }
 
     if (/retention|retainage/.test(s)) {
@@ -167,10 +167,10 @@
     }
 
     if (/safety|incident|osha/.test(s))
-      return 'The field division is at <b>296 consecutive days without a lost-time incident</b>. All active jobs ran daily toolbox talks this week; two near-miss reports were logged and closed at the Convention Center (hoist staging relocation).';
+      return 'The field division is at <b>296 consecutive days without a lost-time incident</b>. Monday-morning toolbox talks ran at both plants and every jobsite this week — safety is a value here, not a priority. Two near-miss reports were logged and closed at the Convention Center (hoist staging relocation).';
 
     if (/crew|labor|sub|workforce/.test(s))
-      return 'Field crews are running ~87% utilization and both plants are above 87% machine utilization. Self-perform crews carry the field; Plant 1 (Wallisville) and Plant 2 (Spiral) feed the install schedule with JIT spool releases. No labor shortfalls flagged for the next 30-day look-ahead.';
+      return 'Field crews are running ~87% utilization and both plants are above 87% machine utilization. Self-perform crews carry the field; the Houston plant (214,000 sf) and Orlando plant (93,000 sf) feed the install schedule with JIT spool releases. No labor shortfalls flagged for the next 30-day look-ahead.';
 
     if (/best|top|strong|winner|outperform/.test(s)) {
       var t = all.slice().sort(function (a, b) { return b.m.marginToDate - a.m.marginToDate; })[0];

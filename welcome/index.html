@@ -65,14 +65,14 @@ p.lede{font-size:16px;color:var(--muted);max-width:640px}
 
 /* stat band */
 .stats{border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--bg2)}
-.stats .wrap{display:grid;grid-template-columns:repeat(6,1fr)}
+.stats .wrap{display:grid;grid-template-columns:repeat(4,1fr)}
 .stat{padding:26px 18px;border-left:1px solid var(--line-soft)}
-.stat:first-child{border-left:none}
+.stat:nth-child(4n+1){border-left:none}
+.stat:nth-child(n+5){border-top:1px solid var(--line-soft)}
 .stat .v{font-size:26px;font-weight:800;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
 .stat .v em{font-style:normal;color:var(--blue)}
 .stat .l{font-size:9.5px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--hint);margin-top:6px}
-@media(max-width:900px){.stats .wrap{grid-template-columns:repeat(3,1fr)}.stat:nth-child(4){border-left:none}}
-@media(max-width:560px){.stats .wrap{grid-template-columns:repeat(2,1fr)}.stat{border-left:none}}
+@media(max-width:900px){.stats .wrap{grid-template-columns:repeat(2,1fr)}.stat{border-left:none;padding:22px 16px}.stat:nth-child(2n){border-left:1px solid var(--line-soft)}.stat:nth-child(n+3){border-top:1px solid var(--line-soft)}}
 
 /* feeds strip */
 .feeds{padding:26px 0;border-bottom:1px solid var(--line)}
@@ -116,6 +116,30 @@ a.card:hover .go{opacity:1}
 .step h4{font-size:15px;font-weight:800;color:var(--ink);margin:12px 0 8px}
 .step p{font-size:13px;color:var(--muted)}
 
+/* history timeline */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:38px}
+@media(max-width:960px){.tl{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.tl{grid-template-columns:1fr}}
+.tl .t{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:18px 18px 16px}
+.tl .y{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:800;color:var(--blue);letter-spacing:.06em}
+.tl h6{font-size:13px;font-weight:800;letter-spacing:-.01em;color:var(--ink);margin:6px 0 5px}
+.tl .t p{font-size:12px;color:var(--muted);line-height:1.55}
+
+/* core values */
+.vals{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:34px}
+@media(max-width:960px){.vals{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.vals{grid-template-columns:1fr}}
+.vals .v{background:var(--bg2);border:1px solid var(--line);border-top:3px solid var(--blue);border-radius:10px;padding:20px}
+.vals .v h5{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:7px}
+.vals .v p{font-size:12px;color:var(--muted);line-height:1.6}
+.cap{font-size:11px;color:var(--hint);margin-top:16px}
+
+/* inline label rows (offices, equipment, software, portfolio) */
+.inline-feeds{display:flex;flex-wrap:wrap;align-items:baseline;gap:10px 22px;margin-top:30px}
+.inline-feeds .t{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--hint)}
+.inline-feeds b{font-size:12.5px;font-weight:700;color:var(--body);letter-spacing:.02em}
+.inline-feeds b i{font-style:normal;color:var(--hint);font-weight:600}
+
 /* governance */
 .gov{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:38px}
 @media(max-width:960px){.gov{grid-template-columns:repeat(2,1fr)}}
@@ -140,7 +164,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 <nav class="nav"><div class="wrap">
   <div class="mark"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM"><span>MCCORVEY SHEET METAL WORKS, L.P.<small>Operations Portal · <em>endurance</em> ai · prepared for executive review</small></span></div>
   <div class="nav-links">
-    <a href="#bidreview">Bid Review</a><a href="#platform">Platform</a><a href="#fab">Fabrication</a><a href="#access">Access &amp; Brain</a>
+    <a href="#bidreview">Bid Review</a><a href="#platform">Platform</a><a href="#fab">Fabrication</a><a href="#history">Since 1925</a><a href="#access">Access &amp; Brain</a>
     <a class="site-link-el" href="https://www.endurancelabs.ai" target="_blank" rel="noopener" style="font-weight:800;color:var(--muted)"><em style="font-style:normal;color:var(--blue)">endurance</em>labs.ai ↗</a>
     <a class="btn" href="/mccorvey/?enter=1" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
     <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=MSM%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20MCCORVEY%20operations%20portal.">Request access →</a>
@@ -188,9 +212,11 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 </div></header>
 
 <div class="stats"><div class="wrap">
-  <div class="stat"><div class="v">1925</div><div class="l">Established · Houston, TX</div></div>
-  <div class="stat"><div class="v">3,000+</div><div class="l">Major commercial projects</div></div>
-  <div class="stat"><div class="v">1,200</div><div class="l">Employees, shop &amp; field</div></div>
+  <div class="stat"><div class="v">1925</div><div class="l">Founded · third-generation family</div></div>
+  <div class="stat"><div class="v">9</div><div class="l">Offices, Texas to the Carolinas</div></div>
+  <div class="stat"><div class="v">300,000+</div><div class="l">Sq ft of manufacturing · 2 plants</div></div>
+  <div class="stat"><div class="v">4,465</div><div class="l">Duct pieces per day capacity</div></div>
+  <div class="stat"><div class="v">~250</div><div class="l">Active projects</div></div>
   <div class="stat"><div class="v">620</div><div class="l">ITB sets reviewed per year</div></div>
   <div class="stat"><div class="v"><em>$2.4M</em></div><div class="l">Run-rate review savings</div></div>
   <div class="stat"><div class="v">3.5h</div><div class="l">Per bid set — down from 42h</div></div>
@@ -226,7 +252,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
   <div class="grid g3">
     <a class="card reveal" href="/mccorvey/"><span class="go">→</span><span class="n">01</span><h3>Executive Command</h3>
       <p>The whole operation on one screen: backlog, earned, billed, margin, shop throughput and the bid-review savings meter — per job or rolled up, with Vista and STRATUS source chips on every figure.</p>
-      <ul><li>Backlog, earned and billed, live from the job register</li><li>Plant 1 / Plant 2 throughput at a glance</li><li>Review-hours saved, tracked against the $2.4M run rate</li></ul></a>
+      <ul><li>Backlog, earned and billed, live from the job register</li><li>Houston / Orlando plant throughput at a glance</li><li>Review-hours saved, tracked against the $2.4M run rate</li></ul></a>
 
     <a class="card reveal" href="/mccorvey/bidreview/"><span class="go">→</span><span class="n">02</span><h3>AI Bid &amp; Document Review</h3>
       <p>The flagship. Machine-reads every ITB set, extracts duct poundage, spiral footage and damper/GRD counts, tracks addenda and flags spec traps — then routes the brief for estimator sign-off.</p>
@@ -270,8 +296,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
   <h2 class="sec">The work behind the numbers.</h2>
   <p class="lede">A century of ductwork — detailed, fabricated and installed by the same company since 1925.</p>
   <div class="shots">
-    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc01.jpg" alt="Fabricated rectangular ductwork" loading="lazy"><span>Rectangular &amp; welded — Plant 1</span></div>
-    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc02.jpg" alt="Spiral duct fabrication" loading="lazy"><span>Spiral &amp; round — Plant 2</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc01.jpg" alt="Fabricated rectangular ductwork" loading="lazy"><span>Rectangular &amp; welded — Houston plant</span></div>
+    <div class="shot reveal"><img src="/mccorvey/assets/photos/mc02.jpg" alt="Spiral duct fabrication" loading="lazy"><span>Spiral &amp; round — Orlando plant</span></div>
     <div class="shot reveal"><img src="/mccorvey/assets/photos/mc03.jpg" alt="BIM coordination and detailing" loading="lazy"><span>BIM design &amp; detailing</span></div>
     <div class="shot reveal"><img src="/mccorvey/assets/photos/mc04.jpg" alt="Ductwork installation on site" loading="lazy"><span>HVAC installation</span></div>
     <div class="shot reveal"><img src="/mccorvey/assets/photos/mc05.jpg" alt="Pre-fabricated duct assemblies staged for shipping" loading="lazy"><span>Pre-fab, staged &amp; shipped</span></div>
@@ -282,11 +308,73 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 <section class="block tint" id="fab"><div class="wrap">
   <span class="eyebrow">The fabrication division</span>
   <h2 class="sec">Two plants. One order book.</h2>
-  <p class="lede">Among the largest HVAC sheet metal detailers, fabricators and installers in the country — and the portal treats the shop like the profit center it is.</p>
+  <p class="lede">Among the largest HVAC sheet metal detailers, fabricators and installers in the country — 300,000+ sq ft of manufacturing across two plants, 580 shop employees across shifts, capacity for 4,465 duct pieces a day. The portal treats the shop like the profit center it is.</p>
   <div class="steps">
-    <div class="step reveal"><div class="k">P1</div><h4>Plant 1 — Wallisville Rd</h4><p>Rectangular and welded fabrication. The shop board sequences releases from BIM coordination through cut, weld, insulate and ship — load-levelled against booked install dates and STRATUS spool packages.</p></div>
-    <div class="step reveal"><div class="k">P2</div><h4>Plant 2 — Spiral &amp; round</h4><p>Spiral and round production runs on its own board with machine-level throughput, so a surge in Duct Direct orders never blindsides an internal job — the conflict shows up weeks out, not on the dock.</p></div>
+    <div class="step reveal"><div class="k">P1</div><h4>Houston Plant — 8610 Wallisville Rd</h4><p>214,000 sq ft and a 300+ person team on rectangular and welded fabrication. The shop board sequences releases from BIM coordination through cut, weld, insulate and ship — load-levelled against booked install dates and STRATUS spool packages.</p></div>
+    <div class="step reveal"><div class="k">P2</div><h4>Orlando Plant — Spiral &amp; round</h4><p>93,000 sq ft and an 80+ person team on spiral and round production, on its own board with machine-level throughput — so a surge in Duct Direct orders never blindsides an internal job. The conflict shows up weeks out, not on the dock.</p></div>
     <div class="step reveal"><div class="k">DD</div><h4>Duct Direct</h4><p>The fabrication sales arm — duct sold to other mechanical contractors — gets real account management: quotes, order status, ship dates and margin by account, in the same register as everything else.</p></div>
+  </div>
+  <div class="inline-feeds reveal">
+    <span class="t">On the floor</span>
+    <b>Custom 20-station coil line</b><b>2× Iowa Precision Pro-Fabriduct lines</b><b>7 plasma tables</b><b>5'×16' laser</b><b>3 spiral machines <i>4"–108" round</i></b><b>Ovalizer</b><b>12 weld stations</b><b>In-house accessories <i>flanges · dampers · corners · clips · Unistrut</i></b>
+  </div>
+  <div class="inline-feeds reveal">
+    <span class="t">Detailing &amp; VDC</span>
+    <b>GTP STRATUS</b><b>AutoCAD MEP</b><b>Revit</b><b>Navisworks</b><b>Trimble hanger layout</b>
+  </div>
+</div></section>
+
+<section class="block" id="history"><div class="wrap">
+  <span class="eyebrow">Since 1925 · Third-generation family-owned</span>
+  <h2 class="sec">A century in the making.</h2>
+  <p class="lede">From a tin shop in Macon, Georgia to nine offices and two manufacturing plants — the same family, the same trade, one hundred years of ductwork. The milestones below are McCorvey's own history, as they tell it.</p>
+  <div class="tl">
+    <div class="t reveal"><div class="y">1925</div><h6>Macon, Georgia</h6><p>Willis "Pop" Eagleton McCorvey founds the company.</p></div>
+    <div class="t reveal"><div class="y">1946</div><h6>Houston — Galena Park</h6><p>Re-established by Willis and his apprentice, Raymond McCorvey.</p></div>
+    <div class="t reveal"><div class="y">1950</div><h6>Manufacturing begins</h6><p>Ductwork production comes in-house.</p></div>
+    <div class="t reveal"><div class="y">1962</div><h6>The straight duct machine</h6><p>Raymond designs it, Elwood builds it — the first of its kind. Competitors copied it.</p></div>
+    <div class="t reveal"><div class="y">1973</div><h6>100,000 sq ft</h6><p>The shop passes six figures of floor.</p></div>
+    <div class="t reveal"><div class="y">1974</div><h6>First multi-million-dollar project</h6><p>Memorial Baptist Hospital.</p></div>
+    <div class="t reveal"><div class="y">1983</div><h6>A new President</h6><p>Tony McCorvey Sr. takes the helm.</p></div>
+    <div class="t reveal"><div class="y">1998</div><h6>Full family ownership</h6><p>And the ballpark — Minute Maid Park.</p></div>
+    <div class="t reveal"><div class="y">2007</div><h6>8610 Wallisville Rd</h6><p>The move to today's Houston headquarters and plant.</p></div>
+    <div class="t reveal"><div class="y">2009</div><h6>Dallas</h6><p>The first office beyond Houston.</p></div>
+    <div class="t reveal"><div class="y">2011</div><h6>Orlando manufacturing</h6><p>A second plant — spiral and round.</p></div>
+    <div class="t reveal"><div class="y">2019</div><h6>The Carolinas</h6><p>Charlotte, Durham and Charleston come online.</p></div>
+  </div>
+  <div class="inline-feeds reveal">
+    <span class="t">Nine offices today</span>
+    <b>Houston <i>HQ</i></b><b>Dallas</b><b>Austin</b><b>San Antonio</b><b>Orlando</b><b>Nashville</b><b>Charlotte</b><b>Durham</b><b>Charleston</b>
+  </div>
+  <div class="vals">
+    <div class="v reveal"><h5>Employees Are Family</h5><p>Three generations of McCorveys have run the shop — and the value they publish first is about everyone else who works in it.</p></div>
+    <div class="v reveal"><h5>Productivity</h5><p>"We don't use the word 'busy'; we remain productive." The portal was built to the same standard — no vanity dashboards, every number actionable.</p></div>
+    <div class="v reveal"><h5>One Crew Attitude</h5><p>Shop, field, office — one crew. One order book, one source of truth, one system everyone works from.</p></div>
+    <div class="v reveal"><h5>Continuous Improvement</h5><p>The company that built the first straight duct machine in 1962 keeps rebuilding how it works — this operating system is the latest iteration.</p></div>
+  </div>
+  <p class="cap">Four of the eight core values McCorvey publishes on mccorvey.com.</p>
+</div></section>
+
+<div class="feeds" style="border-top:1px solid var(--line)"><div class="wrap">
+  <span class="t">Selected past work · real portfolio</span>
+  <b>Orlando International Airport Landside Terminal</b><b>Minute Maid Park</b><b>George R. Brown Convention Center</b><b>Country Music Hall of Fame</b><b>Gaylord Texan Resort</b><b>Houston Methodist Sugar Land</b><b>Lou Ruvo Brain Institute</b><b>Golden Nugget</b><b>Texas Instruments Richardson</b><b>Cameron LNG</b>
+</div></div>
+<div class="feeds"><div class="wrap">
+  <span class="t">Recognition</span>
+  <b>ABC STEP Safety Awards</b><b>ABC Excellence in Construction</b><b>Houston Chronicle Top Workplaces</b><b>HBJ Best Places to Work</b>
+</div></div>
+
+<section class="block tint" id="people"><div class="wrap">
+  <span class="eyebrow">People &amp; training</span>
+  <h2 class="sec">Leaders built in the shop.</h2>
+  <p class="lede">Fifty-plus full-time project managers and VDC detailers, and a workforce the company grows itself — "virtually all our leaders started in the shop or the field."</p>
+  <div class="grid g3">
+    <div class="card reveal"><span class="n">A</span><h3>The Apprenticeship</h3>
+      <p>A four-year, eight-semester paid program — tuition and books covered, with a wage step-up every semester. Apprentices earn while they learn the trade the company has taught for a century.</p></div>
+    <div class="card reveal"><span class="n">K</span><h3>The Keyman Program</h3>
+      <p>Leadership development for the people already on the floor and in the field — the pipeline that has produced virtually every foreman, superintendent and shop leader in the building.</p></div>
+    <div class="card reveal"><span class="n">P</span><h3>Tracked in the portal</h3>
+      <p>The People &amp; Training board carries every cohort — apprentice semesters and wage steps, Keyman candidates, interns — next to the manpower forecast, so the hiring plan and the training pipeline read as one.</p></div>
   </div>
 </div></section>
 
@@ -298,7 +386,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
     <div class="g reveal"><h5>Role-based access</h5><p>Estimator, PM, shop foreman, controller, executive — each role card opens its own view. Margins, rates and Duct Direct account terms are visible only to the roles entitled to them.</p></div>
     <div class="g reveal"><h5>Sequential approvals</h5><p>Office → Controller → CFO on the forecast cycle and billing close; estimator sign-off on every AI-reviewed bid set; PM → Owner on change orders. A stage cannot sign before the one ahead of it.</p></div>
     <div class="g reveal"><h5>Named, timestamped stamps</h5><p>Every sign-off records who, in what role, at what time — visible on the exhibit itself, from a G702 application to a bid-review brief.</p></div>
-    <div class="g reveal"><h5>The Operating Brain</h5><p>Bottom-right on every page: ask it anything the book of record knows — a job's forecast-at-completion, which addendum changed the gauge schedule, Plant 2's load next month — and it answers from the data, with sources.</p></div>
+    <div class="g reveal"><h5>The Operating Brain</h5><p>Bottom-right on every page: ask it anything the book of record knows — a job's forecast-at-completion, which addendum changed the gauge schedule, the Orlando plant’s load next month — and it answers from the data, with sources.</p></div>
   </div>
 </div></section>
 
@@ -315,7 +403,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 
 <footer><div class="wrap">
   <span><b style="color:var(--ink)">Endurance AI Labs</b> — bespoke AI operating systems for the built environment.</span>
-  <span>Demo environment · fictional data · concept build by Endurance AI Labs. All jobs, customers, figures and counterparties are illustrative.</span>
+  <span>Demo environment · fictional data · concept build by Endurance AI Labs. All portal jobs, customers, figures and counterparties are illustrative. Company history, footprint, values, past work and awards are public, cited from mccorvey.com.</span>
   <span>endurancelabs.ai</span>
 </div></footer>
 

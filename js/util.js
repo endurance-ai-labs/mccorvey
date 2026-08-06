@@ -113,13 +113,15 @@ const photoCard = (p) => `
 /* ---- MSM user directory (user-based role access, demo) ---- */
 const PERSONAS = [
   { id: 'owner',      name: 'Tony McCorvey Sr.', title: 'Chief Executive Officer & Owner', perms: { fin: 1, margins: 1, bids: 1 } },
-  { id: 'cfo',        name: 'Elena Vasquez',     title: 'Chief Financial Officer',     perms: { fin: 1, margins: 1, bids: 1 } },
-  { id: 'controller', name: 'Sam Whitaker',      title: 'Controller',                  perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'cfo',        name: 'Kristal McCorvey Crites', title: 'Chief Financial Officer', perms: { fin: 1, margins: 1, bids: 1 } },
+  { id: 'controller', name: 'Tony McCorvey Jr.', title: 'Executive VP — Operations',   perms: { fin: 1, margins: 1, bids: 1 } },
   { id: 'office',     name: 'Gloria Simmons',    title: 'Office Manager — Billing & Payroll', perms: { fin: 1, margins: 0, bids: 0 } },
   { id: 'conmgr',     name: 'Travis Boone',      title: 'Senior Project Manager',      perms: { fin: 0, margins: 0, bids: 1 } },
-  { id: 'svcmgr',     name: 'Hector Ruiz',       title: 'Fabrication Plant Manager',   perms: { fin: 0, margins: 0, bids: 0 } },
+  { id: 'svcmgr',     name: 'Charlie McCorvey',  title: 'VP — Manufacturing',          perms: { fin: 0, margins: 0, bids: 0 } },
   { id: 'eng',        name: 'Sam Nguyen',        title: 'VDC / BIM Manager',           perms: { fin: 0, margins: 0, bids: 1 } },
   { id: 'est',        name: 'Rick Alvarez',      title: 'Chief Estimator',             perms: { fin: 0, margins: 0, bids: 1 } },
+  { id: 'field',      name: 'Zane Maddux',       title: 'Executive Field Superintendent', perms: { fin: 0, margins: 0, bids: 0 } },
+  { id: 'safety',     name: 'Josh Bernard',      title: 'Safety Director',             perms: { fin: 0, margins: 0, bids: 0 } },
   { id: 'client',     name: 'GC Partner',        title: 'General Contractor — External View', perms: { fin: 0, margins: 0, bids: 0, external: 1 } },
 ];
 function currentRole() { try { return localStorage.getItem('msm-role') || ''; } catch (e) { return ''; } }

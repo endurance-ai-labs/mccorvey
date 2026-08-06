@@ -258,7 +258,7 @@ function coSign(num, who) {
   const now = new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
   if (who === 'pm') {
     const p = currentPersona();
-    if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) { alert('The PM signature requires a project manager (Travis Boone, Sam Nguyen or Hector Ruiz). Switch user via the account menu.'); return; }
+    if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) { alert('The PM signature requires a project manager (Travis Boone, Sam Nguyen or Charlie McCorvey). Switch user via the account menu.'); return; }
     co.sigs.pm = { name: p.name, at: now };
     co.status = 'Awaiting Owner Signature';
   } else {
@@ -422,7 +422,7 @@ function secGraphics() {
   const E = j.eng || { equipment: [] };
   return `
     <div class="demo-panel" style="margin-bottom:22px;background:#0b0d10;border-color:#1c2128">
-      <div class="demo-panel-head"><h2 style="color:#e8eaed">Plant 1 — Coil Line &amp; Plasma <span style="font-size:10px;color:#7c8592;letter-spacing:0.1em">· STRATUS PRODUCTION FEED (SIMULATED)</span></h2>
+      <div class="demo-panel-head"><h2 style="color:#e8eaed">Houston Plant — Coil Line &amp; Plasma <span style="font-size:10px;color:#7c8592;letter-spacing:0.1em">· STRATUS PRODUCTION FEED (SIMULATED)</span></h2>
         <span class="k" style="color:#7c8592">values update live · demo simulation</span></div>
       <svg viewBox="0 0 920 300" style="width:100%;max-width:1000px;display:block;margin:0 auto">
         <!-- line bed -->
@@ -463,7 +463,7 @@ function secGraphics() {
 
     <div class="demo-two">
       <div class="demo-panel" style="background:#0b0d10;border-color:#1c2128">
-        <div class="demo-panel-head"><h2 style="color:#e8eaed">Plant 2 — Spiral &amp; Round</h2><span class="k" style="color:#7c8592">simulated</span></div>
+        <div class="demo-panel-head"><h2 style="color:#e8eaed">Orlando — Spiral Line &amp; Round</h2><span class="k" style="color:#7c8592">simulated</span></div>
         <svg viewBox="0 0 460 250" style="width:100%">
           <rect x="40" y="30" width="120" height="70" rx="6" fill="#12202e" stroke="#3f7fbf" stroke-width="2"/>
           <text x="100" y="58" fill="#5da8e8" font-size="13" text-anchor="middle" font-family="monospace">SPIRAL-1</text>

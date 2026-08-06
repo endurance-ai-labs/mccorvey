@@ -49,10 +49,10 @@ const DAYS = ['Mon 7/20', 'Tue 7/21', 'Wed 7/22', 'Thu 7/23', 'Fri 7/24', 'Sat 7
 const CREW = [
   { name: 'R. Trejo',        role: 'Foreman',              code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 4] },
   { name: 'D. Vasquez',      role: 'Journeyman Installer', code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
-  { name: 'K. Nguyen',       role: 'Apprentice',           code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 6, 8, 8, 0] },
+  { name: 'K. Nguyen',       role: 'Apprentice (Sem 5)',   code: '23-100 · Duct Install',   job: 'SJC-2502', src: 'fld', hrs: [8, 8, 6, 8, 8, 0] },
   { name: 'C. Delgado',      role: 'Foreman',              code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
   { name: 'J. Barnes',       role: 'Journeyman Installer', code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [10, 10, 10, 10, 8, 0] },
-  { name: 'A. Osei',         role: 'Apprentice',           code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
+  { name: 'A. Osei',         role: 'Apprentice (Sem 3)',   code: '23-100 · Duct Install',   job: 'BPC-2506', src: 'fld', hrs: [8, 8, 8, 8, 8, 0] },
   { name: 'S. Whitmore',     role: 'Detailer',             code: '23-050 · BIM / Detailing', job: 'ADC-2507', src: 'fld', hrs: [8, 6, 8, 8, 8, 0] },
   { name: 'M. Ibarra',       role: 'Welder',               code: '23-200 · Duct Fab',       job: 'SHOP',     src: 'st',  hrs: [8, 9, 8, 10, 8, 0] },
   { name: 'T. Coleman',      role: 'Plasma Operator',      code: '23-200 · Duct Fab',       job: 'SHOP',     src: 'st',  hrs: [8, 8, 8, 8, 9, 4] },
@@ -118,6 +118,7 @@ function render() {
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Weekly Time Grid</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">shop rows locked (system of record: STRATUS) · field rows editable</span></span></div>
+      <div class="ynote" style="margin-bottom:8px">Standard shop hours: <b>7:00 AM – 3:45 PM, Mon–Fri</b> · apprentice rows carry their apprenticeship-program semester.</div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>Employee</th><th>Job / Division</th><th>Source</th>${DAYS.map(d => `<th style="text-align:center">${d}</th>`).join('')}<th style="text-align:right">Total</th><th style="text-align:right">OT</th></tr></thead>

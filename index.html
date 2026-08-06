@@ -77,7 +77,7 @@ if (internal) {
         <div>
           <div class="cmd-eyebrow">MSM — PERIOD OPERATING REPORT · ALL JOBS</div>
           <h1 class="cmd-title">Executive Command Center</h1>
-          <div class="cmd-sub">${JOBS.length} jobs in scope — one source of truth: Viewpoint Vista financials, STRATUS fab &amp; field production, job costing and forecasting. No exports, no spreadsheet rebuilds — drill-downs one click away.</div>
+          <div class="cmd-sub">Top ${JOBS.length} packages by contract value — of ~${(window.PLANT_TOTALS || {}).activeProjects || 250} active projects company-wide. One source of truth: Viewpoint Vista financials, STRATUS fab &amp; field production, job costing and forecasting. No exports, no spreadsheet rebuilds — drill-downs one click away.</div>
         </div>
         <div class="cmd-side">
           <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
@@ -102,7 +102,7 @@ if (internal) {
       <span class="scope-chip">PM: <b>all</b></span>
       <span class="scope-chip">Plant: <b>all</b></span>
       <span class="scope-chip">vs <b>prior period</b></span>
-      <span class="scope-note">${JOBS.length} of ${JOBS.length} jobs in scope · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
+      <span class="scope-note">top ${JOBS.length} of ~250 active projects · Houston · Dallas · Austin · San Antonio · Orlando · Nashville · Carolinas · prepared for ${esc(currentPersona().name)}, ${esc(currentPersona().title)}</span>
     </div>
 
     <div class="headline-strip">
@@ -120,6 +120,7 @@ if (internal) {
         <div class="ykpi"><div class="l">Cash on Hand</div><div class="v">${fmtK(KPI_SNAPSHOT.cashOnHand)}</div><div class="s">AR ${KPI_SNAPSHOT.arDays} days · AP ${KPI_SNAPSHOT.apDays} days</div></div>
         <div class="ykpi amber"><div class="l">Backlog Coverage</div><div class="v">${KPI_SNAPSHOT.backlogMonths} mo</div><div class="s">at current run-rate</div></div>
         <div class="ykpi"><div class="l">Bid Hit Rate</div><div class="v">${(() => { const w = BID_PIPELINE.filter(b => b.status === 'Won').length, l = BID_PIPELINE.filter(b => b.status === 'Lost').length; return Math.round(w / (w + l) * 100); })()}%</div><div class="s">trailing 6 months</div></div>
+        <div class="ykpi"><div class="l">Plant Output Capacity</div><div class="v">${(PLANT_TOTALS.piecesPerDay).toLocaleString()}/day</div><div class="s">${(PLANT_TOTALS.sqft / 1000).toFixed(0)}K sf · ${PLANT_TOTALS.employees} shop employees · 2 plants</div></div>
       </div>
       <div class="demo-aging">
         ${UTILIZATION.trend.slice(-4).map(t => `

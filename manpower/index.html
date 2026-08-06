@@ -202,6 +202,41 @@ function render() {
       <div class="demo-panel-head"><h2>Estimate at Completion</h2></div>
       <div class="ynote">EAC financials require financial access — operations users see hours and staffing above.</div>
     </div>`}
+
+    <div class="demo-panel" style="margin-top:22px">
+      <div class="demo-panel-head"><h2>People &amp; Training</h2><span class="k">leaders are grown here — the portal tracks every cohort</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:22px">
+        <div>
+          <div style="font-weight:800;margin-bottom:2px;color:var(--color-cloud-whisper)">Apprenticeship Program</div>
+          <div class="ynote" style="margin-bottom:10px"><b>${WORKFORCE.apprenticeship.years}-year · ${WORKFORCE.apprenticeship.semesters} semesters</b> · paid, tuition + books covered</div>
+          <div class="demo-aging">${(() => {
+            const mx = Math.max.apply(null, WORKFORCE.apprenticeship.cohorts.map(c => c.heads).concat([1]));
+            return WORKFORCE.apprenticeship.cohorts.map(c => `
+            <div class="demo-aging-row">
+              <div class="lab">Sem ${c.sem}</div>
+              <div class="bar"><i style="width:${Math.round(c.heads / mx * 100)}%;background:var(--color-blue)"></i></div>
+              <div class="amt">${c.heads}</div>
+            </div>`).join('');
+          })()}</div>
+          <div class="ynote" style="margin-top:8px">${esc(WORKFORCE.apprenticeship.note)}</div>
+        </div>
+        <div>
+          <div style="font-weight:800;margin-bottom:2px;color:var(--color-cloud-whisper)">Keyman Program</div>
+          <div class="ynote" style="margin-bottom:10px">personalized leadership development tracks</div>
+          <div style="font-size:28px;font-weight:800;line-height:1.1;color:var(--color-cloud-whisper)">${WORKFORCE.keyman.active} <span style="font-size:11.5px;font-weight:600;color:var(--color-text-muted)">active keymen</span></div>
+          <div class="ynote" style="margin:6px 0 10px"><b style="color:var(--color-green)">${WORKFORCE.keyman.promotedYTD} promoted</b> into leadership roles YTD</div>
+          <div class="ynote">${esc(WORKFORCE.keyman.note)}</div>
+        </div>
+        <div>
+          <div style="font-weight:800;margin-bottom:2px;color:var(--color-cloud-whisper)">Internships &amp; Recognition</div>
+          <div class="ynote" style="margin-bottom:10px"><b>${WORKFORCE.interns} interns</b> hosted across plants &amp; offices this year</div>
+          <ul style="margin:0 0 10px 16px;padding:0;font-size:11.5px;line-height:1.8;color:var(--color-text-muted)">
+            ${WORKFORCE.awards.map(a => `<li>${esc(a)}</li>`).join('')}
+          </ul>
+          <div class="ynote">Shop hours: Mon–Fri 7:00 AM – 3:45 PM</div>
+        </div>
+      </div>
+    </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
 
   wire();
