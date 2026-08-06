@@ -368,3 +368,139 @@ function slackNudge(key, idx) {
   }, 750);
   setTimeout(() => { const r = ov.querySelector('.slk-reacts'); if (r) r.style.display = 'flex'; }, 1900);
 }
+
+/* =========================================================
+   PEOPLE CHIPS — message any employee via Slack or Teams.
+   Scans rendered text for roster names, wraps them in a chip;
+   click → platform picker → simulated DM composer (demo).
+   ========================================================= */
+const TEAMS_MARK = '<svg viewBox="0 0 24 24" width="13" height="13" aria-hidden="true"><rect x="3" y="6" width="12" height="12" rx="2.4" fill="#6264A7"/><text x="9" y="15.5" font-size="9" font-weight="800" fill="#fff" text-anchor="middle" font-family="Inter,system-ui">T</text><circle cx="18.2" cy="9" r="2.6" fill="#7B83EB"/><path d="M14.8 12.6h6.0a0 0 0 0 1 0 0v3.2a3 3 0 0 1-3 3 3 3 0 0 1-3-3z" fill="#7B83EB"/></svg>';
+
+const MSM_ROSTER = (() => {
+  const map = {};
+  try {
+    PERSONAS.filter(p => !p.perms.external).forEach(p => { map[p.name] = p.title; });
+    ((window.PEOPLE && PEOPLE.pms) || []).forEach(n => { if (!map[n]) map[n] = 'Project Manager'; });
+    ((window.PEOPLE && PEOPLE.supers) || []).forEach(n => { if (!map[n]) map[n] = 'Field Superintendent'; });
+    ['Dana Kowalski', 'Priya Shah', 'Joe Herrera'].forEach(n => { if (!map[n]) map[n] = 'Estimator'; });
+  } catch (e) {}
+  return map;
+})();
+const _rosterNames = Object.keys(MSM_ROSTER).sort((a, b) => b.length - a.length);
+const _rosterRe = _rosterNames.length ? new RegExp('(' + _rosterNames.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')', 'g') : null;
+
+let _pplBusy = false;
+function enhancePeople(root) {
+  if (!_rosterRe || _pplBusy) return;
+  _pplBusy = true;
+  try {
+    const walker = document.createTreeWalker(root || document.body, NodeFilter.SHOW_TEXT, {
+      acceptNode(n) {
+        if (!n.nodeValue || n.nodeValue.length < 4) return NodeFilter.FILTER_REJECT;
+        _rosterRe.lastIndex = 0;
+        if (!_rosterRe.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
+        const p = n.parentElement;
+        if (!p) return NodeFilter.FILTER_REJECT;
+        if (p.closest('script,style,select,option,textarea,input,svg,a,button,.ppl,.ppl-pop,.slk-ov,.bw-panel,.login-overlay,.nav-user-card')) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    nodes.forEach(node => {
+      const frag = document.createDocumentFragment();
+      let last = 0; const s = node.nodeValue;
+      _rosterRe.lastIndex = 0;
+      let m;
+      while ((m = _rosterRe.exec(s)) !== null) {
+        if (m.index > last) frag.appendChild(document.createTextNode(s.slice(last, m.index)));
+        const who = m[1];
+        const chip = document.createElement('span');
+        chip.className = 'ppl';
+        chip.textContent = who;
+        chip.title = 'Message ' + who;
+        chip.addEventListener('click', ev => { ev.stopPropagation(); ev.preventDefault(); pplPicker(ev, who); });
+        frag.appendChild(chip);
+        last = m.index + who.length;
+      }
+      if (last < s.length) frag.appendChild(document.createTextNode(s.slice(last)));
+      node.parentNode.replaceChild(frag, node);
+    });
+  } finally { _pplBusy = false; }
+}
+
+function pplPicker(ev, name) {
+  document.querySelectorAll('.ppl-pop').forEach(el => el.remove());
+  const pop = document.createElement('div');
+  pop.className = 'ppl-pop';
+  pop.innerHTML = '<div class="who">' + esc(name) + '</div><div class="ttl">' + esc(MSM_ROSTER[name] || 'McCorvey Sheet Metal') + '</div>' +
+    '<button data-p="slack">' + SLACK_MARK + ' Message on Slack</button>' +
+    '<button data-p="teams">' + TEAMS_MARK + ' Message on Teams</button>';
+  document.body.appendChild(pop);
+  const x = Math.min(ev.clientX, window.innerWidth - 232), y = Math.min(ev.clientY + 10, window.innerHeight - 130);
+  pop.style.left = Math.max(8, x) + 'px'; pop.style.top = Math.max(8, y) + 'px';
+  pop.querySelectorAll('button').forEach(b => b.addEventListener('click', e2 => { e2.stopPropagation(); pop.remove(); openDM(b.dataset.p, name); }));
+  setTimeout(() => document.addEventListener('click', function h() { pop.remove(); document.removeEventListener('click', h); }, { once: true }), 0);
+}
+
+function openDM(platform, name) {
+  const teams = platform === 'teams';
+  const me = currentPersona() || { name: 'MSM Portal', title: 'Automated' };
+  const title = MSM_ROSTER[name] || 'McCorvey Sheet Metal';
+  const first = name.split(' ')[0];
+  const init = n => n.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
+  const now = () => new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  const ov = document.createElement('div');
+  ov.className = 'slk-ov';
+  ov.innerHTML =
+    '<div class="slk-card ' + (teams ? 'teams' : '') + '" onclick="event.stopPropagation()">' +
+      '<div class="slk-head">' + (teams ? TEAMS_MARK : SLACK_MARK) + '<b>' + (teams ? 'Microsoft Teams' : 'Slack') + '</b><span class="slk-dm-label">Direct message</span><button class="slk-x" aria-label="Close">✕</button></div>' +
+      '<div class="slk-peer">' +
+        '<span class="slk-ava peer">' + init(name) + '</span>' +
+        '<div><b>' + esc(name) + '</b><span class="slk-pres"><i></i> Active</span><div class="slk-title">' + esc(title) + ' · McCorvey Sheet Metal</div></div>' +
+      '</div>' +
+      '<div class="slk-body" id="dm-body"><div class="slk-day"><span>Today</span></div></div>' +
+      '<div class="slk-compose"><input id="dm-in" placeholder="Message ' + esc(first) + '…" autocomplete="off"><button id="dm-send">Send</button></div>' +
+    '</div>';
+  const close = () => ov.remove();
+  ov.addEventListener('click', close);
+  ov.querySelector('.slk-x').addEventListener('click', close);
+  document.body.appendChild(ov);
+  const body = ov.querySelector('#dm-body'), inp = ov.querySelector('#dm-in');
+  const send = () => {
+    const txt = inp.value.trim(); if (!txt) return;
+    inp.value = '';
+    const msg = document.createElement('div');
+    msg.className = 'slk-msg';
+    msg.innerHTML = '<span class="slk-ava me">' + init(me.name) + '</span>' +
+      '<div class="slk-msg-main"><div class="slk-msg-head"><b>' + esc(me.name) + '</b><span class="slk-app">' + (teams ? 'MSM PORTAL' : 'APP · MSM Portal') + '</span><span class="slk-time">' + now() + '</span></div>' +
+      '<div class="slk-text">' + esc(txt) + '</div>' +
+      '<div class="slk-status sending" style="position:static;margin-top:6px"><span class="slk-spin"></span> Sending…</div></div>';
+    body.appendChild(msg); body.scrollTop = body.scrollHeight;
+    setTimeout(() => { const st = msg.querySelector('.slk-status'); if (st) { st.className = 'slk-status ok'; st.style.position = 'static'; st.style.marginTop = '6px'; st.innerHTML = '✓ Delivered to ' + esc(first) + ' · just now'; } }, 700);
+    setTimeout(() => {
+      const r = document.createElement('div');
+      r.className = 'slk-msg';
+      r.innerHTML = '<span class="slk-ava peer">' + init(name) + '</span>' +
+        '<div class="slk-msg-main"><div class="slk-msg-head"><b>' + esc(name) + '</b><span class="slk-time">' + now() + '</span></div>' +
+        '<div class="slk-text">👍 On it — will circle back shortly. <span style="opacity:.55">(simulated reply — demo)</span></div></div>';
+      body.appendChild(r); body.scrollTop = body.scrollHeight;
+    }, 1900);
+  };
+  ov.querySelector('#dm-send').addEventListener('click', send);
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') send(); });
+  setTimeout(() => inp.focus(), 60);
+}
+
+/* auto-enhance after each render: initial load + observe #app re-renders */
+(function () {
+  const kick = () => setTimeout(() => enhancePeople(document.getElementById('app') || document.body), 120);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', kick); else kick();
+  const app = () => document.getElementById('app');
+  const obs = new MutationObserver(muts => {
+    if (_pplBusy) return;
+    if (muts.some(m => m.addedNodes.length)) { clearTimeout(obs._t); obs._t = setTimeout(() => enhancePeople(app() || document.body), 200); }
+  });
+  const arm = () => { const a = app(); if (a) obs.observe(a, { childList: true, subtree: true }); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', arm); else arm();
+})();
