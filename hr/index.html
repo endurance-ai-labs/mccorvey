@@ -140,8 +140,68 @@ function analyzeFit() {
     <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:12px 0 7px">SUGGESTED INTERVIEW QUESTIONS</div>
     <ul style="font-size:12px;line-height:1.7;color:var(--color-text-muted);padding-left:18px;margin-bottom:12px">${qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>
     <div class="fit-reco">🧠 <b>${band[0]}</b> — scored against the ${esc(roleName)} day-to-day (“${esc(prof.day)}”), McCorvey's mission and its 8 published core values. Demo analysis — every recommendation is subject to recruiter review.</div>`;
+
+  /* auto-save the review */
+  const cand = (txt.split('\n')[0] || 'Unnamed candidate').split('—')[0].split(',')[0].trim().slice(0, 42) || 'Unnamed candidate';
+  fitSaveReview({ name: cand, role: roleName, score: overall, band: band[0], resume: txt.slice(0, 20000), ts: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) });
 }
 function loadSample() { document.getElementById('fit-resume').value = SAMPLE_RESUME; analyzeFit(); }
+
+/* ---- saved reviews (localStorage) ---- */
+function fitSavedAll() { try { return JSON.parse(localStorage.getItem('msm-fit-reviews') || '[]'); } catch (e) { return []; } }
+function fitSaveReview(rec) {
+  try {
+    const all = fitSavedAll().filter(r => !(r.name === rec.name && r.role === rec.role));
+    all.unshift(rec);
+    localStorage.setItem('msm-fit-reviews', JSON.stringify(all.slice(0, 20)));
+  } catch (e) {}
+  renderSavedReviews();
+}
+function renderSavedReviews() {
+  const host = document.getElementById('fit-saved'); if (!host) return;
+  const all = fitSavedAll();
+  if (!all.length) { host.innerHTML = '<div class="ynote">No saved reviews yet — every analysis is saved here automatically.</div>'; return; }
+  host.innerHTML = `<div class="demo-tbl-wrap" style="max-height:260px;overflow:auto"><table class="demo-tbl tbl-left" style="font-size:11.5px">
+    <thead><tr><th>Candidate</th><th>Requisition</th><th style="text-align:right">Score</th><th>Recommendation</th><th style="text-align:right">Reviewed</th><th></th></tr></thead>
+    <tbody>${all.map((r, i) => `<tr>
+      <td><b>${esc(r.name)}</b></td>
+      <td>${esc(r.role.length > 34 ? r.role.slice(0, 33) + '…' : r.role)}</td>
+      <td style="text-align:right"><b style="color:${r.score >= 75 ? '#2f9e6e' : r.score >= 55 ? 'var(--color-amber)' : '#c8102e'}">${r.score}</b></td>
+      <td><span class="ypill ${r.score >= 75 ? 'green' : r.score >= 55 ? 'amber' : 'red'}">${esc(r.band)}</span></td>
+      <td style="text-align:right;color:var(--color-slate-hint)">${esc(r.ts)}</td>
+      <td style="white-space:nowrap"><a href="#" onclick="event.preventDefault();loadReview(${i})" style="color:var(--color-blue);font-weight:700;font-size:10.5px">RE-OPEN</a> · <a href="#" onclick="event.preventDefault();delReview(${i})" style="color:var(--color-slate-hint);font-size:10.5px">✕</a></td>
+    </tr>`).join('')}</tbody></table></div>
+    <div class="ynote" style="margin-top:7px">${all.length} saved · stored locally for the demo · <a href="#" onclick="event.preventDefault();clearReviews()" style="color:var(--color-blue);font-weight:700">clear all</a></div>`;
+}
+function loadReview(i) {
+  const r = fitSavedAll()[i]; if (!r) return;
+  document.getElementById('fit-role').value = r.role;
+  document.getElementById('fit-resume').value = r.resume || '';
+  analyzeFit();
+  document.getElementById('fit-out').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function delReview(i) { try { const all = fitSavedAll(); all.splice(i, 1); localStorage.setItem('msm-fit-reviews', JSON.stringify(all)); } catch (e) {} renderSavedReviews(); }
+function clearReviews() { try { localStorage.removeItem('msm-fit-reviews'); } catch (e) {} renderSavedReviews(); }
+
+/* ---- refresh + upload ---- */
+function refreshFit() {
+  const out = document.getElementById('fit-out');
+  out.innerHTML = '<div class="ynote">⟳ Re-running analysis…</div>';
+  setTimeout(analyzeFit, 380);
+}
+function uploadResume(input) {
+  const f = input.files && input.files[0]; if (!f) return;
+  const ext = (f.name.split('.').pop() || '').toLowerCase();
+  if (['txt', 'md', 'text', 'csv'].includes(ext) || (f.type || '').startsWith('text/')) {
+    const rd = new FileReader();
+    rd.onload = () => { document.getElementById('fit-resume').value = String(rd.result || '').slice(0, 20000); analyzeFit(); };
+    rd.readAsText(f);
+  } else {
+    document.getElementById('fit-resume').value = '';
+    document.getElementById('fit-out').innerHTML = `<div class="ynote">📄 <b>${esc(f.name)}</b> received (${Math.round(f.size / 1024)} KB). In the live build, PDF and Word resumes run through the same document pipeline as bid sets — machine-read with page-level citations. For this demo, paste the resume text or upload a .txt file.</div>`;
+  }
+  input.value = '';
+}
 
 /* ---------------- page render ---------------- */
 const srcBar = R.sources.map(s => {
@@ -260,20 +320,29 @@ app.innerHTML = `
     <div class="demo-two">
       <div>
         <label class="yfld" style="display:block;margin-bottom:10px">Analyze against requisition
-          <select id="fit-role" class="yin" style="width:100%">${Object.keys(FIT_ROLES).map(r => `<option>${esc(r)}</option>`).join('')}</select>
+          <select id="fit-role" class="yin" style="width:100%" onchange="if(document.getElementById('fit-resume').value.trim().length>80)refreshFit()">${Object.keys(FIT_ROLES).map(r => `<option>${esc(r)}</option>`).join('')}</select>
         </label>
-        <textarea id="fit-resume" class="fit-in" placeholder="Paste the prospect's resume text here…"></textarea>
+        <textarea id="fit-resume" class="fit-in" placeholder="Paste the prospect's resume text here — or upload a file…"></textarea>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
           <button class="pa-btn primary" onclick="analyzeFit()">⚡ Analyze fit</button>
-          <button class="pa-btn" onclick="loadSample()">Load sample resume</button>
+          <button class="pa-btn" onclick="refreshFit()" title="Re-run the analysis">⟳ Refresh</button>
+          <button class="pa-btn" onclick="document.getElementById('fit-file').click()">📄 Upload resume</button>
+          <button class="pa-btn" onclick="loadSample()">Load sample</button>
+          <input type="file" id="fit-file" accept=".txt,.md,.pdf,.doc,.docx,text/plain" style="display:none" onchange="uploadResume(this)">
         </div>
-        <div class="ynote" style="margin-top:10px">Scores against the role's day-to-day, McCorvey's mission ("never the largest — the best") and the 8 published core values. In the live build this runs the same LLM core as bid review, with page-level citations.</div>
+        <div class="ynote" style="margin-top:10px">Scores against the role's day-to-day, McCorvey's mission ("never the largest — the best") and the 8 published core values. Switching requisitions re-scores automatically. In the live build this runs the same LLM core as bid review, with page-level citations.</div>
       </div>
-      <div id="fit-out"><div class="ynote">Pick a requisition, paste a resume (or load the sample), and hit <b>Analyze fit</b>.</div></div>
+      <div id="fit-out"><div class="ynote">Pick a requisition, paste or upload a resume (or load the sample), and hit <b>Analyze fit</b>.</div></div>
+    </div>
+    <div style="margin-top:18px">
+      <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:8px">SAVED REVIEWS</div>
+      <div id="fit-saved"></div>
     </div>
   </div>
 
   <div class="demo-note">MSM Operations Portal — demo environment, fictional data · payroll figures are illustrative placeholders · AI output subject to recruiter review · concept build by Endurance AI Labs</div>`;
+
+renderSavedReviews();
 </script>
 </body>
 </html>
