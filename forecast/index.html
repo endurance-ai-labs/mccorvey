@@ -68,7 +68,7 @@ const DEFAULTS = {
   newSvcPerYear: 4, newSvcMRR: 85000, churn: 6,
   attachPct: 40, attachMRR: 60000,
   gmConstr: 15, gmSvc: 28, ohPct: 8, ohScale: 0.85,
-  goal: 500,
+  goal: 1500,
   acq: [
     { year: 2, revenue: 30e6, gm: 16, rec: 20, growth: 10 },
     { year: 4, revenue: 60e6, gm: 15, rec: 15, growth: 8 },
@@ -93,7 +93,7 @@ const PRESETS = {
 
 let A = load();
 function load() {
-  try { const raw = localStorage.getItem('msm-5yr'); if (raw) { const st = JSON.parse(raw); if (st.goal == 300) st.goal = 500; /* goal raised to $500M */ if (st.newClientSize < 1e6) return JSON.parse(JSON.stringify(DEFAULTS)); /* pre-rescale scenario — reset */ return st; } } catch (e) {}
+  try { const raw = localStorage.getItem('msm-5yr'); if (raw) { const st = JSON.parse(raw); if (st.goal == 300 || st.goal == 500) st.goal = 1500; /* goal raised to $1.5B */ if (st.newClientSize < 1e6) return JSON.parse(JSON.stringify(DEFAULTS)); /* pre-rescale scenario — reset */ return st; } } catch (e) {}
   return JSON.parse(JSON.stringify(DEFAULTS));
 }
 function save() { try { localStorage.setItem('msm-5yr', JSON.stringify(A)); } catch (e) {} }
@@ -251,7 +251,7 @@ function render() {
           <div class="acq-row" style="font-size:9.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text-muted)"><span>Close</span><span>Size</span><span>Gross margin</span><span>External fab mix</span><span>Post-close growth</span><span></span></div>
           ${acqRows || '<div class="ynote">No acquisitions modeled — organic only.</div>'}
           <div class="row" style="margin-top:6px"><label>Revenue goal</label>
-            <select onchange="upd('goal',this.value)">${[300, 400, 500, 600, 750, 1000].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>$${v}M</option>`).join('')}</select>
+            <select onchange="upd('goal',this.value)">${[500, 750, 1000, 1250, 1500, 2000].map(v => `<option value="${v}" ${A.goal == v ? 'selected' : ''}>${v >= 1000 ? '$' + (v / 1000).toLocaleString(undefined, { maximumFractionDigits: 2 }) + 'B' : '$' + v + 'M'}</option>`).join('')}</select>
             <span class="ynote">Build the scenario live with the leadership team — every control persists.</span></div>
         </div>
       </div>

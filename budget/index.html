@@ -302,7 +302,7 @@ function render() {
         <div class="cmd-tile"><div class="l">T-12 EBITDA</div><div class="v">${fmtK(t12.ebitda)}</div><span class="d up">▲ ${fmtPct(t12.ebitdaPct)} margin</span><div class="s">after overhead</div>${sparkSVG('t12eb', { up: true, color: '#b98a36' })}</div>
         <div class="cmd-tile"><div class="l">Year-1 Forecast Revenue</div><div class="v">${fmtK(y1.revenue)}</div><span class="d up">▲ ${fmtPct((y1.revenue / t12.revenue - 1) * 100)} vs T-12</span><div class="s">booked + weighted pipeline</div>${sparkSVG('y1rev', { up: true, color: '#14283c' })}</div>
         <div class="cmd-tile"><div class="l">Year-1 Forecast EBITDA</div><div class="v">${fmtK(y1.ebitda)}</div><span class="d up">▲ ${fmtPct(y1.ebitdaPct)} margin</span><div class="s">at current growth levers</div>${sparkSVG('y1eb', { up: true })}</div>
-        <div class="cmd-tile hot"><div class="l">$500M Goal — Req. CAGR</div><div class="v">${fmtPct((Math.pow(500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><span class="d down">▼ vs ${fmtPct(G.rev[0].r, 1)} organic</span><div class="s">gap closed by acquisitions + fab growth</div>${sparkSVG('cagr', { up: false, color: '#c8102e' })}</div>
+        <div class="cmd-tile hot"><div class="l">$1.5B Goal — Req. CAGR</div><div class="v">${fmtPct((Math.pow(1500e6 / t12.revenue, 1 / 5) - 1) * 100, 1)}</div><span class="d down">▼ vs ${fmtPct(G.rev[0].r, 1)} organic</span><div class="s">gap closed by acquisitions + fab growth</div>${sparkSVG('cagr', { up: false, color: '#c8102e' })}</div>
       </div>
     </div>
 
@@ -438,7 +438,7 @@ function render() {
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
-        <div class="demo-panel-head"><h2>Five-Year Path vs the $500M Goal</h2><span class="k">plan vs required trajectory</span></div>
+        <div class="demo-panel-head"><h2>Five-Year Path vs the $1.5B Goal</h2><span class="k">plan vs required trajectory</span></div>
         <div class="demo-chart" style="height:260px"><canvas id="ch-path"></canvas></div>
       </div>
       <div class="demo-panel">
@@ -463,7 +463,7 @@ function render() {
             const rev5 = cd[9].revenue;
             return `Current account book: <b>${fmt$(mrr)}/mo (${fmtK(arr0)} annualized)</b> across ${SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').length} active Duct Direct &amp; partner accounts.<br>
             At ${svcGrowth}%/yr (new mechanical-contractor accounts + Standing PO upgrades), external fab reaches <b>${fmtK(arr5)}/yr by Year 5</b> — ${fmtPct(arr5 / (rev5 + arr5) * 100, 1)} of total revenue, at ~28% gross margin.<br>
-            <span class="ynote">External fab is the margin multiplier on the $500M path: it survives bid cycles, keeps the plants loaded between package releases, and every GC relationship below feeds it. Account pipeline lives on the Fabrication Division board.</span>`;
+            <span class="ynote">External fab is the margin multiplier on the $1.5B path: it survives bid cycles, keeps the plants loaded between package releases, and every GC relationship below feeds it. Account pipeline lives on the Fabrication Division board.</span>`;
           })()}
         </div>
       </div>
