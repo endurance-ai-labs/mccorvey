@@ -42,9 +42,18 @@ p.lede{font-size:16px;color:var(--muted);max-width:640px}
 .mark img{height:34px;width:auto;display:block}
 .mark em{font-style:normal;color:var(--blue)}
 .mark small{display:block;font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--hint)}
-.nav-links{margin-left:auto;display:flex;gap:22px;align-items:center}
-.nav-links a{font-size:12.5px;font-weight:600;color:var(--muted)}
+.nav-links{margin-left:auto;display:flex;gap:20px;align-items:center;min-width:0}
+.nav-links a{font-size:12.5px;font-weight:600;color:var(--muted);white-space:nowrap;position:relative;padding:4px 0;transition:color .15s}
 .nav-links a:hover{color:var(--ink)}
+.nav-links a:not(.btn):not(.site-link-el)::after{content:"";position:absolute;left:0;right:100%;bottom:-2px;height:2px;background:var(--red,#c8102e);border-radius:2px;transition:right .18s ease}
+.nav-links a:not(.btn):not(.site-link-el):hover::after{right:0}
+.nav-sep{width:1px;height:22px;background:var(--line);flex:0 0 auto}
+.nav-links .btn{border-radius:9px;line-height:1;display:inline-flex;align-items:center;height:38px;padding:0 16px}
+.nav-links .btn.pri{box-shadow:0 6px 16px rgba(200,16,46,.28)}
+.nav-links .btn:hover{transform:translateY(-1px)}
+@media(max-width:1280px){.site-link-el{display:none}}
+@media(max-width:1180px){.nav .mark small{display:none}}
+@media(max-width:1080px){.nav-links a:not(.btn){display:none}.nav-sep{display:none}}
 .btn{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;padding:10px 20px;border-radius:8px;border:1px solid var(--line);color:var(--ink);background:var(--bg2);transition:all .15s;white-space:nowrap}
 .btn:hover{border-color:var(--blue);color:var(--blue)}
 .btn.pri{background:var(--blue);border-color:var(--blue);color:#fff;box-shadow:0 6px 18px rgba(200,16,46,.25)}
@@ -164,7 +173,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;align-items:baseline;just
 <nav class="nav"><div class="wrap">
   <div class="mark"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM"><span>MCCORVEY SHEET METAL WORKS, L.P.<small>Operations Portal · <em>endurance</em> ai · prepared for executive review</small></span></div>
   <div class="nav-links">
-    <a href="#bidreview">Bid Review</a><a href="#platform">Platform</a><a href="#fab">Fabrication</a><a href="#history">Since 1925</a><a href="#access">Access &amp; Brain</a>
+    <a href="#bidreview">Bid Review</a><a href="#platform">Platform</a><a href="#fab">Fabrication</a><a href="#history">History</a><a href="#access">The Brain</a>
+    <span class="nav-sep"></span>
     <a class="site-link-el" href="https://www.endurancelabs.ai" target="_blank" rel="noopener" style="font-weight:800;color:var(--muted)"><em style="font-style:normal;color:var(--blue)">endurance</em>labs.ai ↗</a>
     <a class="btn" href="/mccorvey/?enter=1" style="border:1.5px solid var(--line);border-radius:8px;padding:9px 16px;font-weight:800;color:var(--ink)">Demo →</a>
     <a class="btn pri" href="mailto:alex@endurancelabs.ai?subject=MSM%20Operations%20Portal%20%E2%80%94%20walkthrough%20request&body=We%27d%20like%20a%20walkthrough%20of%20the%20MCCORVEY%20operations%20portal.">Request access →</a>
