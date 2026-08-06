@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HR — People Command Center — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal — HR: ADP-synced payroll (role-gated), recruiting across career channels, AI prospect-fit analysis, people development. Demo environment, fictional data.">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css">
+<link rel="stylesheet" href="/mccorvey/css/demo.css">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
+<style>
+  .hr-lock { border: 1px dashed var(--color-border); border-radius: 12px; padding: 26px 22px; text-align: center; color: var(--color-text-muted); font-size: 12.5px; background: var(--color-bg-3); }
+  .hr-lock b { display: block; color: var(--color-cloud-whisper); font-size: 13.5px; margin-bottom: 5px; }
+  .hr-funnel { display: flex; gap: 3px; align-items: center; }
+  .hr-funnel i { display: block; height: 8px; border-radius: 3px; background: var(--color-blue); opacity: .9; }
+  .hr-funnel span { font-size: 9px; color: var(--color-slate-hint); margin-left: 6px; white-space: nowrap; }
+  .fit-score { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+  .fit-ring { width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; position: relative; }
+  .fit-ring b { font-size: 24px; color: var(--color-cloud-whisper); }
+  .fit-ring small { position: absolute; bottom: 16px; font-size: 8px; font-weight: 800; letter-spacing: .08em; color: var(--color-slate-hint); }
+  .fit-subs { flex: 1; min-width: 240px; display: grid; gap: 8px; }
+  .fit-sub { display: grid; grid-template-columns: 170px 1fr 44px; gap: 10px; align-items: center; font-size: 11px; color: var(--color-text-muted); }
+  .fit-sub .bar { height: 9px; border-radius: 99px; background: var(--color-bg-3); overflow: hidden; }
+  .fit-sub .bar i { display: block; height: 100%; border-radius: 99px; }
+  .fit-sub b { text-align: right; color: var(--color-cloud-whisper); }
+  .fit-chip { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; font-weight: 700; padding: 4px 10px; border-radius: 999px; margin: 0 5px 6px 0; }
+  .fit-chip.hit { color: #2f9e6e; background: var(--color-green-bg); border: 1px solid #2f9e6e55; }
+  .fit-chip.gap { color: var(--color-amber); background: var(--color-amber-bg); border: 1px solid var(--color-amber); }
+  .fit-val { border-left: 3px solid var(--color-blue); background: var(--color-bg-3); border-radius: 0 9px 9px 0; padding: 8px 12px; margin-bottom: 7px; font-size: 11.5px; color: var(--color-text-muted); }
+  .fit-val b { color: var(--color-cloud-whisper); }
+  .fit-reco { border: 1px solid var(--color-blue); border-radius: 10px; padding: 12px 15px; background: var(--color-blue-pale); font-size: 12.5px; line-height: 1.6; color: var(--color-cloud-whisper); }
+  .fit-in { width: 100%; min-height: 190px; font: inherit; font-size: 12px; line-height: 1.55; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); resize: vertical; outline: none; }
+  .fit-in:focus { border-color: var(--color-blue); }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/mccorvey/js/data.js"></script>
+<script src="/mccorvey/js/util.js"></script>
+<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/vendor/chart.umd.min.js"></script>
+<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
+<script>
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
+McCorveyNav.renderTopbar({ subtitle: 'HR — People Command Center' });
+const app = $('#app');
+const me = currentPersona();
+const canPay = can('fin');          /* payroll summary — finance roles */
+const canExec = can('margins');     /* executive register — executive ring only */
+
+const R = HR.recruiting, P = HR.payroll, HC = HR.headcount, DV = HR.development;
+const hireRate = s => s.hires / Math.max(1, s.applicants) * 100;
+
+/* ---------------- Prospect Fit Analyzer (client-side demo "AI") ---------------- */
+const FIT_ROLES = {
+  "Journeyman Sheet Metal Installer (×8)": { day: "hang rectangular & spiral duct from spool maps, set hangers per 23 05 29, work hoist windows on commercial jobs", kw: { craft: ["sheet metal", "duct", "hvac", "install", "hanger", "smacna", "journeyman", "commercial", "spiral", "field"], certs: ["osha", "aws", "rigg"], tools: ["spool", "lift", "crane", "layout"] } },
+  "Plasma Table Operator — 2nd shift": { day: "run nested plasma cuts from STRATUS releases, stage spools by area, hold gauge tolerances on the coil line", kw: { craft: ["plasma", "cnc", "fabricat", "shop", "gauge", "coil", "operator", "nest"], certs: ["osha", "forklift"], tools: ["stratus", "cam", "torch"] } },
+  "Detailer / VDC Coordinator": { day: "model LOD 400 duct in Revit/CADmep, run clash in Navisworks, release signed-off spools to the plant via STRATUS", kw: { craft: ["revit", "cadmep", "navisworks", "bim", "vdc", "detail", "coordinat", "model", "lod"], certs: ["autodesk"], tools: ["stratus", "trimble", "autocad", "clash"] } },
+  "Project Manager — Commercial": { day: "own package schedule & AIA billing, run GC coordination, keep EACs honest and pay apps moving", kw: { craft: ["project manag", "commercial", "schedule", "subcontract", "budget", "billing", "aia", "change order", "mechanical"], certs: ["pmp", "osha"], tools: ["procore", "vista", "ms project"] } },
+  "Estimator — Div 23": { day: "take off lbs and LF from machine-read bid briefs, price against our unit-cost history, sign off AI doc-review flags", kw: { craft: ["estimat", "takeoff", "bid", "div 23", "mechanical", "duct", "unit cost", "proposal"], certs: ["osha"], tools: ["excel", "planswift", "fastpipe", "fastduct"] } },
+  "Welder — 304SS / kitchen exhaust": { day: "continuous liquid-tight TIG on 304SS exhaust per NFPA 96, dye-test lab systems, shop + occasional field tie-ins", kw: { craft: ["weld", "tig", "stainless", "304", "316", "grease duct", "nfpa", "fabricat"], certs: ["aws", "d9.1", "osha"], tools: ["orbital", "purge"] } },
+  "Shop Foreman — coil line": { day: "run the 20-station coil line crew, sequence STRATUS releases against install dates, own quality & Monday toolbox talks", kw: { craft: ["foreman", "supervis", "shop", "coil", "lead", "production", "sheet metal", "crew"], certs: ["osha 30"], tools: ["stratus", "lean", "kpi"] } },
+  "Apprentice Cohort — Fall '26 (22 seats)": { day: "rotate every station in the plant, the field and the office over 8 paid semesters — one 3-hour class a week, wages step up each semester", kw: { craft: ["apprentice", "student", "helper", "labor", "construction", "eager", "learn", "trade", "mechanic"], certs: ["osha 10"], tools: ["hand tool", "math", "team"] } },
+};
+const FIT_VALUES = [
+  ["Employees Are Family", ["family", "loyal", "long-term", "mentor", "10 years", "12 years", "referr"]],
+  ["Productivity", ["productiv", "efficien", "ahead of schedule", "output", "exceeded", "streamlin"]],
+  ["Safety", ["safety", "osha", "zero incident", "toolbox", "ppe", "lost-time"]],
+  ["One Crew Attitude", ["team", "crew", "collaborat", "together", "coordinated with"]],
+  ["Continuous Improvement", ["learn", "improv", "certif", "trained", "course", "upskill", "new software"]],
+  ["Excellence", ["quality", "award", "best", "punch-free", "zero defect", "recognized"]],
+  ["Humility", ["own", "accountab", "responsib", "hands-on"]],
+  ["Customization", ["custom", "fabricat", "built to spec", "one-off"]],
+];
+const SAMPLE_RESUME = `MARCUS DELGADO — Journeyman Sheet Metal Installer\nHouston, TX · 11 years commercial HVAC ductwork\n\nEXPERIENCE\nLead Installer, Gulf Coast Mechanical Group (2019–present)\n- Hung 40,000+ lbs/month of rectangular and spiral duct on hospital and data center jobs\n- Read spool maps and hanger drawings; set trapeze hangers and seismic bracing per SMACNA\n- Ran a 6-man crew as acting foreman for 8 months — kept every area on pace, zero lost-time incidents\n- Coordinated hoist windows with GC and other trades on a 28-story tower\n\nInstaller, Alamo Air Systems (2015–2019)\n- Commercial installs across San Antonio; kitchen exhaust welded systems support\n- Mentored 3 apprentices through their first semesters\n\nCERTS: OSHA 30 · Scissor/boom lift · Rigging & signal (2024)\nOTHER: Team-first, safety-first — never missed a Monday toolbox talk in 6 years. Looking for a shop that invests in its people for the long term.`;
+
+function analyzeFit() {
+  const roleName = document.getElementById('fit-role').value;
+  const txt = (document.getElementById('fit-resume').value || '').trim();
+  const out = document.getElementById('fit-out');
+  if (!txt || txt.length < 80) { out.innerHTML = '<div class="ynote">Paste a resume (or load the sample) — at least a few lines — then analyze.</div>'; return; }
+  const t = txt.toLowerCase();
+  const prof = FIT_ROLES[roleName] || Object.values(FIT_ROLES)[0];
+
+  /* craft/skills match */
+  const hits = [], gaps = [];
+  let craftScore = 0;
+  prof.kw.craft.forEach(k => { if (t.includes(k)) { craftScore += 1; hits.push(k); } else gaps.push(k); });
+  craftScore = Math.min(100, Math.round(craftScore / prof.kw.craft.length * 118));
+  const certHits = prof.kw.certs.filter(k => t.includes(k));
+  const toolHits = prof.kw.tools.filter(k => t.includes(k));
+
+  /* mission & values alignment */
+  const valHits = [];
+  FIT_VALUES.forEach(([name, kws]) => {
+    const found = kws.find(k => t.includes(k));
+    if (found) {
+      const idx = t.indexOf(found);
+      const snippet = txt.slice(Math.max(0, idx - 34), idx + found.length + 46).replace(/\s+/g, ' ').trim();
+      valHits.push({ name, snippet });
+    }
+  });
+  const valScore = Math.min(100, Math.round(valHits.length / 5 * 100));
+
+  /* day-to-day readiness: tenure + certs + tools */
+  const yrs = (t.match(/(\d+)\+?\s*(years|yrs)/) || [0, 0])[1] * 1;
+  const readiness = Math.min(100, Math.round((Math.min(yrs, 10) / 10) * 46 + certHits.length * 14 + toolHits.length * 10 + (craftScore > 60 ? 18 : 6)));
+
+  const overall = Math.round(craftScore * 0.45 + valScore * 0.3 + readiness * 0.25);
+  const band = overall >= 75 ? ['ADVANCE TO INTERVIEW', '#2f9e6e'] : overall >= 55 ? ['PHONE SCREEN', '#b98a36'] : ['KEEP ON FILE', '#c8102e'];
+
+  const ring = `<div class="fit-ring" style="background:conic-gradient(${band[1]} ${overall * 3.6}deg, var(--color-bg-3) 0)"><div style="width:70px;height:70px;border-radius:50%;background:var(--color-bg-2);display:flex;align-items:center;justify-content:center;flex-direction:column"><b>${overall}</b></div><small>FIT SCORE</small></div>`;
+  const sub = (l, v, c) => `<div class="fit-sub"><span>${l}</span><div class="bar"><i style="width:${v}%;background:${c}"></i></div><b>${v}</b></div>`;
+
+  const qs = [
+    valHits.length < 3 ? 'Tell me about a crew you stayed with a long time — what kept you there?' : 'Walk me through a job where the whole crew had to move as one to hit a date.',
+    craftScore < 70 ? `This role is: ${prof.day}. Which parts have you done, and which would be new?` : 'What is the heaviest / most complex system you have personally set, and what made it hard?',
+    'Safety is a value here, not a priority — tell me about a time you stopped work to fix a hazard.',
+  ];
+
+  out.innerHTML = `
+    <div class="fit-score">${ring}
+      <div class="fit-subs">
+        ${sub('Craft & skills match', craftScore, band[1])}
+        ${sub('Mission & values alignment', valScore, '#14283c')}
+        ${sub('Day-to-day readiness', readiness, '#2f9e6e')}
+      </div>
+    </div>
+    <div style="margin-bottom:12px"><span class="ypill" style="background:${band[1]};color:#fff;border:none">${band[0]}</span>
+      <span class="ynote" style="margin-left:8px">${yrs ? yrs + ' yrs experience detected · ' : ''}${certHits.length} certs matched · ${toolHits.length} tool signals</span></div>
+    <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:7px">SIGNALS MATCHED TO THE ROLE</div>
+    <div style="margin-bottom:12px">${hits.slice(0, 8).map(h => `<span class="fit-chip hit">✓ ${esc(h)}</span>`).join('')}${certHits.map(h => `<span class="fit-chip hit">✓ ${esc(h.toUpperCase())}</span>`).join('')}${gaps.slice(0, 3).map(g => `<span class="fit-chip gap">△ ${esc(g)} — probe in screen</span>`).join('')}</div>
+    <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:7px">CORE-VALUES EVIDENCE (${valHits.length} of 8)</div>
+    ${valHits.slice(0, 4).map(v => `<div class="fit-val"><b>${esc(v.name)}</b> — “…${esc(v.snippet)}…”</div>`).join('') || '<div class="ynote" style="margin-bottom:8px">No direct values language found — worth probing culture fit in the screen.</div>'}
+    <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:12px 0 7px">SUGGESTED INTERVIEW QUESTIONS</div>
+    <ul style="font-size:12px;line-height:1.7;color:var(--color-text-muted);padding-left:18px;margin-bottom:12px">${qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>
+    <div class="fit-reco">🧠 <b>${band[0]}</b> — scored against the ${esc(roleName)} day-to-day (“${esc(prof.day)}”), McCorvey's mission and its 8 published core values. Demo analysis — every recommendation is subject to recruiter review.</div>`;
+}
+function loadSample() { document.getElementById('fit-resume').value = SAMPLE_RESUME; analyzeFit(); }
+
+/* ---------------- page render ---------------- */
+const srcBar = R.sources.map(s => {
+  const max = Math.max(...R.sources.map(x => x.applicants));
+  return `<div class="demo-aging-row" style="grid-template-columns:210px 1fr 170px">
+    <div class="lab" style="display:flex;align-items:center;gap:6px">${srcChip(s.chip)}</div>
+    <div class="bar"><i style="width:${s.applicants / max * 100}%;background:#14283c"></i></div>
+    <div class="amt" style="font-size:10.5px">${s.applicants.toLocaleString()} applicants · <b style="color:#2f9e6e">${s.hires} hires</b> (${hireRate(s).toFixed(1)}%)</div>
+  </div>`;
+}).join('');
+
+const reqRows = R.reqs.map(q => {
+  const maxF = q.funnel[0] || 1;
+  const stages = ['Applied', 'Screened', 'Interview', 'Offer', 'Hired'];
+  return `<tr>
+    <td><b>${esc(q.role)}</b><div class="ynote">${esc(q.office)} · sourced via ${esc(q.src)}</div></td>
+    <td><div class="hr-funnel">${q.funnel.map((v, i) => `<i title="${stages[i]}: ${v}" style="width:${Math.max(5, v / maxF * 90)}px;opacity:${1 - i * 0.14}"></i>`).join('')}<span>${q.funnel[0]} → ${q.funnel[3]} offers</span></div></td>
+    <td style="text-align:right">${q.days}d</td>
+    <td><span class="ypill ${q.status === 'Offer Out' || q.status === 'Selecting' ? 'green' : q.status === 'Screening' ? 'gray' : 'blue'}">${q.status}</span></td>
+  </tr>`;
+}).join('');
+
+const execRows = P.executives.map(e => `<tr>
+  <td><b>${esc(e.name)}</b><div class="ynote">${esc(e.title)}</div></td>
+  <td style="text-align:right">${fmt$(e.base)}</td>
+  <td style="text-align:right">${fmt$(e.period)}</td>
+  <td style="text-align:right">${fmt$(e.ytdGross)}</td>
+  <td>${esc(e.k401)}</td>
+  <td><span class="ypill green">${esc(e.status)}</span></td>
+</tr>`).join('');
+
+app.innerHTML = `
+  <div class="cmd-hero">
+    <div class="cmd-head">
+      <div>
+        <div class="cmd-eyebrow">MSM — HUMAN RESOURCES · ALL OFFICES</div>
+        <h1 class="cmd-title">People Command Center</h1>
+        <div class="cmd-sub">${HC.total.toLocaleString()} employees across 9 offices and 2 plants — payroll synced from ADP, recruiting pulled live from the careers site, Indeed, referrals and the ABC apprenticeship pipeline, and an AI fit analysis on every resume that comes in.</div>
+      </div>
+      <div class="cmd-side">
+        <span class="cmd-range">FY2026 P8 · 07-06-2026 — 08-02-2026</span>
+        <span class="demo-live"><span class="dot"></span> ADP SYNC ${P.lastSync.toUpperCase()}</span>
+        <div class="cmd-chips">${srcChip('adp')} ${srcChip('careers')} ${srcChip('indeed')}</div>
+      </div>
+    </div>
+    <div class="cmd-tiles">
+      <div class="cmd-tile"><div class="l">Headcount</div><div class="v">${HC.total.toLocaleString()}</div><span class="d up">▲ +38 YTD</span><div class="s">${HC.byFn[1][1]} shop · ${HC.byFn[0][1]} field</div>${sparkSVG('hrhead', { up: true, color: '#14283c' })}</div>
+      <div class="cmd-tile"><div class="l">Last Payroll Run</div><div class="v">${canPay ? fmtK(P.lastRun.total) : '••••'}</div><span class="d up">${canPay ? '▲ ' + P.lastRun.heads + ' paid' : '🔒 finance roles'}</span><div class="s">${canPay ? P.lastRun.otPct + '% OT · via ADP' : 'role-gated'}</div>${sparkSVG('hrpay', { up: true })}</div>
+      <div class="cmd-tile"><div class="l">Open Requisitions</div><div class="v">${R.kpis.openReqs}</div><span class="d up">▲ ${R.kpis.applicantsYTD.toLocaleString()} applicants YTD</span><div class="s">across 5 channels</div>${sparkSVG('hrreq', { up: true, color: '#b98a36' })}</div>
+      <div class="cmd-tile"><div class="l">Time to Fill</div><div class="v">${R.kpis.avgTimeToFillDays}d</div><span class="d up">▲ ${R.kpis.offerAcceptPct}% offer accept</span><div class="s">avg, trailing 6 mo</div>${sparkSVG('hrfill', { up: true })}</div>
+      <div class="cmd-tile"><div class="l">Turnover</div><div class="v">${HC.turnoverPct}%</div><span class="d up">▲ vs ${HC.industryTurnoverPct}% industry</span><div class="s">avg tenure ${HC.avgTenureYrs} yrs</div>${sparkSVG('hrturn', { up: true, color: '#2f9e6e' })}</div>
+      <div class="cmd-tile"><div class="l">Apprentice Demand</div><div class="v">${R.kpis.apprenticeApplicants}</div><span class="d up">▲ for ${R.kpis.apprenticeSeats} seats</span><div class="s">Fall '26 cohort — ${(R.kpis.apprenticeApplicants / R.kpis.apprenticeSeats).toFixed(1)}:1</div>${sparkSVG('hrappr', { up: true, color: '#c8102e' })}</div>
+    </div>
+  </div>
+
+  <div class="scope-bar">
+    <span class="scope-chip">Period: <b>FY2026 P8</b></span>
+    <span class="scope-chip">Office: <b>all</b></span>
+    <span class="scope-chip">Division: <b>all</b></span>
+    <span class="scope-chip">Source: <b>all channels</b></span>
+    <span class="scope-note">prepared for ${esc(me.name)}, ${esc(me.title)} · payroll visibility: ${canExec ? 'executive' : canPay ? 'finance' : 'none (role-gated)'}</span>
+  </div>
+
+  <div class="demo-panel" style="margin-bottom:22px" id="payroll">
+    <div class="demo-panel-head"><h2>Payroll — Executive Register</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('adp')}<span class="k">synced ${P.lastSync} · illustrative demo amounts</span></span></div>
+    ${canExec ? `
+    <div class="ykpi-row" style="margin-bottom:14px">
+      <div class="ykpi"><div class="l">Last Run — Total Gross</div><div class="v">${fmtK(P.lastRun.total)}</div><div class="s">${P.lastRun.period}</div></div>
+      <div class="ykpi"><div class="l">Field / Shop / Office</div><div class="v" style="font-size:15px;line-height:1.5">${fmtK(P.lastRun.grossField)} · ${fmtK(P.lastRun.grossShop)} · ${fmtK(P.lastRun.grossOffice)}</div><div class="s">${P.lastRun.heads.toLocaleString()} employees paid</div></div>
+      <div class="ykpi amber"><div class="l">Overtime</div><div class="v">${P.lastRun.otHours.toLocaleString()}h</div><div class="s">${P.lastRun.otPct}% of hours</div></div>
+      <div class="ykpi green"><div class="l">401(k) Participation</div><div class="v">${P.benefits401k}%</div><div class="s">burden ${P.burdenPct}% · ${P.ytdW2.toLocaleString()} W-2s YTD</div></div>
+    </div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl">
+        <thead><tr><th>Executive</th><th style="text-align:right">Annual Base</th><th style="text-align:right">Per Period</th><th style="text-align:right">YTD Gross</th><th>401(k)</th><th>Status</th></tr></thead>
+        <tbody>${execRows}</tbody>
+      </table>
+    </div>
+    <div class="ynote" style="margin-top:8px">Next runs: ${esc(P.nextRun)}. Amounts are <b>round illustrative placeholders</b> — the live build reads actuals from ADP Workforce Now, scoped to this exact executive view.</div>`
+    : `<div class="hr-lock"><b>🔒 Executive payroll requires sign-off-level financial access</b>Signed in as ${esc(me.name)} (${esc(me.title)}). Switch to Tony Sr., Kristal, Tony Jr. or the Controller via the account menu to view the ADP register — this is the same role-based gating that protects margins and Duct Direct terms.</div>`}
+  </div>
+
+  <div class="demo-panel" style="margin-bottom:22px" id="recruiting">
+    <div class="demo-panel-head"><h2>Recruiting — Live Requisition Board</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('careers')}${srcChip('indeed')}${srcChip('abc')}<span class="k">funnel: applied → screened → interview → offer → hired</span></span></div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+      <table class="demo-tbl">
+        <thead><tr><th>Requisition</th><th>Pipeline</th><th style="text-align:right">Open</th><th>Status</th></tr></thead>
+        <tbody>${reqRows}</tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="demo-two" style="margin-bottom:22px">
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Source Performance</h2><span class="k">applicants & hires by channel, YTD</span></div>
+      <div class="demo-aging">${srcBar}</div>
+      <div class="ynote" style="margin-top:10px">Referrals convert best (${hireRate(R.sources[2]).toFixed(1)}%) — consistent with "Employees Are Family." Indeed drives volume for craft roles; the ABC pipeline feeds the apprenticeship at ${(R.kpis.apprenticeApplicants / R.kpis.apprenticeSeats).toFixed(1)} applicants per seat.</div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>People Development & Compliance</h2><span class="k">training, certs & safety</span></div>
+      <div class="ykpi-row" style="margin-bottom:12px">
+        <div class="ykpi"><div class="l">OSHA 30 / 10</div><div class="v">${DV.osha30} / ${DV.osha10}</div><div class="s">supervisors / craft</div></div>
+        <div class="ykpi green"><div class="l">Toolbox Talks</div><div class="v">${DV.toolboxTalkCompliancePct}%</div><div class="s">Monday compliance, all sites</div></div>
+        <div class="ykpi amber"><div class="l">Weld Certs</div><div class="v">${DV.weldCertsActive}</div><div class="s">${DV.weldCertsExpiring90d} expiring in 90d</div></div>
+      </div>
+      <table class="demo-tbl tbl-left" style="font-size:11.5px">
+        <thead><tr><th>Expiring Certifications</th><th style="text-align:right">Window</th></tr></thead>
+        <tbody>${DV.certsExpiring.map(c => `<tr><td>${esc(c[0])}</td><td style="text-align:right">${esc(c[1])}</td></tr>`).join('')}</tbody>
+      </table>
+      <div class="ynote" style="margin-top:8px">${DV.apprenticeGradsYTD} apprentices graduated YTD · ${DV.keymanPromotionsYTD} Keyman promotions — cohort detail on <a href="/mccorvey/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a>.</div>
+    </div>
+  </div>
+
+  <div class="demo-panel" style="margin-bottom:22px" id="develop">
+    <div class="demo-panel-head"><h2>🧠 Prospect Fit Analyzer</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('brain')}<span class="k">resume vs. role day-to-day, mission &amp; the 8 core values</span></span></div>
+    <div class="demo-two">
+      <div>
+        <label class="yfld" style="display:block;margin-bottom:10px">Analyze against requisition
+          <select id="fit-role" class="yin" style="width:100%">${Object.keys(FIT_ROLES).map(r => `<option>${esc(r)}</option>`).join('')}</select>
+        </label>
+        <textarea id="fit-resume" class="fit-in" placeholder="Paste the prospect's resume text here…"></textarea>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+          <button class="pa-btn" style="background:var(--color-blue);color:#fff;border-color:var(--color-blue)" onclick="analyzeFit()">⚡ Analyze fit</button>
+          <button class="pa-btn" onclick="loadSample()">Load sample resume</button>
+        </div>
+        <div class="ynote" style="margin-top:10px">Scores against the role's day-to-day, McCorvey's mission ("never the largest — the best") and the 8 published core values. In the live build this runs the same LLM core as bid review, with page-level citations.</div>
+      </div>
+      <div id="fit-out"><div class="ynote">Pick a requisition, paste a resume (or load the sample), and hit <b>Analyze fit</b>.</div></div>
+    </div>
+  </div>
+
+  <div class="demo-note">MSM Operations Portal — demo environment, fictional data · payroll figures are illustrative placeholders · AI output subject to recruiter review · concept build by Endurance AI Labs</div>`;
+</script>
+</body>
+</html>
