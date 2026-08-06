@@ -6,9 +6,9 @@
 <title>AI Bid & Document Review — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — AI document review. Every spec, drawing set and addendum machine-read before an estimator opens the set. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css">
-<link rel="stylesheet" href="/mccorvey/css/demo.css">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20260806a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20260806a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20260806a">
 <style>
   .dr-risk { display:flex; align-items:center; gap:8px; }
   .dr-risk .bar { width:64px; height:6px; border-radius:99px; background:var(--color-bg-3); overflow:hidden; }
@@ -42,11 +42,11 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/mccorvey/js/data.js"></script>
-<script src="/mccorvey/js/util.js"></script>
-<script src="/mccorvey/js/nav.js"></script>
+<script src="/mccorvey/js/data.js?v=20260806a"></script>
+<script src="/mccorvey/js/util.js?v=20260806a"></script>
+<script src="/mccorvey/js/nav.js?v=20260806a"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
-<script src="/mccorvey/js/mccorvey-brain.js" defer></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20260806a" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — AI Document Review' });

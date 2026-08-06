@@ -371,7 +371,7 @@ function _wireThemeToggle() {
   if (window.__mccorveyStickyHscrollLoaded) return;
   window.__mccorveyStickyHscrollLoaded = true;
   const s = document.createElement('script');
-  s.src = '/mccorvey/js/sticky-hscroll.js';
+  s.src = '/mccorvey/js/sticky-hscroll.js?v=20260806a';
   s.async = true;
   document.head.appendChild(s);
 })();
