@@ -476,3 +476,24 @@ tr.avb-drv td {
 .slk-compose input { flex: 1; font: inherit; font-size: 12.5px; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; }
 .slk-compose button { font: inherit; font-size: 12px; font-weight: 800; border: none; border-radius: 9px; padding: 0 16px; cursor: pointer; color: #fff; background: #611f69; }
 .slk-card.teams .slk-compose button { background: #6264A7; }
+
+/* ---- Modern action buttons — portal-wide override of demo.css .pa-btn ---- */
+.pa-btn, .pa-toolbar .pa-btn {
+  height: 36px; padding: 0 16px; border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-2); color: var(--color-cloud-whisper);
+  font-size: 12px; font-weight: 700; letter-spacing: .01em;
+  display: inline-flex; align-items: center; gap: 7px; cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  transition: transform .13s ease, box-shadow .13s ease, border-color .13s, color .13s, filter .13s;
+}
+.pa-btn:hover { border-color: var(--color-blue); color: var(--color-blue); background: var(--color-bg-2); transform: translateY(-1px); box-shadow: 0 5px 14px rgba(200, 16, 46, .14); }
+.pa-btn:active { transform: translateY(0); box-shadow: var(--shadow-xs); }
+.pa-btn:focus-visible { outline: 2px solid var(--color-blue); outline-offset: 2px; }
+.pa-btn.primary, .pa-btn.pri {
+  background: linear-gradient(135deg, #d5202f, #a30d26); color: #fff; border-color: transparent;
+  box-shadow: 0 6px 16px rgba(200, 16, 46, .30);
+}
+.pa-btn.primary:hover, .pa-btn.pri:hover { color: #fff; border-color: transparent; filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 9px 22px rgba(200, 16, 46, .38); }
+.pa-toolbar select { height: 36px; border-radius: 10px; box-shadow: var(--shadow-xs); }
+select.pa-btn { appearance: auto; }

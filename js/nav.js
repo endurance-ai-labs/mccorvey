@@ -42,17 +42,6 @@ const NAV_GROUPS = [
     ],
   },
   {
-    id: 'hr',
-    label: 'HR',
-    hideExternal: true,
-    items: [
-      { href: '/mccorvey/hr/', label: 'People Command Center' },
-      { href: '/mccorvey/hr/#payroll', label: 'Payroll (ADP)' },
-      { href: '/mccorvey/hr/#recruiting', label: 'Recruiting & Prospect Fit' },
-      { href: '/mccorvey/hr/#develop', label: 'People Development' },
-    ],
-  },
-  {
     id: 'finance',
     label: 'Financial',
     internalOnly: true,
@@ -63,6 +52,17 @@ const NAV_GROUPS = [
       { href: '/mccorvey/manpower/', label: 'Manpower & EAC' },
       { href: '/mccorvey/billing/',  label: 'AIA Billing' },
       { href: '/mccorvey/timesheets/', label: 'Timesheets' },
+    ],
+  },
+  {
+    id: 'hr',
+    label: 'HR',
+    hideExternal: true,
+    items: [
+      { href: '/mccorvey/hr/', label: 'People Command Center' },
+      { href: '/mccorvey/hr/#payroll', label: 'Payroll (ADP)' },
+      { href: '/mccorvey/hr/#recruiting', label: 'Recruiting & Prospect Fit' },
+      { href: '/mccorvey/hr/#develop', label: 'People Development' },
     ],
   },
 ];
