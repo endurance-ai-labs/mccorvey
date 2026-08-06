@@ -207,6 +207,12 @@ function srcChip(kind) {
     st:   ['GTP STRATUS', '#f04e23', 'Fabrication, spooling & field production synced from STRATUS via API'],
     prop: ['MSM PROPRIETARY', '#c8102e', 'Proprietary McCorvey modeling engine — internal only'],
     brain: ['MSM BRAIN — AI DOC REVIEW', '#c8102e', 'Machine-read specs, drawings & addenda — AI extraction with estimator sign-off'],
+    adp: ['ADP WORKFORCE NOW', '#d0271d', 'Payroll, tax & benefits synced from ADP Workforce Now via API'],
+    careers: ['MCCORVEY.COM/CAREERS', '#14283c', 'Applications from the company careers site & apply flow'],
+    indeed: ['INDEED', '#2164f3', 'Job postings & applicant flow synced from Indeed'],
+    ref: ['EMPLOYEE REFERRALS', '#2f9e6e', 'Referral pipeline — tracked through the portal'],
+    abc: ['ABC PIPELINE', '#b98a36', 'Associated Builders & Contractors apprenticeship & craft pipeline'],
+    li: ['LINKEDIN', '#0a66c2', 'Professional roles sourced via LinkedIn'],
   };
   const m = map[kind]; if (!m) return '';
   return `<span title="${m[2]}" style="display:inline-flex;align-items:center;gap:5px;font-size:8.5px;font-weight:800;letter-spacing:0.1em;padding:2px 8px;border-radius:3px;border:1px solid ${m[1]}44;color:${m[1]};background:${m[1]}12;white-space:nowrap"><span style="width:5px;height:5px;border-radius:99px;background:${m[1]}"></span>${m[0]}</span>`;

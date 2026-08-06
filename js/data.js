@@ -993,3 +993,60 @@ window.KPI_SNAPSHOT = KPI_SNAPSHOT;
     (j.photos || []).forEach(p => p.date = addMonths(p.date, shift));
   });
 })();
+
+
+/* =========================================================
+   HR — payroll (ADP-synced, role-gated), recruiting (pulled
+   from career channels) and people development. Fictional /
+   illustrative demo data throughout.
+   ========================================================= */
+const HR = {
+  payroll: {
+    system: "ADP Workforce Now", lastSync: "4 min ago",
+    lastRun: { period: "Week 31 · Jul 27 – Aug 2", grossField: 1284000, grossShop: 918000, grossOffice: 412000, total: 2614000, heads: 1176, otHours: 2840, otPct: 6.1 },
+    nextRun: "Aug 8, 2026 (weekly — field & shop) · Aug 15 (biweekly — office)",
+    burdenPct: 34.2, benefits401k: 92, ytdW2: 1231,
+    /* executive register — ILLUSTRATIVE ROUND PLACEHOLDERS (demo). Visible only to margins-level roles. */
+    executives: [
+      { name: "Tony McCorvey Sr.", title: "Chief Executive Officer & Owner", base: 500000, period: 9615, ytdGross: 302900, k401: "6% match", status: "Current" },
+      { name: "Kristal McCorvey Crites", title: "Chief Financial Officer", base: 400000, period: 7692, ytdGross: 242300, k401: "6% match", status: "Current" },
+      { name: "Tony McCorvey Jr.", title: "Executive VP — Operations", base: 400000, period: 7692, ytdGross: 242300, k401: "6% match", status: "Current" },
+      { name: "Charlie McCorvey", title: "VP — Manufacturing", base: 350000, period: 6731, ytdGross: 212000, k401: "6% match", status: "Current" },
+      { name: "Zane Maddux", title: "Executive Field Superintendent", base: 300000, period: 5769, ytdGross: 181700, k401: "6% match", status: "Current" },
+      { name: "Josh Bernard", title: "Safety Director", base: 250000, period: 4808, ytdGross: 151400, k401: "6% match", status: "Current" },
+    ],
+  },
+  headcount: {
+    total: 1200, byFn: [["Field crews", 340], ["Manufacturing (both plants)", 580], ["PM & VDC", 52], ["Estimating & precon", 18], ["Office & admin", 210]],
+    byOffice: [["Houston", 742], ["Orlando", 168], ["Dallas", 96], ["Austin", 44], ["San Antonio", 38], ["Nashville", 34], ["Carolinas", 78]],
+    turnoverPct: 11.2, industryTurnoverPct: 21.4, avgTenureYrs: 8.4, eNPS: 62,
+  },
+  recruiting: {
+    kpis: { openReqs: 14, applicantsYTD: 1847, avgTimeToFillDays: 34, offerAcceptPct: 87, apprenticeApplicants: 210, apprenticeSeats: 22 },
+    sources: [
+      { name: "mccorvey.com/careers", applicants: 512, hires: 38, chip: "careers" },
+      { name: "Indeed", applicants: 689, hires: 27, chip: "indeed" },
+      { name: "Employee referrals", applicants: 226, hires: 41, chip: "ref" },
+      { name: "ABC apprenticeship pipeline", applicants: 248, hires: 24, chip: "abc" },
+      { name: "LinkedIn", applicants: 172, hires: 9, chip: "li" },
+    ],
+    reqs: [
+      { role: "Journeyman Sheet Metal Installer (×8)", office: "Houston", src: "Indeed · referrals", days: 21, funnel: [214, 68, 24, 11, 6], status: "Interviewing" },
+      { role: "Plasma Table Operator — 2nd shift", office: "Orlando", src: "Indeed · careers site", days: 18, funnel: [86, 31, 12, 4, 2], status: "Interviewing" },
+      { role: "Detailer / VDC Coordinator", office: "Dallas", src: "careers site · LinkedIn", days: 42, funnel: [64, 22, 9, 3, 1], status: "Offer Out" },
+      { role: "Project Manager — Commercial", office: "Charlotte", src: "LinkedIn · referrals", days: 51, funnel: [92, 28, 11, 2, 0], status: "Interviewing" },
+      { role: "Estimator — Div 23", office: "Houston", src: "careers site · referrals", days: 38, funnel: [41, 16, 7, 2, 1], status: "Offer Out" },
+      { role: "Welder — 304SS / kitchen exhaust", office: "Houston", src: "Indeed · ABC", days: 12, funnel: [58, 19, 8, 3, 2], status: "Screening" },
+      { role: "Shop Foreman — coil line", office: "Orlando", src: "internal · referrals", days: 26, funnel: [22, 9, 5, 2, 1], status: "Final Round" },
+      { role: "Apprentice Cohort — Fall '26 (22 seats)", office: "Houston + Orlando", src: "ABC · careers site · schools", days: 44, funnel: [210, 118, 64, 30, 19], status: "Selecting" },
+    ],
+  },
+  development: {
+    osha30: 214, osha10: 466, weldCertsActive: 96, weldCertsExpiring90d: 11,
+    toolboxTalkCompliancePct: 100, apprenticeGradsYTD: 9, keymanPromotionsYTD: 9,
+    certsExpiring: [
+      ["AWS D9.1 — 6 welders", "Sep 2026"], ["Crane rigger/signal — 3 field", "Oct 2026"], ["EPA 608 — 2 techs", "Oct 2026"],
+    ],
+  },
+};
+window.HR = HR;

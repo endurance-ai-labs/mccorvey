@@ -42,6 +42,17 @@ const NAV_GROUPS = [
     ],
   },
   {
+    id: 'hr',
+    label: 'HR',
+    hideExternal: true,
+    items: [
+      { href: '/mccorvey/hr/', label: 'People Command Center' },
+      { href: '/mccorvey/hr/#payroll', label: 'Payroll (ADP)' },
+      { href: '/mccorvey/hr/#recruiting', label: 'Recruiting & Prospect Fit' },
+      { href: '/mccorvey/hr/#develop', label: 'People Development' },
+    ],
+  },
+  {
     id: 'finance',
     label: 'Financial',
     internalOnly: true,
@@ -80,6 +91,7 @@ function _activeGroup(path) {
   if (path.startsWith('/manpower/')) return 'finance';
   if (path.startsWith('/billing/')) return 'finance';
   if (path.startsWith('/timesheets/')) return 'finance';
+  if (path.startsWith('/hr/')) return 'hr';
   if (path.startsWith('/brain/')) return 'brain';
   return 'home';
 }
@@ -133,7 +145,7 @@ function renderTopbar(opts = {}) {
   if (typeof isSignedIn === 'function' && !isSignedIn()) { renderSignIn(); target.outerHTML = ''; return; }
   const me = currentPersona();
   const internal = McCorveyMode.isInternal() && !me.perms.external;
-  const groups = NAV_GROUPS.filter(g => !g.internalOnly || (internal && me.perms.fin));
+  const groups = NAV_GROUPS.filter(g => (!g.internalOnly || (internal && me.perms.fin)) && (!g.hideExternal || internal));
   const activeGroup = groups.find(g => g.id === activeGroupId);
 
   const groupLinks = groups.map(g => {
