@@ -230,6 +230,9 @@ function renderTopbar(opts = {}) {
       </a>
       <nav class="nav nav-desktop">${groupLinks}</nav>
       <div class="portal-topbar-right">
+        <a href="/mccorvey/welcome/" class="nav-icon-btn" title="Switch to the marketing landing page" style="width:auto;padding:0 12px;gap:6px;font-size:9.5px;font-weight:800;letter-spacing:0.09em;text-decoration:none;display:inline-flex;align-items:center">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          LANDING</a>
         <div class="mode-toggle" title="Switch between internal (full financials) and client-facing views" style="${me.perms.external ? 'display:none' : ''}">
           <button id="ymode-int" class="${internal ? 'on' : ''}"><span class="mt-lbl">INTERNAL</span>${internal ? '' : ''}</button>
           <button id="ymode-ext" class="${internal ? '' : 'on'}"><span class="mt-lbl">CLIENT</span></button>

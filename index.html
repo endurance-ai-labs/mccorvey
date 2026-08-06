@@ -247,8 +247,8 @@ if (internal) {
     const BASE_C = 248e6;
     const BASE_S = SERVICE_AGREEMENTS.filter(a => a.status !== 'Proposed').reduce((x, a) => x + a.monthly, 0) * 12;
     let P;
-    try { P = JSON.parse(localStorage.getItem('msm-5yr') || 'null'); if (P && P.goal == 300) P.goal = 500; if (P && P.newClientSize < 1e6) P = null; /* pre-rescale scenario — reset */ } catch (e) {}
-    P = P || { constrGrowth: 5, svcGrowth: 15, escalation: 3, newClientsY1: 2, newClientsRamp: 0, newClientSize: 6.5e6, newClientRepeat: 70, newSvcPerYear: 4, newSvcMRR: 85000, churn: 6, attachPct: 40, attachMRR: 60000, gmConstr: 15, gmSvc: 28, ohPct: 8, ohScale: 0.85, goal: 500, acq: [{ year: 2, revenue: 30e6, gm: 16, rec: 20, growth: 10 }, { year: 4, revenue: 60e6, gm: 15, rec: 15, growth: 8 }] };
+    try { P = JSON.parse(localStorage.getItem('msm-5yr') || 'null'); if (P && (P.goal == 300 || P.goal == 500)) P.goal = 1500; /* goal raised to $1.5B */ if (P && P.newClientSize < 1e6) P = null; /* pre-rescale scenario — reset */ } catch (e) {}
+    P = P || { constrGrowth: 5, svcGrowth: 15, escalation: 3, newClientsY1: 2, newClientsRamp: 0, newClientSize: 6.5e6, newClientRepeat: 70, newSvcPerYear: 4, newSvcMRR: 85000, churn: 6, attachPct: 40, attachMRR: 60000, gmConstr: 15, gmSvc: 28, ohPct: 8, ohScale: 0.85, goal: 1500, acq: [{ year: 2, revenue: 30e6, gm: 16, rec: 20, growth: 10 }, { year: 4, revenue: 60e6, gm: 15, rec: 15, growth: 8 }] };
     const esc2 = P.escalation / 100;
     const R = [1, 2, 3, 4, 5].map(y => {
       const co = BASE_C * Math.pow(1 + P.constrGrowth / 100 + esc2, y);
@@ -264,7 +264,8 @@ if (internal) {
       const oh = total * (P.ohPct / 100) * Math.pow(P.ohScale, Math.log2(Math.max(1, total / (BASE_C + BASE_S))));
       return { y, total, recurring: sb + sn + arec, ebitda: gp - oh };
     });
-    const goal = (P.goal || 500) * 1e6;
+    const goal = (P.goal || 1500) * 1e6;
+    const goalLbl = (P.goal || 1500) >= 1000 ? '$' + ((P.goal || 1500) / 1000).toLocaleString(undefined, { maximumFractionDigits: 1 }) + 'B' : '$' + (P.goal || 1500) + 'M';
     const goalPath = [1, 2, 3, 4, 5].map(y => (BASE_C + BASE_S) * Math.pow(goal / (BASE_C + BASE_S), y / 5));
     new Chart($('#ch-goal'), {
       data: { labels: R.map(r => 'Y' + r.y), datasets: [
@@ -287,7 +288,7 @@ if (internal) {
       <thead><tr><th>Performance Hurdle</th><th style="text-align:right">Target</th><th style="text-align:right">Plan</th><th style="width:90px">Status</th></tr></thead>
       <tbody>${hurdles.map(h => `<tr><td>${h[0]}</td><td style="text-align:right">${h[1]}</td><td style="text-align:right;font-weight:700">${h[2]}</td><td>${chip(h[3], h[4])}</td></tr>`).join('')}</tbody>
     </table>
-    <div class="ynote" style="margin-top:6px">Hurdles derive from the $${P.goal || 500}M goal path — the current saved scenario in the 5-Year Growth Model drives this card live.</div>`;
+    <div class="ynote" style="margin-top:6px">Hurdles derive from the ${goalLbl} goal path — the current saved scenario in the 5-Year Growth Model drives this card live.</div>`;
   })();
 
 } else {
