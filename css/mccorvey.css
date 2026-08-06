@@ -447,3 +447,12 @@ tr.avb-drv td {
 .avbx-chip b { color: var(--color-cloud-whisper); font-weight: 700; }
 .avbx-chip .d { font-weight: 800; font-size: 10px; }
 @media (max-width: 560px) { .avbx-bars { grid-template-columns: 44px 1fr 84px; } .avbx-var { white-space: normal; } }
+
+/* ---- Command center: featured chart card + tiles layout ---- */
+.cmd-body { display: grid; grid-template-columns: minmax(300px, 460px) 1fr; gap: 12px; position: relative; align-items: stretch; }
+.cmd-feature { background: #fff; border-radius: 13px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); padding: 4px; display: flex; align-items: center; min-width: 0; }
+.cmd-feature svg { width: 100%; height: auto; display: block; border-radius: 10px; }
+.cmd-body .cmd-tiles { grid-template-columns: repeat(3, minmax(150px, 1fr)); align-content: stretch; }
+@media (max-width: 1360px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(2, minmax(150px, 1fr)); } }
+@media (max-width: 1020px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } }
+@media (max-width: 1020px) { .cmd-body { grid-template-columns: 1fr; } }

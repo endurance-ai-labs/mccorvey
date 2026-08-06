@@ -85,6 +85,30 @@ if (internal) {
           <div class="cmd-chips">${srcChip('qb')} ${srcChip('st')} ${srcChip('prop')}</div>
         </div>
       </div>
+      <div class="cmd-body">
+        <div class="cmd-feature">
+          <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Estimator review hours per bid set, before and after AI review">
+            <defs>
+              <linearGradient id="eccCurve" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e05a6e"/><stop offset="1" stop-color="#c8102e"/></linearGradient>
+              <linearGradient id="eccFill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(200,16,46,.14)"/><stop offset="1" stop-color="rgba(200,16,46,0)"/></linearGradient>
+            </defs>
+            <rect x="1" y="1" width="558" height="398" rx="14" fill="#ffffff" stroke="#e7eaf0"/>
+            <g fill="#9aa2ad" font-family="Inter,system-ui" font-size="10" font-weight="700" letter-spacing="1.4">
+              <text x="26" y="34">MCCORVEY SHEET METAL · ESTIMATOR HOURS PER BID SET · AI REVIEW</text>
+            </g>
+            <g stroke="#eff1f6"><line x1="26" y1="90" x2="534" y2="90"/><line x1="26" y1="160" x2="534" y2="160"/><line x1="26" y1="230" x2="534" y2="230"/><line x1="26" y1="300" x2="534" y2="300"/></g>
+            <path d="M26,96 C90,102 150,116 210,142 C280,172 340,230 410,278 C460,308 500,320 534,324 L534,360 L26,360 Z" fill="url(#eccFill)"/>
+            <path d="M26,96 C90,102 150,116 210,142 C280,172 340,230 410,278 C460,308 500,320 534,324" fill="none" stroke="url(#eccCurve)" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="534" cy="324" r="9" fill="#fff" stroke="#c8102e" stroke-width="3"/>
+            <g font-family="Inter,system-ui" font-size="11" font-weight="800">
+              <rect x="60" y="76" width="88" height="20" rx="4" fill="#14283c"/><text x="104" y="90" fill="#fff" text-anchor="middle">42 h / set</text>
+              <rect x="440" y="292" width="82" height="20" rx="4" fill="#c8102e"/><text x="481" y="306" fill="#fff" text-anchor="middle">3.5 h / set</text>
+            </g>
+            <g font-family="Inter,system-ui" font-size="9.5" fill="#9aa2ad">
+              <text x="26" y="382">620 ITB SETS / YR</text><text x="150" y="382">~1,420 PAGES / SET</text><text x="300" y="382">VIEWPOINT VISTA · GTP STRATUS</text><text x="534" y="382" text-anchor="end">LIVE</text>
+            </g>
+          </svg>
+        </div>
       <div class="cmd-tiles">
         <div class="cmd-tile"><div class="l">Contract Backlog</div><div class="v">${fmtK(backlog)}</div><span class="d up">▲ +2.4% vs P7</span><div class="s">${JOBS.length} active jobs</div>${sparkSVG('backlog', { up: true, color: '#14283c' })}</div>
         <div class="cmd-tile"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><span class="d up">▲ ${fmtPct(earned / backlog * 100)} of backlog</span><div class="s">earned-value across the book</div>${sparkSVG('earned', { up: true })}</div>
@@ -92,6 +116,7 @@ if (internal) {
         <div class="cmd-tile"><div class="l">Margin to Date</div><div class="v">${fmtK(earned - costTD)}</div><span class="d up">▲ ${fmtPct((earned - costTD) / Math.max(1, earned) * 100)} of earned</span><div class="s">cost to date ${fmtK(costTD)}</div>${sparkSVG('margintd', { up: true })}</div>
         <div class="cmd-tile"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><span class="d up">▲ ${fmtPct(projMargin / backlog * 100)} blended</span><div class="s">at completion, current EACs</div>${sparkSVG('projgm', { up: true, color: '#14283c' })}</div>
         <div class="cmd-tile"><div class="l">Doc Review Savings</div><div class="v">${fmtK(drSave)}</div><span class="d up">▲ run-rate vs $3M spend</span><div class="s"><a href="/mccorvey/bidreview/" style="color:#c8102e;font-weight:800;text-decoration:none">AI BID REVIEW →</a></div>${sparkSVG('drsave', { up: true })}</div>
+      </div>
       </div>
     </div>
 
