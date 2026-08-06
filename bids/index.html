@@ -262,9 +262,22 @@ function saveNewCustomer() {
 function pickField(field, v) {
   const flag = { project: 'customName', address: 'customAddr', bidNumber: 'customBid' }[field];
   if (v === '__custom') { SETUP[flag] = true; render(); return; }
+  if (v === '__generate' && field === 'bidNumber') { BID.meta.bidNumber = generateBidNumber(); SETUP.customBid = false; render(); return; }
   SETUP[flag] = false;
   BID.meta[field] = v;
   render();
+}
+/* next sequential number: highest MSM-<year>-<seq> issued anywhere (options, session issue log, current) + 3 */
+function generateBidNumber() {
+  let issued = [];
+  try { issued = JSON.parse(localStorage.getItem('msm-bidnums') || '[]'); } catch (e) {}
+  const pool = bidNumberOptions().concat(issued, [BID.meta.bidNumber]);
+  const year = new Date().getFullYear();
+  let hi = 400;
+  pool.forEach(s => { const m = String(s).match(/^MSM-\d{4}-(\d+)$/); if (m) hi = Math.max(hi, parseInt(m[1], 10)); });
+  const next = 'MSM-' + year + '-' + (hi + 3);
+  try { issued.push(next); localStorage.setItem('msm-bidnums', JSON.stringify(issued.slice(-50))); } catch (e) {}
+  return next;
 }
 
 function lineCalc(l) {
@@ -566,6 +579,7 @@ function viewInternal() {
             ? `<input class="yin" value="${esc(BID.meta.bidNumber)}" onchange="updMeta('bidNumber',this.value)" onblur="SETUP.customBid=false;render()" autofocus>`
             : `<select class="yin" onchange="pickField('bidNumber',this.value)">
                 ${bidNumberOptions().map(b => `<option value="${esc(b)}" ${b === BID.meta.bidNumber ? 'selected' : ''}>${esc(b)}</option>`).join('')}
+                <option value="__generate">⚡ Generate new bid number</option>
                 <option value="__custom">✏️ Custom number…</option>
               </select>`}
         </label>
