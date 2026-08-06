@@ -456,3 +456,23 @@ tr.avb-drv td {
 @media (max-width: 1360px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(2, minmax(150px, 1fr)); } }
 @media (max-width: 1020px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } }
 @media (max-width: 1020px) { .cmd-body { grid-template-columns: 1fr; } }
+
+/* ---- People chips: message any employee via Slack / Teams ---- */
+.ppl { color: inherit; border-bottom: 1px dashed rgba(200, 16, 46, .45); cursor: pointer; white-space: nowrap; }
+.ppl:hover { color: var(--color-blue); border-bottom-color: var(--color-blue); }
+.ppl::after { content: "💬"; font-size: 8px; vertical-align: super; margin-left: 2px; opacity: .55; }
+.ppl-pop { position: fixed; z-index: 2147482500; background: var(--color-bg-2); border: 1px solid var(--color-border); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 10px; width: 212px; }
+.ppl-pop .who { font-size: 12px; font-weight: 800; color: var(--color-cloud-whisper); margin-bottom: 2px; }
+.ppl-pop .ttl { font-size: 10px; color: var(--color-text-muted); margin-bottom: 9px; }
+.ppl-pop button { display: flex; align-items: center; gap: 8px; width: 100%; font: inherit; font-size: 11.5px; font-weight: 700; color: var(--color-cloud-whisper); background: var(--color-bg-3); border: 1px solid var(--color-border); border-radius: 8px; padding: 8px 10px; cursor: pointer; margin-top: 6px; }
+.ppl-pop button:hover { border-color: var(--color-blue); color: var(--color-blue); }
+/* Teams variant of the DM modal (reuses slk-* skeleton) */
+.slk-card.teams .slk-head { background: #464775; color: #fff; }
+.slk-card.teams .slk-head b { color: #fff; }
+.slk-card.teams .slk-ava.peer { background: #6264A7; }
+.slk-card.teams .slk-ava.me { background: #464775; }
+.slk-card.teams .slk-app { background: #ede9f7; color: #6264A7; }
+.slk-compose { display: flex; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--color-border); }
+.slk-compose input { flex: 1; font: inherit; font-size: 12.5px; padding: 9px 12px; border-radius: 9px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; }
+.slk-compose button { font: inherit; font-size: 12px; font-weight: 800; border: none; border-radius: 9px; padding: 0 16px; cursor: pointer; color: #fff; background: #611f69; }
+.slk-card.teams .slk-compose button { background: #6264A7; }
