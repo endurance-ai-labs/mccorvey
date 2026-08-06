@@ -332,7 +332,7 @@ function bidSign(slot) {
   if (slot === 'pm') {
     const p = currentPersona();
     if (!p || !['conmgr', 'eng', 'svcmgr'].includes(p.id)) {
-      alert('The McCorvey signature line must be signed by a project manager (Travis Boone, Sam Nguyen or Hector Ruiz).\n\nSwitch user via the account menu (top right).');
+      alert('The McCorvey signature line must be signed by a project manager (Travis Boone, Sam Nguyen or Charlie McCorvey).\n\nSwitch user via the account menu (top right).');
       return;
     }
     bidSigSave('pm', { name: p.name, title: p.title, at: now });

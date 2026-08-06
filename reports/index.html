@@ -196,7 +196,7 @@ function render() {
       ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(currentDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
       <div class="sig-row">
         ${sigBlock(j.id + ':conf:office', 'Gloria Simmons — Office Manager, Billing &amp; Payroll, ' + MCCORVEY.company, 'office')}
-        ${sigBlock(j.id + ':conf:cfo', 'Elena Vasquez — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
+        ${sigBlock(j.id + ':conf:cfo', 'Kristal McCorvey Crites — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
       </div>
 
 <!-- ============ page: conditional waiver & release ============ -->
@@ -218,7 +218,7 @@ function render() {
       <p><b>Contractor's certification.</b> The undersigned certifies that the work described in this report has been completed in accordance with the contract documents, that quantities, percentages and amounts reported are accurate to the best of their knowledge, that all amounts have been paid by the contractor for work for which previous certificates for payment were issued and payments received, and that the current payment shown herein is now due.</p>
       <div class="sig-row">
         ${sigBlock(j.id + ':cert:pm', esc(j.pm) + ' — Project Manager, ' + MCCORVEY.company, 'conmgr|eng|svcmgr')}
-        ${sigBlock(j.id + ':cert:cfo', 'Elena Vasquez — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
+        ${sigBlock(j.id + ':cert:cfo', 'Kristal McCorvey Crites — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
       </div>
       <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${MCCORVEY.email}</b>.</p>
       <div class="sig-row">

@@ -89,8 +89,10 @@ const TICKER = [
   ['GALV COIL (CRU)', '$52.40/cwt', '+1.8%', 'up'],
   ['304 SS SURCHARGE', '$0.86/lb', '-0.4%', 'down'],
   ['ALUMINUM (MW)', '$1.32/lb', '+0.9%', 'up'],
+  ['PIECES / DAY (BOTH PLANTS)', '4,465', 'capacity', 'up'],
+  ['ACTIVE PROJECTS', '250', '+6 MoM', 'up'],
   ['SPIRAL LINE UTILIZATION', '91.2%', '+2.0%', 'up'],
-  ['PLASMA TABLES (PLANT 1)', '87.6%', '+1.1%', 'up'],
+  ['PLASMA TABLES (HOUSTON)', '87.6%', '+1.1%', 'up'],
   ['FAB BACKLOG', '9.4M lbs', '+310K lbs', 'up'],
   ['DIESEL (DOE)', '$3.61/gal', '+0.4%', 'up'],
   ['AR SYNC (VISTA)', 'LIVE', '4 min ago', 'up'],
@@ -111,10 +113,14 @@ const TICKER = [
 const MARQUEE = [
   ['MSM', 'Est. 1925 · 3,000+ major commercial projects · among the largest HVAC ductwork fabricators in the U.S.'],
   ['MSM BRAIN', 'AI document review live — 412 bid sets machine-read YTD, $2.36M run-rate savings against the $3M review spend'],
+  ['MSM', '9 offices — Houston · Dallas · Austin · San Antonio · Orlando · Nashville · Charlotte · Durham · Charleston'],
+  ['SAFETY', 'Toolbox talks every Monday morning, every facility, every jobsite — safety is a value, not a priority'],
+  ['CORE VALUES', "We don't use the word 'busy' — we remain productive"],
+  ['ABC', 'STEP Safety Award and Excellence in Construction honors — merit-shop craft training at scale'],
   ['SMACNA', 'New duct construction standards edition adopted — gauge tables updated in the estimating library'],
   ['TEXAS', 'Data center and semiconductor mechanical awards at record pace across the Austin–Taylor corridor'],
   ['DUCT DIRECT', 'Same-week shipping on stock fittings — reserved plant capacity for Standing PO accounts'],
-  ['MSM', 'BIM Design · Pre-Fabrication · HVAC Installation · Turnkey — Houston, TX'],
+  ['KEYMAN', 'Virtually every MSM leader started in the shop or the field — 34 Keymen in the pipeline, 9 promoted YTD'],
   ['AIA', 'Construction billings index positive for institutional work a sixth straight month'],
 ];
 

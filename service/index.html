@@ -18,6 +18,9 @@
 <link rel="stylesheet" href="/mccorvey/css/theme.css">
 <link rel="stylesheet" href="/mccorvey/css/demo.css">
 <link rel="stylesheet" href="/mccorvey/css/mccorvey.css">
+<style>
+  .eqp-chip { display: inline-block; font-size: 10px; font-weight: 600; letter-spacing: 0.01em; padding: 3px 8px; border-radius: 3px; margin: 0 4px 5px 0; background: var(--color-bg-3); color: var(--color-text-muted); border: 1px solid var(--color-border-soft); white-space: normal; }
+</style>
 </head>
 <body>
 <div id="topbar"></div>
@@ -202,6 +205,19 @@ function render() {
         </table>
         <div class="ynote" style="margin-top:8px">The OEM program is a single proposed account today — modeled as its own type so a dedicated production line (or a second plant shift) drops straight in.</div>`;
       })()}
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>The Plants — Houston &amp; Orlando</h2><span class="k">the manufacturing capacity behind every program</span></div>
+      <div class="demo-two">
+        ${PLANT_STATS.map(p => `
+        <div>
+          <div style="font-weight:800;margin-bottom:2px;color:var(--color-cloud-whisper)">${esc(p.name)}</div>
+          <div class="ynote" style="margin-bottom:10px"><b>${p.sqft.toLocaleString()} sq ft</b> · ${p.employees} shop employees</div>
+          <div>${p.equipment.map(e => `<span class="eqp-chip">${esc(e)}</span>`).join('')}</div>
+        </div>`).join('')}
+      </div>
+      <div class="ynote" style="margin-top:12px;border-top:1px solid var(--color-border-soft);padding-top:10px"><b>${PLANT_TOTALS.sqft.toLocaleString()} sq ft combined</b> · ${PLANT_TOTALS.employees} shop employees across shifts · ${PLANT_TOTALS.piecesPerDay.toLocaleString()} pieces/day capacity · in-house accessory manufacturing (flanges, dampers, corners, clips, Unistrut)</div>
     </div>
 
     ${showMoney ? `
