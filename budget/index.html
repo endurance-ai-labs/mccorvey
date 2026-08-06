@@ -346,23 +346,36 @@ function render() {
             { n: 'General liability premium', w: 0.52 }, { n: 'Performance & payment bonds', w: 0.28 }, { n: 'Auto & fleet coverage', w: 0.20 }]],
         ];
         const gmAct = (act.revenue - act.cost.subs - act.cost.labor - act.cost.mat - act.cost.equip) / act.revenue * 100;
-        return `<table class="demo-tbl tbl-left">
-          <thead><tr><th>Line</th><th style="text-align:right">Actual (${mLong(act.m)})</th><th style="text-align:right">Budget</th><th style="text-align:right">Variance</th><th style="width:110px">Flag</th></tr></thead>
-          <tbody>${rows.map(r => {
-            const v = r[1] - r[2], pct = v / r[2] * 100;
-            const bad = (r[0] === 'Contract revenue') ? pct < -5 : pct > 5;
-            const cur = subSplit(r[0], r[4], r[1], avbIdx);
-            const pri = subSplit(r[0], r[4], r[3], avbIdx - 1);
-            const movers = cur.map((c, i) => ({ n: c.n, c: c.v, p: pri[i].v, d: c.v - pri[i].v, chg: (c.v / pri[i].v - 1) * 100 }))
-              .sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
-            const drv = movers.map(m2 => `<span class="avb-drv-item"><span style="color:${m2.d >= 0 ? 'var(--color-green)' : 'var(--color-red)'}">${m2.d >= 0 ? '▲' : '▼'}</span> ${esc(m2.n)} (${fmt$(m2.c)} vs. ${fmt$(m2.p)} in ${mLong(prev.m)}, ${Math.abs(m2.chg).toFixed(1)}% ${m2.chg >= 0 ? 'increase' : 'decrease'})</span>`).join('');
-            return `<tr><td>${r[0]}</td><td style="text-align:right">${fmt$(r[1])}</td><td style="text-align:right">${fmt$(r[2])}</td>
-              <td style="text-align:right;color:${bad ? 'var(--color-red)' : 'var(--color-green)'}">${v < 0 ? '(' + fmt$(Math.abs(v)) + ')' : fmt$(v)} · ${fmtPct(Math.abs(pct))}</td>
-              <td>${Math.abs(pct) <= 5 ? '<span class="demo-chip ok">ON BUDGET</span>' : bad ? '<span class="demo-chip bad">REVIEW</span>' : '<span class="demo-chip ok">FAVORABLE</span>'}</td></tr>
-            <tr class="avb-drv"><td colspan="5">↳ Drivers: ${drv}</td></tr>`;
-          }).join('')}</tbody>
-        </table>
-        <div class="ynote" style="margin-top:8px">Gross margin this month: <b>${fmtPct(gmAct)}</b>. Staffing implication of the current plan lives in <a href="/mccorvey/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a> — the plan currently calls for <b>+45 field installers by Q4</b>.</div>`;
+        const rowCards = rows.map(r => {
+          const isRev = r[0] === 'Contract revenue';
+          const v = r[1] - r[2], pct = v / r[2] * 100;
+          const bad = isRev ? pct < -5 : pct > 5;
+          const even = Math.abs(pct) <= 5;
+          const cls = even ? 'even' : bad ? 'bad' : 'good';
+          const fill = even ? 'var(--color-slate-hint)' : bad ? '#c8102e' : '#2f9e6e';
+          const mx = Math.max(r[1], r[2], 1);
+          const flag = even ? '<span class="demo-chip ok">ON BUDGET</span>' : bad ? '<span class="demo-chip bad">REVIEW</span>' : '<span class="demo-chip ok">FAVORABLE</span>';
+          const varTxt = even
+            ? `<span style="color:var(--color-text-muted)">${v >= 0 ? '+' : '−'}${fmt$(Math.abs(v))} · on budget</span>`
+            : bad
+              ? `<span style="color:#c8102e">▼ ${v < 0 ? '(' + fmt$(Math.abs(v)) + ')' : fmt$(v)} · ${fmtPct(Math.abs(pct))} ${isRev ? 'under budget' : 'over budget'}</span>`
+              : `<span style="color:#2f9e6e">▲ ${fmt$(Math.abs(v))} · ${fmtPct(Math.abs(pct))} ${isRev ? 'over budget' : 'under budget'}</span>`;
+          const cur = subSplit(r[0], r[4], r[1], avbIdx);
+          const pri = subSplit(r[0], r[4], r[3], avbIdx - 1);
+          const movers = cur.map((c, i) => ({ n: c.n, c: c.v, d: c.v - pri[i].v, chg: (c.v / pri[i].v - 1) * 100 }))
+            .sort((a, b) => Math.abs(b.d) - Math.abs(a.d)).slice(0, 3);
+          const chips = movers.map(m2 => `<span class="avbx-chip" title="${esc(m2.n)} — ${fmt$(m2.c)} this month vs ${mLong(prev.m)}"><b>${esc(m2.n.length > 34 ? m2.n.slice(0, 33) + '…' : m2.n)}</b> ${fmtK(m2.c)} <span class="d" style="color:${m2.d >= 0 ? '#2f9e6e' : '#c8102e'}">${m2.d >= 0 ? '▲' : '▼'} ${Math.abs(m2.chg).toFixed(1)}% MoM</span></span>`).join('');
+          return `<div class="avbx-row ${cls}">
+            <div class="avbx-top"><div class="avbx-name">${r[0]} ${flag}</div><div class="avbx-var">${varTxt}</div></div>
+            <div class="avbx-bars">
+              <span class="lb">ACTUAL</span><div class="avbx-track"><i style="width:${(r[1] / mx * 100).toFixed(1)}%;background:${fill}"></i></div><span class="avbx-amt">${fmt$(r[1])}</span>
+              <span class="lb">BUDGET</span><div class="avbx-track"><i style="width:${(r[2] / mx * 100).toFixed(1)}%;background:var(--color-slate-hint);opacity:.4"></i></div><span class="avbx-amt" style="color:var(--color-text-muted)">${fmt$(r[2])}</span>
+            </div>
+            <div class="avbx-chips"><span class="cl">TOP MOVERS</span>${chips}</div>
+          </div>`;
+        }).join('');
+        return rowCards + `
+        <div class="ynote" style="margin-top:10px">Bars compare actual against budget on a shared scale · driver chips show the three biggest month-over-month movers inside each line (hover for detail). Gross margin this month: <b>${fmtPct(gmAct)}</b>. Staffing implication of the current plan lives in <a href="/mccorvey/manpower/" style="color:var(--color-blue);font-weight:700">Manpower &amp; EAC</a> — the plan currently calls for <b>+45 field installers by Q4</b>.</div>`;
       })()}
     </div>
 
