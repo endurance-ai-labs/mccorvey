@@ -138,20 +138,31 @@ function setRole(id) {
 }
 function signOutUser() { try { localStorage.removeItem('msm-role'); } catch (e) {} window.location.reload(); }
 
-/* ---- access gate: portal code required before the user picker ---- */
+/* ---- access gate: portal code required before the user picker ----
+   Client-side only — not a security control. Hash ships in the page.
+   Anything sensitive must never live in this public demo repo. */
+const MSM_GATE_HASH = '178eafee2882646acc3a0ce6295ddb3db5aa82ae20425614307ba702455958d6';
 function gateOK() { try { return localStorage.getItem('msm-gate') === 'ok'; } catch (e) { return false; } }
+async function _msmSha256(s) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
 function tryGate(ev) {
   ev.preventDefault();
   const inp = document.getElementById('gate-code');
-  if (inp && inp.value.trim().toLowerCase() === 'enduranceportal') {
-    try { localStorage.setItem('msm-gate', 'ok'); } catch (e) {}
-    const ov = document.querySelector('.login-overlay'); if (ov) ov.remove();
-    renderSignIn();
-  } else {
-    const err = document.getElementById('gate-err');
-    if (err) err.style.display = 'block';
-    if (inp) { inp.value = ''; inp.focus(); }
-  }
+  const err = document.getElementById('gate-err');
+  if (!inp) return false;
+  _msmSha256(inp.value.trim()).then((h) => {
+    if (h === MSM_GATE_HASH) {
+      try { localStorage.setItem('msm-gate', 'ok'); } catch (e) {}
+      const ov = document.querySelector('.login-overlay'); if (ov) ov.remove();
+      renderSignIn();
+    } else {
+      if (err) err.style.display = 'block';
+      inp.value = '';
+      inp.focus();
+    }
+  });
   return false;
 }
 
