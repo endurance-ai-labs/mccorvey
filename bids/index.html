@@ -15,24 +15,53 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261007b">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261007b">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261007b">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261007c">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261007c">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261007c">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/mccorvey/js/data.js?v=20261007b"></script>
-<script src="/mccorvey/js/util.js?v=20261007b"></script>
-<script src="/mccorvey/js/nav.js?v=20261007b"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261007b" defer></script>
+<script src="/mccorvey/js/data.js?v=20261007c"></script>
+<script src="/mccorvey/js/util.js?v=20261007c"></script>
+<script src="/mccorvey/js/nav.js?v=20261007c"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261007c" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction' });
 const internal = McCorveyMode.isInternal() && can('bids');
 
 /* live working copy — resets on reload */
 const BID = JSON.parse(JSON.stringify(BID_DEFAULTS));
+
+/* ---- handoff from the Adjustable Bid Modeler: confirmed shape → line items ---- */
+let MODEL_HANDOFF = null;
+if (location.search.includes('from=model')) {
+  try { MODEL_HANDOFF = JSON.parse(localStorage.getItem('msm-bidmodel-handoff') || 'null'); } catch (e) {}
+  if (MODEL_HANDOFF && MODEL_HANDOFF.lines && MODEL_HANDOFF.lines.length) {
+    BID.lines = MODEL_HANDOFF.lines;
+    Object.assign(BID.levers, MODEL_HANDOFF.levers || {});
+    BID.alternates.forEach(a => { a.included = false; });
+    BID.meta.project = MODEL_HANDOFF.project || BID.meta.project;
+    BID.meta.bidNumber = 'MSM-' + new Date().getFullYear() + '-' + (1200 + (MODEL_HANDOFF.ts % 700));
+  } else { MODEL_HANDOFF = null; }
+}
+function modelBanner() {
+  if (!MODEL_HANDOFF) return '';
+  const S = MODEL_HANDOFF.summary || {};
+  const mpCol = S.overall === 'ok' ? '#2f9e6e' : S.overall === 'tight' ? 'var(--color-amber)' : '#c8102e';
+  return `<div class="demo-panel" style="margin-bottom:18px;border-left:4px solid #14283c">
+    <div class="demo-panel-head"><h2>Converted from the Adjustable Bid Modeler</h2>
+      <span style="display:flex;gap:8px;align-items:center"><a class="pa-btn" href="/mccorvey/bidmodel/" style="text-decoration:none">← Back to the model</a></span></div>
+    <div class="ykpi-row" style="margin-bottom:6px">
+      <div class="ykpi"><div class="l">Confirmed Client Price</div><div class="v">${fmtK(S.client || 0)}</div><div class="s">${S.pinned ? 'market-pinned in the model' : 'priced from levers'}</div></div>
+      <div class="ykpi"><div class="l">Cost to McCorvey</div><div class="v">${fmtK(S.cogs || 0)}</div><div class="s">${MODEL_HANDOFF.lines.length} line items generated</div></div>
+      <div class="ykpi ${S.marginPct >= 13 ? 'green' : S.marginPct >= 11 ? 'amber' : 'red'}"><div class="l">Modeled Margin</div><div class="v">${(S.marginPct || 0).toFixed(1)}%</div><div class="s">carried into the levers below</div></div>
+      <div class="ykpi"><div class="l">Manpower at Confirm</div><div class="v" style="color:${mpCol}">${S.overall === 'ok' ? 'STAFFABLE' : (S.overall || '').toUpperCase()}</div><div class="s">${Math.round(S.fieldNeed || 0)} field · ${Math.round(S.shopNeed || 0)} shop heads · ${S.weeks || '—'} wks</div></div>
+    </div>
+    <div class="ynote">Each modeled scope became a CSI line with unit cost = material + shop + field labor at the modeled productivity, so <b>the base bid below reconciles to the model</b>. Refine lines here, then lock Rev A before it goes to the customer.</div>
+  </div>`;
+}
 const APPR_KEY = 'bid-' + BID.meta.bidNumber;
 const APPR_STEPS = [
   { role: 'est',   label: 'Estimating — Prepared, Ready for Review', doneLabel: 'Estimate Prepared' },
@@ -656,6 +685,8 @@ function viewInternal() {
         </span>
       </div>
     </div>
+
+    ${modelBanner()}
 
     <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid ${authorized ? 'var(--color-green)' : 'var(--mccorvey-red)'}">
       <div class="demo-panel-head"><h2>Estimate Release Control</h2><span class="k">sequential sign-off · role-gated · switch role via the account menu (top right)</span></div>
