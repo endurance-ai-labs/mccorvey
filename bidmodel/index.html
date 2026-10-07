@@ -6,9 +6,9 @@
 <title>Adjustable Bid Modeler — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — type-in bid sheet: every change reprices cost to client, cost to McCorvey and profit instantly, with a manpower check and same-page bid confirmation. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261007d">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261007d">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261007d">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261008a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261008a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261008a">
 <style>
   /* ---------- summary bar ---------- */
   .bs-roll { position: sticky; z-index: 60; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 12px 0 10px; background: var(--color-bg); }
@@ -19,56 +19,78 @@
   .bs-tile.client { border-top-color: #14283c; } .bs-tile.cost { border-top-color: var(--color-amber); }
   .bs-tile.ok { border-top-color: #2f9e6e; } .bs-tile.watch, .bs-tile.tight { border-top-color: var(--color-amber); } .bs-tile.bad, .bs-tile.over { border-top-color: #c8102e; }
 
-  /* ---------- pricing toolbar ---------- */
-  .bs-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: stretch; margin: 6px 0 16px; }
-  .bs-solve { display: flex; align-items: center; gap: 8px; background: var(--color-bg-2); border: 1px solid var(--color-border); border-radius: 12px; padding: 8px 10px 8px 14px; }
+  /* ---------- toolbar ---------- */
+  .bs-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 6px 0 10px; }
+  .bs-solve { display: flex; align-items: center; gap: 8px; background: var(--color-bg-2); border: 1px solid var(--color-border); border-radius: 12px; padding: 7px 9px 7px 13px; }
   .bs-solve label { font-size: 10px; font-weight: 800; letter-spacing: .09em; color: var(--color-slate-hint); text-transform: uppercase; white-space: nowrap; }
-  .bs-solve input { width: 132px; font: inherit; font-size: 14px; font-weight: 800; text-align: right; padding: 8px 10px; border-radius: 9px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; font-variant-numeric: tabular-nums; }
+  .bs-solve input { width: 128px; font: inherit; font-size: 14px; font-weight: 800; text-align: right; padding: 7px 10px; border-radius: 9px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; font-variant-numeric: tabular-nums; }
   .bs-solve input:focus { border-color: var(--color-blue); }
   .bs-solve .pa-btn { height: 34px; }
-  .bs-status { display: inline-flex; align-items: center; gap: 8px; height: 42px; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; padding: 0 14px; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-bg-2); color: var(--color-text-muted); }
+  .bs-status { display: inline-flex; align-items: center; gap: 8px; height: 42px; font-size: 10.5px; font-weight: 800; letter-spacing: .1em; padding: 0 14px; border-radius: 12px; border: 1px solid var(--color-border); background: var(--color-bg-2); color: var(--color-text-muted); white-space: nowrap; }
   .bs-status i { width: 8px; height: 8px; border-radius: 50%; background: var(--color-amber); }
   .bs-status.done i { background: #2f9e6e; }
+  .bs-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+  .bs-tools select { height: 36px; font: inherit; font-size: 12px; font-weight: 700; padding: 0 12px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-bg-2); color: var(--color-cloud-whisper); cursor: pointer; box-shadow: var(--shadow-xs); }
+  .bs-tools .sep { width: 1px; height: 24px; background: var(--color-border); margin: 0 4px; }
 
-  /* ---------- the bid sheet (spreadsheet-style) ---------- */
+  /* ---------- talk-track strip ---------- */
+  .bs-facts { display: flex; flex-wrap: wrap; gap: 8px 22px; padding: 10px 16px; margin-bottom: 14px; border-radius: 12px; background: #14283c; color: rgba(255,255,255,.72); font-size: 11.5px; }
+  .bs-facts b { color: #fff; font-variant-numeric: tabular-nums; }
+  .bs-facts .k { font-size: 9.5px; font-weight: 800; letter-spacing: .12em; color: #e8b23a; }
+
+  /* ---------- the bid sheet ---------- */
   .bs-wrap { overflow-x: auto; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-bg-2); }
-  table.bs { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; min-width: 1240px; table-layout: fixed; }
-  table.bs th { position: sticky; top: 0; background: #14283c; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: 10px 7px; text-align: right; white-space: normal; line-height: 1.25; vertical-align: bottom; }
+  table.bs { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 12.5px; min-width: 1320px; table-layout: fixed; }
+  table.bs th { background: #14283c; color: #fff; font-size: 9px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; padding: 10px 7px; text-align: right; white-space: normal; line-height: 1.25; vertical-align: bottom; }
   table.bs th.l, table.bs td.l { text-align: left; }
+  table.bs th.c, table.bs td.c { text-align: center; }
   table.bs th.grp-cost { background: #3a4a5c; } table.bs th.grp-client { background: #7a1420; }
-  table.bs td { padding: 5px 6px; border-bottom: 1px solid var(--color-border-soft); text-align: right; color: var(--color-cloud-whisper); font-variant-numeric: tabular-nums; vertical-align: middle; white-space: nowrap; }
+  table.bs td { padding: 5px 6px; border-bottom: 1px solid var(--color-border-soft); text-align: right; color: var(--color-cloud-whisper); font-variant-numeric: tabular-nums; vertical-align: middle; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   table.bs tr:hover td { background: var(--color-bg-3); }
   table.bs td.calc { color: var(--color-text-muted); }
-  table.bs td.strong { font-weight: 800; color: var(--color-cloud-whisper); }
+  table.bs td.strong { font-weight: 800; }
   table.bs td.client { background: rgba(200,16,46,.035); }
   table.bs tr:hover td.client { background: rgba(200,16,46,.07); }
+  table.bs tr.exc td:not(.keep) { opacity: .42; }
+  table.bs tr.exc .cell.txt { text-decoration: line-through; }
+  table.bs tr.newline td:first-child { box-shadow: inset 3px 0 0 #2f9e6e; }
   .cell { width: 100%; min-width: 0; font: inherit; font-size: 12.5px; font-weight: 700; text-align: right; padding: 7px 8px; border-radius: 7px; border: 1px solid transparent; background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; font-variant-numeric: tabular-nums; }
   .cell:hover { border-color: var(--color-border); }
   .cell:focus { border-color: var(--color-blue); background: var(--color-bg-2); box-shadow: 0 0 0 3px rgba(200,16,46,.12); }
   .cell.txt { text-align: left; font-weight: 600; }
   .cell.unit { text-align: center; }
   .cell.mk { color: #7a1420; }
+  .cell.price { color: #7a1420; font-weight: 800; background: rgba(200,16,46,.06); }
   .cell.dflt { color: var(--color-slate-hint); font-weight: 600; }
-  .cell:disabled { background: transparent; border-color: transparent; color: var(--color-cloud-whisper); cursor: default; }
+  .cell.chg { box-shadow: inset 3px 0 0 var(--color-amber); }
+  .cell:disabled { background: transparent; border-color: transparent; color: var(--color-cloud-whisper); cursor: default; box-shadow: none; }
+  .bs-tag { display: block; font-size: 9px; font-weight: 800; letter-spacing: .06em; color: #2f9e6e; margin: 2px 0 0 9px; text-transform: uppercase; }
+  .bs-tag.flag { color: #c8102e; }
   .bs-total td { font-weight: 800; background: var(--color-bg-3) !important; border-top: 2px solid var(--color-border); font-size: 13px; }
-  .bs-x { border: none; background: none; color: var(--color-slate-hint); cursor: pointer; font-size: 13px; padding: 4px 6px; border-radius: 6px; }
-  .bs-x:hover { color: #c8102e; background: rgba(200,16,46,.08); }
+  .bs-act { display: inline-flex; gap: 1px; }
+  .bs-act button { border: none; background: none; color: var(--color-slate-hint); cursor: pointer; font-size: 12px; padding: 4px 5px; border-radius: 6px; line-height: 1; }
+  .bs-act button:hover { color: var(--color-blue); background: rgba(200,16,46,.08); }
+  .bs-chk { width: 16px; height: 16px; accent-color: #14283c; cursor: pointer; vertical-align: middle; }
   .bs-mg { display: inline-block; min-width: 50px; font-size: 11px; font-weight: 800; padding: 3px 7px; border-radius: 6px; text-align: center; }
   .bs-mg.ok { color: #2f9e6e; background: var(--color-green-bg); } .bs-mg.watch { color: var(--color-amber); background: var(--color-amber-bg); } .bs-mg.bad { color: #c8102e; background: var(--color-red-bg); }
-  .bs-hint { font-size: 11px; color: var(--color-slate-hint); margin-top: 9px; line-height: 1.6; }
+  .bs-hint { font-size: 11px; color: var(--color-slate-hint); line-height: 1.6; }
   .bs-hint kbd { font: inherit; font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 4px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-text-muted); }
+  .bs-legend { display: inline-flex; align-items: center; gap: 5px; margin-left: 12px; }
+  .bs-legend i { display: inline-block; width: 3px; height: 13px; border-radius: 2px; }
 
-  /* ---------- settings grids (no sliders) ---------- */
+  /* ---------- settings (steppers, no sliders) ---------- */
   .bs-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px 14px; }
   .bs-f { display: flex; flex-direction: column; gap: 5px; }
   .bs-f > span { font-size: 10px; font-weight: 800; letter-spacing: .08em; color: var(--color-slate-hint); text-transform: uppercase; }
-  .bs-f > span i { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; color: var(--color-slate-hint); }
+  .bs-f > span i { font-style: normal; font-weight: 600; letter-spacing: 0; text-transform: none; }
   .bs-step { display: flex; align-items: stretch; border: 1px solid var(--color-border); border-radius: 9px; overflow: hidden; background: var(--color-bg-3); }
   .bs-step button { width: 32px; border: none; background: transparent; color: var(--color-text-muted); font-size: 15px; font-weight: 700; cursor: pointer; }
   .bs-step button:hover { background: var(--color-bg-2); color: var(--color-blue); }
   .bs-step input { flex: 1; min-width: 0; border: none; background: transparent; font: inherit; font-size: 13px; font-weight: 800; text-align: center; color: var(--color-cloud-whisper); outline: none; padding: 8px 4px; font-variant-numeric: tabular-nums; }
   .bs-step em { font-style: normal; font-size: 10px; font-weight: 700; color: var(--color-slate-hint); align-self: center; padding-right: 9px; }
   .bs-step:focus-within { border-color: var(--color-blue); }
+  .bs-ta { width: 100%; min-height: 92px; font: inherit; font-size: 12px; line-height: 1.55; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); resize: vertical; outline: none; }
+  .bs-ta:focus { border-color: var(--color-blue); }
 
   /* ---------- manpower ---------- */
   .bs-gauge { margin-top: 14px; }
@@ -89,20 +111,25 @@
   .cdoc-meta b { color: #14283c; }
   .cdoc-title { font-size: 20px; font-weight: 800; color: #14283c; letter-spacing: -.01em; margin-bottom: 4px; }
   .cdoc-sub { font-size: 12px; color: #5b6472; margin-bottom: 16px; }
+  .cdoc-h { font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: #14283c; margin: 18px 0 8px; }
   table.cdoc-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
   table.cdoc-tbl th { text-align: right; font-size: 9.5px; letter-spacing: .09em; text-transform: uppercase; color: #fff; background: #14283c; padding: 9px 10px; }
   table.cdoc-tbl th.l, table.cdoc-tbl td.l { text-align: left; }
   table.cdoc-tbl td { padding: 8px 10px; border-bottom: 1px solid #e7eaf0; text-align: right; font-variant-numeric: tabular-nums; }
   table.cdoc-tbl tr.sub td { font-weight: 700; border-top: 1px solid #c9ced8; }
   table.cdoc-tbl tr.grand td { font-weight: 800; font-size: 14px; color: #14283c; background: #f3f5f9; border-top: 2px solid #14283c; }
-  .cdoc-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; font-size: 11px; color: #5b6472; line-height: 1.65; }
-  .cdoc-terms b { display: block; color: #14283c; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; margin-bottom: 4px; }
+  .cdoc-terms { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 18px; font-size: 11px; color: #5b6472; line-height: 1.65; white-space: pre-line; }
+  .cdoc-terms b { display: block; color: #14283c; font-size: 10px; letter-spacing: .09em; text-transform: uppercase; margin-bottom: 4px; white-space: normal; }
   .cdoc-sign { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 26px; }
   .cdoc-sign div { border-top: 1px solid #1b2230; padding-top: 6px; font-size: 10.5px; color: #5b6472; }
   .cdoc-int { margin-top: 16px; border: 1px dashed var(--color-border); border-radius: 12px; padding: 13px 16px; background: var(--color-bg-3); }
   .rev-chip { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--color-border); border-radius: 10px; padding: 7px 12px; font-size: 11px; color: var(--color-text-muted); background: var(--color-bg-2); cursor: pointer; }
   .rev-chip b { color: var(--color-cloud-whisper); }
   .rev-chip.on { border-color: #14283c; box-shadow: inset 0 0 0 1px #14283c; }
+
+  /* ---------- toast ---------- */
+  .bs-toast { position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%) translateY(20px); opacity: 0; z-index: 2147483000; background: #14283c; color: #fff; font-size: 12.5px; font-weight: 700; padding: 11px 18px; border-radius: 10px; box-shadow: 0 10px 28px rgba(10,22,38,.35); transition: all .2s ease; pointer-events: none; }
+  .bs-toast.on { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   @media (max-width: 1280px) { .bs-roll { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 960px) { .bs-roll { position: static; } .cdoc-terms, .cdoc-sign { grid-template-columns: 1fr; } }
@@ -119,26 +146,52 @@
 <main class="page">
   <div class="demo-wrap" id="app"></div>
 </main>
+<div class="bs-toast" id="bs-toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261007d"></script>
-<script src="/mccorvey/js/util.js?v=20261007d"></script>
-<script src="/mccorvey/js/nav.js?v=20261007d"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261007d" defer></script>
+<script src="/mccorvey/js/data.js?v=20261008a"></script>
+<script src="/mccorvey/js/util.js?v=20261008a"></script>
+<script src="/mccorvey/js/nav.js?v=20261008a"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261008a" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Adjustable Bid Modeler' });
 
 /* =====================================================================
-   BID SHEET MODEL
-   Each line: qty × (material + shop hrs × shop rate + field hrs × field rate)
-   = cost to McCorvey; × (1 + markup) = sell. Markup per line (blank = default).
-   Bond / GL / contingency ride on the sell subtotal → cost to client.
+   BID SHEET
+   line cost  = qty × (material×esc + shop hrs × shop rate + field hrs × field rate)
+   line sell  = cost × (1 + markup)          (markup per line; blank = default)
+   client     = Σ included sell × (1 + bond + GL + contingency)
+   Price-side cells (unit price, client price) are editable too — typing
+   one back-solves that line's markup.
    ===================================================================== */
 const KEY_STATE = 'msm-bidsheet-v3', KEY_REVS = 'msm-bidsheet-revs-v3';
 const FIELD_POOL = 340, SHOP_POOL = 580, UTIL = 0.9, HRSWK = 40, TARGET = 13, FLOOR = 11;
 
+const CATALOG = [
+  { scope: 'Rectangular duct — galvanized, per SMACNA', unit: 'lbs', qty: 100000, mat: 0.72, shopUPH: 75, fieldUPH: 42, rx: /rect/i },
+  { scope: 'Spiral & round duct', unit: 'LF', qty: 5000, mat: 9.40, shopUPH: 9, fieldUPH: 6.5, rx: /spiral|round/i },
+  { scope: 'Oval duct', unit: 'LF', qty: 1000, mat: 14.0, shopUPH: 6, fieldUPH: 4.5, rx: /oval/i },
+  { scope: 'Welded stainless exhaust — NFPA 96', unit: 'LF', qty: 500, mat: 46, shopUPH: 1.6, fieldUPH: 2.2, rx: /weld|316|fume|kitchen exhaust/i },
+  { scope: 'Aluminum duct — natatorium / corrosive', unit: 'lbs', qty: 20000, mat: 2.60, shopUPH: 40, fieldUPH: 30, rx: /alumin/i },
+  { scope: 'Double-wall insulated duct', unit: 'lbs', qty: 50000, mat: 1.35, shopUPH: 45, fieldUPH: 35, rx: /double.?wall/i },
+  { scope: 'Air devices (GRDs) — furnish & install', unit: 'ea', qty: 200, mat: 74, shopUPH: 0, fieldUPH: 1.43, rx: /air device|grd/i },
+  { scope: 'Fire/smoke dampers & accessories', unit: 'ea', qty: 50, mat: 410, shopUPH: 0, fieldUPH: 0.5, rx: /damper/i },
+  { scope: 'Volume dampers & access doors', unit: 'ea', qty: 200, mat: 38, shopUPH: 0, fieldUPH: 3, rx: /volume damper|access door/i },
+  { scope: 'Flex duct & connections', unit: 'LF', qty: 2000, mat: 4.20, shopUPH: 0, fieldUPH: 25, rx: /flex/i },
+  { scope: 'Destratification / HVLS adapters', unit: 'ea', qty: 20, mat: 380, shopUPH: 0, fieldUPH: 0.5, rx: /destrat|hvls/i },
+  { scope: 'Duct liner & external wrap (insulation sub)', unit: 'LS', qty: 1, mat: 250000, shopUPH: 0, fieldUPH: 0, rx: /liner|insulation/i },
+  { scope: 'Rigging, lifts & equipment', unit: 'LS', qty: 1, mat: 150000, shopUPH: 0, fieldUPH: 0, rx: /rigging|lift/i },
+  { scope: 'BIM coordination & shop drawings (LOD 400)', unit: 'LS', qty: 1, mat: 180000, shopUPH: 0, fieldUPH: 0, rx: /bim|detailing|shop drawing/i },
+  { scope: 'Duct leakage testing (SMACNA)', unit: 'LS', qty: 1, mat: 60000, shopUPH: 0, fieldUPH: 0, rx: /leakage/i },
+];
+
+const DEFAULT_TERMS = {
+  incl: 'Detailing & LOD 400 coordination, fabrication at McCorvey plants, delivery, installation, hangers & supports, TAB support. Quantities per the bid documents and addenda as reviewed.',
+  excl: 'HVAC equipment, controls, electrical, TAB (by others), painting of exposed duct. Progress billing monthly via AIA G702/G703, 5% retainage. Steel surcharge applies after validity.',
+  valid: 30,
+};
 const DEFAULT_STATE = {
-  meta: { project: 'Memorial City Medical Office Tower — HVAC Ductwork', gc: 'Harmon Construction', bidNo: 'MSM-2026-1214', due: '2026-10-21' },
+  meta: Object.assign({ project: 'Memorial City Medical Office Tower — HVAC Ductwork', gc: 'Harmon Construction', bidNo: 'MSM-2026-1214', due: '2026-10-21' }, DEFAULT_TERMS),
   g: { shopRate: 62, fieldRate: 78, escPct: 1.0, defMkup: 15.5, ohPct: 6.0, bondPct: 1.0, glPct: 0.85, contPct: 0.5,
        weeks: 40, otPct: 0, fieldCommitPct: 78, shopCommitPct: 82 },
   lines: [
@@ -153,166 +206,231 @@ const DEFAULT_STATE = {
   status: 'draft',
 };
 let S = JSON.parse(JSON.stringify(DEFAULT_STATE));
-try { const sv = JSON.parse(localStorage.getItem(KEY_STATE) || 'null'); if (sv && sv.lines) S = sv; } catch (e) {}
+try { const sv = JSON.parse(localStorage.getItem(KEY_STATE) || 'null'); if (sv && sv.lines) { S = sv; S.meta = Object.assign({}, DEFAULT_TERMS, S.meta); } } catch (e) {}
 function revsAll() { try { return JSON.parse(localStorage.getItem(KEY_REVS) || '[]'); } catch (e) { return []; } }
-let viewRev = null;   /* index of the revision shown in the confirmed panel */
+let viewRev = null;
+const inc = l => l.inc !== false;
 
 /* ---------------- calc ---------------- */
-function lineCalc(l) {
-  const G = S.g;
-  const em = 1 + G.escPct / 100;
-  const otX = 1 + (G.otPct / (100 + G.otPct)) * 0.5;
-  const shopH = l.shopUPH > 0 ? l.qty / l.shopUPH : 0;
-  const fieldH = l.fieldUPH > 0 ? l.qty / l.fieldUPH : 0;
+function lineCost(l) {
+  const G = S.g, em = 1 + G.escPct / 100, otX = 1 + (G.otPct / (100 + G.otPct)) * 0.5;
+  const shopH = l.shopUPH > 0 ? l.qty / l.shopUPH : 0, fieldH = l.fieldUPH > 0 ? l.qty / l.fieldUPH : 0;
   const mat = l.qty * l.mat * em, shop = shopH * G.shopRate * otX, field = fieldH * G.fieldRate * otX;
-  const cost = mat + shop + field;
-  const mk = l.mkup != null ? l.mkup : G.defMkup;
-  const sell = cost * (1 + mk / 100);
-  const oh = cost * G.ohPct / 100;
-  const profit = sell - cost - oh;
-  return { shopH, fieldH, mat, shop, field, cost, unitCost: l.qty ? cost / l.qty : 0, mk, sell, unitSell: l.qty ? sell / l.qty : 0, oh, profit, margin: sell ? (sell - cost) / sell * 100 : 0 };
+  return { shopH, fieldH, mat, shop, field, cost: mat + shop + field };
+}
+function lineCalc(l) {
+  const b = lineCost(l);
+  const mk = l.mkup != null ? l.mkup : S.g.defMkup;
+  const sell = b.cost * (1 + mk / 100), oh = b.cost * S.g.ohPct / 100;
+  return Object.assign(b, { unitCost: l.qty ? b.cost / l.qty : 0, mk, sell, unitSell: l.qty ? sell / l.qty : 0, oh, profit: sell - b.cost - oh, margin: sell ? (sell - b.cost) / sell * 100 : 0 });
 }
 function totals() {
   const G = S.g;
   const L = S.lines.map(lineCalc);
-  const sum = k => L.reduce((a, x) => a + x[k], 0);
+  const sum = k => L.reduce((a, x, i) => a + (inc(S.lines[i]) ? x[k] : 0), 0);
   const cost = sum('cost'), sell = sum('sell'), oh = sum('oh'), profit = sum('profit'), shopH = sum('shopH'), fieldH = sum('fieldH'), mat = sum('mat'), lab = sum('shop') + sum('field');
   const a = (G.bondPct + G.glPct + G.contPct) / 100;
-  const addons = sell * a, cont$ = sell * G.contPct / 100;
-  const client = sell + addons;
+  const addons = sell * a, cont$ = sell * G.contPct / 100, client = sell + addons;
   const margin = client ? (sell - cost + cont$) / client * 100 : 0;
-  const sFloor = cost / Math.max(0.05, (1 + G.contPct / 100) - FLOOR / 100 * (1 + a));
-  const floor$ = sFloor * (1 + a);
-  const weeks = Math.max(4, G.weeks);
-  const hpw = weeks * HRSWK * UTIL * (1 + G.otPct / 100);
+  const sellAt = m => cost / Math.max(0.05, (1 + G.contPct / 100) - m / 100 * (1 + a));
+  const floor$ = sellAt(FLOOR) * (1 + a), target$ = sellAt(TARGET) * (1 + a);
+  const weeks = Math.max(4, G.weeks), hpw = weeks * HRSWK * UTIL * (1 + G.otPct / 100);
   const fieldNeed = fieldH / hpw, shopNeed = shopH / hpw;
   const fieldAvail = FIELD_POOL * (1 - G.fieldCommitPct / 100), shopAvail = SHOP_POOL * (1 - G.shopCommitPct / 100);
   const fLoad = fieldNeed / Math.max(0.1, fieldAvail) * 100, sLoad = shopNeed / Math.max(0.1, shopAvail) * 100;
   const st = l => l <= 85 ? 'ok' : l <= 100 ? 'tight' : 'over';
-  return { L, cost, sell, oh, profit, mat, lab, shopH, fieldH, addons, cont$, client, margin, floor$, a,
-           weeks, fieldNeed, shopNeed, fieldAvail, shopAvail, fLoad, sLoad, fSt: st(fLoad), sSt: st(sLoad), mp: st(Math.max(fLoad, sLoad)) };
+  return { L, cost, sell, oh, profit, mat, lab, shopH, fieldH, addons, cont$, client, margin, floor$, target$, a,
+           weeks, fieldNeed, shopNeed, fieldAvail, shopAvail, fLoad, sLoad, mp: st(Math.max(fLoad, sLoad)) };
 }
 const band = m => m >= TARGET ? 'ok' : m >= FLOOR ? 'watch' : 'bad';
 
-/* ---------------- solvers: type a target, markups move ---------------- */
-function applyUniformDelta(dPct) { S.lines.forEach(l => { l.mkup = Math.round(((l.mkup != null ? l.mkup : S.g.defMkup) + dPct) * 100) / 100; }); }
-function solveSell(sellReq) { const T = totals(); if (T.cost <= 0) return; applyUniformDelta((sellReq - T.sell) / T.cost * 100); }
-function bidAtPrice(v) { const X = num(v); if (!(X > 0)) return; solveSell(X / (1 + totals().a)); syncInputs(); refresh(); }
-function bidAtMargin(v) { const m = num(v); if (!(m > 0 && m < 60)) return; const T = totals(), c = S.g.contPct / 100; solveSell(T.cost / ((1 + c) - m / 100 * (1 + T.a))); syncInputs(); refresh(); }
-function nudgeAll(d) { applyUniformDelta(d); syncInputs(); refresh(); }
-function roundTotal(step) { const T = totals(); bidAtPrice(Math.round(T.client / step) * step); }
-function resetMarkups() { S.lines.forEach(l => { l.mkup = null; }); syncInputs(); refresh(); }
+/* ---------------- undo / redo ---------------- */
+const UNDO = [], REDO = [];
+let editSnap = null;
+function checkpoint() { UNDO.push(JSON.stringify(S)); if (UNDO.length > 100) UNDO.shift(); REDO.length = 0; undoBtns(); }
+function undo() { if (locked() || !UNDO.length) return; REDO.push(JSON.stringify(S)); S = JSON.parse(UNDO.pop()); render(true); toast('Undone'); }
+function redo() { if (locked() || !REDO.length) return; UNDO.push(JSON.stringify(S)); S = JSON.parse(REDO.pop()); render(true); toast('Redone'); }
+function undoBtns() { const u = document.getElementById('btn-undo'), r = document.getElementById('btn-redo'); if (u) u.disabled = !UNDO.length || locked(); if (r) r.disabled = !REDO.length || locked(); }
 
-/* ---------------- formatting / parsing ---------------- */
+/* ---------------- solvers ---------------- */
+function shiftMarkups(d) { S.lines.forEach(l => { if (inc(l)) l.mkup = Math.round(((l.mkup != null ? l.mkup : S.g.defMkup) + d) * 100) / 100; }); }
+function solveSell(req) { const T = totals(); if (T.cost > 0) shiftMarkups((req - T.sell) / T.cost * 100); }
+function bidAtPrice(v, quiet) { const X = num(v); if (!(X > 0)) return; if (!quiet) checkpoint(); solveSell(X / (1 + totals().a)); syncInputs(); refresh(); toast('Markups solved to ' + money(X)); }
+function bidAtMargin(v) { const m = num(v); if (!(m > 0 && m < 60)) return; checkpoint(); const T = totals(), c = S.g.contPct / 100; solveSell(T.cost / ((1 + c) - m / 100 * (1 + T.a))); syncInputs(); refresh(); toast('Markups solved to ' + m + '% margin'); }
+function nudgeAll(d) { checkpoint(); shiftMarkups(d); syncInputs(); refresh(); }
+function roundTotal(step) { checkpoint(); bidAtPrice(Math.round(totals().client / step) * step, true); }
+function resetMarkups() { checkpoint(); S.lines.forEach(l => { l.mkup = null; }); syncInputs(); refresh(); toast('Markups reset to default'); }
+
+/* ---------------- line actions ---------------- */
+function addFromCatalog(idx) {
+  if (idx === '' || idx == null) return;
+  checkpoint();
+  const c = idx === 'blank' ? { scope: 'New scope item', unit: 'LS', qty: 1, mat: 0, shopUPH: 0, fieldUPH: 0 } : CATALOG[+idx];
+  S.lines.push({ scope: c.scope, unit: c.unit, qty: c.qty, mat: c.mat, shopUPH: c.shopUPH, fieldUPH: c.fieldUPH, mkup: null });
+  render(true);
+  const n = document.querySelector(`input[data-i="${S.lines.length - 1}"][data-f="${idx === 'blank' ? 'scope' : 'qty'}"]`); if (n) { n.focus(); n.select(); }
+}
+function dupLine(i) { checkpoint(); const c = JSON.parse(JSON.stringify(S.lines[i])); c.scope += ' (copy)'; delete c.tag; S.lines.splice(i + 1, 0, c); render(true); }
+function moveLine(i, d) { const j = i + d; if (j < 0 || j >= S.lines.length) return; checkpoint(); [S.lines[i], S.lines[j]] = [S.lines[j], S.lines[i]]; render(true); }
+function delLine(i) { checkpoint(); const s = S.lines[i].scope; S.lines.splice(i, 1); render(true); toast('Removed "' + s.slice(0, 40) + '" — Ctrl+Z to undo'); }
+function toggleInc(i, on) { checkpoint(); S.lines[i].inc = on ? undefined : false; render(true); }
+
+/* ---------------- load quantities from AI Bid Review ---------------- */
+function reviewSets() { return (window.DOCREVIEW && DOCREVIEW.queue || []).filter(q => q.quantities && q.quantities.length); }
+function loadFromReview(bid) {
+  const q = reviewSets().find(x => x.bid === bid); if (!q) return;
+  checkpoint();
+  let matched = 0, added = 0, flags = 0;
+  q.quantities.forEach(x => {
+    const nums = String(x.qty).match(/[\d,]+(?:\.\d+)?/g); if (!nums) return;
+    const qty = num(nums[nums.length - 1]);
+    const tpl = CATALOG.find(c => c.rx.test(x.item));
+    let line = tpl ? S.lines.find(l => tpl.rx.test(l.scope)) : null;
+    if (!line) {
+      const base = tpl || { scope: x.item, unit: x.unit === 'lbs' ? 'lbs' : x.unit, qty, mat: 0, shopUPH: 0, fieldUPH: 0 };
+      line = { scope: base.scope, unit: base.unit, qty, mat: base.mat, shopUPH: base.shopUPH, fieldUPH: base.fieldUPH, mkup: null };
+      S.lines.push(line); added++;
+    } else matched++;
+    line.qty = qty; line.tag = 'AI takeoff · ' + q.bid + ' · ' + x.conf + '% conf.';
+  });
+  /* flagged spec adders with a $ impact → optional lines, excluded until the bidder ticks them */
+  (q.findings || []).forEach(f => {
+    const m = String(f.detail).match(/\$\s?(\d+(?:\.\d+)?)K/i); if (!m || f.sev === 'info') return;
+    const title = 'Spec adder — ' + f.title;
+    if (S.lines.some(l => l.scope === title)) return;
+    S.lines.push({ scope: title, unit: 'LS', qty: 1, mat: num(m[1]) * 1000, shopUPH: 0, fieldUPH: 0, mkup: null, inc: false, tag: 'AI flag · ' + f.sev.toUpperCase() + ' · ' + f.clause, flag: 1 });
+    flags++;
+  });
+  S.meta.project = q.project; S.meta.gc = q.gc; S.meta.bidNo = 'MSM-' + q.bid.replace('B-', '2026-'); S.meta.due = q.due;
+  render(true);
+  toast(`Loaded ${matched + added} quantities from ${q.bid}${flags ? ' + ' + flags + ' flagged adders (unchecked — tick to include)' : ''}`);
+}
+
+/* ---------------- copy summary for text / email ---------------- */
+function copySummary() {
+  const T = totals(), revs = revsAll(), r = revs[revs.length - 1];
+  const lines = S.lines.filter(inc).map((l, i) => { const c = lineCalc(l); return `  • ${l.scope}: ${fmtN(l.qty, 0)} ${l.unit} @ ${moneyU(c.unitSell)} = ${money(c.sell)}`; }).join('\n');
+  const txt = `${S.meta.bidNo} — ${S.meta.project}\nTo: ${S.meta.gc}\nBase bid: ${money(T.client)}${locked() && r ? ' (Rev ' + r.rev + ')' : ' (draft)'} · valid ${S.meta.valid} days\n${lines}\nIncludes bond, GL & contingency ${money(T.addons)}.\n— internal: cost ${fmtK(T.cost)} · margin ${T.margin.toFixed(1)}% · ${T.fieldNeed.toFixed(0)} field / ${T.shopNeed.toFixed(0)} shop heads, ${T.weeks} wks`;
+  const done = () => toast('Bid summary copied — paste into email or text');
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt, done)); else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, cb) { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); cb(); }
+
+/* ---------------- formatting ---------------- */
 const num = v => { const n = parseFloat(String(v).replace(/[$,%\s]/g, '')); return isFinite(n) ? n : 0; };
 const fmtN = (n, d) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d || 0, maximumFractionDigits: d == null ? 2 : d });
 const money = n => (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString('en-US');
 const money2 = n => (n < 0 ? '−$' : '$') + Math.abs(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const FIELD_DEC = { qty: 0, mat: 2, shopUPH: 2, fieldUPH: 2, mkup: 2 };
-const fmtF = (f, v) => f === 'mat' ? fmtN(v, v >= 1000 ? 0 : 2) : (f === 'shopUPH' || f === 'fieldUPH' || f === 'mkup') ? fmtN(v) : fmtN(v, FIELD_DEC[f]);
 const moneyU = n => Math.abs(n) >= 1000 ? money(n) : money2(n);
+const NUMF = ['qty', 'mat', 'shopUPH', 'fieldUPH', 'mkup', 'usell', 'sell'];
+const fmtF = (f, v) => f === 'qty' || f === 'sell' ? fmtN(v, 0) : f === 'mat' || f === 'usell' ? fmtN(v, Math.abs(v) >= 1000 ? 0 : 2) : f === 'mkup' ? Number(v).toLocaleString('en-US', { maximumFractionDigits: 1 }) : fmtN(v);
 const locked = () => S.status === 'confirmed';
+function toast(msg) { const t = document.getElementById('bs-toast'); if (!t) return; t.textContent = msg; t.classList.add('on'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 2600); }
 
 /* ---------------- render ---------------- */
 const app = $('#app');
 function stepField(key, label, unit, step, hint) {
+  const d = locked() ? 'disabled' : '';
   return `<label class="bs-f"><span>${label}${hint ? ' <i>' + hint + '</i>' : ''}</span>
-    <div class="bs-step"><button type="button" onclick="stepG('${key}',-${step})" ${locked() ? 'disabled' : ''}>−</button>
-      <input data-g="${key}" value="${fmtN(S.g[key])}" inputmode="decimal" ${locked() ? 'disabled' : ''}>
-      <em>${unit}</em><button type="button" onclick="stepG('${key}',${step})" ${locked() ? 'disabled' : ''}>+</button></div></label>`;
+    <div class="bs-step"><button type="button" onclick="stepG('${key}',-${step})" ${d}>−</button><input data-g="${key}" value="${fmtN(S.g[key])}" inputmode="decimal" ${d}><em>${unit}</em><button type="button" onclick="stepG('${key}',${step})" ${d}>+</button></div></label>`;
 }
 function rowsHTML() {
-  const dis = locked() ? 'disabled' : '';
+  const d = locked() ? 'disabled' : '';
   return S.lines.map((l, i) => `
-    <tr>
-      <td class="l" style="color:var(--color-slate-hint);font-weight:700">${i + 1}</td>
-      <td class="l"><input class="cell txt" data-i="${i}" data-f="scope" value="${esc(l.scope)}" ${dis}></td>
-      <td><input class="cell" data-i="${i}" data-f="qty" value="${fmtN(l.qty, 0)}" inputmode="decimal" ${dis}></td>
-      <td><input class="cell unit" data-i="${i}" data-f="unit" value="${esc(l.unit)}" ${dis}></td>
-      <td><input class="cell" data-i="${i}" data-f="mat" value="${fmtF('mat', l.mat)}" inputmode="decimal" ${dis} title="Material $ per unit (escalation applied in settings)"></td>
-      <td><input class="cell" data-i="${i}" data-f="shopUPH" value="${fmtF('shopUPH', l.shopUPH)}" inputmode="decimal" ${dis} title="Shop productivity — units per man-hour (0 = no shop labor)"></td>
-      <td><input class="cell" data-i="${i}" data-f="fieldUPH" value="${fmtF('fieldUPH', l.fieldUPH)}" inputmode="decimal" ${dis} title="Field productivity — units per man-hour (0 = no field labor)"></td>
-      <td class="calc" id="o-${i}-uc">—</td>
-      <td class="strong" id="o-${i}-cost">—</td>
-      <td class="client"><input class="cell mk ${l.mkup == null ? 'dflt' : ''}" data-i="${i}" data-f="mkup" value="${l.mkup == null ? '' : fmtF('mkup', l.mkup)}" placeholder="${fmtN(S.g.defMkup, 1)}" inputmode="decimal" ${dis} title="Markup % on cost — blank uses the default"></td>
-      <td class="client calc" id="o-${i}-us">—</td>
-      <td class="client strong" id="o-${i}-sell">—</td>
-      <td class="client" id="o-${i}-profit">—</td>
-      <td class="client" id="o-${i}-mg">—</td>
-      <td>${locked() ? '' : `<button class="bs-x" onclick="delLine(${i})" title="Remove line">✕</button>`}</td>
+    <tr class="${inc(l) ? '' : 'exc'}" id="row-${i}">
+      <td class="c keep"><input type="checkbox" class="bs-chk" ${inc(l) ? 'checked' : ''} ${d} onchange="toggleInc(${i},this.checked)" title="${inc(l) ? 'In the bid — uncheck to price it out (becomes an alternate)' : 'Excluded — check to add back into the bid'}"></td>
+      <td class="l keep"><input class="cell txt" data-i="${i}" data-f="scope" value="${esc(l.scope)}" ${d} title="${esc(l.scope)}">${l.tag ? `<span class="bs-tag ${l.flag ? 'flag' : ''}">${esc(l.tag)}</span>` : ''}</td>
+      <td><input class="cell" data-i="${i}" data-f="qty" value="${fmtF('qty', l.qty)}" inputmode="decimal" ${d}></td>
+      <td><input class="cell unit" data-i="${i}" data-f="unit" value="${esc(l.unit)}" ${d}></td>
+      <td><input class="cell" data-i="${i}" data-f="mat" value="${fmtF('mat', l.mat)}" inputmode="decimal" ${d} title="Material $ per unit (escalation set below)"></td>
+      <td><input class="cell" data-i="${i}" data-f="shopUPH" value="${fmtF('shopUPH', l.shopUPH)}" inputmode="decimal" ${d} title="Shop productivity — units per man-hour (0 = none)"></td>
+      <td><input class="cell" data-i="${i}" data-f="fieldUPH" value="${fmtF('fieldUPH', l.fieldUPH)}" inputmode="decimal" ${d} title="Field productivity — units per man-hour (0 = none)"></td>
+      <td class="calc" id="o-${i}-uc"></td>
+      <td class="strong" id="o-${i}-cost"></td>
+      <td class="client"><input class="cell mk ${l.mkup == null ? 'dflt' : ''}" data-i="${i}" data-f="mkup" value="${l.mkup == null ? '' : fmtF('mkup', l.mkup)}" placeholder="${fmtN(S.g.defMkup, 1)}" inputmode="decimal" ${d} title="Markup % on cost — blank uses the default"></td>
+      <td class="client"><input class="cell price" data-i="${i}" data-f="usell" inputmode="decimal" ${d} title="Type a unit price — markup back-solves"></td>
+      <td class="client"><input class="cell price" data-i="${i}" data-f="sell" inputmode="decimal" ${d} title="Type a line price — markup back-solves"></td>
+      <td class="client" id="o-${i}-profit"></td>
+      <td class="client" id="o-${i}-mg"></td>
+      <td class="c keep">${locked() ? '' : `<span class="bs-act"><button onclick="moveLine(${i},-1)" title="Move up">↑</button><button onclick="moveLine(${i},1)" title="Move down">↓</button><button onclick="dupLine(${i})" title="Duplicate">⧉</button><button onclick="delLine(${i})" title="Remove">✕</button></span>`}</td>
     </tr>`).join('');
 }
-function render() {
-  const revs = revsAll();
-  const nextRev = String.fromCharCode(65 + revs.length);
+function render(keepScroll) {
+  const y = window.scrollY;
+  const revs = revsAll(), nextRev = String.fromCharCode(65 + revs.length), d = locked() ? 'disabled' : '';
+  const sets = reviewSets();
   app.innerHTML = `
   <div class="demo-hero" style="padding-bottom:6px">
     <div>
       <div class="demo-eyebrow">PRECONSTRUCTION · BID SHEET</div>
       <h1>Adjustable <em>Bid Modeler</em></h1>
-      <div class="sub">Type it like a spreadsheet. Every quantity, unit cost, productivity or markup you change reprices <b>cost to client</b>, <b>cost to McCorvey</b> and <b>profit</b> instantly — and the crew check runs on the same hours. Type a price or a margin and the markups solve themselves. Confirm the bid right here when it's done.</div>
+      <div class="sub">Type it like a spreadsheet — on the cost side <b>or</b> the price side. Every change reprices cost to client, cost to McCorvey and profit instantly, the crew check runs on the same hours, and the bid confirms right here.</div>
     </div>
     <div class="demo-hero-right">
       <span class="demo-live"><span class="dot"></span> LIVE · AUTOSAVED</span>
-      <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
+      <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('brain')}</span>
     </div>
   </div>
 
   <div class="demo-panel" style="margin-bottom:14px;padding-top:14px;padding-bottom:14px">
     <div class="bs-fields" style="grid-template-columns:2.2fr 1.3fr 1fr 1fr">
-      <label class="bs-f"><span>Project</span><input class="cell txt" data-m="project" value="${esc(S.meta.project)}" ${locked() ? 'disabled' : ''}></label>
-      <label class="bs-f"><span>General contractor</span><input class="cell txt" style="min-width:0" data-m="gc" value="${esc(S.meta.gc)}" ${locked() ? 'disabled' : ''}></label>
-      <label class="bs-f"><span>Bid #</span><input class="cell txt" style="min-width:0" data-m="bidNo" value="${esc(S.meta.bidNo)}" ${locked() ? 'disabled' : ''}></label>
-      <label class="bs-f"><span>Bid due</span><input class="cell txt" style="min-width:0" type="date" data-m="due" value="${esc(S.meta.due)}" ${locked() ? 'disabled' : ''}></label>
+      <label class="bs-f"><span>Project</span><input class="cell txt" data-m="project" value="${esc(S.meta.project)}" ${d}></label>
+      <label class="bs-f"><span>General contractor</span><input class="cell txt" data-m="gc" value="${esc(S.meta.gc)}" ${d}></label>
+      <label class="bs-f"><span>Bid #</span><input class="cell txt" data-m="bidNo" value="${esc(S.meta.bidNo)}" ${d}></label>
+      <label class="bs-f"><span>Bid due</span><input class="cell txt" type="date" data-m="due" value="${esc(S.meta.due)}" ${d}></label>
     </div>
   </div>
 
   <div class="bs-roll" id="bs-roll">
-    <div class="bs-tile client"><div class="l">Cost to Client — Base Bid</div><div class="v" id="t-client">—</div><div class="s" id="t-client-s">—</div></div>
-    <div class="bs-tile cost"><div class="l">Cost to McCorvey</div><div class="v" id="t-cost">—</div><div class="s" id="t-cost-s">—</div></div>
-    <div class="bs-tile" id="t-profit-tile"><div class="l">Profit + Overhead</div><div class="v" id="t-profit">—</div><div class="s" id="t-profit-s">—</div></div>
-    <div class="bs-tile" id="t-mp-tile"><div class="l">Manpower Check</div><div class="v" id="t-mp">—</div><div class="s" id="t-mp-s">—</div></div>
+    <div class="bs-tile client"><div class="l">Cost to Client — Base Bid</div><div class="v" id="t-client"></div><div class="s" id="t-client-s"></div></div>
+    <div class="bs-tile cost"><div class="l">Cost to McCorvey</div><div class="v" id="t-cost"></div><div class="s" id="t-cost-s"></div></div>
+    <div class="bs-tile" id="t-profit-tile"><div class="l">Profit + Overhead</div><div class="v" id="t-profit"></div><div class="s" id="t-profit-s"></div></div>
+    <div class="bs-tile" id="t-mp-tile"><div class="l">Manpower Check</div><div class="v" id="t-mp"></div><div class="s" id="t-mp-s"></div></div>
   </div>
 
   <div class="bs-bar">
-    <div class="bs-solve"><label>Bid at price</label><input id="solve-price" placeholder="$ total" inputmode="decimal" ${locked() ? 'disabled' : ''} onkeydown="if(event.key==='Enter'){bidAtPrice(this.value);this.value='';this.blur()}"><button class="pa-btn" onclick="bidAtPrice(document.getElementById('solve-price').value);document.getElementById('solve-price').value=''" ${locked() ? 'disabled' : ''}>Apply</button></div>
-    <div class="bs-solve"><label>Bid at margin</label><input id="solve-margin" style="width:84px" placeholder="13%" inputmode="decimal" ${locked() ? 'disabled' : ''} onkeydown="if(event.key==='Enter'){bidAtMargin(this.value);this.value='';this.blur()}"><button class="pa-btn" onclick="bidAtMargin(document.getElementById('solve-margin').value);document.getElementById('solve-margin').value=''" ${locked() ? 'disabled' : ''}>Apply</button></div>
-    <div class="bs-solve"><label>All markups</label><button class="pa-btn" onclick="nudgeAll(-1)" ${locked() ? 'disabled' : ''}>−1%</button><button class="pa-btn" onclick="nudgeAll(1)" ${locked() ? 'disabled' : ''}>+1%</button><button class="pa-btn" onclick="roundTotal(10000)" ${locked() ? 'disabled' : ''} title="Round the client total to the nearest $10,000">Round to $10K</button><button class="pa-btn" onclick="resetMarkups()" ${locked() ? 'disabled' : ''} title="Clear line markups back to the default">Reset</button></div>
+    <div class="bs-solve"><label>Bid at price</label><input id="solve-price" placeholder="$ total" inputmode="decimal" ${d} onkeydown="if(event.key==='Enter'){bidAtPrice(this.value);this.value='';this.blur()}"><button class="pa-btn" ${d} onclick="const i=document.getElementById('solve-price');bidAtPrice(i.value);i.value=''">Apply</button></div>
+    <div class="bs-solve"><label>Bid at margin</label><input id="solve-margin" style="width:76px" placeholder="13%" inputmode="decimal" ${d} onkeydown="if(event.key==='Enter'){bidAtMargin(this.value);this.value='';this.blur()}"><button class="pa-btn" ${d} onclick="const i=document.getElementById('solve-margin');bidAtMargin(i.value);i.value=''">Apply</button></div>
+    <div class="bs-solve"><label>All markups</label><button class="pa-btn" ${d} onclick="nudgeAll(-1)">−1%</button><button class="pa-btn" ${d} onclick="nudgeAll(1)">+1%</button><button class="pa-btn" ${d} onclick="roundTotal(10000)" title="Round the client total to the nearest $10,000">Round $10K</button><button class="pa-btn" ${d} onclick="resetMarkups()">Reset</button></div>
     <span style="display:flex;gap:10px;margin-left:auto;align-items:center">
-    <span class="bs-status ${locked() ? 'done' : ''}"><i></i>${locked() ? 'CONFIRMED · REV ' + (revs[revs.length - 1] || {}).rev : 'DRAFT · REV ' + nextRev}</span>
-    ${locked()
-      ? `<button class="pa-btn" style="height:42px;padding:0 20px;font-size:13px" onclick="reviseBid()">Revise bid → Rev ${nextRev}</button>`
-      : `<button class="pa-btn primary" style="height:42px;padding:0 22px;font-size:13px" onclick="confirmBid()">Confirm bid — Rev ${nextRev}</button>`}
+      <span class="bs-status ${locked() ? 'done' : ''}"><i></i>${locked() ? 'CONFIRMED · REV ' + (revs[revs.length - 1] || {}).rev : 'DRAFT · REV ' + nextRev}</span>
+      ${locked()
+        ? `<button class="pa-btn" style="height:42px;padding:0 20px;font-size:13px" onclick="reviseBid()">Revise bid → Rev ${nextRev}</button>`
+        : `<button class="pa-btn primary" style="height:42px;padding:0 22px;font-size:13px" onclick="confirmBid()">Confirm bid — Rev ${nextRev}</button>`}
     </span>
   </div>
 
+  <div class="bs-facts" id="bs-facts"></div>
+
   <div class="demo-panel" style="margin-bottom:22px">
-    <div class="demo-panel-head"><h2>Bid Sheet</h2><span class="k" id="sheet-k">${locked() ? 'locked — confirmed bid · revise to make changes' : 'click any white cell and type · totals update as you type'}</span></div>
+    <div class="demo-panel-head"><h2>Bid Sheet</h2><span class="k" id="sheet-k"></span></div>
+    <div class="bs-tools">
+      <button class="pa-btn" id="btn-undo" onclick="undo()" title="Undo (Ctrl+Z)">↶ Undo</button>
+      <button class="pa-btn" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Y)">↷ Redo</button>
+      <span class="sep"></span>
+      <select ${d} onchange="addFromCatalog(this.value);this.value=''"><option value="">+ Add line from catalog…</option>${CATALOG.map((c, i) => `<option value="${i}">${esc(c.scope)} (${c.unit})</option>`).join('')}<option value="blank">Blank line</option></select>
+      <select ${d} onchange="loadFromReview(this.value);this.value=''"><option value="">🧠 Load quantities from AI Bid Review…</option>${sets.map(q => `<option value="${q.bid}">${q.bid} · ${esc(q.project.split('—')[0].trim())} (${q.quantities.length} qty${q.findings.length ? ', ' + q.findings.length + ' flags' : ''})</option>`).join('')}</select>
+      <span class="sep"></span>
+      <button class="pa-btn" onclick="copySummary()" title="Copy a text summary of the bid for email or text">⧉ Copy summary</button>
+    </div>
     <div class="bs-wrap">
       <table class="bs">
-        <colgroup><col style="width:30px"><col style="width:23%"><col style="width:96px"><col style="width:60px"><col style="width:86px"><col style="width:64px"><col style="width:64px"><col style="width:82px"><col style="width:104px"><col style="width:70px"><col style="width:82px"><col style="width:108px"><col style="width:92px"><col style="width:68px"><col style="width:30px"></colgroup>
-        <thead>
-          <tr>
-            <th class="l" style="width:28px">#</th><th class="l">Scope</th><th>Qty</th><th style="text-align:center">Unit</th>
-            <th class="grp-cost">Material $/unit</th><th class="grp-cost">Shop units/hr</th><th class="grp-cost">Field units/hr</th><th class="grp-cost">Unit cost</th><th class="grp-cost">Cost to MSM</th>
-            <th class="grp-client">Markup %</th><th class="grp-client">Unit price</th><th class="grp-client">Client price</th><th class="grp-client">Profit</th><th class="grp-client">Margin</th><th style="width:30px"></th>
-          </tr>
-        </thead>
-        <tbody id="bs-body">${rowsHTML()}</tbody>
+        <colgroup><col style="width:38px"><col style="width:20%"><col style="width:96px"><col style="width:58px"><col style="width:84px"><col style="width:62px"><col style="width:62px"><col style="width:80px"><col style="width:100px"><col style="width:72px"><col style="width:90px"><col style="width:112px"><col style="width:88px"><col style="width:66px"><col style="width:92px"></colgroup>
+        <thead><tr>
+          <th class="c" title="In the bid">In</th><th class="l">Scope</th><th>Qty</th><th class="c">Unit</th>
+          <th class="grp-cost" title="Material $ per unit">Material $/unit</th><th class="grp-cost" title="Units per man-hour in the shop">Shop units/hr</th><th class="grp-cost" title="Units per man-hour in the field">Field units/hr</th><th class="grp-cost">Unit cost</th><th class="grp-cost">Cost to MSM</th>
+          <th class="grp-client">Markup %</th><th class="grp-client" title="Editable — markup back-solves">Unit price ✎</th><th class="grp-client" title="Editable — markup back-solves">Client price ✎</th><th class="grp-client">Profit</th><th class="grp-client">Margin</th><th></th>
+        </tr></thead>
+        <tbody>${rowsHTML()}</tbody>
         <tfoot>
-          <tr class="bs-total">
-            <td></td><td class="l">Subtotal — ${S.lines.length} line${S.lines.length === 1 ? '' : 's'}</td><td></td><td></td><td></td><td></td><td></td><td></td>
-            <td id="f-cost">—</td><td id="f-mk" class="client">—</td><td class="client"></td><td id="f-sell" class="client">—</td><td id="f-profit" class="client">—</td><td id="f-mg" class="client">—</td><td></td>
-          </tr>
-          <tr><td></td><td class="l calc">Bond, GL insurance &amp; contingency (${fmtN(S.g.bondPct + S.g.glPct + S.g.contPct, 2)}% of sell)</td><td colspan="9"></td><td id="f-addons" class="client calc">—</td><td colspan="3"></td></tr>
-          <tr class="bs-total"><td></td><td class="l">Base bid — cost to client</td><td colspan="9"></td><td id="f-client" class="client" style="font-size:14.5px">—</td><td colspan="3"></td></tr>
+          <tr class="bs-total"><td></td><td class="l" id="f-label"></td><td></td><td></td><td></td><td></td><td></td><td></td><td id="f-cost"></td><td id="f-mk" class="client"></td><td class="client"></td><td id="f-sell" class="client"></td><td id="f-profit" class="client"></td><td id="f-mg" class="client"></td><td></td></tr>
+          <tr><td></td><td class="l calc">Bond, GL insurance &amp; contingency (${fmtN(S.g.bondPct + S.g.glPct + S.g.contPct, 2)}% of sell)</td><td colspan="9"></td><td id="f-addons" class="client calc"></td><td colspan="3"></td></tr>
+          <tr class="bs-total"><td></td><td class="l">Base bid — cost to client</td><td colspan="9"></td><td id="f-client" class="client" style="font-size:14.5px"></td><td colspan="3"></td></tr>
         </tfoot>
       </table>
     </div>
-    <div style="display:flex;gap:10px;align-items:center;margin-top:10px;flex-wrap:wrap">
-      ${locked() ? '' : '<button class="pa-btn" onclick="addLine()">+ Add line</button>'}
-      <div class="bs-hint"><kbd>Tab</kbd> next cell · <kbd>Enter</kbd> down a row · <kbd>↑</kbd><kbd>↓</kbd> nudge a number (<kbd>Shift</kbd> = ×10) · blank markup = default ${fmtN(S.g.defMkup, 1)}% · u/hr = units per man-hour (0 = none)</div>
-    </div>
+    <div class="bs-hint" style="margin-top:10px"><kbd>Tab</kbd> across · <kbd>Enter</kbd> down · <kbd>↑</kbd><kbd>↓</kbd> nudge (<kbd>Shift</kbd> ×10) · <kbd>Ctrl</kbd>+<kbd>Z</kbd> undo · ✎ price cells back-solve markup · uncheck <b>In</b> to price a scope out
+      <span class="bs-legend"><i style="background:var(--color-amber)"></i>changed since last rev</span><span class="bs-legend"><i style="background:#2f9e6e"></i>new line</span></div>
   </div>
 
   <div class="demo-two" style="margin-bottom:22px">
@@ -323,7 +441,7 @@ function render() {
         ${stepField('fieldRate', 'Field labor rate', '$/hr', 1)}
         ${stepField('escPct', 'Steel escalation', '%', 0.25, 'on material')}
         ${stepField('defMkup', 'Default markup', '%', 0.5, 'blank lines')}
-        ${stepField('ohPct', 'Overhead', '%', 0.25, 'cost of doing business')}
+        ${stepField('ohPct', 'Overhead', '%', 0.25)}
         ${stepField('contPct', 'Contingency', '%', 0.25)}
         ${stepField('bondPct', 'P&amp;P bond', '%', 0.05)}
         ${stepField('glPct', 'GL insurance', '%', 0.05)}
@@ -339,35 +457,67 @@ function render() {
         ${stepField('fieldCommitPct', 'Field committed', '%', 1, 'of 340')}
         ${stepField('shopCommitPct', 'Shop committed', '%', 1, 'of 580')}
       </div>
-      <div class="bs-gauge"><div class="gh"><b>Field crew</b><span id="g-field">—</span></div><div class="track"><i id="g-field-i"></i><span class="cap"></span></div></div>
-      <div class="bs-gauge"><div class="gh"><b>Fab shop</b><span id="g-shop">—</span></div><div class="track"><i id="g-shop-i"></i><span class="cap"></span></div></div>
+      <div class="bs-gauge"><div class="gh"><b>Field crew</b><span id="g-field"></span></div><div class="track"><i id="g-field-i"></i><span class="cap"></span></div></div>
+      <div class="bs-gauge"><div class="gh"><b>Fab shop</b><span id="g-shop"></span></div><div class="track"><i id="g-shop-i"></i><span class="cap"></span></div></div>
       <div class="bs-note" id="mp-note"></div>
+    </div>
+  </div>
+
+  <div class="demo-panel" style="margin-bottom:22px">
+    <div class="demo-panel-head"><h2>Proposal Terms</h2><span class="k">prints on the confirmed bid</span></div>
+    <div class="bs-fields" style="grid-template-columns:1fr 1fr 170px">
+      <label class="bs-f"><span>Inclusions</span><textarea class="bs-ta" data-m="incl" ${d}>${esc(S.meta.incl)}</textarea></label>
+      <label class="bs-f"><span>Exclusions &amp; terms</span><textarea class="bs-ta" data-m="excl" ${d}>${esc(S.meta.excl)}</textarea></label>
+      ${stepField('__valid', 'Valid for', 'days', 5)}
     </div>
   </div>
 
   <div id="confirmed"></div>
 
   <div class="demo-note">MSM Operations Portal — demo environment, fictional data · rates and productivities are placeholders for MSM's historical cost database · concept build by Endurance AI Labs</div>`;
-  dock();
-  refresh();
-  renderConfirmed();
+  /* validity field lives on meta, not g — patch its value */
+  const vi = document.querySelector('input[data-g="__valid"]'); if (vi) { vi.dataset.g = ''; vi.dataset.m = 'valid'; vi.value = S.meta.valid; }
+  dock(); refresh(); renderConfirmed(); undoBtns();
+  if (keepScroll) window.scrollTo(0, y);
 }
 
-/* ---------------- live refresh (no re-render → typing never loses focus) ---------------- */
+/* ---------------- live refresh (in place — typing never loses focus) ---------------- */
 const BC = { ok: '#2f9e6e', watch: 'var(--color-amber)', bad: '#c8102e', tight: 'var(--color-amber)', over: '#c8102e' };
 function setH(id, v) { const el = document.getElementById(id); if (el) el.innerHTML = v; }
+function setV(sel, v) { const el = document.querySelector(sel); if (el && el !== document.activeElement) el.value = v; }
 function refresh() {
   const T = totals();
+  const revs = revsAll(), last = revs.length ? revs[revs.length - 1] : null;
+  let changes = 0;
   T.L.forEach((c, i) => {
+    const l = S.lines[i];
     setH('o-' + i + '-uc', moneyU(c.unitCost));
     setH('o-' + i + '-cost', money(c.cost));
-    setH('o-' + i + '-us', moneyU(c.unitSell));
-    setH('o-' + i + '-sell', money(c.sell));
+    setV(`input[data-i="${i}"][data-f="usell"]`, fmtF('usell', c.unitSell));
+    setV(`input[data-i="${i}"][data-f="sell"]`, fmtF('sell', c.sell));
     setH('o-' + i + '-profit', `<span style="color:${c.profit < 0 ? '#c8102e' : 'inherit'}">${money(c.profit)}</span>`);
     setH('o-' + i + '-mg', `<span class="bs-mg ${band(c.margin)}">${c.margin.toFixed(1)}%</span>`);
     const mk = document.querySelector(`input[data-i="${i}"][data-f="mkup"]`); if (mk) mk.placeholder = fmtN(S.g.defMkup, 1);
+    /* change markers vs the last confirmed revision (only while drafting a revision) */
+    const row = document.getElementById('row-' + i);
+    if (last && !locked()) {
+      const r = last.lines.find(x => x.scope === l.scope);
+      const qEl = document.querySelector(`input[data-i="${i}"][data-f="qty"]`), sEl = document.querySelector(`input[data-i="${i}"][data-f="sell"]`);
+      if (!r) { if (row) row.classList.add('newline'); changes++; }
+      else {
+        if (row) row.classList.remove('newline');
+        const qc = r.qty !== l.qty, sc = Math.abs((r.inc === false ? 0 : r.sell) - (inc(l) ? c.sell : 0)) > 1;
+        if (qEl) { qEl.classList.toggle('chg', qc); qEl.title = qc ? 'Rev ' + last.rev + ': ' + fmtN(r.qty, 0) : ''; }
+        if (sEl) { sEl.classList.toggle('chg', sc); sEl.title = sc ? 'Rev ' + last.rev + ': ' + money(r.sell) : 'Type a line price — markup back-solves'; }
+        if (qc || sc) changes++;
+      }
+    }
   });
+  if (last && !locked()) changes += last.lines.filter(r => !S.lines.some(l => l.scope === r.scope)).length;
+  const nIn = S.lines.filter(inc).length, nOut = S.lines.length - nIn;
+  setH('sheet-k', locked() ? 'locked — confirmed bid · revise to make changes' : (last ? `<b style="color:var(--color-amber)">${changes} change${changes === 1 ? '' : 's'} since Rev ${last.rev}</b> · ` : '') + 'type in any shaded cell · totals update as you type');
   const blended = T.cost ? (T.sell / T.cost - 1) * 100 : 0;
+  setH('f-label', `Subtotal — ${nIn} line${nIn === 1 ? '' : 's'} in bid${nOut ? ' · ' + nOut + ' priced out' : ''}`);
   setH('f-cost', money(T.cost)); setH('f-mk', blended.toFixed(1) + '%'); setH('f-sell', money(T.sell));
   setH('f-profit', `<span style="color:${T.profit < 0 ? '#c8102e' : 'inherit'}">${money(T.profit)}</span>`);
   setH('f-mg', `<span class="bs-mg ${band(T.margin)}">${T.margin.toFixed(1)}%</span>`);
@@ -379,10 +529,22 @@ function refresh() {
   setH('t-cost-s', 'material ' + fmtK(T.mat) + ' · labor ' + fmtK(T.lab) + '<br>' + Math.round(T.shopH + T.fieldH).toLocaleString() + ' man-hours');
   setH('t-profit', fmtK(T.profit + T.oh));
   setH('t-profit-s', 'margin <b>' + T.margin.toFixed(1) + '%</b> · target ' + TARGET + '%<br>profit ' + fmtK(T.profit) + ' · overhead ' + fmtK(T.oh) + (T.profit < 0 ? ' · <b style="color:#c8102e">UNDERWATER</b>' : ''));
-  document.getElementById('t-profit-tile').className = 'bs-tile ' + band(T.margin);
+  const pt = document.getElementById('t-profit-tile'); if (pt) pt.className = 'bs-tile ' + band(T.margin);
   setH('t-mp', T.mp === 'ok' ? 'STAFFABLE' : T.mp === 'tight' ? 'TIGHT' : 'OVER CAPACITY');
   setH('t-mp-s', 'field <b>' + T.fieldNeed.toFixed(0) + '</b> of ' + T.fieldAvail.toFixed(0) + ' available · shop <b>' + T.shopNeed.toFixed(0) + '</b> of ' + T.shopAvail.toFixed(0) + '<br>' + T.weeks + ' weeks' + (S.g.otPct ? ' · ' + S.g.otPct + '% OT' : ''));
-  document.getElementById('t-mp-tile').className = 'bs-tile ' + T.mp;
+  const mt = document.getElementById('t-mp-tile'); if (mt) mt.className = 'bs-tile ' + T.mp;
+  /* talk-track strip */
+  const onePct = T.cost * 0.01 * (1 + T.a);
+  const room = T.client - T.floor$;
+  const biggest = T.L.map((c, i) => ({ c, l: S.lines[i] })).filter(x => inc(x.l)).sort((a, b) => b.c.cost - a.c.cost)[0];
+  const rectI = S.lines.findIndex(l => inc(l) && l.fieldUPH > 0 && /rect/i.test(l.scope));
+  let prodTxt = '';
+  if (rectI > -1) { const l = S.lines[rectI], c = T.L[rectI]; const dH = l.qty / l.fieldUPH - l.qty / (l.fieldUPH + 1); prodTxt = `<span><span class="k">PRODUCTIVITY</span> +1 lb/hr in the field on rect duct saves <b>${fmtK(dH * S.g.fieldRate * (1 + c.mk / 100) * (1 + T.a))}</b></span>`; }
+  setH('bs-facts', `<span><span class="k">TALK TRACK</span> each 1% of markup = <b>${fmtK(onePct)}</b></span>
+    <span>${room >= 0 ? 'room above the ' + FLOOR + '% floor <b>' + fmtK(room) + '</b>' : '<b style="color:#ef6a76">' + fmtK(-room) + ' below the ' + FLOOR + '% floor</b>'}</span>
+    <span>${TARGET}% target price <b>${fmtK(T.target$)}</b></span>
+    ${biggest ? `<span>largest cost: <b>${esc(biggest.l.scope.split('—')[0].trim())}</b> (${(biggest.c.cost / T.cost * 100).toFixed(0)}%)</span>` : ''}
+    ${prodTxt}`);
   /* gauges */
   const gauge = (k, load, need, avail, hrs) => {
     const b = load <= 85 ? 'ok' : load <= 100 ? 'tight' : 'over';
@@ -396,21 +558,19 @@ function refresh() {
     if (T.mp === 'ok') { note.style.borderLeftColor = '#2f9e6e'; note.innerHTML = '<b>Staffable as bid.</b> ' + T.fieldNeed.toFixed(0) + ' field + ' + T.shopNeed.toFixed(0) + ' shop heads over ' + T.weeks + ' weeks stays inside the 85% line on uncommitted crews.'; }
     else {
       const load = Math.max(T.fLoad, T.sLoad), who = T.fLoad >= T.sLoad ? 'Field crew' : 'Fab shop';
-      const wk = Math.ceil(T.weeks * load / 85), ot = Math.min(25, Math.ceil((load / 85 - 1) * 100));
       note.style.borderLeftColor = BC[T.mp];
-      note.innerHTML = '<b>' + who + ' at ' + load.toFixed(0) + '% of available heads.</b> To staff it: extend to <b>' + wk + ' weeks</b>, or carry about <b>' + ot + '% OT</b> (the sheet reprices labor at 1.5× automatically), or free crews from backlog before you commit this schedule.';
+      note.innerHTML = '<b>' + who + ' at ' + load.toFixed(0) + '% of available heads.</b> To staff it: extend to <b>' + Math.ceil(T.weeks * load / 85) + ' weeks</b>, or carry about <b>' + Math.min(25, Math.ceil((load / 85 - 1) * 100)) + '% OT</b> (labor reprices at 1.5× automatically), or free crews from backlog first.';
     }
   }
   /* composition */
   const comp = [['Material', T.mat, '#14283c'], ['Labor', T.lab, '#6b7685'], ['Overhead', T.oh, '#cf4a57'], ['Profit', Math.max(0, T.profit), '#2f9e6e'], ['Bond · GL · contingency', T.addons, '#b98a36']];
-  setH('bs-comp', '<div style="display:flex;height:16px;border-radius:99px;overflow:hidden">' + comp.map(c => `<i title="${c[0]}" style="display:block;width:${(c[1] / T.client * 100).toFixed(2)}%;background:${c[2]}"></i>`).join('') + '</div>' +
-    '<div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px;font-size:11px;color:var(--color-text-muted)">' + comp.map(c => `<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c[2]};margin-right:5px;vertical-align:-1px"></i>${c[0]} <b style="color:var(--color-cloud-whisper)">${fmtK(c[1])}</b> · ${(c[1] / T.client * 100).toFixed(1)}%</span>`).join('') + '</div>');
-  /* live delta vs last confirmed rev while revising */
-  const revs = revsAll();
+  setH('bs-comp', '<div style="display:flex;height:16px;border-radius:99px;overflow:hidden">' + comp.map(c => `<i title="${c[0]}" style="display:block;width:${T.client ? (c[1] / T.client * 100).toFixed(2) : 0}%;background:${c[2]}"></i>`).join('') + '</div>' +
+    '<div style="display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:9px;font-size:11px;color:var(--color-text-muted)">' + comp.map(c => `<span><i style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${c[2]};margin-right:5px;vertical-align:-1px"></i>${c[0]} <b style="color:var(--color-cloud-whisper)">${fmtK(c[1])}</b> · ${T.client ? (c[1] / T.client * 100).toFixed(1) : 0}%</span>`).join('') + '</div>');
+  /* live delta vs last rev */
   const dl = document.getElementById('rev-delta');
-  if (dl && revs.length && !locked()) {
-    const R = revs[revs.length - 1].totals, d = T.client - R.client;
-    dl.innerHTML = `Revising from <b>Rev ${revs[revs.length - 1].rev}</b>: price <b style="color:${d >= 0 ? '#2f9e6e' : '#c8102e'}">${d >= 0 ? '+' : '−'}${fmtK(Math.abs(d))}</b> · margin ${R.margin.toFixed(1)}% → <b>${T.margin.toFixed(1)}%</b> · profit ${fmtK(R.profit + R.oh)} → <b>${fmtK(T.profit + T.oh)}</b>`;
+  if (dl && last && !locked()) {
+    const R = last.totals, dd = T.client - R.client;
+    dl.innerHTML = `Revising from <b>Rev ${last.rev}</b>: price <b style="color:${dd >= 0 ? '#2f9e6e' : '#c8102e'}">${dd >= 0 ? '+' : '−'}${fmtK(Math.abs(dd))}</b> · margin ${R.margin.toFixed(1)}% → <b>${T.margin.toFixed(1)}%</b> · profit ${fmtK(R.profit + R.oh)} → <b>${fmtK(T.profit + T.oh)}</b> · ${changes} line change${changes === 1 ? '' : 's'}`;
   }
   try { localStorage.setItem(KEY_STATE, JSON.stringify(S)); } catch (e) {}
 }
@@ -419,34 +579,55 @@ function refresh() {
 function syncInputs() {
   document.querySelectorAll('input[data-f]').forEach(inp => {
     if (inp === document.activeElement) return;
-    const l = S.lines[+inp.dataset.i]; const f = inp.dataset.f; if (!l) return;
+    const l = S.lines[+inp.dataset.i], f = inp.dataset.f; if (!l) return;
     if (f === 'mkup') { inp.value = l.mkup == null ? '' : fmtF('mkup', l.mkup); inp.classList.toggle('dflt', l.mkup == null); }
-    else if (f in FIELD_DEC) inp.value = fmtF(f, l[f]);
+    else if (['qty', 'mat', 'shopUPH', 'fieldUPH'].includes(f)) inp.value = fmtF(f, l[f]);
   });
-  document.querySelectorAll('input[data-g]').forEach(inp => { if (inp !== document.activeElement) inp.value = fmtN(S.g[inp.dataset.g]); });
+  document.querySelectorAll('input[data-g]').forEach(inp => { if (inp !== document.activeElement && inp.dataset.g) inp.value = fmtN(S.g[inp.dataset.g]); });
 }
+function priceToMarkup(l, f, v) {
+  const b = lineCost(l); if (b.cost <= 0) return;
+  const target = f === 'usell' ? v * l.qty : v;
+  l.mkup = Math.round((target / b.cost - 1) * 10000) / 100;
+  const mk = document.querySelector(`input[data-i="${S.lines.indexOf(l)}"][data-f="mkup"]`);
+  if (mk) { mk.value = fmtF('mkup', l.mkup); mk.classList.remove('dflt'); }
+}
+app.addEventListener('focusin', e => {
+  const t = e.target;
+  if (t.matches && t.matches('.cell, .bs-ta, input[data-g], input[data-m]')) editSnap = JSON.stringify(S);
+  if (t.classList && t.classList.contains('cell') && t.dataset.f !== 'scope') setTimeout(() => t.select(), 0);
+});
 app.addEventListener('input', e => {
   const t = e.target;
+  if (!(t.matches && t.matches('.cell, .bs-ta, input[data-g], input[data-m]'))) return;
+  if (editSnap) { UNDO.push(editSnap); if (UNDO.length > 100) UNDO.shift(); REDO.length = 0; editSnap = null; undoBtns(); }
   if (t.dataset.f != null) {
     const l = S.lines[+t.dataset.i], f = t.dataset.f;
     if (f === 'scope' || f === 'unit') l[f] = t.value;
     else if (f === 'mkup') { l.mkup = t.value.trim() === '' ? null : num(t.value); t.classList.toggle('dflt', l.mkup == null); }
+    else if (f === 'usell' || f === 'sell') { if (t.value.trim() !== '') priceToMarkup(l, f, num(t.value)); }
     else l[f] = num(t.value);
     refresh();
-  } else if (t.dataset.g != null) { S.g[t.dataset.g] = num(t.value); refresh(); }
-  else if (t.dataset.m != null) { S.meta[t.dataset.m] = t.value; refresh(); }
+  } else if (t.dataset.g) { S.g[t.dataset.g] = num(t.value); refresh(); }
+  else if (t.dataset.m != null) { S.meta[t.dataset.m] = t.dataset.m === 'valid' ? num(t.value) : t.value; refresh(); }
 });
 app.addEventListener('focusout', e => {
   const t = e.target;
-  if (t.dataset.f != null && t.dataset.f in FIELD_DEC) { const l = S.lines[+t.dataset.i]; if (t.dataset.f === 'mkup' && l.mkup == null) return; t.value = fmtF(t.dataset.f, l[t.dataset.f]); }
-  if (t.dataset.g != null) t.value = fmtN(S.g[t.dataset.g]);
+  if (t.dataset.f != null && NUMF.includes(t.dataset.f)) {
+    const l = S.lines[+t.dataset.i], f = t.dataset.f; if (!l) return;
+    if (f === 'mkup') { if (l.mkup != null) t.value = fmtF('mkup', l.mkup); return; }
+    if (f === 'usell' || f === 'sell') { refresh(); const c = lineCalc(l); t.value = fmtF(f, f === 'sell' ? c.sell : c.unitSell); return; }
+    t.value = fmtF(f, l[f]);
+  }
+  if (t.dataset.g) t.value = fmtN(S.g[t.dataset.g]);
 });
 app.addEventListener('keydown', e => {
   const t = e.target;
-  if (!(t.classList && (t.classList.contains('cell')))) return;
+  if (!(t.classList && t.classList.contains('cell'))) return;
   const f = t.dataset.f;
-  if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && f in FIELD_DEC) {
+  if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && ['qty', 'mat', 'shopUPH', 'fieldUPH', 'mkup'].includes(f)) {
     e.preventDefault();
+    if (!editSnap) checkpoint(); else { UNDO.push(editSnap); REDO.length = 0; editSnap = null; undoBtns(); }
     const l = S.lines[+t.dataset.i];
     const base = { qty: Math.max(1, Math.pow(10, Math.floor(Math.log10(Math.max(1, l.qty))) - 2)), mat: 0.01, shopUPH: 0.5, fieldUPH: 0.5, mkup: 0.5 }[f];
     const step = base * (e.shiftKey ? 10 : 1) * (e.key === 'ArrowUp' ? 1 : -1);
@@ -458,71 +639,83 @@ app.addEventListener('keydown', e => {
     e.preventDefault();
     const next = document.querySelector(`input[data-i="${+t.dataset.i + 1}"][data-f="${f}"]`);
     if (next) { next.focus(); next.select(); } else t.blur();
-  }
+  } else if (e.key === 'Escape') t.blur();
 });
-app.addEventListener('focusin', e => { const t = e.target; if (t.classList && t.classList.contains('cell') && t.dataset.f !== 'scope') setTimeout(() => t.select(), 0); });
-function stepG(k, d) { S.g[k] = Math.max(0, Math.round((S.g[k] + d) * 1000) / 1000); syncInputs(); refresh(); }
-function addLine() { S.lines.push({ scope: 'New scope item', unit: 'LS', qty: 1, mat: 0, shopUPH: 0, fieldUPH: 0, mkup: null }); render(); const n = document.querySelector(`input[data-i="${S.lines.length - 1}"][data-f="scope"]`); if (n) { n.focus(); n.select(); } }
-function delLine(i) { S.lines.splice(i, 1); render(); }
+document.addEventListener('keydown', e => {
+  if (!(e.ctrlKey || e.metaKey)) return;
+  const k = e.key.toLowerCase();
+  if (k === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+  else if (k === 'y' || (k === 'z' && e.shiftKey)) { e.preventDefault(); redo(); }
+});
+function stepG(k, dlt) {
+  checkpoint();
+  if (k === '__valid') { S.meta.valid = Math.max(0, (S.meta.valid || 0) + dlt); const vi = document.querySelector('input[data-m="valid"]'); if (vi) vi.value = S.meta.valid; refresh(); return; }
+  S.g[k] = Math.max(0, Math.round((S.g[k] + dlt) * 1000) / 1000); syncInputs(); refresh();
+}
 
 /* ---------------- confirm / revise (same page) ---------------- */
 function confirmBid() {
-  const T = totals();
-  const revs = revsAll();
-  const rev = String.fromCharCode(65 + revs.length);
+  const T = totals(), revs = revsAll(), rev = String.fromCharCode(65 + revs.length);
   revs.push({
     rev, ts: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }),
     by: (currentPersona() || {}).name || 'MSM',
-    meta: JSON.parse(JSON.stringify(S.meta)), g: JSON.parse(JSON.stringify(S.g)),
-    lines: S.lines.map((l, i) => ({ scope: l.scope, unit: l.unit, qty: l.qty, unitSell: T.L[i].unitSell, sell: T.L[i].sell, cost: T.L[i].cost })),
-    totals: { client: T.client, sell: T.sell, addons: T.addons, cost: T.cost, profit: T.profit, oh: T.oh, margin: T.margin, mp: T.mp, fieldNeed: T.fieldNeed, shopNeed: T.shopNeed, weeks: T.weeks, hours: T.shopH + T.fieldH },
+    meta: JSON.parse(JSON.stringify(S.meta)),
+    lines: S.lines.map((l, i) => ({ scope: l.scope, unit: l.unit, qty: l.qty, unitSell: T.L[i].unitSell, sell: T.L[i].sell, cost: T.L[i].cost, inc: inc(l) })),
+    totals: { client: T.client, sell: T.sell, addons: T.addons, cost: T.cost, profit: T.profit, oh: T.oh, margin: T.margin, mp: T.mp, fieldNeed: T.fieldNeed, shopNeed: T.shopNeed, weeks: T.weeks, hours: T.shopH + T.fieldH, a: T.a },
   });
   try { localStorage.setItem(KEY_REVS, JSON.stringify(revs)); } catch (e) {}
   S.status = 'confirmed'; viewRev = revs.length - 1;
   render();
+  toast('Rev ' + rev + ' confirmed — ' + money(T.client));
   setTimeout(() => { const el = document.getElementById('confirmed'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 60);
 }
 function reviseBid() { S.status = 'draft'; render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
-function clearRevs() { try { localStorage.removeItem(KEY_REVS); } catch (e) {} S.status = 'draft'; viewRev = null; render(); }
+function clearRevs() { try { localStorage.removeItem(KEY_REVS); } catch (e) {} S.status = 'draft'; viewRev = null; render(true); }
 function showRev(i) { viewRev = i; renderConfirmed(); }
 function renderConfirmed() {
   const host = document.getElementById('confirmed'); if (!host) return;
   const revs = revsAll();
   if (!revs.length) { host.innerHTML = ''; return; }
   if (viewRev == null || viewRev >= revs.length) viewRev = revs.length - 1;
-  const R = revs[viewRev], T = R.totals;
-  const due = R.meta.due ? new Date(R.meta.due + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
+  const R = revs[viewRev], T = R.totals, M = Object.assign({}, DEFAULT_TERMS, R.meta);
+  const due = M.due ? new Date(M.due + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
   const prev = viewRev > 0 ? revs[viewRev - 1].totals : null;
+  const inL = R.lines.filter(l => l.inc !== false), outL = R.lines.filter(l => l.inc === false);
+  const altX = 1 + (T.a || 0);
   host.innerHTML = `
   <div class="demo-panel" style="margin-bottom:22px;border-left:4px solid #2f9e6e">
     <div class="demo-panel-head"><h2>Confirmed Bid</h2>
       <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
         ${revs.map((r, i) => `<span class="rev-chip ${i === viewRev ? 'on' : ''}" onclick="showRev(${i})"><b>Rev ${r.rev}</b> ${fmtK(r.totals.client)} · ${r.totals.margin.toFixed(1)}%</span>`).join('')}
         <button class="pa-btn primary" onclick="window.print()">Print / PDF</button>
+        <button class="pa-btn" onclick="copySummary()">⧉ Copy summary</button>
         <button class="pa-btn" onclick="clearRevs()" title="Clear revision history (demo)">Clear history</button>
       </span></div>
     ${!locked() ? '<div class="bs-note" id="rev-delta" style="margin:0 0 14px;border-left-color:var(--color-amber)"></div>' : ''}
     <div class="cdoc" id="cdoc">
       <div class="cdoc-head">
         <div><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works, L.P."><div class="co">McCorvey Sheet Metal Works, L.P. · 8610 Wallisville Road, Houston, TX 77029 · (713) 672-7545</div></div>
-        <div class="cdoc-meta">Bid <b>${esc(R.meta.bidNo)}</b> · Rev <b>${R.rev}</b><br>Issued ${esc(R.ts)}<br>Bid due <b>${due}</b> · valid 30 days</div>
+        <div class="cdoc-meta">Bid <b>${esc(M.bidNo)}</b> · Rev <b>${R.rev}</b><br>Issued ${esc(R.ts)}<br>Bid due <b>${due}</b> · valid ${esc(M.valid)} days</div>
       </div>
-      <div class="cdoc-title">${esc(R.meta.project)}</div>
-      <div class="cdoc-sub">HVAC sheet metal ductwork — fabricate, deliver &amp; install · Submitted to <b>${esc(R.meta.gc)}</b></div>
+      <div class="cdoc-title">${esc(M.project)}</div>
+      <div class="cdoc-sub">HVAC sheet metal ductwork — fabricate, deliver &amp; install · Submitted to <b>${esc(M.gc)}</b></div>
       <table class="cdoc-tbl">
         <thead><tr><th class="l" style="width:34px">Item</th><th class="l">Description</th><th>Qty</th><th class="l">Unit</th><th>Unit price</th><th>Amount</th></tr></thead>
         <tbody>
-          ${R.lines.map((l, i) => `<tr><td class="l">${i + 1}</td><td class="l">${esc(l.scope)}</td><td>${fmtN(l.qty, 0)}</td><td class="l">${esc(l.unit)}</td><td>${moneyU(l.unitSell)}</td><td>${money(l.sell)}</td></tr>`).join('')}
+          ${inL.map((l, i) => `<tr><td class="l">${i + 1}</td><td class="l">${esc(l.scope)}</td><td>${fmtN(l.qty, 0)}</td><td class="l">${esc(l.unit)}</td><td>${moneyU(l.unitSell)}</td><td>${money(l.sell)}</td></tr>`).join('')}
           <tr class="sub"><td></td><td class="l">Subtotal</td><td colspan="3"></td><td>${money(T.sell)}</td></tr>
           <tr><td></td><td class="l">Payment &amp; performance bond, GL insurance &amp; contingency</td><td colspan="3"></td><td>${money(T.addons)}</td></tr>
           <tr class="grand"><td></td><td class="l">BASE BID</td><td colspan="3"></td><td>${money(T.client)}</td></tr>
         </tbody>
       </table>
+      ${outL.length ? `<div class="cdoc-h">Alternates — not included in base bid</div>
+      <table class="cdoc-tbl"><thead><tr><th class="l" style="width:34px">Alt</th><th class="l">Description</th><th>Qty</th><th class="l">Unit</th><th>Add to base bid</th></tr></thead>
+        <tbody>${outL.map((l, i) => `<tr><td class="l">A${i + 1}</td><td class="l">${esc(l.scope.replace(/^Spec adder — /, ''))}</td><td>${fmtN(l.qty, 0)}</td><td class="l">${esc(l.unit)}</td><td>+ ${money(l.sell * altX)}</td></tr>`).join('')}</tbody></table>` : ''}
       <div class="cdoc-terms">
-        <div><b>Inclusions</b>Detailing &amp; LOD 400 coordination, fabrication at McCorvey plants, delivery, installation, hangers &amp; supports, TAB support. Quantities per the bid documents and addenda as reviewed.</div>
-        <div><b>Exclusions &amp; terms</b>HVAC equipment, controls, electrical, TAB (by others), painting of exposed duct. Progress billing monthly via AIA G702/G703, 5% retainage. Steel surcharge applies after validity.</div>
+        <div><b>Inclusions</b>${esc(M.incl)}</div>
+        <div><b>Exclusions &amp; terms</b>${esc(M.excl)}</div>
       </div>
-      <div class="cdoc-sign"><div>McCorvey Sheet Metal Works, L.P. — authorized signature &amp; date</div><div>${esc(R.meta.gc)} — acceptance &amp; date</div></div>
+      <div class="cdoc-sign"><div>McCorvey Sheet Metal Works, L.P. — authorized signature &amp; date</div><div>${esc(M.gc)} — acceptance &amp; date</div></div>
     </div>
     <div class="cdoc-int">
       <div style="font-size:10px;font-weight:800;letter-spacing:.1em;color:var(--color-slate-hint);margin-bottom:8px">INTERNAL — NOT ON THE CUSTOMER COPY</div>
@@ -534,10 +727,9 @@ function renderConfirmed() {
       </div>
     </div>
   </div>`;
-  refresh();
+  if (!locked()) refresh();
 }
 
-/* dock the summary bar under the portal's sticky header */
 function dock() {
   const roll = document.getElementById('bs-roll'), sub = document.querySelector('.section-subnav');
   if (roll && sub) roll.style.top = ((parseFloat(getComputedStyle(sub).top) || 0) + sub.getBoundingClientRect().height) + 'px';
