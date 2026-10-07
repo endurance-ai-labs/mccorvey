@@ -497,3 +497,9 @@ tr.avb-drv td {
 .pa-btn.primary:hover, .pa-btn.pri:hover { color: #fff; border-color: transparent; filter: brightness(1.07); transform: translateY(-1px); box-shadow: 0 9px 22px rgba(200, 16, 46, .38); }
 .pa-toolbar select { height: 36px; border-radius: 10px; box-shadow: var(--shadow-xs); }
 select.pa-btn { appearance: auto; }
+
+/* ---- Redline Compare (Bid Builder negotiation mode) ---- */
+.rdl-empty { border: 1px dashed var(--color-border); border-radius: 12px; padding: 20px 22px; font-size: 12.5px; line-height: 1.7; color: var(--color-text-muted); background: var(--color-bg-3); }
+.rdl-empty b { display: block; color: var(--color-cloud-whisper); font-size: 13.5px; margin-bottom: 4px; }
+.rdl-rm td { opacity: .62; }
+.rdl-rm td:nth-child(2) { text-decoration: line-through; }

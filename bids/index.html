@@ -15,18 +15,18 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20260806a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20260806a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20260806a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261007a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261007a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261007a">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/mccorvey/js/data.js?v=20260806a"></script>
-<script src="/mccorvey/js/util.js?v=20260806a"></script>
-<script src="/mccorvey/js/nav.js?v=20260806a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20260806a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261007a"></script>
+<script src="/mccorvey/js/util.js?v=20261007a"></script>
+<script src="/mccorvey/js/nav.js?v=20261007a"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261007a" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction' });
 const internal = McCorveyMode.isInternal() && can('bids');
@@ -280,13 +280,7 @@ function generateBidNumber() {
   return next;
 }
 
-function lineCalc(l) {
-  const direct = l.qty * l.unitCost;
-  const esc$ = direct * BID.levers.escalationPct / 100;
-  const oh = (direct + esc$) * BID.levers.overheadPct / 100;
-  const profit = (direct + esc$ + oh) * BID.levers.profitPct / 100;
-  return { direct, esc$, oh, profit, sell: direct + esc$ + oh + profit };
-}
+function lineCalc(l) { return lineCalcWith(l, BID.levers); }
 function totals() {
   let direct = 0, esc$ = 0, oh = 0, profit = 0, sellSub = 0;
   BID.lines.forEach(l => { const c = lineCalc(l); direct += c.direct; esc$ += c.esc$; oh += c.oh; profit += c.profit; sellSub += c.sell; });
@@ -305,7 +299,8 @@ function updLever(k, v) { BID.levers[k] = parseFloat(v) || 0; render(); }
 function updMeta(k, v) { BID.meta[k] = v; render(); }
 function updLine(i, k, v) {
   const l = BID.lines[i];
-  if (['qty', 'unitCost', 'offset', 'dur'].includes(k)) l[k] = parseFloat(v) || 0; else l[k] = v;
+  if (k === 'negSell') { const n = parseFloat(v); l.negSell = isFinite(n) && n > 0 ? n : null; }
+  else if (['qty', 'unitCost', 'offset', 'dur'].includes(k)) l[k] = parseFloat(v) || 0; else l[k] = v;
   render();
 }
 function addLine() {
@@ -318,6 +313,131 @@ function updAlt(i, k, v) {
   const a = BID.alternates[i];
   if (k === 'included') a.included = v; else if (k === 'amount') a.amount = parseFloat(v) || 0; else a[k] = v;
   render();
+}
+
+/* ========== REDLINE COMPARE — original quote vs customer-negotiated revision ==========
+   Lock the estimate as "Rev A". Every subsequent edit (qty, unit cost, added/removed
+   lines, levers) diffs live against it: per-line deltas + a profit bridge + a margin
+   guardrail. "Import customer redline" applies a sample markup set for the demo.     */
+function origKey() { return 'msm-orig:' + BID.meta.bidNumber; }
+function getOriginal() { try { return JSON.parse(localStorage.getItem(origKey()) || 'null'); } catch (e) { return null; } }
+function lineCalcWith(l, levers) {
+  const direct = l.qty * l.unitCost;
+  const esc$ = direct * levers.escalationPct / 100;
+  const oh = (direct + esc$) * levers.overheadPct / 100;
+  let profit = (direct + esc$ + oh) * levers.profitPct / 100;
+  let sell = direct + esc$ + oh + profit;
+  /* customer-redlined price: sell is pinned, cost basis is NOT — profit absorbs the hit */
+  if (l.negSell != null && l.negSell > 0) { sell = l.negSell; profit = sell - direct - esc$ - oh; }
+  return { direct, esc$, oh, profit, sell, neg: l.negSell != null && l.negSell > 0 };
+}
+function totalsWith(lines, levers) {
+  let direct = 0, oh = 0, profit = 0, sellSub = 0;
+  lines.forEach(l => { const c = lineCalcWith(l, levers); direct += c.direct; oh += c.oh; profit += c.profit; sellSub += c.sell; });
+  const bond = sellSub * levers.bondPct / 100, gl = sellSub * levers.glPct / 100;
+  const contingency = sellSub * levers.contingencyPct / 100;
+  const tax = (sellSub + bond + gl + contingency) * levers.taxPct / 100;
+  const base = sellSub + bond + gl + contingency + tax;
+  return { direct, oh, profit, sellSub, base, marginPct: base ? (oh + profit + contingency) / base * 100 : 0 };
+}
+function lockOriginal() {
+  BID.lines.forEach((l, i) => { if (!l._rid) l._rid = 'r' + Date.now().toString(36) + i; });
+  const snap = { ts: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }),
+    lines: JSON.parse(JSON.stringify(BID.lines)), levers: JSON.parse(JSON.stringify(BID.levers)) };
+  try { localStorage.setItem(origKey(), JSON.stringify(snap)); } catch (e) {}
+  render();
+}
+function clearOriginal() { try { localStorage.removeItem(origKey()); } catch (e) {} render(); }
+function importRedline() {
+  if (!getOriginal()) lockOriginal();
+  const by = t => BID.lines.find(l => l.trade === t);
+  const gr = by('Air Devices');      if (gr) gr.qty = Math.round(gr.qty * 0.865);              /* owner furnishes part of the GRD schedule */
+  const sp = by('Spiral & Round Duct'); if (sp) sp.qty = Math.round(sp.qty * 1.092);           /* atrium exposed run added */
+  const we = by('Welded Exhaust');   if (we) we.negSell = Math.round(lineCalcWith(we, BID.levers).sell * 0.93 / 100) * 100;   /* customer pins welded package 7% under quote */
+  const rc = by('Rectangular Duct'); if (rc) rc.negSell = Math.round(lineCalcWith(rc, BID.levers).sell * 0.975 / 100) * 100;  /* 2.5% haircut on the big rect number */
+  const li = BID.lines.findIndex(l => l.trade === 'Duct Liner & Wrap'); if (li > -1) BID.lines.splice(li, 1);  /* liner moved to GC's insulation scope */
+  if (!by('Equipment Rigging')) BID.lines.push({ trade: 'Equipment Rigging', csi: '23 05 00', desc: 'AHU rigging & setting incl. crane coordination — qty per customer redline', qty: 22, unit: 'ea', unitCost: 14800, sub: 'Bayou City Crane & Rigging', offset: 120, dur: 40 });
+  render();
+  setTimeout(() => { const el = document.getElementById('rdl-panel'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 80);
+}
+function redlinePanel(T) {
+  const O = getOriginal();
+  if (!O) return `
+    <div class="demo-panel" style="margin-bottom:22px" id="rdl-panel">
+      <div class="demo-panel-head"><h2>⇄ Redline Compare — Negotiation Mode</h2><span class="k">original quote vs the customer's markup, profit tracked line by line</span></div>
+      <div class="rdl-empty">
+        <b>Lock this estimate as the Original Quote (Rev A) before sending it out.</b>
+        When the customer comes back with a redline — quantities moved, lines cut, prices pushed — every edit you make here
+        diffs against Rev A automatically: change 14 units to 22 and the direct cost, OH, profit and sell on that line
+        re-sync instantly, with the margin impact rolled up in the bridge.
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="pa-btn primary" onclick="lockOriginal()">📌 Lock Original Quote (Rev A)</button>
+          <button class="pa-btn" onclick="importRedline()">📥 Lock &amp; import sample customer redline</button>
+        </div>
+      </div>
+    </div>`;
+  const TA = totalsWith(O.lines, O.levers);
+  const cur = {}; BID.lines.forEach(l => { if (l._rid) cur[l._rid] = l; });
+  const seen = {};
+  const rows = [];
+  let unchanged = 0;
+  O.lines.forEach(ol => {
+    const nl = cur[ol._rid];
+    const a = lineCalcWith(ol, O.levers);
+    if (!nl) { rows.push({ st: 'REMOVED', name: ol.trade + ' — ' + ol.desc, qa: ol.qty, qb: null, ua: ol.unitCost, ub: null, sa: a.sell, sb: 0, pa: a.profit, pb: 0 }); return; }
+    seen[ol._rid] = 1;
+    const b = lineCalcWith(nl, BID.levers);
+    const changed = nl.qty !== ol.qty || nl.unitCost !== ol.unitCost || nl.desc !== ol.desc || Math.abs(b.sell - a.sell) > 0.5;
+    if (!changed) { unchanged++; return; }
+    const st = (nl.negSell != null && nl.negSell !== ol.negSell) ? 'PRICE REDLINED' : nl.qty !== ol.qty ? 'QTY CHANGED' : nl.unitCost !== ol.unitCost ? 'REPRICED' : 'REVISED';
+    rows.push({ st, name: nl.trade + ' — ' + nl.desc, qa: ol.qty, qb: nl.qty, ua: ol.unitCost, ub: nl.unitCost, sa: a.sell, sb: b.sell, pa: a.profit, pb: b.profit });
+  });
+  BID.lines.forEach(nl => {
+    if (nl._rid && seen[nl._rid]) return;
+    if (nl._rid && !cur[nl._rid]) return;
+    if (!nl._rid || !O.lines.some(ol => ol._rid === nl._rid)) {
+      const b = lineCalcWith(nl, BID.levers);
+      rows.push({ st: 'ADDED', name: nl.trade + ' — ' + nl.desc, qa: null, qb: nl.qty, ua: null, ub: nl.unitCost, sa: 0, sb: b.sell, pa: 0, pb: b.profit });
+    }
+  });
+  const dBase = T.base - TA.base, dProfit = (T.profit + T.oh) - (TA.profit + TA.oh);
+  const mA = TA.marginPct, mB = T.marginPct;
+  const guard = mB >= 13 ? ['MARGIN HOLDING', 'green', '#2f9e6e'] : mB >= 11 ? ['WATCH — BELOW 13% TARGET', 'amber', 'var(--color-amber)'] : ['FLOOR BREACH — BELOW 11%', 'red', '#c8102e'];
+  const num = (v, d) => v == null ? '—' : Number(v).toLocaleString('en-US', { maximumFractionDigits: d == null ? 0 : d });
+  const delta = (a, b, money) => { const d = (b || 0) - (a || 0); if (Math.abs(d) < 0.5) return ''; const s = money ? fmtK(Math.abs(d)) : num(Math.abs(d)); return ` <span style="font-size:9.5px;font-weight:800;color:${d > 0 ? '#2f9e6e' : '#c8102e'}">${d > 0 ? '▲' : '▼'}${s}</span>`; };
+  const stPill = { 'QTY CHANGED': 'amber', 'REPRICED': 'amber', 'REVISED': 'amber', 'PRICE REDLINED': 'red', 'ADDED': 'green', 'REMOVED': 'red' };
+  const diffRows = rows.map(r => `
+    <tr class="${r.st === 'REMOVED' ? 'rdl-rm' : ''}">
+      <td><span class="ypill ${stPill[r.st]}">${r.st}</span></td>
+      <td style="max-width:320px">${esc(r.name.length > 70 ? r.name.slice(0, 69) + '…' : r.name)}</td>
+      <td style="text-align:right;white-space:nowrap">${num(r.qa)} → <b>${num(r.qb)}</b>${delta(r.qa, r.qb)}</td>
+      <td style="text-align:right;white-space:nowrap">${r.ua == null ? '—' : fmt$2(r.ua)} → <b>${r.ub == null ? '—' : fmt$2(r.ub)}</b></td>
+      <td style="text-align:right;white-space:nowrap">${fmtK(r.sa)} → <b>${fmtK(r.sb)}</b>${delta(r.sa, r.sb, 1)}</td>
+      <td style="text-align:right;white-space:nowrap;color:${r.pb - r.pa >= 0 ? '#2f9e6e' : '#c8102e'};font-weight:700">${fmtK(r.pa)} → ${fmtK(r.pb)}${delta(r.pa, r.pb, 1)}</td>
+    </tr>`).join('');
+  return `
+    <div class="demo-panel" style="margin-bottom:22px;border-left:4px solid ${guard[2]}" id="rdl-panel">
+      <div class="demo-panel-head"><h2>⇄ Redline Compare — Rev A vs Current</h2>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <span class="k">Rev A locked ${esc(O.ts)}</span>
+          <button class="pa-btn" onclick="importRedline()">📥 Import customer redline (sample)</button>
+          <button class="pa-btn" onclick="lockOriginal()" title="Snapshot the current estimate as the new Rev A">📌 Re-lock as Rev A</button>
+          <button class="pa-btn" onclick="clearOriginal()" title="Exit negotiation mode">✕ Clear</button>
+        </span></div>
+      <div class="ykpi-row" style="margin-bottom:14px">
+        <div class="ykpi"><div class="l">Base Bid — Rev A → Current</div><div class="v" style="font-size:17px">${fmtK(TA.base)} → ${fmtK(T.base)}</div><div class="s" style="color:${dBase >= 0 ? 'var(--color-green)' : 'var(--color-red)'};font-weight:700">${dBase >= 0 ? '▲ +' : '▼ −'}${fmtK(Math.abs(dBase))} vs original</div></div>
+        <div class="ykpi ${dProfit >= 0 ? 'green' : 'red'}"><div class="l">OH + Profit $ — Rev A → Current</div><div class="v" style="font-size:17px">${fmtK(TA.profit + TA.oh)} → ${fmtK(T.profit + T.oh)}</div><div class="s" style="color:${dProfit >= 0 ? 'var(--color-green)' : 'var(--color-red)'};font-weight:700">${dProfit >= 0 ? '▲ +' : '▼ −'}${fmtK(Math.abs(dProfit))} — what the negotiation costs</div></div>
+        <div class="ykpi"><div class="l">Blended Margin</div><div class="v" style="font-size:17px">${mA.toFixed(1)}% → ${mB.toFixed(1)}%</div><div class="s">target ≥ 13.0%</div></div>
+        <div class="ykpi ${guard[1]}"><div class="l">Guardrail</div><div class="v" style="font-size:14px;line-height:1.4">${guard[0]}</div><div class="s">${rows.length} change${rows.length === 1 ? '' : 's'} · ${unchanged} lines unchanged</div></div>
+      </div>
+      ${rows.length ? `<div class="demo-tbl-wrap grid-scroll" style="max-height:none">
+        <table class="demo-tbl">
+          <thead><tr><th style="width:110px">Change</th><th>Line</th><th style="text-align:right">Qty A → B</th><th style="text-align:right">Unit Cost A → B</th><th style="text-align:right">Sell A → B</th><th style="text-align:right">Profit A → B</th></tr></thead>
+          <tbody>${diffRows}</tbody>
+        </table>
+      </div>` : '<div class="ynote">No differences yet — edit any quantity or unit cost in the estimate above, or import the sample customer redline. Every change re-syncs cost, OH, profit and sell instantly and lands here.</div>'}
+      <div class="ynote" style="margin-top:9px">Edit quantities and unit costs in <b>Estimate Detail</b> above — the bridge, deltas and guardrail update live. Lock a new Rev when a round of negotiation closes; the proposal and e-sign flow always price off the current revision.</div>
+    </div>`;
 }
 
 function bidGantt() {
@@ -480,8 +600,9 @@ function viewInternal() {
         <td><input class="yin num" type="number" step="0.01" value="${l.unitCost.toFixed(2)}" style="width:96px" onchange="updLine(${i},'unitCost',this.value)"></td>
         <td style="text-align:right">${fmt$2(c.direct)}</td>
         <td style="text-align:right">${fmt$2(c.oh)}</td>
-        <td style="text-align:right">${fmt$2(c.profit)}</td>
-        <td style="text-align:right"><b>${fmt$2(c.sell)}</b></td>
+        <td style="text-align:right;color:${c.profit < 0 ? '#c8102e' : 'inherit'};font-weight:${c.neg ? 700 : 'inherit'}">${fmt$2(c.profit)}</td>
+        <td style="text-align:right"><b style="${c.neg ? 'color:var(--color-amber)' : ''}">${fmt$2(c.sell)}</b>${c.neg ? '<div style="font-size:8px;font-weight:800;letter-spacing:.06em;color:var(--color-amber)">REDLINED</div>' : ''}
+          <input class="yin num" type="number" step="100" placeholder="redline $" value="${c.neg ? l.negSell : ''}" style="width:86px;margin-top:3px;font-size:10px" onchange="updLine(${i},'negSell',this.value)" title="Customer-negotiated price for this line — leave blank to price from levers. Cost basis stays; profit absorbs the difference."></td>
         <td><select class="yin" style="min-width:140px" onchange="updLine(${i},'sub',this.value)">${subOpts}</select></td>
         <td><input class="yin num" type="number" value="${l.offset}" style="width:50px" onchange="updLine(${i},'offset',this.value)" title="start offset (days)"></td>
         <td><input class="yin num" type="number" value="${l.dur}" style="width:50px" onchange="updLine(${i},'dur',this.value)" title="duration (days)"></td>
@@ -628,6 +749,8 @@ function viewInternal() {
         </table>
       </div>
     </div>
+
+    ${redlinePanel(T)}
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
