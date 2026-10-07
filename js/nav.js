@@ -38,6 +38,7 @@ const NAV_GROUPS = [
     items: [
       { href: '/mccorvey/bidreview/', label: '🧠 AI Bid & Document Review' },
       { href: '/mccorvey/bids/',     label: 'Bid Builder' },
+      { href: '/mccorvey/bidmodel/', label: '⚖️ Adjustable Bid Modeler' },
       { href: '/mccorvey/pipeline/', label: 'Bid Pipeline & Win/Loss' },
     ],
   },
@@ -84,6 +85,7 @@ function _activeGroup(path) {
   if (path.startsWith('/service/')) return 'service';
   if (path.startsWith('/bids/')) return 'bids';
   if (path.startsWith('/bidreview/')) return 'bids';
+  if (path.startsWith('/bidmodel/')) return 'bids';
   if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/budget/')) return 'finance';

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adjustable Bid Modeler — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal — shape a bid live: cost to client, cost to McCorvey and profitability move together, with a manpower feasibility governor. Demo environment, fictional data.">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261007b">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261007b">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261007b">
+<style>
+  /* sticky three-way rollup */
+  .bm-roll { position: sticky; top: 0; z-index: 60; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px 0 12px; background: var(--color-bg); }
+  .bm-tile { border-radius: 13px; padding: 13px 16px 11px; background: var(--color-bg-2); border: 1px solid var(--color-border); border-top: 3px solid var(--color-slate-hint); box-shadow: var(--shadow-sm); min-width: 0; }
+  .bm-tile .l { font-size: 9px; font-weight: 800; letter-spacing: .12em; color: var(--color-slate-hint); margin-bottom: 5px; text-transform: uppercase; }
+  .bm-tile .v { font-size: clamp(19px, 2vw, 26px); font-weight: 800; letter-spacing: -.02em; color: var(--color-cloud-whisper); line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .bm-tile .s { font-size: 10.5px; color: var(--color-text-muted); margin-top: 4px; line-height: 1.45; }
+  .bm-tile.client { border-top-color: #14283c; }
+  .bm-tile.cost { border-top-color: var(--color-amber); }
+  .bm-tile.profit.ok { border-top-color: #2f9e6e; }
+  .bm-tile.profit.watch { border-top-color: var(--color-amber); }
+  .bm-tile.profit.bad { border-top-color: #c8102e; }
+  .bm-tile.mp.ok { border-top-color: #2f9e6e; } .bm-tile.mp.tight { border-top-color: var(--color-amber); } .bm-tile.mp.over { border-top-color: #c8102e; }
+  /* slider rows */
+  .bm-row { display: grid; grid-template-columns: minmax(150px, 215px) 1fr 118px; gap: 8px 14px; align-items: center; padding: 7px 0; border-bottom: 1px solid var(--color-border-soft); }
+  .bm-row:last-child { border-bottom: none; }
+  .bm-row .lb { font-size: 11.5px; color: var(--color-text-muted); line-height: 1.35; }
+  .bm-row .lb b { display: block; color: var(--color-cloud-whisper); font-size: 12px; font-weight: 700; }
+  .bm-row input[type=range] { width: 100%; accent-color: #c8102e; height: 22px; cursor: pointer; }
+  .bm-row .nm { display: flex; align-items: center; gap: 5px; justify-content: flex-end; }
+  .bm-row .nm input { width: 84px; font: inherit; font-size: 11.5px; font-weight: 700; text-align: right; padding: 6px 8px; border-radius: 8px; border: 1px solid var(--color-border); background: var(--color-bg-3); color: var(--color-cloud-whisper); outline: none; }
+  .bm-row .nm input:focus { border-color: var(--color-blue); }
+  .bm-row .nm span { font-size: 9.5px; font-weight: 700; color: var(--color-slate-hint); width: 26px; }
+  /* cost composition bars */
+  .bm-comp { display: grid; grid-template-columns: 150px 1fr 120px; gap: 6px 12px; align-items: center; font-size: 11px; color: var(--color-text-muted); }
+  .bm-comp .bar { height: 14px; border-radius: 99px; background: var(--color-bg-3); overflow: hidden; }
+  .bm-comp .bar i { display: block; height: 100%; border-radius: 99px; }
+  .bm-comp b { text-align: right; color: var(--color-cloud-whisper); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  /* manpower gauges */
+  .bm-gauge { margin-bottom: 14px; }
+  .bm-gauge .gh { display: flex; justify-content: space-between; align-items: baseline; font-size: 11.5px; color: var(--color-text-muted); margin-bottom: 5px; }
+  .bm-gauge .gh b { color: var(--color-cloud-whisper); font-size: 12.5px; }
+  .bm-gauge .track { height: 18px; border-radius: 99px; background: var(--color-bg-3); position: relative; overflow: hidden; }
+  .bm-gauge .track i { display: block; height: 100%; border-radius: 99px; transition: width .18s ease; }
+  .bm-gauge .track .cap { position: absolute; top: -3px; bottom: -3px; width: 2.5px; background: var(--color-cloud-whisper); opacity: .55; }
+  .bm-remedy { border: 1px solid var(--color-border); border-left: 4px solid var(--color-amber); border-radius: 10px; padding: 11px 14px; font-size: 12px; line-height: 1.6; color: var(--color-text-muted); background: var(--color-bg-3); }
+  .bm-remedy b { color: var(--color-cloud-whisper); }
+  @media (max-width: 960px) { .bm-roll { grid-template-columns: repeat(2, 1fr); position: static; } .bm-row { grid-template-columns: 1fr; } .bm-row .nm { justify-content: flex-start; } }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+
+<script src="/mccorvey/js/data.js?v=20261007b"></script>
+<script src="/mccorvey/js/util.js?v=20261007b"></script>
+<script src="/mccorvey/js/nav.js?v=20261007b"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261007b" defer></script>
+<script>
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
+McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Adjustable Bid Modeler' });
+
+/* ================= MODEL STATE (everything adjustable) ================= */
+const M = {
+  scope: { rectLbs: 1420000, spiralLF: 38000, weldLF: 2100, grd: 2140, damp: 480 },
+  rates: {
+    matLb: 0.72, spiralMatLF: 9.4, weldMatLF: 46, grdEa: 74, dampEa: 410,
+    shopRate: 62, fieldRate: 78,
+    shopLbsHr: 75, fieldLbsHr: 42,          /* productivity: lbs per man-hour */
+    spiralShopLFHr: 9, spiralFieldLFHr: 6.5,
+    weldShopLFHr: 1.6, weldFieldLFHr: 2.2,
+    grdFieldHrEa: 0.7,
+    subsPct: 4.0, equipPct: 2.5,
+  },
+  levers: { ohPct: 6.0, profitPct: 9.0, bondPct: 1.0, glPct: 0.85, contPct: 0.5, escPct: 1.0 },
+  priceOverride: null,
+  mp: { weeks: 40, otPct: 0, fieldCommitPct: 78, shopCommitPct: 82 },
+};
+const FIELD_POOL = 340, SHOP_POOL = 580, UTIL = 0.9, HRSWK = 40;
+
+function calc() {
+  const s = M.scope, r = M.rates, L = M.levers, mp = M.mp;
+  /* hours */
+  const shopHrs  = s.rectLbs / r.shopLbsHr + s.spiralLF / r.spiralShopLFHr + s.weldLF / r.weldShopLFHr;
+  const fieldHrs = s.rectLbs / r.fieldLbsHr + s.spiralLF / r.spiralFieldLFHr + s.weldLF / r.weldFieldLFHr + s.grd * r.grdFieldHrEa;
+  /* OT premium: ot share of hours costs 1.5x */
+  const otX = 1 + (mp.otPct / 100) * 0.5 * (mp.otPct > 0 ? mp.otPct / (100 + mp.otPct) * (100 / mp.otPct) : 0);
+  const otCostX = 1 + (mp.otPct / (100 + mp.otPct)) * 0.5;   /* share of hours worked at 1.5x */
+  /* cost to McCorvey */
+  const material = s.rectLbs * r.matLb + s.spiralLF * r.spiralMatLF + s.weldLF * r.weldMatLF + s.grd * r.grdEa + s.damp * r.dampEa;
+  const esc$ = material * L.escPct / 100;
+  const shopLab = shopHrs * r.shopRate * otCostX;
+  const fieldLab = fieldHrs * r.fieldRate * otCostX;
+  const directBase = material + esc$ + shopLab + fieldLab;
+  const subs = directBase * r.subsPct / 100;
+  const equip = directBase * r.equipPct / 100;
+  const cogs = directBase + subs + equip;
+  /* ladder to client price */
+  const oh = cogs * L.ohPct / 100;
+  let profit = (cogs + oh) * L.profitPct / 100;
+  let sellSub = cogs + oh + profit;
+  const addonPct = (L.bondPct + L.glPct + L.contPct) / 100;
+  let client = sellSub * (1 + addonPct);
+  if (M.priceOverride != null && M.priceOverride > 0) {
+    client = M.priceOverride;
+    sellSub = client / (1 + addonPct);
+    profit = sellSub - cogs - oh;
+  }
+  const cont$ = sellSub * L.contPct / 100;
+  const marginPct = client ? (oh + profit + cont$) / client * 100 : 0;
+  /* manpower */
+  const weeks = Math.max(4, mp.weeks);
+  const hrsPerHead = weeks * HRSWK * UTIL * (1 + mp.otPct / 100);
+  const fieldNeed = fieldHrs / hrsPerHead;
+  const shopNeed = shopHrs / hrsPerHead;
+  const fieldAvail = FIELD_POOL * (1 - mp.fieldCommitPct / 100);
+  const shopAvail = SHOP_POOL * (1 - mp.shopCommitPct / 100);
+  const fLoad = fieldNeed / Math.max(0.1, fieldAvail) * 100;
+  const sLoad = shopNeed / Math.max(0.1, shopAvail) * 100;
+  const status = l => l <= 85 ? 'ok' : l <= 100 ? 'tight' : 'over';
+  return { shopHrs, fieldHrs, material, esc$, shopLab, fieldLab, subs, equip, cogs, oh, profit, sellSub, cont$, client, marginPct,
+           weeks, fieldNeed, shopNeed, fieldAvail, shopAvail, fLoad, sLoad,
+           fStatus: status(fLoad), sStatus: status(sLoad),
+           overall: status(Math.max(fLoad, sLoad)) };
+}
+
+/* ================= STATIC SHELL (built once; values update in place) ================= */
+function row(group, key, label, sub, min, max, step, unit, fmtIn) {
+  const v = group[key];
+  const id = 'bm-' + (group === M.scope ? 's' : group === M.rates ? 'r' : group === M.levers ? 'l' : 'm') + '-' + key;
+  return `<div class="bm-row">
+    <div class="lb"><b>${label}</b>${sub || ''}</div>
+    <input type="range" id="${id}-rg" min="${min}" max="${max}" step="${step}" value="${v}" oninput="setVal('${id}', this.value)">
+    <span class="nm"><input id="${id}-nm" type="number" min="${min}" max="${max}" step="${step}" value="${v}" onchange="setVal('${id}', this.value)"><span>${unit}</span></span>
+  </div>`;
+}
+const GROUPS = { s: M.scope, r: M.rates, l: M.levers, m: M.mp };
+function setVal(id, v) {
+  const parts = id.split('-');
+  const g = GROUPS[parts[1]], key = parts.slice(2).join('-');
+  g[key] = parseFloat(v) || 0;
+  const rg = document.getElementById(id + '-rg'), nm = document.getElementById(id + '-nm');
+  if (rg) rg.value = g[key]; if (nm) nm.value = g[key];
+  refresh();
+}
+function setOverride(v) {
+  const n = parseFloat(v);
+  M.priceOverride = isFinite(n) && n > 0 ? n : null;
+  refresh();
+}
+function clearOverride() { M.priceOverride = null; const i = document.getElementById('bm-ovr'); if (i) i.value = ''; refresh(); }
+
+const app = $('#app');
+app.innerHTML = `
+  <div class="demo-hero" style="padding-bottom:10px">
+    <div>
+      <div class="demo-eyebrow">PRECONSTRUCTION · DEAL SHAPING</div>
+      <h1>Adjustable <em>Bid Modeler</em></h1>
+      <div class="sub">One screen, every lever: scope, shop &amp; field productivity, rates, markups and schedule. <b>Cost to client, cost to McCorvey and profit move together live</b> — and the manpower governor keeps the deal honest against the crews actually available. Shape it here, then build the line-level estimate in the <a href="/mccorvey/bids/" style="color:var(--color-blue);font-weight:700">Bid Builder</a>.</div>
+    </div>
+    <div class="demo-hero-right">
+      <span class="demo-live"><span class="dot"></span> LIVE RECALC</span>
+      <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
+    </div>
+  </div>
+
+  <div class="bm-roll" id="bm-roll">
+    <div class="bm-tile client"><div class="l">Cost to Client (Base Bid)</div><div class="v" id="o-client">—</div><div class="s" id="o-client-s">—</div></div>
+    <div class="bm-tile cost"><div class="l">Cost to McCorvey</div><div class="v" id="o-cogs">—</div><div class="s" id="o-cogs-s">—</div></div>
+    <div class="bm-tile profit ok" id="t-profit"><div class="l">Profit + OH</div><div class="v" id="o-profit">—</div><div class="s" id="o-profit-s">—</div></div>
+    <div class="bm-tile mp ok" id="t-mp"><div class="l">Manpower Check</div><div class="v" id="o-mp">—</div><div class="s" id="o-mp-s">—</div></div>
+  </div>
+
+  <div class="demo-two" style="margin-bottom:22px">
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Scope &amp; Quantities</h2><span class="k">what we're bidding</span></div>
+      ${row(M.scope, 'rectLbs', 'Rectangular duct', '<span style="font-size:10px">galvanized, per SMACNA</span>', 100000, 4000000, 10000, 'lbs')}
+      ${row(M.scope, 'spiralLF', 'Spiral & round duct', '', 0, 120000, 500, 'LF')}
+      ${row(M.scope, 'weldLF', 'Welded exhaust', '<span style="font-size:10px">304SS, NFPA 96</span>', 0, 12000, 100, 'LF')}
+      ${row(M.scope, 'grd', 'Air devices (GRDs)', '', 0, 8000, 10, 'ea')}
+      ${row(M.scope, 'damp', 'Fire/smoke dampers', '', 0, 2000, 10, 'ea')}
+    </div>
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Cost to McCorvey — Rates &amp; Productivity</h2><span class="k">our actual cost basis</span></div>
+      ${row(M.rates, 'matLb', 'Galv material', '<span style="font-size:10px">coil incl. scrap</span>', 0.4, 1.4, 0.01, '$/lb')}
+      ${row(M.rates, 'shopRate', 'Shop labor rate', '', 45, 95, 1, '$/hr')}
+      ${row(M.rates, 'fieldRate', 'Field labor rate', '', 55, 120, 1, '$/hr')}
+      ${row(M.rates, 'shopLbsHr', 'Shop productivity', '<span style="font-size:10px">lbs per man-hour</span>', 40, 120, 1, 'lb/h')}
+      ${row(M.rates, 'fieldLbsHr', 'Field productivity', '<span style="font-size:10px">lbs hung per man-hour</span>', 20, 70, 1, 'lb/h')}
+      ${row(M.rates, 'subsPct', 'Subs & bought-out', '<span style="font-size:10px">insulation, rigging, freight</span>', 0, 15, 0.5, '%')}
+      ${row(M.rates, 'equipPct', 'Equipment & consumables', '', 0, 8, 0.5, '%')}
+    </div>
+  </div>
+
+  <div class="demo-two" style="margin-bottom:22px">
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Commercial Levers → Client Price</h2><span class="k">markups — or pin the market price</span></div>
+      ${row(M.levers, 'ohPct', 'Overhead', '', 0, 15, 0.25, '%')}
+      ${row(M.levers, 'profitPct', 'Profit', '', 0, 20, 0.25, '%')}
+      ${row(M.levers, 'contPct', 'Contingency', '', 0, 5, 0.25, '%')}
+      ${row(M.levers, 'escPct', 'Steel escalation', '<span style="font-size:10px">on material</span>', 0, 8, 0.25, '%')}
+      <div class="bm-row" style="border-top:1px dashed var(--color-border);margin-top:4px;padding-top:12px">
+        <div class="lb"><b>Market price override</b><span style="font-size:10px">pin what the job will take — profit absorbs the difference</span></div>
+        <div></div>
+        <span class="nm"><input id="bm-ovr" type="number" step="50000" placeholder="e.g. 6800000" onchange="setOverride(this.value)"><span>$</span></span>
+      </div>
+      <div style="margin-top:8px"><button class="pa-btn" onclick="clearOverride()">✕ Clear override — price from levers</button></div>
+      <div style="margin-top:16px">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.09em;color:var(--color-slate-hint);margin-bottom:8px">WHERE THE CLIENT DOLLAR GOES</div>
+        <div class="bm-comp" id="bm-comp"></div>
+      </div>
+    </div>
+    <div class="demo-panel">
+      <div class="demo-panel-head"><h2>Manpower Governor</h2><span class="k">can we actually build it?</span></div>
+      ${row(M.mp, 'weeks', 'Project duration', '', 8, 120, 1, 'wks')}
+      ${row(M.mp, 'otPct', 'Overtime allowance', '<span style="font-size:10px">adds capacity · OT hours cost 1.5×</span>', 0, 25, 1, '%')}
+      ${row(M.mp, 'fieldCommitPct', 'Field pool committed elsewhere', '<span style="font-size:10px">of 340 installers, current backlog</span>', 50, 95, 1, '%')}
+      ${row(M.mp, 'shopCommitPct', 'Plant capacity committed', '<span style="font-size:10px">of 580 shop employees, both plants</span>', 50, 95, 1, '%')}
+      <div style="margin-top:16px">
+        <div class="bm-gauge">
+          <div class="gh"><b>Field crew</b><span id="g-field-t">—</span></div>
+          <div class="track"><i id="g-field-i" style="width:0%;background:#2f9e6e"></i><span class="cap" style="left:85%"></span></div>
+        </div>
+        <div class="bm-gauge">
+          <div class="gh"><b>Fab shop</b><span id="g-shop-t">—</span></div>
+          <div class="track"><i id="g-shop-i" style="width:0%;background:#2f9e6e"></i><span class="cap" style="left:85%"></span></div>
+        </div>
+        <div id="bm-remedy"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="demo-note">MSM Operations Portal — demo environment, fictional data · modeling is illustrative; rates and productivities are placeholders for MSM's historical cost database · concept build by Endurance AI Labs</div>`;
+
+/* ================= LIVE REFRESH (updates values in place — no re-render) ================= */
+const sc = { ok: '#2f9e6e', tight: 'var(--color-amber)', over: '#c8102e' };
+const scTxt = { ok: 'OK', tight: 'TIGHT', over: 'OVER CAPACITY' };
+function refresh() {
+  const c = calc();
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.innerHTML = v; };
+  set('o-client', fmtK(c.client));
+  set('o-client-s', (M.priceOverride ? '<b style="color:var(--color-amber)">MARKET-PINNED</b> · ' : 'from levers · ') + fmt$(Math.round(c.client)));
+  set('o-cogs', fmtK(c.cogs));
+  set('o-cogs-s', `material ${fmtK(c.material + c.esc$)} · shop ${fmtK(c.shopLab)} · field ${fmtK(c.fieldLab)}`);
+  set('o-profit', fmtK(c.profit + c.oh));
+  set('o-profit-s', `margin <b>${c.marginPct.toFixed(1)}%</b> vs 13% target · profit ${fmtK(c.profit)}${c.profit < 0 ? ' — <b style="color:#c8102e">UNDERWATER</b>' : ''}`);
+  const pBand = c.marginPct >= 13 ? 'ok' : c.marginPct >= 11 ? 'watch' : 'bad';
+  document.getElementById('t-profit').className = 'bm-tile profit ' + pBand;
+  set('o-mp', scTxt[c.overall]);
+  set('o-mp-s', `field ${c.fieldNeed.toFixed(0)} of ${c.fieldAvail.toFixed(0)} avail · shop ${c.shopNeed.toFixed(0)} of ${c.shopAvail.toFixed(0)} avail`);
+  document.getElementById('t-mp').className = 'bm-tile mp ' + c.overall;
+  /* gauges */
+  const g = (p, load, need, avail, hrs) => {
+    document.getElementById('g-' + p + '-i').style.width = Math.min(100, load) + '%';
+    document.getElementById('g-' + p + '-i').style.background = sc[load <= 85 ? 'ok' : load <= 100 ? 'tight' : 'over'];
+    set('g-' + p + '-t', `<b style="color:${sc[load <= 85 ? 'ok' : load <= 100 ? 'tight' : 'over']}">${need.toFixed(1)} heads</b> needed of ${avail.toFixed(0)} available · ${Math.round(hrs).toLocaleString()} hrs · ${load.toFixed(0)}% loaded`);
+  };
+  g('field', c.fLoad, c.fieldNeed, c.fieldAvail, c.fieldHrs);
+  g('shop', c.sLoad, c.shopNeed, c.shopAvail, c.shopHrs);
+  /* remedy */
+  let rem = '';
+  if (c.overall !== 'ok') {
+    const worst = c.fLoad >= c.sLoad ? 'field' : 'shop';
+    const load = Math.max(c.fLoad, c.sLoad);
+    const weeksNeeded = Math.ceil(c.weeks * load / 85);
+    const otNeeded = Math.min(25, Math.ceil((load / 85 - 1) * 100));
+    rem = `<div class="bm-remedy" style="border-left-color:${sc[c.overall]}"><b>${worst === 'field' ? 'Field crew' : 'Fab shop'} is the constraint at ${load.toFixed(0)}% of available heads.</b>
+      Get back inside the 85% guardrail by extending to <b>${weeksNeeded} weeks</b>, raising OT to <b>~${otNeeded}%</b> (adds ${fmtK((c.shopLab + c.fieldLab) * 0.5 * otNeeded / (100 + otNeeded))} labor premium), or freeing crews from current backlog before committing this schedule.</div>`;
+  } else {
+    rem = `<div class="bm-remedy" style="border-left-color:#2f9e6e"><b>Staffable as modeled.</b> ${c.fieldNeed.toFixed(0)} field + ${c.shopNeed.toFixed(0)} shop heads over ${c.weeks} weeks sits inside the 85% guardrail of uncommitted capacity — margin isn't being bought with crews we don't have.</div>`;
+  }
+  set('bm-remedy', rem);
+  /* cost composition */
+  const comp = [
+    ['Material + escalation', c.material + c.esc$, '#14283c'],
+    ['Shop labor', c.shopLab, '#5b6472'],
+    ['Field labor', c.fieldLab, '#8a93a1'],
+    ['Subs & equipment', c.subs + c.equip, 'var(--color-amber)'],
+    ['Overhead', c.oh, '#cf4a57'],
+    ['Profit' + (c.profit < 0 ? ' (negative)' : ''), Math.max(0, c.profit), '#2f9e6e'],
+    ['Bond · GL · contingency', c.client - c.sellSub, '#b98a36'],
+  ];
+  const mx = Math.max(...comp.map(x => x[1]), 1);
+  set('bm-comp', comp.map(x => `<span>${x[0]}</span><div class="bar"><i style="width:${x[1] / mx * 100}%;background:${x[2]}"></i></div><b>${fmtK(x[1])} · ${(x[1] / c.client * 100).toFixed(1)}%</b>`).join(''));
+}
+refresh();
+</script>
+</body>
+</html>
