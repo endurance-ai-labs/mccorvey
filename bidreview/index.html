@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AI Bid & Document Review — MSM Operations Portal</title>
+<title>Bid Queue & Review ROI — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — AI document review. Every spec, drawing set and addendum machine-read before an estimator opens the set. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261008a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261008a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261008a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
 <style>
   .dr-risk { display:flex; align-items:center; gap:8px; }
   .dr-risk .bar { width:64px; height:6px; border-radius:99px; background:var(--color-bg-3); overflow:hidden; }
@@ -42,14 +42,14 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/mccorvey/js/data.js?v=20261008a"></script>
-<script src="/mccorvey/js/util.js?v=20261008a"></script>
-<script src="/mccorvey/js/nav.js?v=20261008a"></script>
+<script src="/mccorvey/js/data.js?v=20261013a"></script>
+<script src="/mccorvey/js/util.js?v=20261013a"></script>
+<script src="/mccorvey/js/nav.js?v=20261013a"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261008a" defer></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
-McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — AI Document Review' });
+McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Bid Queue & Review ROI' });
 const app = $('#app');
 const DR = window.DOCREVIEW;
 const B = DR.baseline, Y = DR.ytd;
@@ -135,6 +135,12 @@ function render() {
         <div class="cmd-tile"><div class="l">High Flags in Queue</div><div class="v">${highOpen}</div><span class="d down">▼ awaiting sign-off</span><div class="s">${DR.queue.length} bid sets in review</div>${sparkSVG('flags', { up: false, color: '#c8102e' })}</div>
       </div>
     </div>
+
+    <a href="/mccorvey/specreview/" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;text-decoration:none;border:1px solid #c8102e;border-left-width:5px;border-radius:12px;padding:13px 18px;margin-bottom:16px;background:var(--color-blue-pale)">
+      <span style="font-size:22px">📕</span>
+      <span style="flex:1;min-width:220px"><b style="display:block;font-size:13.5px;color:var(--color-cloud-whisper)">Open a set in Spec Book Review</b><span style="font-size:12px;color:var(--color-text-muted)">Div 00/01 + 22 + 23 triage, cited findings, what changed since you priced, RFIs and spec adders straight into the bid sheet.</span></span>
+      <span class="pa-btn primary" style="pointer-events:none">Spec Book Review →</span>
+    </a>
 
     <div class="scope-bar">
       <span class="scope-chip">Period: <b>FY2026 P8</b></span>

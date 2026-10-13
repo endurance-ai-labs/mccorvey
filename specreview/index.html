@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spec Book Review — MSM Operations Portal</title>
+<meta name="description" content="McCorvey Sheet Metal — Spec Book Review. Div 00/01 + 22 + 23 triage, cited findings, issue-to-issue changes, conflicts to RFIs, responsibility matrix and spec adders into the bid. Demo environment, fictional sample book.">
+<link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<style>
+  .sr-src { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
+  .sr-src .pa-btn { background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.22); }
+  .sr-src .pa-btn:hover { background:rgba(255,255,255,.16); color:#fff; border-color:#fff; }
+  .sr-src .pa-btn.primary { background:#c8102e; border-color:#c8102e; }
+  .sr-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
+  .sr-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
+  .sr-mode.local i { background:#2f9e6e; }
+
+  .sr-lens { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 14px; }
+  .sr-lens .lb { font-size:10px; font-weight:800; letter-spacing:.1em; color:var(--color-slate-hint); text-transform:uppercase; margin-right:2px; }
+  .sr-chip { font:inherit; font-size:12px; font-weight:700; padding:7px 14px; border-radius:999px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-text-muted); cursor:pointer; }
+  .sr-chip:hover { border-color:var(--color-blue); color:var(--color-blue); }
+  .sr-chip.on { background:#14283c; color:#fff; border-color:#14283c; }
+  .sr-lens select { font:inherit; font-size:12px; font-weight:700; padding:7px 10px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); }
+  .sr-lens .nt { margin-left:auto; font-size:11.5px; color:var(--color-text-muted); }
+
+  .sr-tabs { display:flex; gap:4px; border-bottom:1px solid var(--color-border); margin-bottom:18px; overflow-x:auto; scrollbar-width:none; }
+  .sr-tab { font:inherit; font-size:13px; font-weight:700; padding:11px 16px 12px; border:0; border-bottom:3px solid transparent; background:none; color:var(--color-text-muted); cursor:pointer; white-space:nowrap; display:flex; gap:8px; align-items:center; }
+  .sr-tab b { font-size:10.5px; font-weight:800; min-width:20px; padding:2px 7px; border-radius:999px; background:var(--color-bg-3); color:var(--color-text-muted); }
+  .sr-tab:hover { color:var(--color-cloud-whisper); }
+  .sr-tab.on { color:var(--color-blue); border-bottom-color:var(--color-blue); }
+  .sr-tab.on b { background:var(--color-blue); color:#fff; }
+  .sr-tab .n { width:20px; height:20px; border-radius:50%; font-size:10.5px; display:inline-flex; align-items:center; justify-content:center; background:var(--color-bg-3); }
+  .sr-tab.on .n { background:var(--color-blue-pale); }
+
+  .sr-bars { display:flex; flex-direction:column; gap:9px; }
+  .sr-bar { display:grid; grid-template-columns:200px 1fr 70px; gap:12px; align-items:center; font-size:12px; }
+  .sr-bar .nm { color:var(--color-cloud-whisper); font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .sr-bar .nm span { display:block; font-size:10.5px; font-weight:600; color:var(--color-text-muted); }
+  .sr-bar .tr { height:12px; border-radius:99px; background:var(--color-bg-3); overflow:hidden; }
+  .sr-bar .tr i { display:block; height:100%; border-radius:99px; }
+  .sr-bar .v { text-align:right; font-weight:800; font-variant-numeric:tabular-nums; color:var(--color-cloud-whisper); }
+  .sr-legend { display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; font-size:11px; color:var(--color-text-muted); }
+  .sr-legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; vertical-align:-1px; }
+
+  .sr-order { counter-reset:o; display:flex; flex-direction:column; gap:10px; }
+  .sr-order li { list-style:none; display:grid; grid-template-columns:30px 1fr auto; gap:12px; align-items:start; padding:11px 13px; border:1px solid var(--color-border); border-radius:11px; background:var(--color-bg-2); }
+  .sr-order li .k { width:28px; height:28px; border-radius:50%; background:var(--color-blue); color:#fff; font-weight:800; font-size:12.5px; display:flex; align-items:center; justify-content:center; }
+  .sr-order li.dim .k { background:var(--color-slate-hint); }
+  .sr-order li b { display:block; font-size:12.8px; color:var(--color-cloud-whisper); }
+  .sr-order li span { font-size:11.5px; color:var(--color-text-muted); line-height:1.5; }
+  .sr-order li .pp { font-weight:800; font-size:13px; color:var(--color-cloud-whisper); white-space:nowrap; font-variant-numeric:tabular-nums; }
+
+  .sr-stamp { font-size:10px; font-weight:800; letter-spacing:.05em; padding:3px 8px; border-radius:6px; white-space:nowrap; background:var(--color-bg-3); color:var(--color-text-muted); }
+  .sr-stamp.re { background:#c8102e; color:#fff; }
+  .sr-stamp.stale { background:var(--color-amber-bg); color:var(--color-amber); border:1px solid var(--color-amber); }
+  .sr-heat { display:inline-flex; gap:4px; }
+  .sr-heat span { min-width:22px; text-align:center; font-size:10.5px; font-weight:800; padding:2px 6px; border-radius:6px; }
+  .sr-heat .h { background:#c8102e; color:#fff; } .sr-heat .m { background:var(--color-amber-bg); color:var(--color-amber); } .sr-heat .i { background:var(--color-bg-3); color:var(--color-text-muted); }
+  .sr-heat .z { color:var(--color-slate-hint); }
+  tr.sr-open td { background:var(--color-blue-pale) !important; }
+  tr.sr-detail td { background:var(--color-bg-2) !important; padding:12px 16px 4px !important; }
+
+  .sr-find { border:1px solid var(--color-border); border-left-width:4px; border-radius:11px; padding:13px 15px 12px; margin-bottom:10px; background:var(--color-bg-2); }
+  .sr-find.high { border-left-color:#c8102e; } .sr-find.med { border-left-color:var(--color-amber); } .sr-find.info { border-left-color:var(--color-border); }
+  .sr-find .fh { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:6px; }
+  .sr-find .fh b { font-size:13.3px; color:var(--color-cloud-whisper); }
+  .sr-cite { font-size:10.5px; font-weight:800; letter-spacing:.03em; color:#14283c; background:#e8edf3; border-radius:5px; padding:3px 8px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  [data-theme="dark"] .sr-cite { color:#cfe0f2; background:#1f3248; }
+  .sr-badge { font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; white-space:nowrap; }
+  .sr-badge.d01 { background:#14283c; color:#fff; }
+  .sr-badge.chg { background:var(--color-blue-pale); color:var(--color-blue); border:1px solid var(--color-blue); }
+  .sr-badge.cat { background:var(--color-bg-3); color:var(--color-text-muted); }
+  .sr-sev { font-size:9px; font-weight:800; letter-spacing:.09em; padding:3px 8px; border-radius:999px; }
+  .sr-sev.high { color:#fff; background:#c8102e; } .sr-sev.med { color:var(--color-amber); background:var(--color-amber-bg); border:1px solid var(--color-amber); } .sr-sev.info { color:var(--color-text-muted); background:var(--color-bg-3); border:1px solid var(--color-border); }
+  .sr-says { font-size:12.3px; line-height:1.6; color:var(--color-cloud-whisper); padding:8px 12px; border-left:3px solid var(--color-border); background:var(--color-bg); border-radius:0 8px 8px 0; margin:6px 0 7px; }
+  .sr-imp { font-size:12px; line-height:1.55; color:var(--color-text-muted); }
+  .sr-imp b { color:var(--color-cloud-whisper); }
+  .sr-act { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:10px; }
+  .sr-seg { display:inline-flex; border:1px solid var(--color-border); border-radius:10px; overflow:hidden; }
+  .sr-seg button { font:inherit; font-size:11.5px; font-weight:700; padding:6px 12px; border:0; border-right:1px solid var(--color-border); background:var(--color-bg); color:var(--color-text-muted); cursor:pointer; }
+  .sr-seg button:last-child { border-right:0; }
+  .sr-seg button:hover { color:var(--color-cloud-whisper); background:var(--color-bg-3); }
+  .sr-seg button.on.price { background:#2f9e6e; color:#fff; } .sr-seg button.on.rfi { background:#14283c; color:#fff; }
+  .sr-seg button.on.clarify { background:var(--color-amber); color:#fff; } .sr-seg button.on.exclude { background:#6b7684; color:#fff; } .sr-seg button.on.note { background:var(--color-bg-3); color:var(--color-cloud-whisper); }
+  .sr-amt { display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:var(--color-text-muted); }
+  .sr-amt input { width:118px; font:inherit; font-size:13px; font-weight:800; text-align:right; padding:6px 9px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-bg); color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .sr-amt input:focus { outline:none; border-color:var(--color-blue); }
+  .sr-basis { font-size:11px; color:var(--color-slate-hint); }
+
+  .sr-filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:14px; }
+  .sr-filters input[type=search] { flex:1; min-width:200px; font:inherit; font-size:13px; padding:9px 12px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); }
+  .sr-filters select { font:inherit; font-size:12px; font-weight:700; padding:8px 10px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); }
+
+  .sr-diffhead { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:18px; }
+  .sr-kpi { border:1px solid var(--color-border); border-top:4px solid #14283c; border-radius:12px; padding:13px 16px; background:var(--color-bg-2); }
+  .sr-kpi.red { border-top-color:#c8102e; } .sr-kpi.green { border-top-color:#2f9e6e; } .sr-kpi.amber { border-top-color:var(--color-amber); }
+  .sr-kpi .l { font-size:10px; font-weight:800; letter-spacing:.1em; color:var(--color-slate-hint); text-transform:uppercase; }
+  .sr-kpi .v { font-size:24px; font-weight:800; color:var(--color-cloud-whisper); margin-top:5px; font-variant-numeric:tabular-nums; }
+  .sr-kpi .s { font-size:11px; color:var(--color-text-muted); margin-top:3px; }
+  .sr-dsec { border:1px solid var(--color-border); border-radius:12px; margin-bottom:14px; overflow:hidden; background:var(--color-bg-2); }
+  .sr-dsec .hd { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px 16px; border-bottom:1px solid var(--color-border); background:var(--color-bg); }
+  .sr-dsec .hd b { font-size:13.5px; color:var(--color-cloud-whisper); }
+  .sr-dsec .hd .tot { margin-left:auto; font-weight:800; font-size:13px; font-variant-numeric:tabular-nums; }
+  .sr-chg { display:grid; grid-template-columns:1fr 1fr 120px; gap:0; border-bottom:1px solid var(--color-border); }
+  .sr-chg:last-child { border-bottom:0; }
+  .sr-chg > div { padding:11px 15px; font-size:12.3px; line-height:1.55; }
+  .sr-chg .was { background:rgba(200,16,46,.045); color:var(--color-text-muted); border-right:1px solid var(--color-border); }
+  .sr-chg .was del { color:#a30d26; text-decoration-thickness:1.5px; }
+  .sr-chg .now { background:rgba(47,158,110,.06); color:var(--color-cloud-whisper); }
+  .sr-chg .now ins { text-decoration:none; background:rgba(47,158,110,.16); border-radius:3px; padding:0 2px; }
+  .sr-chg .lab { font-size:9.5px; font-weight:800; letter-spacing:.09em; color:var(--color-slate-hint); text-transform:uppercase; display:block; margin-bottom:4px; }
+  .sr-chg .imp { text-align:right; font-weight:800; font-variant-numeric:tabular-nums; border-left:1px solid var(--color-border); }
+  .sr-chg .imp small { display:block; font-size:10.5px; font-weight:600; color:var(--color-text-muted); margin-top:3px; }
+  .up { color:#c8102e; } .dn { color:#2f9e6e; }
+
+  .sr-conf { border:1px solid var(--color-border); border-radius:12px; padding:14px 16px; margin-bottom:14px; background:var(--color-bg-2); }
+  .sr-conf .fh { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:10px; }
+  .sr-conf .fh b { font-size:13.5px; color:var(--color-cloud-whisper); }
+  .sr-sides { display:grid; gap:10px; margin-bottom:10px; }
+  .sr-side { border:1px dashed var(--color-border); border-radius:10px; padding:10px 12px; background:var(--color-bg); font-size:12px; line-height:1.55; color:var(--color-cloud-whisper); }
+  .sr-side .sd { font-size:9.5px; font-weight:800; letter-spacing:.09em; color:var(--color-slate-hint); margin-bottom:5px; display:flex; gap:8px; align-items:center; }
+  .sr-vs { align-self:center; font-size:10px; font-weight:800; color:#c8102e; text-align:center; }
+  .sr-rfi { font-family:ui-monospace, SFMono-Regular, Consolas, monospace; font-size:11.5px; line-height:1.6; white-space:pre-wrap; background:#0d1826; color:#dbe5ef; border-radius:10px; padding:13px 15px; margin:0 0 10px; display:none; }
+  .sr-rfi.show { display:block; }
+
+  .sr-mx td.warn { background:var(--color-amber-bg) !important; color:var(--color-amber); font-weight:700; }
+  .sr-mx td { font-size:12px; vertical-align:top; }
+  .sr-mx td.it { font-weight:700; color:var(--color-cloud-whisper); }
+
+  .sr-addtbl input { width:120px; font:inherit; font-size:13px; font-weight:800; text-align:right; padding:6px 9px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-bg); color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .sr-total { display:flex; flex-wrap:wrap; gap:14px; align-items:center; justify-content:space-between; padding:16px 18px; border:1px solid #14283c; border-radius:12px; background:#14283c; color:#fff; margin-top:14px; }
+  .sr-total .v { font-size:28px; font-weight:800; font-variant-numeric:tabular-nums; }
+  .sr-total .l { font-size:10px; font-weight:800; letter-spacing:.12em; color:rgba(255,255,255,.7); }
+  .sr-total .pa-btn { background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.25); }
+  .sr-total .pa-btn.primary { background:#c8102e; border-color:#c8102e; }
+
+  .sr-drop { border:2px dashed var(--color-border); border-radius:14px; padding:20px; text-align:center; color:var(--color-text-muted); font-size:12.5px; margin-bottom:16px; background:var(--color-bg-2); cursor:pointer; }
+  .sr-drop.over { border-color:var(--color-blue); background:var(--color-blue-pale); }
+  .sr-drop b { color:var(--color-cloud-whisper); }
+  .sr-ov { position:fixed; inset:0; background:rgba(8,16,28,.72); z-index:500; display:none; align-items:center; justify-content:center; }
+  .sr-ov.show { display:flex; }
+  .sr-ov .bx { width:min(460px, 92vw); background:#0d1826; color:#fff; border-radius:16px; padding:26px 26px 22px; box-shadow:0 30px 60px rgba(0,0,0,.4); }
+  .sr-ov .bx h3 { margin:0 0 4px; font-size:17px; }
+  .sr-ov .bx p { margin:0 0 16px; font-size:12px; color:rgba(255,255,255,.7); line-height:1.5; }
+  .sr-ov .pg { height:8px; border-radius:99px; background:rgba(255,255,255,.12); overflow:hidden; }
+  .sr-ov .pg i { display:block; height:100%; width:0; background:linear-gradient(90deg,#c8102e,#f0566e); transition:width .2s; }
+  .sr-ov .st { margin-top:10px; font-size:12px; color:rgba(255,255,255,.85); font-variant-numeric:tabular-nums; }
+  .sr-toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:#14283c; color:#fff; padding:11px 18px; border-radius:11px; font-size:12.5px; font-weight:700; opacity:0; transition:.25s; z-index:600; box-shadow:0 12px 30px rgba(0,0,0,.25); max-width:90vw; }
+  .sr-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+  .sr-empty { padding:28px; text-align:center; color:var(--color-text-muted); font-size:12.5px; border:1px dashed var(--color-border); border-radius:12px; }
+
+  @media (max-width: 900px) {
+    .sr-bar { grid-template-columns:120px 1fr 54px; }
+    .sr-diffhead { grid-template-columns:1fr 1fr; }
+    .sr-chg { grid-template-columns:1fr; }
+    .sr-chg .was { border-right:0; border-bottom:1px solid var(--color-border); }
+    .sr-chg .imp { text-align:left; border-left:0; border-top:1px solid var(--color-border); }
+    .sr-lens .nt { margin-left:0; width:100%; }
+    .sr-sides { grid-template-columns:1fr !important; }
+    .sr-vs { display:none; }
+    .sr-side, .sr-rfi { min-width:0; overflow-wrap:anywhere; }
+  }
+</style>
+</head>
+<body>
+<div id="topbar"></div>
+<main class="page">
+  <div class="demo-wrap" id="app"></div>
+</main>
+<input type="file" id="pick-cur" accept="application/pdf" hidden>
+<input type="file" id="pick-prior" accept="application/pdf" hidden>
+<div class="sr-ov" id="ov"><div class="bx"><h3 id="ov-h">Reading spec book</h3><p>Processed entirely in this browser. Nothing is uploaded, nothing leaves this machine.</p><div class="pg"><i id="ov-bar"></i></div><div class="st" id="ov-st">Loading PDF reader…</div></div></div>
+<div class="sr-toast" id="toast"></div>
+
+<script src="/mccorvey/js/data.js?v=20261013a"></script>
+<script src="/mccorvey/js/util.js?v=20261013a"></script>
+<script src="/mccorvey/js/nav.js?v=20261013a"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013a"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013c"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script>
+if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
+McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book Review' });
+const app = $('#app');
+const E = window.SpecEngine;
+
+/* ---------------- state ---------------- */
+let BOOK = E.activeBook();
+let RAW = null, PRIOR = null;          /* in-memory only: extracted text of the loaded book(s) */
+let lens = E.store.get('msm-spec-lens', 'sm');
+let tab = (location.hash || '#triage').slice(1);
+let openSec = null, showAllSecs = false;
+const F = { sev: 'all', cat: 'all', act: 'all', q: '' };
+let DEC = E.decisions(BOOK);
+
+const money = n => (n < 0 ? '−$' : '$') + Math.abs(Math.round(n)).toLocaleString();
+const moneyK = n => { const a = Math.abs(n); const s = a >= 1e6 ? (a / 1e6).toFixed(2) + 'M' : a >= 1e3 ? Math.round(a / 1e3) + 'K' : Math.round(a); return (n < 0 ? '−$' : '$') + s; };
+const pgs = n => Number(n).toLocaleString();
+const sevLbl = { high: 'HIGH', med: 'MEDIUM', info: 'INFO' };
+const sevOrder = { high: 0, med: 1, info: 2 };
+const ACTS = [['price', 'Price it'], ['rfi', 'RFI it'], ['clarify', 'Qualify'], ['exclude', 'Exclude'], ['note', 'Noted']];
+function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2600); }
+
+const fLens = f => f.lens || E.lensOf(f.sec);
+const vis = f => E.inLens(fLens(f), lens);
+const secVis = s => lens === 'all' ? true : E.inLens(E.lensOf(s.id), lens);
+const isYours = s => E.YOURS.includes(s.div);
+const dec = f => E.decOf(BOOK, f, DEC);
+const issueLbl = n => n == null ? '—' : 'Issue ' + String(n).padStart(2, '0');
+
+/* ---------------- derived numbers ---------------- */
+function stats() {
+  const secs = BOOK.sections;
+  const total = BOOK.totalPages;
+  const yours = secs.filter(isYours).reduce((a, s) => a + s.pages, 0);
+  const hooks = secs.filter(s => E.HOOKS.includes(s.div)).reduce((a, s) => a + s.pages, 0);
+  const fs = BOOK.findings.filter(vis);
+  const high = fs.filter(f => f.sev === 'high').length;
+  const div01 = fs.filter(f => f.sec.startsWith('01')).length;
+  const diffs = BOOK.diffs.filter(d => E.inLens(d.lens, lens));
+  const net = diffs.reduce((a, d) => a + d.changes.reduce((b, c) => b + (c.amt || 0), 0), 0);
+  const conf = BOOK.conflicts.filter(c => E.inLens(c.lens, lens));
+  const rfiIn = conf.filter(c => (DEC[c.id] || {}).act !== 'off').length;
+  const adders = fs.filter(f => dec(f).act === 'price');
+  const add$ = adders.reduce((a, f) => a + (+dec(f).amt || 0), 0);
+  const stale = secs.filter(s => isYours(s) && s.issue != null && s.issue < BOOK.pricedIssue - 0).length;
+  return { total, yours, hooks, fs, high, div01, diffs, net, conf, rfiIn, adders, add$, stale };
+}
+
+/* ---------------- render ---------------- */
+function render() {
+  const S = stats();
+  const lensSecs = BOOK.sections.filter(s => secVis(s) && isYours(s));
+  const lensPages = lensSecs.reduce((a, s) => a + s.pages, 0);
+  app.innerHTML = `
+    <div class="cmd-hero">
+      <div class="cmd-head">
+        <div>
+          <div class="cmd-eyebrow">MSM BRAIN — SPEC BOOK REVIEW · PRECONSTRUCTION</div>
+          <h1 class="cmd-title">${esc(BOOK.name)}</h1>
+          <div class="cmd-sub">${esc(BOOK.sub)}${BOOK.sample ? ` · ${esc(BOOK.cm)} (CM) · ${BOOK.buildings.map(b => b.n.replace('Building ', 'Bldg ') + ' ' + Math.round(b.sf / 1000) + 'K SF').join(' · ')}` : ''}.<br>
+            <b style="color:#fff">The read we were taught:</b> Division 00/01 project requirements everyone follows, then 22 Plumbing and 23 HVAC. The Brain reads all ${pgs(S.total)} pages anyway — and pulls every Div 01 obligation into your trade.</div>
+        </div>
+        <div class="cmd-side">
+          <span class="sr-mode ${BOOK.local ? 'local' : ''}"><i></i>${BOOK.local ? 'YOUR BOOK · LOCAL ONLY' : 'SAMPLE BOOK · FICTIONAL'}</span>
+          <span class="cmd-range">${issueLbl(BOOK.bookIssue)}${BOOK.bookDate ? ' · ' + fmtDate(BOOK.bookDate) : ''} · priced at ${issueLbl(BOOK.pricedIssue)}</span>
+          <div class="sr-src">
+            <button class="pa-btn primary" onclick="$('#pick-cur').click()">📕 Load a spec book (PDF)</button>
+            ${BOOK.local ? `<button class="pa-btn" onclick="$('#pick-prior').click()">⇄ Compare prior issue</button><button class="pa-btn" onclick="useSample()">Back to sample</button>` : ''}
+          </div>
+        </div>
+      </div>
+      <div class="cmd-tiles">
+        <div class="cmd-tile"><div class="l">Pages in Book</div><div class="v">${pgs(S.total)}</div><span class="d up">▲ ${BOOK.sections.length} sections mapped</span><div class="s">every page read, cited by page</div>${sparkSVG('sr-pages', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Pages That Matter</div><div class="v">${pgs(S.yours)}</div><span class="d up">▲ ${Math.round(S.yours / S.total * 100)}% of the book</span><div class="s">Div 00/01 + 22 + 23 · ${pgs(S.hooks)} more scanned for hooks</div>${sparkSVG('sr-focus', { up: true })}</div>
+        <div class="cmd-tile hot"><div class="l">Changed Since Priced</div><div class="v">${S.diffs.length}</div><span class="d down">▼ ${BOOK.sample ? (S.net >= 0 ? '+' : '') + moneyK(S.net) + ' net' : 'sections reissued'}</span><div class="s">${issueLbl(BOOK.pricedIssue)} → ${issueLbl(BOOK.bookIssue)} · no clouds in the text</div>${sparkSVG('sr-chg', { up: false, color: '#c8102e' })}</div>
+        <div class="cmd-tile"><div class="l">Findings · ${esc(E.LENSES[lens].label)}</div><div class="v">${S.fs.length}</div><span class="d down">▼ ${S.high} high</span><div class="s">${S.div01} hidden in Div 01</div>${sparkSVG('sr-find', { up: true, color: '#b98a36' })}</div>
+        <div class="cmd-tile"><div class="l">RFIs Drafted</div><div class="v">${S.rfiIn}</div><span class="d up">▲ CM format</span><div class="s">conflicts, missing sections, blanks</div>${sparkSVG('sr-rfi', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Spec Adders</div><div class="v">${S.add$ || !S.adders.length ? moneyK(S.add$) : S.adders.length + ' to price'}</div><span class="d up">▲ ${S.adders.length} priced lines</span><div class="s">${S.add$ ? 'cost the drawings do not show' : 'enter $ on each — Adders tab'}</div>${sparkSVG('sr-add', { up: true })}</div>
+      </div>
+    </div>
+
+    <div class="sr-lens">
+      <span class="lb">Trade lens</span>
+      ${Object.entries(E.LENSES).map(([k, v]) => `<button class="sr-chip ${lens === k ? 'on' : ''}" onclick="setLens('${k}')">${v.label}</button>`).join('')}
+      <span class="lb" style="margin-left:10px">Priced at</span>
+      <select onchange="setPriced(this.value)">${priceOpts()}</select>
+      <span class="nt">${pgs(lensPages)} pages to read in this lens · Div 01 items attach to every trade</span>
+    </div>
+
+    <div class="sr-tabs">
+      ${[['triage', '1', 'Triage', BOOK.sections.filter(s => secVis(s) && isYours(s)).length],
+         ['findings', '2', 'Findings', S.fs.length],
+         ['changes', '3', 'What Changed', S.diffs.length],
+         ['rfis', '4', 'Conflicts → RFIs', S.conf.length],
+         ['matrix', '5', 'Who Does What', BOOK.matrix.filter(m => E.inLens(m.lens, lens)).length],
+         ['adders', '6', 'Adders → Bid', S.adders.length]]
+        .map(([k, n, l, c]) => `<button class="sr-tab ${tab === k ? 'on' : ''}" onclick="go('${k}')"><span class="n">${n}</span>${l}<b>${c}</b></button>`).join('')}
+    </div>
+
+    <div id="pane">${pane(S)}</div>
+
+    <div class="demo-note">${BOOK.local
+      ? 'Your book was read in this browser tab. The PDF and its text never left this machine; close the tab to clear it. Findings are rule-based first-pass flags — every one cites its page for estimator sign-off.'
+      : 'Sample spec book is fictional — Project Bluebonnet, its owner, CM, design team and clause wording are illustrative. Load your own PDF to run the same review on a real book, in-browser.'} · concept build by Endurance AI Labs</div>`;
+  bindAmounts();
+}
+
+function priceOpts() {
+  const nums = [...new Set(BOOK.sections.map(s => s.issue).filter(x => x != null))].sort((a, b) => a - b);
+  if (!nums.includes(BOOK.pricedIssue)) nums.push(BOOK.pricedIssue);
+  return nums.map(n => `<option value="${n}" ${n === BOOK.pricedIssue ? 'selected' : ''}>${issueLbl(n)}${BOOK.issues && BOOK.issues[n] ? ' — ' + BOOK.issues[n].label.split('— ')[1] : ''}</option>`).join('');
+}
+
+function pane(S) {
+  if (tab === 'findings') return paneFindings(S);
+  if (tab === 'changes') return paneChanges(S);
+  if (tab === 'rfis') return paneRfis(S);
+  if (tab === 'matrix') return paneMatrix(S);
+  if (tab === 'adders') return paneAdders(S);
+  return paneTriage(S);
+}
+
+/* ---------------- 1 · triage ---------------- */
+function paneTriage(S) {
+  const secs = BOOK.sections;
+  const groups = [
+    { k: 'Div 00/01 — Project requirements', d: ['00', '01'], c: '#c8102e', note: 'the rules everyone follows' },
+    { k: 'Div 22 — Plumbing', d: ['22'], c: '#c8102e', note: 'yours' },
+    { k: 'Div 23 — HVAC', d: ['23'], c: '#c8102e', note: 'yours' },
+    { k: 'Div 21/25/26/28/40 — Hooks', d: E.HOOKS, c: '#14283c', note: 'scanned for scope that lands on you' },
+    { k: 'Architectural, structural, site', d: null, c: '#9aa6b2', note: 'skipped by the estimator, still indexed' },
+  ].map(g => {
+    const ss = secs.filter(s => g.d ? g.d.includes(s.div) : !(E.YOURS.includes(s.div) || E.HOOKS.includes(s.div)));
+    return Object.assign(g, { pages: ss.reduce((a, s) => a + s.pages, 0), n: ss.length });
+  });
+  const max = Math.max(...groups.map(g => g.pages));
+  const fBySec = {};
+  BOOK.findings.forEach(f => { (fBySec[f.sec] = fBySec[f.sec] || { high: 0, med: 0, info: 0, all: [] }); fBySec[f.sec][f.sev]++; fBySec[f.sec].all.push(f); });
+  const reissued = new Set(BOOK.diffs.map(d => d.sec));
+  const ivSecs = secs.filter(s => showAllSecs ? true : (isYours(s) && secVis(s)) || (fBySec[s.id] && s.div !== '00' && E.HOOKS.includes(s.div) && lens === 'all'));
+  const ord = [
+    { t: 'Division 00/01 — project requirements', s: 'Flow-downs, payment conditions, testing, Cx, temporary HVAC. The Brain attaches every one to the trade it hits.', p: groups[0].pages, n: S.div01 + ' obligations pulled into your trade' },
+    { t: 'Division 23 — HVAC', s: 'Pressure classes, sealing, hangers, accessories, insulation, equipment scope splits.', p: groups[2].pages, n: BOOK.findings.filter(f => f.sec.startsWith('23')).length + ' findings' },
+    { t: 'Division 22 — Plumbing', s: 'Pipe materials, testing, seismic, fixtures, compressed air.', p: groups[1].pages, n: BOOK.findings.filter(f => f.sec.startsWith('22')).length + ' findings' },
+    { t: 'Hooks in 21 / 25 / 26 / 28 / 40', s: 'Controls installed by the duct trade, VFD hand-offs, smoke detectors, process piping.', p: groups[3].pages, n: BOOK.findings.filter(f => E.HOOKS.includes(f.sec.slice(0, 2))).length + ' findings', dim: 1 },
+    { t: 'Everything else', s: 'Indexed and searchable — cross-division changes (like roof curbs moving to Div 07) still surface in What Changed.', p: groups[4].pages, n: 'skipped', dim: 1 },
+  ];
+  return `
+    <div class="demo-two" style="margin-bottom:22px">
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Where the ${pgs(BOOK.totalPages)} pages go</h2><span class="k">pages by division group</span></div>
+        <div class="sr-bars">${groups.map(g => `
+          <div class="sr-bar"><div class="nm">${g.k}<span>${g.n} sections · ${g.note}</span></div><div class="tr"><i style="width:${Math.max(2, g.pages / max * 100)}%;background:${g.c}"></i></div><div class="v">${pgs(g.pages)}</div></div>`).join('')}
+        </div>
+        <div class="sr-legend"><span><i style="background:#c8102e"></i>read in full</span><span><i style="background:#14283c"></i>scanned for hooks</span><span><i style="background:#9aa6b2"></i>indexed only</span></div>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head"><h2>Read order</h2><span class="k">how the estimator works the book</span></div>
+        <ol class="sr-order" style="margin:0;padding:0">${ord.map((o, i) => `
+          <li class="${o.dim ? 'dim' : ''}"><span class="k">${i + 1}</span><div><b>${o.t}</b><span>${o.s} <b style="display:inline;font-size:11.5px">${o.n}</b></span></div><span class="pp">${pgs(o.p)} pp</span></li>`).join('')}
+        </ol>
+      </div>
+    </div>
+
+    <div class="demo-panel" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>Section navigator</h2>
+        <span style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><span class="k">${ivSecs.length} sections · click a row for its findings</span>
+        <button class="pa-btn" onclick="showAllSecs=!showAllSecs;render()">${showAllSecs ? 'Show your sections only' : 'Show all ' + secs.length + ' sections'}</button></span></div>
+      <div class="demo-tbl-wrap grid-scroll" style="max-height:620px">
+        <table class="demo-tbl tbl-left">
+          <thead><tr><th>Section</th><th>Title</th><th style="text-align:right">Pages</th><th>Issue stamp</th><th>Findings H · M · I</th></tr></thead>
+          <tbody>${ivSecs.map(s => {
+            const h = fBySec[s.id] || { high: 0, med: 0, info: 0, all: [] };
+            const re = s.issue != null && s.issue > BOOK.pricedIssue && (reissued.has(s.id) || BOOK.local);
+            const stale = s.issue != null && s.issue < BOOK.pricedIssue && isYours(s);
+            const row = `<tr class="yclick ${openSec === s.id ? 'sr-open' : ''}" onclick="toggleSec('${s.id}')">
+              <td><b>${s.id}</b></td><td>${esc(s.title)}</td><td style="text-align:right;white-space:nowrap">pp. ${pgs(s.start)}–${pgs(s.end)}</td>
+              <td><span class="sr-stamp ${re ? 're' : stale ? 'stale' : ''}">${re ? 'REISSUED · ' : stale ? 'STALE · ' : ''}${issueLbl(s.issue)}</span></td>
+              <td><span class="sr-heat">${h.high ? `<span class="h">${h.high}</span>` : '<span class="z">·</span>'}${h.med ? `<span class="m">${h.med}</span>` : '<span class="z">·</span>'}${h.info ? `<span class="i">${h.info}</span>` : '<span class="z">·</span>'}</span></td></tr>`;
+            const det = openSec === s.id ? `<tr class="sr-detail"><td colspan="5">${h.all.length ? h.all.sort((a, b) => sevOrder[a.sev] - sevOrder[b.sev]).map(findCard).join('') : `<div class="ynote" style="margin-bottom:10px">No flags in this section. ${s.pages} pages read.</div>`}</td></tr>` : '';
+            return row + det;
+          }).join('')}</tbody>
+        </table>
+      </div>
+    </div>`;
+}
+
+/* ---------------- 2 · findings ---------------- */
+function findCard(f) {
+  const d = dec(f);
+  const d01 = f.sec.startsWith('01') || f.sec.startsWith('00');
+  return `<div class="sr-find ${f.sev}" id="f-${f.id}">
+    <div class="fh"><span class="sr-sev ${f.sev}">${sevLbl[f.sev]}</span><b>${esc(f.title)}</b>
+      <span class="sr-cite">${E.cite(f.sec, f.para, f.page)}</span>
+      ${d01 ? '<span class="sr-badge d01">HIDDEN IN DIV 01</span>' : ''}
+      ${f.chg ? `<span class="sr-badge chg">CHANGED IN ${issueLbl(f.chg).toUpperCase()}</span>` : ''}
+      <span class="sr-badge cat">${esc(f.cat)}</span></div>
+    <div class="sr-says">“${esc(f.says)}”</div>
+    <div class="sr-imp"><b>Why it matters:</b> ${esc(f.impact)}</div>
+    <div class="sr-act">
+      <span class="sr-seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>
+      ${d.act === 'price' ? `<label class="sr-amt">Adder $<input data-amt="${f.id}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="enter $" inputmode="decimal"></label>${f.basis ? `<span class="sr-basis">${esc(f.basis)}</span>` : ''}` : ''}
+      ${d.act === 'rfi' && f.rfi ? `<button class="pa-btn" onclick="go('rfis','c-${f.rfi}')">See ${f.rfi} draft →</button>` : ''}
+    </div>
+  </div>`;
+}
+function paneFindings(S) {
+  const cats = [...new Set(S.fs.map(f => f.cat))].sort();
+  const q = F.q.toLowerCase();
+  const list = S.fs.filter(f => (F.sev === 'all' || f.sev === F.sev) && (F.cat === 'all' || f.cat === F.cat) &&
+      (F.act === 'all' || dec(f).act === F.act) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q)))
+    .sort((a, b) => sevOrder[a.sev] - sevOrder[b.sev] || a.page - b.page);
+  const counts = {}; S.fs.forEach(f => { const a = dec(f).act; counts[a] = (counts[a] || 0) + 1; });
+  return `
+    <div class="sr-filters">
+      <input type="search" placeholder="Search findings — hanger, warranty, 23 3113, no substitution…" value="${esc(F.q)}" oninput="F.q=this.value;rerenderPane(true)">
+      <select onchange="F.sev=this.value;rerenderPane()"><option value="all">All severities</option>${['high', 'med', 'info'].map(s => `<option value="${s}" ${F.sev === s ? 'selected' : ''}>${sevLbl[s]}</option>`).join('')}</select>
+      <select onchange="F.cat=this.value;rerenderPane()"><option value="all">All categories</option>${cats.map(c => `<option ${F.cat === c ? 'selected' : ''}>${esc(c)}</option>`).join('')}</select>
+      <select onchange="F.act=this.value;rerenderPane()"><option value="all">All decisions</option>${ACTS.map(([k, l]) => `<option value="${k}" ${F.act === k ? 'selected' : ''}>${l} (${counts[k] || 0})</option>`).join('')}</select>
+    </div>
+    <div class="ynote" style="margin:-4px 0 12px">${list.length} of ${S.fs.length} findings · decide each one: <b>Price it</b> sends an adder to the bid sheet, <b>RFI it</b> drafts a question for the CM, <b>Qualify</b> and <b>Exclude</b> write the bid letter.</div>
+    <div id="flist">${list.map(findCard).join('') || '<div class="sr-empty">No findings match these filters.</div>'}</div>`;
+}
+
+/* ---------------- 3 · what changed ---------------- */
+function paneChanges(S) {
+  const ds = S.diffs;
+  const secT = id => E.secTitle(BOOK, id);
+  const lensYours = BOOK.sections.filter(s => isYours(s) && secVis(s) && s.div !== '00');
+  const unchanged = lensYours.filter(s => !ds.some(d => d.sec === s.id));
+  const div22 = BOOK.sections.filter(s => s.div === '22'), div22chg = ds.filter(d => d.sec.startsWith('22')).length;
+  const up = ds.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.max(0, c.amt || 0), 0), 0);
+  const dn = ds.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.min(0, c.amt || 0), 0), 0);
+  const nChg = ds.reduce((a, d) => a + d.changes.length, 0);
+  const stampOnly = ds.some(d => d.stampOnly);
+  return `
+    <div class="sr-diffhead">
+      <div class="sr-kpi red"><div class="l">Sections changed</div><div class="v">${ds.length}</div><div class="s">${issueLbl(BOOK.pricedIssue)} → ${issueLbl(BOOK.bookIssue)} in this lens</div></div>
+      <div class="sr-kpi"><div class="l">Line-level changes</div><div class="v">${stampOnly && !nChg ? '—' : nChg}</div><div class="s">${stampOnly && !PRIOR ? 'load the prior issue for the redline' : 'none marked in the text'}</div></div>
+      <div class="sr-kpi amber"><div class="l">Added cost</div><div class="v">${BOOK.sample ? '+' + moneyK(up) : '—'}</div><div class="s">${BOOK.sample ? 'priced against your Issue 03 number' : 'price each change below'}</div></div>
+      <div class="sr-kpi green"><div class="l">Credits found</div><div class="v">${BOOK.sample ? moneyK(dn) : '—'}</div><div class="s">${BOOK.sample ? 'incl. one hiding in Div 07' : ''}</div></div>
+    </div>
+    <div class="dr-reco" style="border:1px solid #c8102e;border-radius:10px;padding:13px 15px;background:var(--color-blue-pale);font-size:12.8px;line-height:1.6;margin-bottom:16px">🧠 Reissued sections carry a new date in the header and <b>nothing else</b> — no clouds, no deltas, no revision narrative. The Brain compares every sentence against the issue you priced and puts a dollar figure on what moved.
+      ${BOOK.sample && div22.length ? ` <b>Division 22: ${div22chg} of ${div22.length} sections changed — your plumbing number stands.</b>` : ''}</div>
+    ${ds.length ? ds.map(d => {
+      const tot = d.changes.reduce((a, c) => a + (c.amt || 0), 0);
+      return `<div class="sr-dsec">
+        <div class="hd"><span class="sr-stamp re">${d.isNew ? 'NEW SECTION' : issueLbl(d.from) + ' → ' + issueLbl(d.to)}</span><b>${d.sec} — ${esc(secT(d.sec))}</b>
+          ${d.crossDiv ? '<span class="sr-badge d01">OUTSIDE YOUR DIVISION</span>' : ''}
+          <span class="tot ${tot > 0 ? 'up' : tot < 0 ? 'dn' : ''}">${BOOK.sample ? (tot > 0 ? '+' : '') + money(tot) : ''}</span></div>
+        ${d.stampOnly && !d.changes.length ? `<div style="padding:12px 16px;font-size:12.3px;color:var(--color-text-muted)">Header stamp moved from ${issueLbl(d.from)} to ${issueLbl(d.to)}. ${PRIOR ? 'No sentence-level differences found against the prior issue.' : 'Load the prior issue PDF to see exactly which sentences changed.'}</div>` : ''}
+        ${d.changes.map(c => `<div class="sr-chg">
+          <div class="was"><span class="lab">${c.kind === 'add' ? 'Was — not in prior issue' : 'Was' + (c.para ? ' · ¶' + c.para : '')}${c.priorPage ? ' · prior p.' + pgs(c.priorPage) : ''}</span>${c.before ? `<del>${esc(c.before)}</del>` : '<i>—</i>'}</div>
+          <div class="now"><span class="lab">${c.kind === 'del' ? 'Now — deleted' : 'Now' + (c.para ? ' · ¶' + c.para : '')}${c.page ? ' · p.' + pgs(c.page) : ''}</span>${c.after ? `<ins>${esc(c.after)}</ins>` : '<i>Deleted.</i>'}${c.note ? `<div class="ynote" style="margin-top:6px">${esc(c.note)}</div>` : ''}</div>
+          <div class="imp ${c.amt > 0 ? 'up' : c.amt < 0 ? 'dn' : ''}">${BOOK.sample ? (c.amt ? (c.amt > 0 ? '+' : '') + money(c.amt) : '$0') : '—'}<small>${c.find ? `<a href="javascript:void 0" onclick="go('findings','f-${c.find}')">finding ${c.find} →</a>` : c.kind}</small></div>
+        </div>`).join('')}
+        ${d.more ? '<div class="ynote" style="padding:8px 16px">Showing the first 30 changes in this section.</div>' : ''}
+      </div>`;
+    }).join('') : '<div class="sr-empty">No sections in this lens changed after the issue you priced.</div>'}
+    ${BOOK.sample ? `<div class="ynote" style="margin-top:6px">${unchanged.length} of your ${lensYours.length} sections in this lens are unchanged since ${issueLbl(BOOK.pricedIssue)}.</div>` : ''}`;
+}
+
+/* ---------------- 4 · conflicts → RFIs ---------------- */
+function paneRfis(S) {
+  const list = S.conf.slice().sort((a, b) => sevOrder[a.sev] - sevOrder[b.sev]);
+  let n = 0;
+  const num = {}; BOOK.conflicts.forEach(c => { if ((DEC[c.id] || {}).act !== 'off') num[c.id] = ++n; });
+  const side = (x, lbl) => x ? `<div class="sr-side"><div class="sd">${lbl} <span class="sr-cite">${x.sec === '—' ? 'not in book' : E.cite(x.sec, x.para, x.page)}</span></div>${esc(x.says)}</div>` : '';
+  return `
+    <div class="ynote" style="margin:-4px 0 14px">${BOOK.local ? 'Missing cross-referenced sections and unresolved template text, found by checking every reference in your sections against the book\'s own table of contents.' : 'Places where the book contradicts itself, points at a section that doesn\'t exist, or leaves a blank.'} Each one becomes an RFI in the CM's format — sub RFIs sent direct come back unanswered. <a href="/mccorvey/rfis/" style="color:var(--color-blue);font-weight:700">Open the RFI register →</a></div>
+    ${list.length ? list.map(c => {
+      const on = (DEC[c.id] || {}).act !== 'off';
+      return `<div class="sr-conf" id="c-${c.id}">
+        <div class="fh"><span class="sr-sev ${c.sev}">${sevLbl[c.sev]}</span><b>${esc(c.title)}</b><span class="sr-badge cat">${c.id}</span>${on ? `<span class="sr-badge chg">${E.rfiNo(num[c.id])}</span>` : ''}</div>
+        <div class="sr-sides" style="grid-template-columns:${c.c ? '1fr 1fr 1fr' : '1fr 30px 1fr'}">${side(c.a, 'SAYS')}${c.c ? '' : '<div class="sr-vs">VS</div>'}${side(c.b, c.c ? 'BUT' : 'BUT')}${side(c.c, 'AND')}</div>
+        <pre class="sr-rfi" id="rt-${c.id}">${esc(E.rfiText(BOOK, c, num[c.id] || 0))}</pre>
+        <div class="sr-act">
+          <button class="pa-btn" onclick="$('#rt-${c.id}').classList.toggle('show')">View RFI draft</button>
+          <button class="pa-btn" onclick="copyRfi('${c.id}', ${num[c.id] || 0})">⧉ Copy RFI</button>
+          <button class="pa-btn ${on ? '' : 'primary'}" onclick="toggleRfi('${c.id}')">${on ? '✓ In RFI log — remove' : '+ Add to RFI log'}</button>
+          <span class="sr-basis">${esc(c.cost || '')}</span>
+        </div>
+      </div>`;
+    }).join('') : '<div class="sr-empty">No conflicts or missing references found in this lens.</div>'}`;
+}
+
+/* ---------------- 5 · who does what ---------------- */
+function paneMatrix() {
+  const rows = BOOK.matrix.filter(m => E.inLens(m.lens, lens));
+  if (BOOK.matrixMode === 'extracted') {
+    return `<div class="ynote" style="margin:-4px 0 12px">Every "furnished by / installed by / wired by Division …" statement in your sections, with its page — the raw material for the responsibility matrix.</div>
+      <div class="demo-panel"><div class="demo-tbl-wrap grid-scroll" style="max-height:640px"><table class="demo-tbl tbl-left sr-mx">
+        <thead><tr><th style="width:150px">Cite</th><th>Statement</th></tr></thead>
+        <tbody>${rows.map(r => `<tr><td><span class="sr-cite">${E.cite(r.src, '', r.page)}</span></td><td>${esc(r.item)}</td></tr>`).join('') || '<tr><td colspan="2">No responsibility statements found in this lens.</td></tr>'}</tbody></table></div></div>`;
+  }
+  const cell = v => `<td class="${/⚠/.test(v) ? 'warn' : ''}">${esc(v)}</td>`;
+  return `<div class="ynote" style="margin:-4px 0 12px">Who furnishes, installs, wires and tests — assembled from Divisions 01, 07, 08, 22, 23, 25, 26 and 28. <b style="color:var(--color-amber)">Amber</b> = unassigned or contradicted in the book.</div>
+    <div class="demo-panel"><div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left sr-mx">
+      <thead><tr><th>Item</th><th>Furnish</th><th>Install</th><th>Wire / power</th><th>Test / witness</th><th>Watch</th><th>Source</th></tr></thead>
+      <tbody>${rows.map(m => `<tr><td class="it">${esc(m.item)}</td>${cell(m.f)}${cell(m.i)}${cell(m.w)}${cell(m.t)}${cell(m.note || '')}<td><span class="sr-cite">${esc(m.src)}</span></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ---------------- 6 · adders → bid ---------------- */
+function paneAdders(S) {
+  const rows = S.fs.filter(f => dec(f).act === 'price').sort((a, b) => (+dec(b).amt || 0) - (+dec(a).amt || 0));
+  const qual = S.fs.filter(f => ['clarify', 'exclude'].includes(dec(f).act)).length;
+  const rfis = S.rfiIn;
+  return `
+    <div class="ynote" style="margin:-4px 0 12px">Every finding marked <b>Price it</b>. Amounts are editable — they flow into the Adjustable Bid Modeler as included lines, each tagged with its spec cite.</div>
+    <div class="demo-panel"><div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left sr-addtbl">
+      <thead><tr><th>Spec adder</th><th>Cite</th><th>Basis</th><th style="text-align:right">Amount</th></tr></thead>
+      <tbody>${rows.map(f => `<tr><td><b>${esc(f.title)}</b>${f.chg ? ' <span class="sr-badge chg">ISSUE ' + String(f.chg).padStart(2, '0') + '</span>' : ''}</td><td><span class="sr-cite">${E.cite(f.sec, f.para, f.page)}</span></td><td style="font-size:11.5px;color:var(--color-text-muted)">${esc(f.basis || '—')}</td>
+        <td style="text-align:right"><input data-amt="${f.id}" value="${dec(f).amt ? Math.round(dec(f).amt).toLocaleString() : ''}" placeholder="enter $" inputmode="decimal"></td></tr>`).join('') || '<tr><td colspan="4">Nothing marked "Price it" yet — decide findings on the Findings tab.</td></tr>'}</tbody>
+    </table></div></div>
+    <div class="sr-total">
+      <div><div class="l">SPEC ADDERS · ${esc(E.LENSES[lens].label.toUpperCase())}</div><div class="v" id="add-tot">${money(S.add$)}</div><div style="font-size:11.5px;color:rgba(255,255,255,.75)">${rows.length} priced · ${qual} qualifications · ${rfis} RFIs</div></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="pa-btn" onclick="location.href='/mccorvey/rfis/#letter'">Exclusions &amp; clarifications letter →</button>
+        <button class="pa-btn" onclick="toBid(false)">Add adders to current bid sheet</button>
+        ${BOOK.takeoff ? '<button class="pa-btn primary" onclick="toBid(true)">Start bid sheet from this book →</button>' : ''}
+      </div>
+    </div>`;
+}
+
+/* ---------------- actions ---------------- */
+function go(t, anchor) {
+  tab = t; history.replaceState(null, '', '#' + t); render();
+  if (anchor) setTimeout(() => { const el = document.getElementById(anchor); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800); } }, 40);
+  else window.scrollTo({ top: Math.min(window.scrollY, document.querySelector('.sr-tabs').offsetTop - 170), behavior: 'smooth' });
+}
+function setLens(k) { lens = k; E.store.set('msm-spec-lens', k); render(); }
+function setPriced(v) {
+  BOOK.pricedIssue = +v;
+  if (BOOK.local) { if (!PRIOR) BOOK.diffs = E.stampDiffs(BOOK); E.store.sset('msm-spec-local', BOOK); }
+  else BOOK.diffs = BOOK.diffs; /* sample book: curated redline is against Issue 03 */
+  render(); toast('Priced-at issue set to ' + issueLbl(+v));
+}
+function toggleSec(id) { openSec = openSec === id ? null : id; render(); }
+function persist() { E.saveDecisions(BOOK, DEC); }
+function setAct(id, act) {
+  const f = BOOK.findings.find(x => x.id === id);
+  DEC[id] = Object.assign({}, DEC[id], { act });
+  if (act === 'rfi' && f && f.rfi) { DEC[f.rfi] = Object.assign({}, DEC[f.rfi], { act: 'on' }); }
+  persist(); rerenderPane(); refreshTiles();
+  if (act === 'price') setTimeout(() => { const i = document.querySelector(`input[data-amt="${id}"]`); if (i && !i.value) i.focus(); }, 30);
+}
+function toggleRfi(id) { const on = (DEC[id] || {}).act !== 'off'; DEC[id] = Object.assign({}, DEC[id], { act: on ? 'off' : 'on' }); persist(); rerenderPane(); refreshTiles(); toast(on ? 'Removed from RFI log' : 'Added to RFI log'); }
+function copyRfi(id, n) {
+  const c = BOOK.conflicts.find(x => x.id === id); const txt = E.rfiText(BOOK, c, n);
+  const done = () => toast('RFI copied — paste into the CM\'s RFI form or email');
+  if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, () => fb(txt, done)); else fb(txt, done);
+}
+function fb(txt, cb) { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); cb(); }
+function rerenderPane(keepFocus) {
+  const S = stats();
+  if (keepFocus && tab === 'findings') { const fl = document.getElementById('flist'); const tmp = document.createElement('div'); tmp.innerHTML = paneFindings(S); fl.innerHTML = tmp.querySelector('#flist').innerHTML; }
+  else $('#pane').innerHTML = pane(S);
+  document.querySelectorAll('.sr-tab b').forEach((b, i) => { b.textContent = [BOOK.sections.filter(s => secVis(s) && isYours(s)).length, S.fs.length, S.diffs.length, S.conf.length, BOOK.matrix.filter(m => E.inLens(m.lens, lens)).length, S.adders.length][i]; });
+  bindAmounts();
+}
+function refreshTiles() {
+  const S = stats(), t = document.querySelectorAll('.cmd-tile .v');
+  if (t[4]) t[4].textContent = S.rfiIn;
+  if (t[5]) { t[5].textContent = S.add$ || !S.adders.length ? moneyK(S.add$) : S.adders.length + ' to price'; t[5].parentElement.querySelector('.d').textContent = '▲ ' + S.adders.length + ' priced lines'; }
+  const at = document.getElementById('add-tot'); if (at) at.textContent = money(S.add$);
+}
+function bindAmounts() {
+  document.querySelectorAll('input[data-amt]').forEach(inp => {
+    inp.oninput = () => { const v = +inp.value.replace(/[^\d.\-]/g, ''); DEC[inp.dataset.amt] = Object.assign({}, DEC[inp.dataset.amt], { act: 'price', amt: isNaN(v) ? 0 : v }); persist(); refreshTiles(); };
+    inp.onblur = () => { const v = +inp.value.replace(/[^\d.\-]/g, ''); inp.value = v ? Math.round(v).toLocaleString() : ''; };
+  });
+}
+function toBid(fresh) {
+  const S = stats();
+  const adders = S.fs.filter(f => dec(f).act === 'price').map(f => ({ title: f.title, amt: +dec(f).amt || 0, tag: 'Spec · ' + E.cite(f.sec, f.para, f.page) }));
+  if (!adders.length && !fresh) { toast('Mark findings "Price it" first'); return; }
+  E.store.set('msm-spec-handoff', { at: Date.now(), fresh, name: BOOK.name, gc: BOOK.bid.gc || BOOK.cm, bidNo: BOOK.bid.bidNo, due: BOOK.bid.due, base: fresh ? BOOK.takeoff : null, adders });
+  location.href = '/mccorvey/bidmodel/?from=spec';
+}
+
+/* ---------------- load a real book (in-browser) ---------------- */
+function ov(show, h) { $('#ov').classList.toggle('show', show); if (h) $('#ov-h').textContent = h; }
+function prog(msg, f) { $('#ov-st').textContent = msg; $('#ov-bar').style.width = Math.round(f * 100) + '%'; }
+async function loadBook(file) {
+  if (!file) return;
+  ov(true, 'Reading ' + file.name); prog('Loading PDF reader…', 0.02);
+  try {
+    const t0 = performance.now();
+    const r = await E.analyze(file, prog);
+    BOOK = r.book; RAW = r.raw; PRIOR = null;
+    E.store.sset('msm-spec-local', BOOK); E.store.sset('msm-spec-active', 'local');
+    DEC = E.decisions(BOOK);
+    ov(false); tab = 'triage'; render();
+    toast(`Read ${pgs(BOOK.totalPages)} pages in ${((performance.now() - t0) / 1000).toFixed(0)}s — ${BOOK.sections.length} sections, ${BOOK.findings.length} findings`);
+  } catch (e) { ov(false); toast('Could not read that PDF: ' + e.message); console.error(e); }
+}
+async function loadPrior(file) {
+  if (!file || !RAW) { if (!RAW) toast('Reload your book first — its text is kept in memory only'); return; }
+  ov(true, 'Comparing against ' + file.name); prog('Loading prior issue…', 0.02);
+  try {
+    const pages = await E.extract(file, (d, n) => prog('Reading prior page ' + pgs(d) + ' of ' + pgs(n), d / n * 0.9));
+    prog('Comparing sentence by sentence', 0.94);
+    PRIOR = E.buildSections(pages);
+    BOOK.diffs = E.diffBooks(RAW, PRIOR, s => E.YOURS.includes(s.div) || E.HOOKS.includes(s.div));
+    E.store.sset('msm-spec-local', BOOK);
+    ov(false); go('changes');
+    toast(`${BOOK.diffs.length} sections changed versus ${file.name}`);
+  } catch (e) { ov(false); toast('Could not compare: ' + e.message); console.error(e); }
+}
+function useSample() { E.store.sset('msm-spec-active', 'sample'); BOOK = window.SPECBOOK; RAW = PRIOR = null; DEC = E.decisions(BOOK); render(); toast('Back to the sample book'); }
+$('#pick-cur').onchange = e => { loadBook(e.target.files[0]); e.target.value = ''; };
+$('#pick-prior').onchange = e => { loadPrior(e.target.files[0]); e.target.value = ''; };
+document.addEventListener('dragover', e => { e.preventDefault(); });
+document.addEventListener('drop', e => { e.preventDefault(); const f = [...(e.dataTransfer.files || [])].find(x => /pdf$/i.test(x.type) || /\.pdf$/i.test(x.name)); if (f) loadBook(f); });
+
+/* a local book's text is not kept across reloads — say so */
+if (BOOK.local) setTimeout(() => toast('Your book\'s findings are restored; reload the PDF to compare issues'), 600);
+render();
+if (location.hash && location.hash.length > 1) setTimeout(() => window.scrollTo({ top: document.querySelector('.sr-tabs').offsetTop - 170 }), 50);
+</script>
+</body>
+</html>

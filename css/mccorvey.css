@@ -408,6 +408,10 @@ tr.avb-drv td {
 .cmd-range { font-size: 10.5px; font-weight: 700; letter-spacing: .08em; color: rgba(255,255,255,.75); background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14); border-radius: 8px; padding: 5px 11px; white-space: nowrap; }
 .cmd-chips { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
 .cmd-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(172px, 1fr)); gap: 12px; position: relative; }
+/* six-tile heroes: 6 across, then 3+3, then 2+2+2 — never a 4+2 orphan row */
+.cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+@media (max-width: 1240px) { .cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .cmd-tile { background: #fff; border-radius: 13px; padding: 13px 15px 11px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); min-width: 0; }
 .cmd-tile .l { font-size: 9px; font-weight: 800; letter-spacing: .12em; color: #8a93a1; margin-bottom: 6px; text-transform: uppercase; }
 .cmd-tile .v { font-size: clamp(19px, 2vw, 24px); font-weight: 800; letter-spacing: -.02em; color: #1b2230; line-height: 1; margin-bottom: 6px; font-variant-numeric: tabular-nums; }

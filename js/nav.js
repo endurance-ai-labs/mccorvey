@@ -36,10 +36,12 @@ const NAV_GROUPS = [
     id: 'bids',
     label: 'Preconstruction',
     items: [
-      { href: '/mccorvey/bidreview/', label: '🧠 AI Bid & Document Review' },
-      { href: '/mccorvey/bids/',     label: 'Bid Builder' },
-      { href: '/mccorvey/bidmodel/', label: '⚖️ Adjustable Bid Modeler' },
-      { href: '/mccorvey/pipeline/', label: 'Bid Pipeline & Win/Loss' },
+      { href: '/mccorvey/specreview/', label: '📕 Spec Book Review' },
+      { href: '/mccorvey/rfis/',      label: 'RFIs & Clarifications' },
+      { href: '/mccorvey/bidmodel/',  label: '⚖️ Adjustable Bid Modeler' },
+      { href: '/mccorvey/bids/',      label: 'Bid Builder & Redline' },
+      { href: '/mccorvey/bidreview/', label: '🧠 Bid Queue & Review ROI' },
+      { href: '/mccorvey/pipeline/',  label: 'Bid Pipeline & Win/Loss' },
     ],
   },
   {
@@ -86,6 +88,8 @@ function _activeGroup(path) {
   if (path.startsWith('/bids/')) return 'bids';
   if (path.startsWith('/bidreview/')) return 'bids';
   if (path.startsWith('/bidmodel/')) return 'bids';
+  if (path.startsWith('/specreview/')) return 'bids';
+  if (path.startsWith('/rfis/')) return 'bids';
   if (path.startsWith('/pipeline/')) return 'bids';
   if (path.startsWith('/forecast/')) return 'finance';
   if (path.startsWith('/budget/')) return 'finance';
