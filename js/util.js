@@ -345,7 +345,7 @@ function slackNudge(key, idx) {
           <div class="slk-msg-main">
             <div class="slk-msg-head"><b>${esc(me.name)}</b><span class="slk-app">APP · MSM Portal</span><span class="slk-time">${now}</span></div>
             <div class="slk-text">${esc(msg)}</div>
-            <div class="slk-reacts" style="display:none"><span class="slk-react">👀 1</span></div>
+            <div class="slk-reacts" style="display:none"><span class="slk-react">Seen 1</span></div>
           </div>
         </div>
         <div class="slk-status sending"><span class="slk-spin"></span> Sending via Slack…</div>
@@ -489,7 +489,7 @@ function openDM(platform, name) {
       r.className = 'slk-msg';
       r.innerHTML = '<span class="slk-ava peer">' + init(name) + '</span>' +
         '<div class="slk-msg-main"><div class="slk-msg-head"><b>' + esc(name) + '</b><span class="slk-time">' + now() + '</span></div>' +
-        '<div class="slk-text">👍 On it — will circle back shortly. <span style="opacity:.55">(simulated reply — demo)</span></div></div>';
+        '<div class="slk-text">On it — will circle back shortly. <span style="opacity:.55">(simulated reply — demo)</span></div></div>';
       body.appendChild(r); body.scrollTop = body.scrollHeight;
     }, 1900);
   };

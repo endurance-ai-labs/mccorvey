@@ -15,18 +15,18 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction' });
 const internal = McCorveyMode.isInternal() && can('bids');
@@ -177,14 +177,14 @@ function aiAssist() {
   ov.innerHTML = `
     <div class="svc-card" onclick="event.stopPropagation()" style="max-width:680px">
       <div class="svc-card-head">
-        <div><b>🤖 AI Bid Assistant</b><div class="ynote">Paste an RFP, scope email or walk notes — the assistant drafts trade lines, CSI codes, quantities and pricing. MSM proprietary engine (demo).</div></div>
+        <div><b>AI Bid Assistant</b><div class="ynote">Paste an RFP, scope email or walk notes — the assistant drafts trade lines, CSI codes, quantities and pricing. MSM proprietary engine (demo).</div></div>
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
       <textarea class="yin" id="ai-rfp" rows="10" style="resize:vertical" placeholder="Paste the RFP or scope description here…"></textarea>
       <div class="ytoolrow" style="margin-top:12px;margin-bottom:0">
         <button class="pa-btn" style="cursor:pointer" id="ai-sample">Use sample RFP</button>
         <div class="spacer"></div>
-        <button class="pa-btn primary" style="cursor:pointer" id="ai-go">✨ Draft My Bid</button>
+        <button class="pa-btn primary" style="cursor:pointer" id="ai-go">Draft My Bid</button>
       </div>
       <div id="ai-out" style="margin-top:12px"></div>
     </div>`;
@@ -400,8 +400,8 @@ function redlinePanel(T) {
         diffs against Rev A automatically: change 14 units to 22 and the direct cost, OH, profit and sell on that line
         re-sync instantly, with the margin impact rolled up in the bridge.
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="pa-btn primary" onclick="lockOriginal()">📌 Lock Original Quote (Rev A)</button>
-          <button class="pa-btn" onclick="importRedline()">📥 Lock &amp; import sample customer redline</button>
+          <button class="pa-btn primary" onclick="lockOriginal()">Lock Original Quote (Rev A)</button>
+          <button class="pa-btn" onclick="importRedline()">Lock &amp; import sample customer redline</button>
         </div>
       </div>
     </div>`;
@@ -449,8 +449,8 @@ function redlinePanel(T) {
       <div class="demo-panel-head"><h2>⇄ Redline Compare — Rev A vs Current</h2>
         <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <span class="k">Rev A locked ${esc(O.ts)}</span>
-          <button class="pa-btn" onclick="importRedline()">📥 Import customer redline (sample)</button>
-          <button class="pa-btn" onclick="lockOriginal()" title="Snapshot the current estimate as the new Rev A">📌 Re-lock as Rev A</button>
+          <button class="pa-btn" onclick="importRedline()">Import customer redline (sample)</button>
+          <button class="pa-btn" onclick="lockOriginal()" title="Snapshot the current estimate as the new Rev A">Re-lock as Rev A</button>
           <button class="pa-btn" onclick="clearOriginal()" title="Exit negotiation mode">✕ Clear</button>
         </span></div>
       <div class="ykpi-row" style="margin-bottom:14px">
@@ -538,7 +538,7 @@ function sendForSignature() {
   ov.innerHTML = `
     <div class="svc-card" onclick="event.stopPropagation()" style="max-width:640px">
       <div class="svc-card-head">
-        <div><b>✉ Send for Customer e-Signature</b><div class="ynote">The customer receives a secure signing link — their signature lands back on this proposal automatically.</div></div>
+        <div><b>Send for Customer e-Signature</b><div class="ynote">The customer receives a secure signing link — their signature lands back on this proposal automatically.</div></div>
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
       <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="sfs-to" value="${to}"></label>
@@ -547,7 +547,7 @@ function sendForSignature() {
       <div class="ytoolrow" style="margin-top:14px;margin-bottom:0">
         <span class="ynote">Demo: the signing link opens this proposal with the customer's signature line active.</span>
         <div class="spacer"></div>
-        <button class="pa-btn primary" style="cursor:pointer" id="sfs-send">✉ Send Signature Request</button>
+        <button class="pa-btn primary" style="cursor:pointer" id="sfs-send">Send Signature Request</button>
       </div>
     </div>`;
   ov.addEventListener('click', () => ov.remove());
@@ -589,7 +589,7 @@ function emailBid() {
   ov.innerHTML = `
     <div class="svc-card" onclick="event.stopPropagation()" style="max-width:640px">
       <div class="svc-card-head">
-        <div><b>✉ Email Proposal ${esc(BID.meta.bidNumber)}</b><div class="ynote">Review and send — opens in your mail app with everything pre-filled.</div></div>
+        <div><b>Email Proposal ${esc(BID.meta.bidNumber)}</b><div class="ynote">Review and send — opens in your mail app with everything pre-filled.</div></div>
         <button class="pa-btn" style="cursor:pointer" onclick="this.closest('.svc-modal').remove()">✕</button>
       </div>
       <label class="yfld" style="margin-bottom:10px">To<input class="yin" id="em-to" value="precon@${esc(BID.meta.owner.toLowerCase().replace(/[^a-z]+/g, '')).slice(0, 18)}.demo" placeholder="GC / owner contact email"></label>
@@ -598,7 +598,7 @@ function emailBid() {
       <div class="ytoolrow" style="margin-top:14px;margin-bottom:0">
         <span class="ynote">Tip: use “PDF the Bid” first and attach the saved PDF before sending.</span>
         <div class="spacer"></div>
-        <button class="pa-btn primary" style="cursor:pointer" id="em-send">✉ Open in Mail App</button>
+        <button class="pa-btn primary" style="cursor:pointer" id="em-send">Open in Mail App</button>
       </div>
     </div>`;
   ov.addEventListener('click', () => ov.remove());
@@ -677,10 +677,10 @@ function viewInternal() {
         <span class="demo-live"><span class="dot"></span> BASE BID ${fmt$2(T.base)}</span>
         <span style="display:flex;gap:6px">${srcChip('prop')} ${srcChip('st')}</span>
         <span style="display:flex;gap:8px">
-          <button class="pa-btn" style="cursor:pointer" onclick="alert('Demo: drop the estimating workbook (.xlsx) here — line items, quantities and pricing map into the portal automatically. The estimator keeps their spreadsheet; the company gets the reporting.')">⬆ Import Estimate (.xlsx)</button>
-          <button class="pa-btn primary" style="cursor:pointer;background:linear-gradient(135deg,#14283c,#0d5aa7)" onclick="aiAssist()">🤖 AI Draft from RFP</button>
-          <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
-          <button class="pa-btn primary" style="cursor:pointer" onclick="previewProposal=true;render();window.scrollTo(0,0)">📄 PDF the Bid</button>
+          <button class="pa-btn" style="cursor:pointer" onclick="alert('Demo: drop the estimating workbook (.xlsx) here — line items, quantities and pricing map into the portal automatically. The estimator keeps their spreadsheet; the company gets the reporting.')">Import Estimate (.xlsx)</button>
+          <button class="pa-btn primary" style="cursor:pointer;background:linear-gradient(135deg,#14283c,#0d5aa7)" onclick="aiAssist()">AI Draft from RFP</button>
+          <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">Email Bid</button>
+          <button class="pa-btn primary" style="cursor:pointer" onclick="previewProposal=true;render();window.scrollTo(0,0)">PDF the Bid</button>
           <button class="pa-btn primary" style="cursor:pointer" onclick="addLine()">＋ Add Line Item</button>
         </span>
       </div>
@@ -709,7 +709,7 @@ function viewInternal() {
             ? `<input class="yin" value="${esc(BID.meta.project)}" onchange="updMeta('project',this.value)" onblur="SETUP.customName=false;render()" autofocus>`
             : `<select class="yin" onchange="pickField('project',this.value)">
                 ${[BID.meta.project, ...nameOptions(BID.meta.owner).filter(n => n !== BID.meta.project)].map(n => `<option value="${esc(n)}" ${n === BID.meta.project ? 'selected' : ''}>${esc(n)}</option>`).join('')}
-                <option value="__custom">✏️ Custom name…</option>
+                <option value="__custom">Custom name…</option>
               </select>`}
         </label>
         <label class="yfld">Owner / Client
@@ -723,7 +723,7 @@ function viewInternal() {
             ? `<input class="yin" value="${esc(BID.meta.address)}" onchange="updMeta('address',this.value)" onblur="SETUP.customAddr=false;render()" autofocus>`
             : `<select class="yin" onchange="pickField('address',this.value)">
                 ${[BID.meta.address, ...addrOptions(BID.meta.owner).filter(a => a !== BID.meta.address)].map(a => `<option value="${esc(a)}" ${a === BID.meta.address ? 'selected' : ''}>${esc(a)}</option>`).join('')}
-                <option value="__custom">✏️ Custom address…</option>
+                <option value="__custom">Custom address…</option>
               </select>`}
         </label>
         <label class="yfld">Bid Number
@@ -731,8 +731,8 @@ function viewInternal() {
             ? `<input class="yin" value="${esc(BID.meta.bidNumber)}" onchange="updMeta('bidNumber',this.value)" onblur="SETUP.customBid=false;render()" autofocus>`
             : `<select class="yin" onchange="pickField('bidNumber',this.value)">
                 ${bidNumberOptions().map(b => `<option value="${esc(b)}" ${b === BID.meta.bidNumber ? 'selected' : ''}>${esc(b)}</option>`).join('')}
-                <option value="__generate">⚡ Generate new bid number</option>
-                <option value="__custom">✏️ Custom number…</option>
+                <option value="__generate">Generate new bid number</option>
+                <option value="__custom">Custom number…</option>
               </select>`}
         </label>
         <label class="yfld">Project Manager<select class="yin" onchange="updMeta('pm',this.value)">${pmOpts}</select></label>
@@ -827,8 +827,8 @@ function viewExternal(preview) {
       ${preview ? `<button class="pa-btn" style="cursor:pointer" onclick="previewProposal=false;render();window.scrollTo(0,0)">← Back to Estimate</button>` : ''}
       <span class="ynote">${authorized ? 'Authorized for submission — full sign-off chain executed.' : '<b style="color:var(--color-red)">DRAFT</b> — not yet authorized for submission (see Estimate Release Control).'}</span>
       <div class="spacer"></div>
-      <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">✉ Email Bid</button>
-      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 PDF the Bid</button>
+      <button class="pa-btn" style="cursor:pointer" onclick="emailBid()">Email Bid</button>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">PDF the Bid</button>
     </div>
 
     <div class="ydoc" style="position:relative">
@@ -913,15 +913,15 @@ function viewExternal(preview) {
         const pmS = bidSigState('pm'), ownS = bidSigState('owner'), sent = bidSigState('sent');
         return `
       <div class="sig-row">
-        ${bidSigBlock('pm', MCCORVEY.company + ' — ' + esc(BID.meta.pm) + ', Project Manager', '✍ Sign as McCorvey PM')}
+        ${bidSigBlock('pm', MCCORVEY.company + ' — ' + esc(BID.meta.pm) + ', Project Manager', 'Sign as McCorvey PM')}
         ${ownS || sent
-          ? bidSigBlock('owner', esc(BID.meta.owner) + ' — Owner / Authorized Agent', '✍ Customer e-Sign (via emailed link)')
+          ? bidSigBlock('owner', esc(BID.meta.owner) + ' — Owner / Authorized Agent', 'Customer e-Sign (via emailed link)')
           : `<div class="sig"><div class="sig-cap" style="margin-top:6px">${esc(BID.meta.owner)} — Owner / Authorized Agent<br><span class="ynote">${pmS ? 'Ready to send for customer signature.' : 'Unlocks after the McCorvey PM signs.'}</span></div></div>`}
       </div>
       <div class="ytoolrow no-print" style="margin-top:16px;margin-bottom:0">
         ${pmS && !ownS ? (sent
           ? `<span class="ypill blue">SENT FOR SIGNATURE</span><span class="ynote">to ${esc(sent.to)} · ${esc(sent.at)} — awaiting customer</span>`
-          : `<button class="pa-btn primary" style="cursor:pointer" onclick="sendForSignature()">✉ Send to Customer for e-Signature</button>`) : ''}
+          : `<button class="pa-btn primary" style="cursor:pointer" onclick="sendForSignature()">Send to Customer for e-Signature</button>`) : ''}
         ${pmS && ownS ? `<span class="ypill green">FULLY EXECUTED</span><span class="ynote">both parties signed electronically — proposal is now a contract exhibit</span>` : ''}
         ${!pmS ? `<span class="ynote">Signature flow: McCorvey PM signs → send to customer → customer e-signs from their inbox.</span>` : ''}
         <div class="spacer"></div>

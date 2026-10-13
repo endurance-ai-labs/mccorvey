@@ -6,9 +6,9 @@
 <title>HR — People Command Center — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — HR: ADP-synced payroll (role-gated), recruiting across career channels, AI prospect-fit analysis, people development. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   .hr-lock { border: 1px dashed var(--color-border); border-radius: 12px; padding: 26px 22px; text-align: center; color: var(--color-text-muted); font-size: 12.5px; background: var(--color-bg-3); }
   .hr-lock b { display: block; color: var(--color-cloud-whisper); font-size: 13.5px; margin-bottom: 5px; }
@@ -40,11 +40,11 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'HR — People Command Center' });
@@ -139,7 +139,7 @@ function analyzeFit() {
     ${valHits.slice(0, 4).map(v => `<div class="fit-val"><b>${esc(v.name)}</b> — “…${esc(v.snippet)}…”</div>`).join('') || '<div class="ynote" style="margin-bottom:8px">No direct values language found — worth probing culture fit in the screen.</div>'}
     <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:12px 0 7px">SUGGESTED INTERVIEW QUESTIONS</div>
     <ul style="font-size:12px;line-height:1.7;color:var(--color-text-muted);padding-left:18px;margin-bottom:12px">${qs.map(q => `<li>${esc(q)}</li>`).join('')}</ul>
-    <div class="fit-reco">🧠 <b>${band[0]}</b> — scored against the ${esc(roleName)} day-to-day (“${esc(prof.day)}”), McCorvey's mission and its 8 published core values. Demo analysis — every recommendation is subject to recruiter review.</div>`;
+    <div class="fit-reco"><b>${band[0]}</b> — scored against the ${esc(roleName)} day-to-day (“${esc(prof.day)}”), McCorvey's mission and its 8 published core values. Demo analysis — every recommendation is subject to recruiter review.</div>`;
 
   /* auto-save the review */
   const cand = (txt.split('\n')[0] || 'Unnamed candidate').split('—')[0].split(',')[0].trim().slice(0, 42) || 'Unnamed candidate';
@@ -198,7 +198,7 @@ function uploadResume(input) {
     rd.readAsText(f);
   } else {
     document.getElementById('fit-resume').value = '';
-    document.getElementById('fit-out').innerHTML = `<div class="ynote">📄 <b>${esc(f.name)}</b> received (${Math.round(f.size / 1024)} KB). In the live build, PDF and Word resumes run through the same document pipeline as bid sets — machine-read with page-level citations. For this demo, paste the resume text or upload a .txt file.</div>`;
+    document.getElementById('fit-out').innerHTML = `<div class="ynote"><b>${esc(f.name)}</b> received (${Math.round(f.size / 1024)} KB). In the live build, PDF and Word resumes run through the same document pipeline as bid sets — machine-read with page-level citations. For this demo, paste the resume text or upload a .txt file.</div>`;
   }
   input.value = '';
 }
@@ -249,7 +249,7 @@ app.innerHTML = `
     </div>
     <div class="cmd-tiles">
       <div class="cmd-tile"><div class="l">Headcount</div><div class="v">${HC.total.toLocaleString()}</div><span class="d up">▲ +38 YTD</span><div class="s">${HC.byFn[1][1]} shop · ${HC.byFn[0][1]} field</div>${sparkSVG('hrhead', { up: true, color: '#14283c' })}</div>
-      <div class="cmd-tile"><div class="l">Last Payroll Run</div><div class="v">${canPay ? fmtK(P.lastRun.total) : '••••'}</div><span class="d up">${canPay ? '▲ ' + P.lastRun.heads + ' paid' : '🔒 finance roles'}</span><div class="s">${canPay ? P.lastRun.otPct + '% OT · via ADP' : 'role-gated'}</div>${sparkSVG('hrpay', { up: true })}</div>
+      <div class="cmd-tile"><div class="l">Last Payroll Run</div><div class="v">${canPay ? fmtK(P.lastRun.total) : '••••'}</div><span class="d up">${canPay ? '▲ ' + P.lastRun.heads + ' paid' : 'finance roles'}</span><div class="s">${canPay ? P.lastRun.otPct + '% OT · via ADP' : 'role-gated'}</div>${sparkSVG('hrpay', { up: true })}</div>
       <div class="cmd-tile"><div class="l">Open Requisitions</div><div class="v">${R.kpis.openReqs}</div><span class="d up">▲ ${R.kpis.applicantsYTD.toLocaleString()} applicants YTD</span><div class="s">across 5 channels</div>${sparkSVG('hrreq', { up: true, color: '#b98a36' })}</div>
       <div class="cmd-tile"><div class="l">Time to Fill</div><div class="v">${R.kpis.avgTimeToFillDays}d</div><span class="d up">▲ ${R.kpis.offerAcceptPct}% offer accept</span><div class="s">avg, trailing 6 mo</div>${sparkSVG('hrfill', { up: true })}</div>
       <div class="cmd-tile"><div class="l">Turnover</div><div class="v">${HC.turnoverPct}%</div><span class="d up">▲ vs ${HC.industryTurnoverPct}% industry</span><div class="s">avg tenure ${HC.avgTenureYrs} yrs</div>${sparkSVG('hrturn', { up: true, color: '#2f9e6e' })}</div>
@@ -281,7 +281,7 @@ app.innerHTML = `
       </table>
     </div>
     <div class="ynote" style="margin-top:8px">Next runs: ${esc(P.nextRun)}. Amounts are <b>round illustrative placeholders</b> — the live build reads actuals from ADP Workforce Now, scoped to this exact executive view.</div>`
-    : `<div class="hr-lock"><b>🔒 Executive payroll requires sign-off-level financial access</b>Signed in as ${esc(me.name)} (${esc(me.title)}). Switch to Tony Sr., Kristal, Tony Jr. or the Controller via the account menu to view the ADP register — this is the same role-based gating that protects margins and Duct Direct terms.</div>`}
+    : `<div class="hr-lock"><b>Executive payroll requires sign-off-level financial access</b>Signed in as ${esc(me.name)} (${esc(me.title)}). Switch to Tony Sr., Kristal, Tony Jr. or the Controller via the account menu to view the ADP register — this is the same role-based gating that protects margins and Duct Direct terms.</div>`}
   </div>
 
   <div class="demo-panel" style="margin-bottom:22px" id="recruiting">
@@ -316,7 +316,7 @@ app.innerHTML = `
   </div>
 
   <div class="demo-panel" style="margin-bottom:22px" id="develop">
-    <div class="demo-panel-head"><h2>🧠 Prospect Fit Analyzer</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('brain')}<span class="k">resume vs. role day-to-day, mission &amp; the 8 core values</span></span></div>
+    <div class="demo-panel-head"><h2>Prospect Fit Analyzer</h2><span style="display:flex;gap:8px;align-items:center">${srcChip('brain')}<span class="k">resume vs. role day-to-day, mission &amp; the 8 core values</span></span></div>
     <div class="demo-two">
       <div>
         <label class="yfld" style="display:block;margin-bottom:10px">Analyze against requisition
@@ -324,9 +324,9 @@ app.innerHTML = `
         </label>
         <textarea id="fit-resume" class="fit-in" placeholder="Paste the prospect's resume text here — or upload a file…"></textarea>
         <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-          <button class="pa-btn primary" onclick="analyzeFit()">⚡ Analyze fit</button>
+          <button class="pa-btn primary" onclick="analyzeFit()">Analyze fit</button>
           <button class="pa-btn" onclick="refreshFit()" title="Re-run the analysis">⟳ Refresh</button>
-          <button class="pa-btn" onclick="document.getElementById('fit-file').click()">📄 Upload resume</button>
+          <button class="pa-btn" onclick="document.getElementById('fit-file').click()">Upload resume</button>
           <button class="pa-btn" onclick="loadSample()">Load sample</button>
           <input type="file" id="fit-file" accept=".txt,.md,.pdf,.doc,.docx,text/plain" style="display:none" onchange="uploadResume(this)">
         </div>

@@ -15,9 +15,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   .job-tabs { display:flex; gap:6px; flex-wrap:wrap; margin:6px 0 24px; }
   .job-tab { font-size:11.5px; font-weight:700; letter-spacing:0.04em; padding:7px 14px; border-radius:999px;
@@ -33,11 +33,11 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Job Tracker' });
 const internal = McCorveyMode.isInternal() && !(currentPersona() && currentPersona().perms.external);
@@ -77,7 +77,7 @@ function render() {
       </div>
       <div class="demo-prop-head-right">
         <span class="demo-live"><span class="dot"></span> ${fmtPct(m.pct, 1)} COMPLETE</span>
-        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/mccorvey/reports/?id=${j.id}">📄 Owner Progress Report</a>
+        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/mccorvey/reports/?id=${j.id}">Owner Progress Report</a>
       </div>
     </div>
     ${(() => {
@@ -136,7 +136,7 @@ function secOverview(m) {
       ${showMargins ? `<div class="ykpi green"><div class="l">Margin to Date</div><div class="v">${fmtK(m.marginToDate)}</div><div class="s">projected ${fmtK(m.projMargin)} (${fmtPct(m.projMarginPct)})</div></div>` : ''}
     </div>
 
-    ${j.insurance ? `<div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)"><div style="font-size:12.5px;color:var(--color-cloud-whisper)">🛡 <b>Insurance restoration</b> — ${esc(j.insurance.carrier)}: ${esc(j.insurance.approval)} · ${esc(j.insurance.peril)}</div></div>` : ''}
+    ${j.insurance ? `<div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--color-amber)"><div style="font-size:12.5px;color:var(--color-cloud-whisper)"><b>Insurance restoration</b> — ${esc(j.insurance.carrier)}: ${esc(j.insurance.approval)} · ${esc(j.insurance.peril)}</div></div>` : ''}
 
     <div class="demo-two" style="margin-bottom:22px">
       <div class="demo-panel">
@@ -275,8 +275,8 @@ function coSign(num, who) {
 
 function coCell(c) {
   if (!c.portal) return `<span class="demo-chip ${c.status === 'Approved' ? 'ok' : 'mut'}">${esc(c.status)}</span>`;
-  if (c.status === 'Awaiting PM Signature') return `<button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','pm')">✍ PM Sign</button>`;
-  if (c.status === 'Awaiting Owner Signature') return `<span class="ynote">PM: ${esc(c.sigs.pm.name)} ✓</span> <button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','owner')">✍ Owner Sign</button>`;
+  if (c.status === 'Awaiting PM Signature') return `<button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','pm')">PM Sign</button>`;
+  if (c.status === 'Awaiting Owner Signature') return `<span class="ynote">PM: ${esc(c.sigs.pm.name)} ✓</span> <button class="pa-btn primary" style="cursor:pointer" onclick="coSign('${c.num}','owner')">Owner Sign</button>`;
   return `<span class="demo-chip ok">APPROVED ✓</span><div class="ynote">${esc(c.sigs.pm ? c.sigs.pm.name : '')} · ${esc(c.sigs.owner ? c.sigs.owner.name : '')}</div>`;
 }
 
@@ -328,7 +328,7 @@ function secEngineering() {
 
     <div class="demo-panel" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Submittal Package — Drawing Register</h2>
-        <span style="display:flex;gap:8px;align-items:center">${srcChip('prop')}<button class="pa-btn primary" style="cursor:pointer" onclick="showSubmittal()">📐 Generate Submittal Package</button></span></div>
+        <span style="display:flex;gap:8px;align-items:center">${srcChip('prop')}<button class="pa-btn primary" style="cursor:pointer" onclick="showSubmittal()">Generate Submittal Package</button></span></div>
       <table class="demo-tbl tbl-left">
         <thead><tr><th style="width:80px">Drawing</th><th>Drawing Name</th><th style="width:52px">Rev</th><th style="width:110px">Issued</th><th style="width:150px">Status</th></tr></thead>
         <tbody>${E.submittals.map(x => `<tr><td><b>${x.no}</b></td><td>${esc(x.name)}</td><td>${x.rev}</td><td>${fmtDateShort(x.date)}</td><td>${subPill(x.status)}</td></tr>`).join('')}</tbody>
@@ -368,7 +368,7 @@ function showSubmittal() {
 
   $('#submittal-host').innerHTML = `
     <div class="ytoolrow no-print" style="margin-top:22px"><div class="spacer"></div>
-      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button></div>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">Print / Save as PDF</button></div>
 
     <div class="ydoc">
       <div class="ydoc-head">
@@ -731,7 +731,7 @@ function showG702(num) {
   }).join('');
 
   $('#g702-host').innerHTML = `
-    <div class="ytoolrow no-print"><div class="spacer"></div><button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button></div>
+    <div class="ytoolrow no-print"><div class="spacer"></div><button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">Print / Save as PDF</button></div>
     <div class="ydoc">
       <div class="ydoc-head">
         <div><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo"><div class="sub" style="margin-top:8px">McCorvey Sheet Metal Works, L.P. · HVAC Sheet Metal — BIM Detailing, Fabrication &amp; Installation</div></div>
@@ -797,7 +797,7 @@ function secReports() {
   return `
     <div class="demo-panel">
       <div class="demo-panel-head"><h2>Progress Report History</h2>
-        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/mccorvey/reports/?id=${j.id}">📄 Generate New Report</a></div>
+        <a class="pa-btn primary" style="cursor:pointer;text-decoration:none" href="/mccorvey/reports/?id=${j.id}">Generate New Report</a></div>
       <table class="demo-tbl tbl-left">
         <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
         <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>

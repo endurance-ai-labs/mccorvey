@@ -6,9 +6,9 @@
 <title>RFIs & Clarifications — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — RFI register and bid qualifications letter generated from Spec Book Review. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   .rf-lens { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:0 0 16px; }
   .rf-lens .lb { font-size:10px; font-weight:800; letter-spacing:.1em; color:var(--color-slate-hint); text-transform:uppercase; }
@@ -75,12 +75,12 @@
 </main>
 <div class="rf-toast" id="toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013c"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013d"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — RFIs & Clarifications' });
@@ -260,7 +260,7 @@ function render() {
     <div class="demo-panel" id="letter" style="margin-bottom:22px">
       <div class="demo-panel-head"><h2>Qualifications Letter</h2><span class="k">${saved ? 'edited — your changes are saved' : 'generated from your decisions'}</span></div>
       <div class="lt-tools">
-        <button class="pa-btn primary" onclick="window.print()">🖨 Print / save PDF</button>
+        <button class="pa-btn primary" onclick="window.print()">Print / save PDF</button>
         <button class="pa-btn" onclick="copyLetter()">⧉ Copy text</button>
         <button class="pa-btn" onclick="regen()">↻ Regenerate from decisions</button>
         <span class="nt">Click into the letter to edit. Price it → basis of bid · Qualify → clarifications · Exclude → exclusions · open RFIs → assumptions.</span>

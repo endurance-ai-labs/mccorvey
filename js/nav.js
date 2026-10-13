@@ -36,12 +36,16 @@ const NAV_GROUPS = [
     id: 'bids',
     label: 'Preconstruction',
     items: [
-      { href: '/mccorvey/specreview/', label: '📕 Spec Book Review' },
-      { href: '/mccorvey/rfis/',      label: 'RFIs & Clarifications' },
-      { href: '/mccorvey/bidmodel/',  label: '⚖️ Adjustable Bid Modeler' },
-      { href: '/mccorvey/bids/',      label: 'Bid Builder & Redline' },
-      { href: '/mccorvey/bidreview/', label: '🧠 Bid Queue & Review ROI' },
-      { href: '/mccorvey/pipeline/',  label: 'Bid Pipeline & Win/Loss' },
+      { href: '/mccorvey/specreview/', label: 'Spec Review', tabs: [
+        { href: '/mccorvey/specreview/', label: 'Spec Book Review' },
+        { href: '/mccorvey/rfis/',       label: 'RFIs & Bid Letter' },
+        { href: '/mccorvey/bidreview/',  label: 'Bid Queue & Review ROI' },
+      ] },
+      { href: '/mccorvey/bidmodel/', label: 'Bidding', tabs: [
+        { href: '/mccorvey/bidmodel/', label: 'Adjustable Bid Modeler' },
+        { href: '/mccorvey/bids/',     label: 'Bid Builder & Redline' },
+      ] },
+      { href: '/mccorvey/pipeline/', label: 'Pipeline & Win/Loss' },
     ],
   },
   {
@@ -76,6 +80,14 @@ function _normalizePath(p) {
   if (p === '/mccorvey') return '/';
   if (p.startsWith('/mccorvey/')) p = p.slice(9);
   return p || '/';
+}
+
+function _hrefActive(href, path) {
+  const n = _normalizePath(href);
+  return path === n || (n !== '/' && path.startsWith(n));
+}
+function _itemActive(it, path) {
+  return _hrefActive(it.href, path) || (it.tabs || []).some(t => _hrefActive(t.href, path));
 }
 
 function _activeGroup(path) {
@@ -159,12 +171,12 @@ function renderTopbar(opts = {}) {
     const href = g.items.length === 0 ? g.href : g.items[0].href;
     if (g.items.length === 0) {
       if (g.cta) {
-        return `<div class="nav-item"><a href="${href}" data-group="${g.id}" class="nav-cta${active ? ' active' : ''}" style="display:inline-flex;align-items:center;gap:5px;color:#fff;padding:6px 15px;border-radius:999px;font-weight:700;">🧠 ${g.label}</a></div>`;
+        return `<div class="nav-item"><a href="${href}" data-group="${g.id}" class="nav-cta${active ? ' active' : ''}" style="display:inline-flex;align-items:center;gap:5px;color:#fff;padding:6px 15px;border-radius:999px;font-weight:700;">${g.label}</a></div>`;
       }
       return `<div class="nav-item"><a href="${href}" data-group="${g.id}" class="${active ? 'active' : ''}">${g.label}</a></div>`;
     }
     const dropdownItems = g.items.map(it => {
-      const itemActive = path === it.href || (it.href !== '/' && path.startsWith(it.href));
+      const itemActive = _itemActive(it, path);
       if (it.jobFlyout) {
         return `<div class="nav-dd-fly-parent">
           <a href="${it.href}" class="nav-dropdown-item ${itemActive ? 'active' : ''}">${it.label} <span class="nav-caret" style="float:right">▸</span></a>
@@ -187,7 +199,7 @@ function renderTopbar(opts = {}) {
       return `<div class="nav-item"><a href="${href}" data-group="${g.id}" class="${active ? 'active' : ''}">${g.label}</a></div>`;
     }
     const dropdownItems = g.items.map(it => {
-      const itemActive = path === it.href || (it.href !== '/' && path.startsWith(it.href));
+      const itemActive = _itemActive(it, path);
       return `<a href="${it.href}" class="nav-dropdown-item ${itemActive ? 'active' : ''}">${it.label}</a>`;
     }).join('');
     return `
@@ -201,7 +213,7 @@ function renderTopbar(opts = {}) {
   const hasSubnav = activeGroup && activeGroup.items.length > 1;
   if (hasSubnav) {
     const subItems = activeGroup.items.map(it => {
-      const itemActive = path === it.href || (it.href !== '/' && path.startsWith(it.href));
+      const itemActive = _itemActive(it, path);
       if (it.jobFlyout) {
         return `<span class="subnav-fly-parent">
           <a href="${it.href}" class="section-subnav-item ${itemActive ? 'active' : ''}">${it.label} <span class="nav-caret">▾</span></a>
@@ -289,6 +301,17 @@ function renderTopbar(opts = {}) {
     ${subBar}`;
 
   document.body.classList.remove('has-sidenav', 'has-sidenav-collapsed');
+
+  // in-page tabs for menu items that group several pages (Spec Review, Bidding)
+  const tabItem = activeGroup && activeGroup.items.find(it => it.tabs && _itemActive(it, path));
+  const main = document.querySelector('main.page');
+  if (tabItem && main && !document.getElementById('page-tabs')) {
+    const wrap = document.createElement('div');
+    wrap.id = 'page-tabs';
+    wrap.className = 'demo-wrap page-tabs-wrap';
+    wrap.innerHTML = `<div class="page-tabs">${tabItem.tabs.map(t => `<a href="${t.href}" class="page-tab ${_hrefActive(t.href, path) ? 'active' : ''}">${t.label}</a>`).join('')}</div>`;
+    main.insertBefore(wrap, main.firstChild);
+  }
 
   // demo watermark on every page
   if (!document.querySelector('.demo-watermark')) {

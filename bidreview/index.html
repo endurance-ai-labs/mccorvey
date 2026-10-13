@@ -6,15 +6,15 @@
 <title>Bid Queue & Review ROI — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — AI document review. Every spec, drawing set and addendum machine-read before an estimator opens the set. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   .dr-risk { display:flex; align-items:center; gap:8px; }
   .dr-risk .bar { width:64px; height:6px; border-radius:99px; background:var(--color-bg-3); overflow:hidden; }
   .dr-risk .bar i { display:block; height:100%; border-radius:99px; }
   .dr-doc { display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--color-border); border-radius:9px; margin-bottom:8px; background:var(--color-bg-2); }
-  .dr-doc .ic { font-size:16px; }
+  .dr-doc .ic { font-size:9.5px; font-weight:800; letter-spacing:.06em; color:var(--color-blue); background:var(--color-blue-pale); border-radius:5px; padding:3px 6px; min-width:36px; text-align:center; }
   .dr-doc .nm { flex:1; min-width:0; }
   .dr-doc .nm b { display:block; font-size:12.5px; color:var(--color-cloud-whisper); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .dr-doc .nm span { font-size:10.5px; color:var(--color-text-muted); }
@@ -42,11 +42,11 @@
   <div class="demo-wrap" id="app"></div>
 </main>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Bid Queue & Review ROI' });
@@ -87,10 +87,10 @@ function render() {
     </tr>`).join('');
 
   const q = DR.queue[selected];
-  const docIcon = { Spec: '📕', Drawings: '📐', Addendum: '📎', Contract: '📄' };
+  const docIcon = { Spec: 'SPEC', Drawings: 'DWG', Addendum: 'ADD', Contract: 'DOC' };
   const docs = q.docs.map(d => `
     <div class="dr-doc">
-      <span class="ic">${docIcon[d.type] || '📄'}</span>
+      <span class="ic">${docIcon[d.type] || 'DOC'}</span>
       <span class="nm"><b>${esc(d.name)}</b><span>${d.type} · ${d.pages.toLocaleString()} pages</span></span>
       <span class="ypill ${d.status === 'Read' ? 'green' : d.status === 'Reading' ? 'blue' : 'gray'}">${d.status}</span>
     </div>`).join('');
@@ -137,7 +137,6 @@ function render() {
     </div>
 
     <a href="/mccorvey/specreview/" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;text-decoration:none;border:1px solid #c8102e;border-left-width:5px;border-radius:12px;padding:13px 18px;margin-bottom:16px;background:var(--color-blue-pale)">
-      <span style="font-size:22px">📕</span>
       <span style="flex:1;min-width:220px"><b style="display:block;font-size:13.5px;color:var(--color-cloud-whisper)">Open a set in Spec Book Review</b><span style="font-size:12px;color:var(--color-text-muted)">Div 00/01 + 22 + 23 triage, cited findings, what changed since you priced, RFIs and spec adders straight into the bid sheet.</span></span>
       <span class="pa-btn primary" style="pointer-events:none">Spec Book Review →</span>
     </a>
@@ -199,7 +198,7 @@ function render() {
         <div>
           <div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin-bottom:9px">AI FINDINGS — ${q.findings.length} FLAGS${q.risk != null ? ' · RISK ' + q.risk + '/100' : ''}</div>
           ${findings}
-          ${q.recommendation ? `<div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:16px 0 9px">RECOMMENDATION</div><div class="dr-reco">🧠 ${esc(q.recommendation)}</div>` : ''}
+          ${q.recommendation ? `<div style="font-size:10.5px;font-weight:800;letter-spacing:.08em;color:var(--color-slate-hint);margin:16px 0 9px">RECOMMENDATION</div><div class="dr-reco">${esc(q.recommendation)}</div>` : ''}
           ${q.status === 'Review Complete' ? `<div class="ynote" style="margin-top:10px">Review time: <b>${q.hoursAI}h</b> with AI first-pass vs. an estimated ${q.hoursManual}h manual — ${Math.round((1 - q.hoursAI / q.hoursManual) * 100)}% less. Sign-off recorded to the bid file.</div>` : ''}
         </div>
       </div>

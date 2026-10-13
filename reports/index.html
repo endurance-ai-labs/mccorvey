@@ -15,18 +15,18 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://endurance-ai-labs.github.io/mccorvey/assets/brand/og-cover.png">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Progress Reports' });
 let jobId = qs('id') || 'GCM-2410';
@@ -59,7 +59,7 @@ function clearSig(key) { try { localStorage.removeItem('msm-sign:' + key); } cat
 function sigBlock(key, cap, roles) {
   const s = sigState(key);
   if (s) return `<div class="sig signed"><span class="sig-script">${esc(s.name)}</span><div class="sig-meta">Digitally signed — ${esc(s.title)} · ${esc(s.at)} <a href="#" class="no-print" style="color:#97a0ad;font-weight:400" onclick="event.preventDefault();clearSig('${key}')" title="Clear signature (demo)">↺</a></div><div class="sig-cap">${cap}</div></div>`;
-  return `<div class="sig"><button class="sig-btn" onclick="signDoc('${key}','${roles}')">✍ Sign electronically</button><div class="sig-cap">${cap}</div></div>`;
+  return `<div class="sig"><button class="sig-btn" onclick="signDoc('${key}','${roles}')">Sign electronically</button><div class="sig-cap">${cap}</div></div>`;
 }
 
 function render() {
@@ -102,7 +102,7 @@ function render() {
         <select class="yin" id="rep-job">${jobOpts}</select>
       </label>
       <div class="spacer"></div>
-      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">🖨 Print / Save as PDF</button>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">Print / Save as PDF</button>
     </div>
 
     <div class="demo-panel no-print" style="margin-bottom:22px">

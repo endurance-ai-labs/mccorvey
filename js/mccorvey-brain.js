@@ -57,7 +57,7 @@
   panel.innerHTML =
     '<div class="bw-head"><div class="t"><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"#e8b23a\" stroke-width=\"1.7\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M9.5 2.5a2.6 2.6 0 0 0-2.6 2.6c-1.4.2-2.5 1.3-2.5 2.8 0 .5.1 1 .4 1.4A3 3 0 0 0 3 12c0 1 .5 1.9 1.2 2.4-.2.4-.3.9-.3 1.4a2.9 2.9 0 0 0 2.9 2.9c.2 1.3 1.3 2.3 2.7 2.3 1.1 0 2-.6 2.5-1.5V4.3a2.6 2.6 0 0 0-2.5-1.8Z\"/><path d=\"M14.5 2.5a2.6 2.6 0 0 1 2.6 2.6c1.4.2 2.5 1.3 2.5 2.8 0 .5-.1 1-.4 1.4A3 3 0 0 1 21 12c0 1-.5 1.9-1.2 2.4.2.4.3.9.3 1.4a2.9 2.9 0 0 1-2.9 2.9c-.2 1.3-1.3 2.3-2.7 2.3-1.1 0-2-.6-2.5-1.5V4.3a2.6 2.6 0 0 1 2.5-1.8Z\"/><path d=\"M12 4.3v15.2\"/><path d=\"M7 9h2M15 9h2M7.5 13.5H10M14 13.5h2.5\"/></svg>MSM — Operating Brain<a href="/mccorvey/brain/" style="margin-left:auto;font-size:10px;color:#f3d6da;text-decoration:none;font-weight:600" title="Open full page">FULL PAGE ↗</a></div>' +
       '<div class="s">Every job, bid set, pay app and plant release — synthesized live</div></div>' +
-    '<div class="bw-disc">⚠ Demo assistant. Responses are illustrative and <b>entirely fictional</b> — not factual, not advice, and should not be relied upon.</div>' +
+    '<div class="bw-disc">Demo assistant. Responses are illustrative and <b>entirely fictional</b> — not factual, not advice, and should not be relied upon.</div>' +
     '<div class="bw-body" id="bw-body"></div>' +
     '<div class="bw-row"><textarea class="bw-in" id="bw-in" rows="1" placeholder="Ask about a job, margin, billing, schedule…"></textarea>' +
       '<button class="bw-send" id="bw-send" aria-label="Send">→</button></div>' +

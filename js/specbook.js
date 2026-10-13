@@ -471,15 +471,15 @@
 
   /* -------------------------------------------------------------------
      RESPONSIBILITY MATRIX — furnish / install / wire-power / test / note
-     ⚠ marks an unassigned or conflicting cell
+     "Gap:" marks an unassigned or conflicting cell
      ------------------------------------------------------------------- */
   const M = [
-    { item: 'VAV terminal units', lens: 'sm', f: 'Div 23', i: 'Div 23', w: 'Div 25 (factory-mounted controller)', t: 'TAB / Cx', note: '⚠ transformers — integral vs grouped (C01)', src: '23 3300 · 23 0513' },
+    { item: 'VAV terminal units', lens: 'sm', f: 'Div 23', i: 'Div 23', w: 'Div 25 (factory-mounted controller)', t: 'TAB / Cx', note: 'Gap: transformers — integral vs grouped (C01)', src: '23 3300 · 23 0513' },
     { item: 'Control dampers & airflow stations', lens: 'sm', f: 'Div 25', i: 'Div 23 duct', w: 'Div 25', t: 'Cx', note: 'Moved to your install scope in Issue 04', src: '25 0900 ¶1.9.K' },
-    { item: 'Fire / smoke / combination dampers', lens: 'sm', f: 'Div 23', i: 'Div 23', w: 'FA: Div 28 · BAS: Div 25 · 120V: ⚠ none', t: 'Div 23 + FA vendor', note: '⚠ actuator power unassigned (C06)', src: '23 0513 · 23 3300' },
+    { item: 'Fire / smoke / combination dampers', lens: 'sm', f: 'Div 23', i: 'Div 23', w: 'FA: Div 28 · BAS: Div 25 · 120V: Gap: none', t: 'Div 23 + FA vendor', note: 'Gap: actuator power unassigned (C06)', src: '23 0513 · 23 3300' },
     { item: 'Duct smoke detectors', lens: 'sm', f: 'Div 28', i: 'Div 23', w: 'Div 28', t: 'Div 28', note: 'Install labor is yours', src: '25 0900 ¶1.9.O' },
     { item: 'Duct leakage testing', lens: 'sm', f: '—', i: 'Div 23 performs', w: '—', t: 'Witness: TAB + CxA + special inspector (smoke control)', note: 'Three witnesses, sealing reviewed first', src: '23 3113 ¶3.16 · 01 4533' },
-    { item: 'Testing, adjusting & balancing', lens: 'hvac', f: 'CM-hired TAB', i: '—', w: '—', t: 'TAB', note: '⚠ sheave/drive changes — who pays (C09)', src: '01 9100 · 23 3400' },
+    { item: 'Testing, adjusting & balancing', lens: 'hvac', f: 'CM-hired TAB', i: '—', w: '—', t: 'TAB', note: 'Gap: sheave/drive changes — who pays (C09)', src: '01 9100 · 23 3400' },
     { item: 'Temporary HVAC operation', lens: 'hvac', f: 'Permanent equip.', i: 'Div 23', w: 'Div 26', t: 'Div 23 operates + filters', note: 'Second factory start-up before SC', src: '01 5000 · 01 7300' },
     { item: 'HVAC VFDs', lens: 'hvac', f: 'Div 23', i: 'Div 26', w: 'Div 26', t: 'Div 23 + mfr', note: 'Spec lives in 26 2923', src: '23 0513 ¶2.3' },
     { item: 'Plumbing pump VFDs', lens: 'plumb', f: 'Div 22', i: 'Div 26', w: 'Div 26', t: 'Div 22 + mfr', note: '', src: '22 0513 ¶2.2' },
@@ -487,12 +487,12 @@
     { item: 'RTU cantilever curbs & screens', lens: 'hvac', f: 'Div 23 (delegated design)', i: 'Div 23', w: '—', t: 'PE letter', note: 'Structural design-build in an equipment section', src: '23 7416 ¶2.1.F' },
     { item: 'Equipment pads', lens: 'hvac', f: 'Div 23', i: 'Div 23', w: '—', t: '—', note: 'Concrete + pad drawings', src: '23 0500 ¶3.12' },
     { item: 'Louvers / plenums', lens: 'sm', f: 'Louver: Div 08 · plenum: Div 23', i: 'Div 08 / Div 23', w: '—', t: '—', note: 'Insulated blank-offs are yours', src: '08 9119 · 23 3113' },
-    { item: 'Seismic restraint design', lens: 'all', f: 'Contractor PE', i: 'Each trade', w: '—', t: 'PE letter', note: '⚠ criteria missing (C03)', src: '01 1000 ¶1.11.C' },
+    { item: 'Seismic restraint design', lens: 'all', f: 'Contractor PE', i: 'Each trade', w: '—', t: 'PE letter', note: 'Gap: criteria missing (C03)', src: '01 1000 ¶1.11.C' },
     { item: 'Duct insulation', lens: 'sm', f: 'Div 23 (insulation sub-sub)', i: 'Div 23', w: '—', t: '—', note: 'Plumbing insulation separately in Div 22', src: '23 0700 · 22 0719' },
-    { item: 'Grease duct', lens: 'sm', f: 'Div 23', i: 'Div 23', w: '—', t: '⚠ no test specified', note: 'Hood by Div 11; 20-yr warranty (C07)', src: '23 3113.19' },
+    { item: 'Grease duct', lens: 'sm', f: 'Div 23', i: 'Div 23', w: '—', t: 'Gap: no test specified', note: 'Hood by Div 11; 20-yr warranty (C07)', src: '23 3113.19' },
     { item: 'Firestopping at duct penetrations', lens: 'sm', f: 'Div 07 (single-source)', i: 'Div 07', w: '—', t: 'Special inspector', note: 'Confirm you are not carrying it', src: '07 8413' },
-    { item: 'Owner conveyor / ASRS connections', lens: 'all', f: 'Owner', i: 'Contractor', w: '?', t: '?', note: '⚠ product list blank (C14)', src: '01 1000 ¶1.6' },
-    { item: 'Process piping PCC-9', lens: 'plumb', f: '⚠ "Piping Installation Contractor"', i: '⚠ unnamed', w: '—', t: 'Owner-witnessed hydro', note: 'Exclude unless invited', src: '40 0523' },
+    { item: 'Owner conveyor / ASRS connections', lens: 'all', f: 'Owner', i: 'Contractor', w: 'Gap: undefined', t: 'Gap: undefined', note: 'Gap: product list blank (C14)', src: '01 1000 ¶1.6' },
+    { item: 'Process piping PCC-9', lens: 'plumb', f: 'Gap: "Piping Installation Contractor"', i: 'Gap: unnamed', w: '—', t: 'Owner-witnessed hydro', note: 'Exclude unless invited', src: '40 0523' },
   ];
 
   /* base takeoff used when "Start bid sheet from this book" is pressed */

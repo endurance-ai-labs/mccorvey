@@ -6,9 +6,9 @@
 <title>Adjustable Bid Modeler — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — type-in bid sheet: every change reprices cost to client, cost to McCorvey and profit instantly, with a manpower check and same-page bid confirmation. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   /* ---------- summary bar ---------- */
   .bs-roll { position: sticky; z-index: 60; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 12px 0 10px; background: var(--color-bg); }
@@ -148,12 +148,12 @@
 </main>
 <div class="bs-toast" id="bs-toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013c"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013d"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Adjustable Bid Modeler' });
@@ -321,8 +321,8 @@ function specPayload(fresh) {
 function specMenu() {
   const B = specBook(); if (!B) return '';
   const p = specPayload(false), tot = p.adders.reduce((a, x) => a + x.amt, 0);
-  return (B.takeoff ? `<option value="spec:fresh">📕 Spec Book Review · ${esc(B.name)} — start sheet from book (+${p.adders.length} adders)</option>` : '') +
-    `<option value="spec:add">📕 Spec Book Review · add ${p.adders.length} priced spec adders (${fmtK(tot)})</option>`;
+  return (B.takeoff ? `<option value="spec:fresh">Spec Book Review · ${esc(B.name)} — start sheet from book (+${p.adders.length} adders)</option>` : '') +
+    `<option value="spec:add">Spec Book Review · add ${p.adders.length} priced spec adders (${fmtK(tot)})</option>`;
 }
 function loadSpec(fresh) { const p = specPayload(fresh); if (p) applySpec(p); }
 function applySpec(h) {
@@ -448,7 +448,7 @@ function render(keepScroll) {
       <button class="pa-btn" id="btn-redo" onclick="redo()" title="Redo (Ctrl+Y)">↷ Redo</button>
       <span class="sep"></span>
       <select ${d} onchange="addFromCatalog(this.value);this.value=''"><option value="">+ Add line from catalog…</option>${CATALOG.map((c, i) => `<option value="${i}">${esc(c.scope)} (${c.unit})</option>`).join('')}<option value="blank">Blank line</option></select>
-      <select ${d} onchange="loadFromReview(this.value);this.value=''"><option value="">🧠 Load quantities / spec adders…</option>${specMenu()}${sets.map(q => `<option value="${q.bid}">${q.bid} · ${esc(q.project.split('—')[0].trim())} (${q.quantities.length} qty${q.findings.length ? ', ' + q.findings.length + ' flags' : ''})</option>`).join('')}</select>
+      <select ${d} onchange="loadFromReview(this.value);this.value=''"><option value="">Load quantities / spec adders…</option>${specMenu()}${sets.map(q => `<option value="${q.bid}">${q.bid} · ${esc(q.project.split('—')[0].trim())} (${q.quantities.length} qty${q.findings.length ? ', ' + q.findings.length + ' flags' : ''})</option>`).join('')}</select>
       <span class="sep"></span>
       <button class="pa-btn" onclick="copySummary()" title="Copy a text summary of the bid for email or text">⧉ Copy summary</button>
     </div>

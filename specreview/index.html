@@ -6,9 +6,9 @@
 <title>Spec Book Review — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — Spec Book Review. Div 00/01 + 22 + 23 triage, cited findings, issue-to-issue changes, conflicts to RFIs, responsibility matrix and spec adders into the bid. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
 <style>
   .sr-src { display:flex; flex-wrap:wrap; gap:8px; justify-content:flex-end; }
   .sr-src .pa-btn { background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.22); }
@@ -175,12 +175,12 @@
 <div class="sr-ov" id="ov"><div class="bx"><h3 id="ov-h">Reading spec book</h3><p>Processed entirely in this browser. Nothing is uploaded, nothing leaves this machine.</p><div class="pg"><i id="ov-bar"></i></div><div class="st" id="ov-st">Loading PDF reader…</div></div></div>
 <div class="sr-toast" id="toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013a"></script>
-<script src="/mccorvey/js/util.js?v=20261013a"></script>
-<script src="/mccorvey/js/nav.js?v=20261013a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013c"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013d"></script>
+<script src="/mccorvey/js/util.js?v=20261013d"></script>
+<script src="/mccorvey/js/nav.js?v=20261013d"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013d"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book Review' });
@@ -248,7 +248,7 @@ function render() {
           <span class="sr-mode ${BOOK.local ? 'local' : ''}"><i></i>${BOOK.local ? 'YOUR BOOK · LOCAL ONLY' : 'SAMPLE BOOK · FICTIONAL'}</span>
           <span class="cmd-range">${issueLbl(BOOK.bookIssue)}${BOOK.bookDate ? ' · ' + fmtDate(BOOK.bookDate) : ''} · priced at ${issueLbl(BOOK.pricedIssue)}</span>
           <div class="sr-src">
-            <button class="pa-btn primary" onclick="$('#pick-cur').click()">📕 Load a spec book (PDF)</button>
+            <button class="pa-btn primary" onclick="$('#pick-cur').click()">Load a spec book (PDF)</button>
             ${BOOK.local ? `<button class="pa-btn" onclick="$('#pick-prior').click()">⇄ Compare prior issue</button><button class="pa-btn" onclick="useSample()">Back to sample</button>` : ''}
           </div>
         </div>
@@ -424,7 +424,7 @@ function paneChanges(S) {
       <div class="sr-kpi amber"><div class="l">Added cost</div><div class="v">${BOOK.sample ? '+' + moneyK(up) : '—'}</div><div class="s">${BOOK.sample ? 'priced against your Issue 03 number' : 'price each change below'}</div></div>
       <div class="sr-kpi green"><div class="l">Credits found</div><div class="v">${BOOK.sample ? moneyK(dn) : '—'}</div><div class="s">${BOOK.sample ? 'incl. one hiding in Div 07' : ''}</div></div>
     </div>
-    <div class="dr-reco" style="border:1px solid #c8102e;border-radius:10px;padding:13px 15px;background:var(--color-blue-pale);font-size:12.8px;line-height:1.6;margin-bottom:16px">🧠 Reissued sections carry a new date in the header and <b>nothing else</b> — no clouds, no deltas, no revision narrative. The Brain compares every sentence against the issue you priced and puts a dollar figure on what moved.
+    <div class="dr-reco" style="border:1px solid #c8102e;border-radius:10px;padding:13px 15px;background:var(--color-blue-pale);font-size:12.8px;line-height:1.6;margin-bottom:16px">Reissued sections carry a new date in the header and <b>nothing else</b> — no clouds, no deltas, no revision narrative. The Brain compares every sentence against the issue you priced and puts a dollar figure on what moved.
       ${BOOK.sample && div22.length ? ` <b>Division 22: ${div22chg} of ${div22.length} sections changed — your plumbing number stands.</b>` : ''}</div>
     ${ds.length ? ds.map(d => {
       const tot = d.changes.reduce((a, c) => a + (c.amt || 0), 0);
@@ -477,7 +477,7 @@ function paneMatrix() {
         <thead><tr><th style="width:150px">Cite</th><th>Statement</th></tr></thead>
         <tbody>${rows.map(r => `<tr><td><span class="sr-cite">${E.cite(r.src, '', r.page)}</span></td><td>${esc(r.item)}</td></tr>`).join('') || '<tr><td colspan="2">No responsibility statements found in this lens.</td></tr>'}</tbody></table></div></div>`;
   }
-  const cell = v => `<td class="${/⚠/.test(v) ? 'warn' : ''}">${esc(v)}</td>`;
+  const cell = v => `<td class="${/Gap:/.test(v) ? 'warn' : ''}">${esc(v)}</td>`;
   return `<div class="ynote" style="margin:-4px 0 12px">Who furnishes, installs, wires and tests — assembled from Divisions 01, 07, 08, 22, 23, 25, 26 and 28. <b style="color:var(--color-amber)">Amber</b> = unassigned or contradicted in the book.</div>
     <div class="demo-panel"><div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left sr-mx">
       <thead><tr><th>Item</th><th>Furnish</th><th>Install</th><th>Wire / power</th><th>Test / witness</th><th>Watch</th><th>Source</th></tr></thead>
