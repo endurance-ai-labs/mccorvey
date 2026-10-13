@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013h">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013h">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013h">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013i">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013i">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013i">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -225,13 +225,13 @@
 <div class="sb-ov" id="ov"><div class="bx"><h3 id="ov-h">Reading spec book</h3><p>Processed entirely in this browser. Nothing is uploaded.</p><div class="pg"><i id="ov-bar"></i></div><div class="st" id="ov-st">Loading PDF reader…</div></div></div>
 <div class="sb-toast" id="toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013h"></script>
-<script src="/mccorvey/js/util.js?v=20261013h"></script>
-<script src="/mccorvey/js/nav.js?v=20261013h"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013h"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013h"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261013h"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013h" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013i"></script>
+<script src="/mccorvey/js/util.js?v=20261013i"></script>
+<script src="/mccorvey/js/nav.js?v=20261013i"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013i"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013i"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261013i"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013i" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -286,7 +286,8 @@ const lensOk = l => E.inLens(l || 'other', META.lens);
 const fLens = f => f.lens || E.lensOf(f.sec);
 const divRank = sec => { const d = sec.slice(0, 2); return d === '00' || d === '01' ? 0 : d === '23' ? 1 : d === '25' ? 2 : d === '22' ? 3 : 4; };
 const FS = () => BOOK.findings.filter(f => lensOk(fLens(f))).sort((a, b) => divRank(a.sec) - divRank(b.sec) || a.page - b.page);
-const dec = f => { const d = DEC[f.id] || {}; return { act: d.act || f.act, amt: d.amt != null ? +d.amt : (f.amt || 0), ok: !!d.ok }; };
+const dec = f => { const d = DEC[f.id] || {}; const amt = d.amt != null ? +d.amt : (f.amt || 0); return { act: d.act || f.act, amt, ok: !!d.ok, allow: !!d.allow && !(amt > 0) }; };
+const needsAmt = f => { const d = dec(f); return d.act === 'price' && !(d.amt > 0) && !d.allow; };
 const CONFS = () => BOOK.conflicts.filter(c => lensOk(c.lens));
 const inLog = c => (DEC[c.id] || {}).act !== 'off';
 const rs = id => Object.assign({ status: 'draft', sent: '', answer: '' }, RS[id]);
@@ -294,7 +295,8 @@ const DIFFS = () => BOOK.diffs.filter(d => lensOk(d.lens));
 const acked = d => !!(DEC['chg:' + d.sec] || {}).ack;
 const isYours = s => E.YOURS.includes(s.div);
 function rfiNums() { const N = {}; let n = 0; BOOK.conflicts.forEach(c => { if (inLog(c)) N[c.id] = ++n; }); return N; }
-const ADDERS = () => FS().filter(f => dec(f).act === 'price').map(f => ({ id: f.id, title: f.title, amt: +dec(f).amt || 0, tag: 'Spec · ' + E.cite(f.sec, f.para, f.page) }));
+const ADDERS = () => FS().filter(f => dec(f).act === 'price' && dec(f).amt > 0).map(f => ({ id: f.id, title: f.title, amt: +dec(f).amt || 0, tag: 'Spec · ' + E.cite(f.sec, f.para, f.page) }));
+const ALLOWS = () => FS().filter(f => dec(f).act === 'price' && dec(f).allow);
 const staleSecs = () => BOOK.sections.filter(s => isYours(s) && s.id !== '00 0000' && s.issue != null && s.issue < BOOK.pricedIssue && lensOk(E.lensOf(s.id)));
 const SCOPE = { sm: 'HVAC sheet metal ductwork and accessories', hvac: 'Division 23 HVAC', plumb: 'Division 22 plumbing', all: 'Divisions 22 and 23 mechanical' };
 function sheet() { const S = BC.load(); return S && S.meta.specKey === BOOK.key ? S : null; }
@@ -330,8 +332,10 @@ function checks() {
   if (hi.length) add('error', 'decide', `${hi.length} high-severity finding${hi.length > 1 ? 's' : ''} not reviewed`, 'Each needs a Price / RFI / Qualify / Exclude decision.', "go('decide','needs')", 'Review');
   const rest = F.filter(f => f.sev !== 'high' && !dec(f).ok);
   if (rest.length) add('warn', 'decide', `${rest.length} medium/info finding${rest.length > 1 ? 's' : ''} will use the recommended decision`, '', 'acceptAll(true)', 'Accept all');
-  const zero = F.filter(f => dec(f).act === 'price' && !(dec(f).amt > 0));
-  if (zero.length) add('error', 'decide', `${zero.length} priced finding${zero.length > 1 ? 's have' : ' has'} no dollar amount`, zero.slice(0, 3).map(f => f.title).join(' · '), "go('decide','noamt')", 'Enter $');
+  const zero = F.filter(needsAmt);
+  if (zero.length) add('error', 'decide', `${zero.length} priced finding${zero.length > 1 ? 's have' : ' has'} no dollar amount`, 'Enter the $, or carry it as an allowance (listed in the proposal as not included).', "go('decide','noamt')", 'Fix');
+  const al = ALLOWS();
+  if (al.length) add('warn', 'decide', `${al.length} item${al.length > 1 ? 's' : ''} carried as allowances (TBD)`, 'Listed in the proposal as not included in the base bid, to be priced.', "go('decide','allow')", 'Review');
 
   const un = DIFFS().filter(d => !acked(d));
   if (un.length) add('error', 'changes', `${un.length} changed section${un.length > 1 ? 's' : ''} not confirmed`, 'Confirm each change is in your number.', "go('changes')", 'Confirm');
@@ -516,14 +520,14 @@ function fdHTML(f) {
     </div>
     <div class="fd-side">
       <span class="seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''} ${f.act === k ? 'rec' : ''}" title="${f.act === k ? 'Recommended' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>
-      ${d.act === 'price' ? `<label class="amt">Adder $<input data-amt="${f.id}" class="${d.amt > 0 ? '' : 'miss'}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="required" inputmode="decimal"></label>${f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : ''}` : ''}
-      ${d.ok ? '<span class="fd-ok">✓ REVIEWED</span>' : `<button class="pa-btn primary" style="height:30px;font-size:11.5px" onclick="confirmF('${f.id}')">Confirm: ${ACTS.find(a => a[0] === d.act)[1]}</button>`}
+      ${d.act === 'price' ? `<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${d.allow ? '<span class="bdg chg">ALLOWANCE · TBD</span>' : ''}<label class="amt">Adder $<input data-amt="${f.id}" class="${d.amt > 0 || d.allow ? '' : 'miss'}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="${d.allow ? 'optional' : 'required'}" inputmode="decimal"></label>${d.amt > 0 ? '' : `<button class="pa-btn" style="height:30px;font-size:11px" onclick="setAllow('${f.id}',${!d.allow})">${d.allow ? 'Undo allowance' : 'Carry as allowance'}</button>`}</span>${f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : ''}` : ''}
+      ${d.ok ? `<span class="fd-ok">✓ REVIEWED${d.allow ? ' · ALLOWANCE' : ''}</span>` : `<button class="pa-btn primary" style="height:30px;font-size:11.5px" onclick="confirmF('${f.id}')">Confirm: ${ACTS.find(a => a[0] === d.act)[1]}</button>`}
     </div>
   </div>`;
 }
 function paneDecide() {
   const F = FS(), q = UI.q.toLowerCase();
-  const isK = (k, f) => k === 'needs' ? !dec(f).ok : k === 'high' ? f.sev === 'high' : k === 'price' ? dec(f).act === 'price' : k === 'noamt' ? dec(f).act === 'price' && !(dec(f).amt > 0) : true;
+  const isK = (k, f) => k === 'needs' ? !dec(f).ok : k === 'high' ? f.sev === 'high' : k === 'price' ? dec(f).act === 'price' : k === 'noamt' ? needsAmt(f) : k === 'allow' ? dec(f).act === 'price' && dec(f).allow : true;
   const list = F.filter(f => isK(UI.filter, f) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q)));
   const groups = []; list.forEach(f => { let g = groups.find(x => x.sec === f.sec); if (!g) groups.push(g = { sec: f.sec, items: [] }); g.items.push(f); });
   const cnt = k => F.filter(f => isK(k, f)).length;
@@ -532,10 +536,11 @@ function paneDecide() {
   return `
     ${progHTML()}
     <div class="sb-tools">
-      ${[['needs', 'Needs review'], ['high', 'High'], ['price', 'Priced'], ['noamt', 'Missing $'], ['all', 'All']].filter(([k]) => k !== 'noamt' || cnt('noamt') || UI.filter === 'noamt').map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
+      ${[['needs', 'Needs review'], ['high', 'High'], ['price', 'Priced'], ['noamt', 'Missing $'], ['allow', 'Allowances'], ['all', 'All']].filter(([k]) => !['noamt', 'allow'].includes(k) || cnt(k) || UI.filter === k).map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
       <input type="search" id="fq" placeholder="Search — hanger, warranty, 23 3113…" value="${esc(UI.q)}">
       <button class="pa-btn" onclick="UI.showMatrix=!UI.showMatrix;rerender()">${UI.showMatrix ? 'Hide who does what' : 'Who does what'}</button>
       ${shownOpen ? `<button class="pa-btn primary" onclick="acceptShown()">Accept recommended (${shownOpen})</button>` : ''}
+      ${cnt('noamt') ? `<button class="pa-btn" onclick="allowAll()" title="Priced items with no $ yet: list them in the proposal as not included, to be priced">Carry ${cnt('noamt')} missing $ as allowances</button>` : ''}
     </div>
     <div class="ynote" style="margin:-2px 0 14px">Every finding comes with a recommended decision (marked REC). Confirm it in one click or pick another. <b>Price it</b> adds a line to the bid, <b>RFI</b> drafts a question to the CM, <b>Qualify</b> and <b>Exclude</b> write the proposal terms.</div>
     ${UI.showMatrix ? matrixHTML(mx) : ''}
@@ -698,6 +703,7 @@ function proposalHTML(S, T) {
     ${h('Specification requirements included')}
     <p style="margin:0 0 6px">The base bid includes the following requirements, called out because they go beyond typical practice:</p>
     <ol>${priced.map(f => `<li>${esc(f.title)} ${cite(f)}</li>`).join('') || '<li>Per plans and specifications.</li>'}</ol>
+    ${ALLOWS().length ? `${h('Allowances — identified, not included in base bid')}<p style="margin:0 0 6px">The following specification requirements are identified in the documents but are not included in the base bid. Pricing will be provided as an add once quantities are confirmed:</p><ol>${ALLOWS().map(f => `<li>${esc(f.title)} ${cite(f)}</li>`).join('')}</ol>` : ''}
     ${D.length ? `${h('Changes reviewed and included')}<ol>${D.map(d => `<li>Section ${d.sec} ${esc(E.secTitle(BOOK, d.sec))} — ${d.isNew ? 'new section' : iss(d.from) + ' to ' + iss(d.to)}, reviewed and included.</li>`).join('')}</ol>` : ''}
     ${pending.length ? `${h('Assumptions pending RFI responses')}<ol>${pending.map(c => `<li>${esc(assume(c))} <span class="ref">(${E.rfiNo(N[c.id])})</span></li>`).join('')}</ol>` : ''}
     ${answered.length ? `${h('RFI responses incorporated')}<ol>${answered.map(c => `<li>${esc(rs(c.id).answer)} <span class="ref">(${E.rfiNo(N[c.id])})</span></li>`).join('')}</ol>` : ''}
@@ -749,20 +755,30 @@ function setAct(id, act) {
 }
 function confirmF(id) {
   const f = BOOK.findings.find(x => x.id === id), d = dec(f);
-  if (d.act === 'price' && !(d.amt > 0)) { toast('Enter the adder amount first'); const i = document.querySelector(`input[data-amt="${id}"]`); if (i) i.focus(); return; }
+  if (needsAmt(f)) { toast('Enter the $, or carry it as an allowance'); const i = document.querySelector(`input[data-amt="${id}"]`); if (i) i.focus(); return; }
   DEC[id] = Object.assign({}, DEC[id], { act: d.act, ok: true }); saveDec(); repaintCard(id);
 }
 function repaintCard(id) { const el = document.getElementById('f-' + id); const f = BOOK.findings.find(x => x.id === id); if (el && f) { el.outerHTML = fdHTML(f); bind(); } refreshChrome(); }
 function acceptList(list) {
   let n = 0, skipped = 0;
-  list.forEach(f => { const d = dec(f); if (d.ok) return; if (d.act === 'price' && !(d.amt > 0)) { skipped++; return; } DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; });
+  list.forEach(f => { const d = dec(f); if (d.ok) return; if (needsAmt(f)) { skipped++; return; } DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; });
   saveDec(); rerender();
-  toast(`${n} accepted as recommended${skipped ? ` · ${skipped} still need a dollar amount` : ''}`);
+  toast(`${n} accepted as recommended${skipped ? ` · ${skipped} need a $ or "Carry as allowance"` : ''}`);
 }
 function acceptAll(nonHighOnly) { acceptList(FS().filter(f => !nonHighOnly || f.sev !== 'high')); }
 function acceptShown() {
   const q = UI.q.toLowerCase();
   acceptList(FS().filter(f => (UI.filter === 'all' || (UI.filter === 'needs' && !dec(f).ok) || (UI.filter === 'high' && f.sev === 'high') || (UI.filter === 'price' && dec(f).act === 'price')) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q))));
+}
+function setAllow(id, on) {
+  const f = BOOK.findings.find(x => x.id === id);
+  DEC[id] = Object.assign({}, DEC[id], { act: 'price', allow: on, ok: on ? true : dec(f).amt > 0 });
+  saveDec(); repaintCard(id); toast(on ? 'Carried as an allowance — listed in the proposal as not included' : 'Allowance removed');
+}
+function allowAll() {
+  const list = FS().filter(needsAmt);
+  list.forEach(f => DEC[f.id] = Object.assign({}, DEC[f.id], { act: 'price', allow: true, ok: true }));
+  saveDec(); rerender(); toast(`${list.length} carried as allowances — enter a $ any time to move one into the base bid`);
 }
 function acceptSec(sec) { acceptList(FS().filter(f => f.sec === sec)); }
 function jumpFinding(id) { UI.filter = 'all'; UI.q = ''; go('decide'); setTimeout(() => { const el = document.getElementById('f-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800); } }, 350); }
