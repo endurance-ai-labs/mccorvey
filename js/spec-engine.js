@@ -38,44 +38,50 @@
   };
   const inLens = (itemLens, lens) => (LENSES[lens] || LENSES.all).show.includes(itemLens || 'other');
 
-  /* ---------------- rule library (known spec traps) ---------------- */
+  /* ---------------- rule library (known spec traps) ----------------
+     rx    → the clause pattern (tested against the page body, headers stripped)
+     t     → optional title built from the clause, so it names the actual value
+     basis → how an estimator prices it (shown next to the $ field)
+     sev   → high = moves the number or the schedule on most jobs          */
+  const NUMW = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, fifteen: 15, twenty: 20 };
+  const numOf = w => NUMW[String(w).toLowerCase()] || +w;
   const RULES = [
-    { id: 'deck', lens: 'sm', sev: 'high', cat: 'Hangers', title: 'Hangers restricted from metal deck — supplemental steel', rx: /(no hangers?[^.]{0,80}metal deck|(attach|suspend)\w*[^.]{0,40}(to|from)[^.]{0,30}metal deck)/i, impact: 'Every attachment may need added steel to structure. Price supplemental steel per hanger point.', act: 'price' },
-    { id: 'drops', lens: 'sm', sev: 'high', cat: 'Hangers', title: 'Long drops must be angle/channel — no rods or straps', rx: /(do not use (straps|rods)|drops?[^.]{0,60}(exceed|over|greater than)[^.]{0,30}\d+\s*(inch|in\.|")[^.]{0,80}(angle|channel))/i, impact: 'High-bay drops become trapeze and bracing work.', act: 'price' },
-    { id: 'sealA', lens: 'sm', sev: 'high', cat: 'Sealing', title: 'Seal Class A required', rx: /seal(ing)?\s+class\s*[:\-]?\s*A\b/i, impact: 'Sealing labor premium — check whether it applies to low-pressure systems too.', act: 'price' },
-    { id: 'wg10', lens: 'sm', sev: 'high', cat: 'Pressure class', title: 'High-pressure duct class (≥ 6" wg)', rx: /\b(6|8|10)[- ]?(inch|in\.?|")\s*(w\.?g|water gauge)\.?\s*(positive|\+)/i, impact: 'Heavier gauge, tighter reinforcement, full leak testing.', act: 'price' },
-    { id: 'leak', lens: 'sm', sev: 'high', cat: 'Testing', title: 'Duct leakage testing scope', rx: /(test all (high|medium)[^.]{0,40}duct|leakage test[^.]{0,120}(medium|high|shaft|witness))/i, impact: 'Test crew, rigs, retests and an inspection hold before insulation.', act: 'price' },
-    { id: 'spin', lens: 'sm', sev: 'med', cat: 'Fittings', title: 'Spin-in / cinch-lock fittings restricted', rx: /spin[- ]?in[^.]{0,60}(not (allowed|permitted|acceptable)|prohibit)/i, impact: 'Takeoffs become conical tees, bellmouths or boots.', act: 'price' },
-    { id: 'snap', lens: 'sm', sev: 'med', cat: 'Shop', title: 'Snaplock / button-punch seams prohibited', rx: /(snap\s?lock|button[- ]punch|pocket lock)[^.]{0,60}not (be )?(permitted|allowed|acceptable)/i, impact: 'Pittsburgh seams only — coil-line setup and seam labor.', act: 'price' },
-    { id: 'door', lens: 'sm', sev: 'med', cat: 'Accessories', title: 'Factory access doors only — no shop-built', rx: /(shop|field)[- ]fabricated access doors?[^.]{0,40}not/i, impact: 'Buy every access door.', act: 'price' },
-    { id: 'flex', lens: 'sm', sev: 'med', cat: 'Flex', title: 'Flex duct length limit', rx: /(flex(ible)? duct[^.]{0,140}(maximum|max\.?)[^.]{0,30}\d+\s*(inch|in\.?|"|feet|ft))|(maximum length of \d+\s*(inch|in))/i, impact: 'More hard duct to the diffusers than the plans suggest.', act: 'price' },
-    { id: 'grease', lens: 'sm', sev: 'med', cat: 'Grease duct', title: 'Grease duct construction / test requirements', rx: /grease duct[^.]{0,120}(UL|welded|liquid[- ]tight|light test|NFPA 96)/i, impact: 'Confirm factory-built vs field-welded and who tests.', act: 'clarify' },
-    { id: 'outins', lens: 'sm', sev: 'high', cat: 'Insulation', title: 'Outdoor duct insulation + jacket', rx: /(outdoor|exterior|exposed to (the )?weather)[^.]{0,80}duct[^.]{0,120}(jacket|cladding|\d\s*(inch|in\.?|")\s*(thick|board))/i, impact: 'Rooftop duct finish is a large insulation-sub number.', act: 'price' },
-    { id: 'castiron', lens: 'plumb', sev: 'high', cat: 'Material', title: 'Cast iron condensate drain', rx: /(condensate[^.]{0,100}cast[- ]iron|cast[- ]iron[^.]{0,100}condensate)/i, impact: 'Unusual and expensive vs PVC/copper — confirm intent.', act: 'price' },
-    { id: 'legion', lens: 'plumb', sev: 'med', cat: 'Testing', title: 'Legionella testing required', rx: /legionella/i, impact: 'Lab fees plus disinfection/retest risk.', act: 'price' },
-    { id: 'oilfree', lens: 'plumb', sev: 'med', cat: 'Conflict', title: 'Oil-free air requirement — check against compressor type', rx: /oil[- ]free/i, impact: 'Oil-free machines cost roughly double — confirm the basis of design matches.', act: 'rfi' },
-    { id: 'oakum', lens: 'plumb', sev: 'med', cat: 'Means & methods', title: 'Lead-and-oakum joints', rx: /oakum/i, impact: 'Labor-heavy, and hot work where open flame is restricted.', act: 'note' },
-    { id: 'pex', lens: 'plumb', sev: 'info', cat: 'Material', title: 'PEX restricted / copper type mandated', rx: /(PEX[^.]{0,40}not (permitted|allowed)|type\s+L[^.]{0,40}(only|copper))/i, impact: 'Material basis for domestic water.', act: 'note' },
-    { id: 'vfd', lens: 'hvac', sev: 'med', cat: 'Scope split', title: 'VFDs furnished by the mechanical/plumbing trade', rx: /(variable[- ]frequency (drives?|motor controllers?)|VFDs?)[^.]{0,120}(furnished|provided) (by|under) Division 2[23]/i, impact: 'Drive purchase lands in your number.', act: 'clarify' },
-    { id: 'thd', lens: 'hvac', sev: 'high', cat: 'Electrical', title: 'Harmonic distortion limit on drives', rx: /(\d(\.\d)?\s*%\s*(total )?harmonic|THD[^.]{0,40}\d\s*%)/i, impact: 'Filters or active front ends on every drive.', act: 'price' },
-    { id: 'pads', lens: 'hvac', sev: 'med', cat: 'Scope', title: 'Equipment pads by the mechanical trade', rx: /(provide|furnish)[^.]{0,30}(reinforced )?concrete (equipment )?(pads|bases|housekeeping)/i, impact: 'Concrete scope inside the mechanical number.', act: 'price' },
-    { id: 'curb', lens: 'hvac', sev: 'high', cat: 'Delegated design', title: 'Structural curbs / screens with delegated design', rx: /(curbs?|screen frames?)[^.]{0,140}(wind|seismic)[^.]{0,60}(load|design)/i, impact: 'Structural design-build hidden in an equipment section.', act: 'price' },
-    { id: 'subs', lens: 'all', sev: 'high', cat: 'Closed spec', title: 'Substitutions restricted', rx: /(no substitutions?|substitutions? (for convenience )?(are|is|will) not (be )?(permitted|considered|accepted|allowed)|comparable products? will not be considered)/i, impact: 'Price only the listed manufacturers.', act: 'note' },
-    { id: 'nocost', lens: 'all', sev: 'high', cat: 'Cost shift', title: 'Cost shifted to the trade — "no additional cost"', rx: /(at no (additional|extra) cost to (the )?owner|no change orders? (will|shall) be (accepted|considered|issued))/i, impact: 'Read each one — these are where margin quietly leaves.', act: 'clarify' },
-    { id: 'flame', lens: 'all', sev: 'high', cat: 'Means & methods', title: 'Open flame / hot work restricted', rx: /(open[- ]flame[^.]{0,60}not (be )?permitted|hot[- ]work permit|fire watch)/i, impact: 'Press fittings, fire-watch labor and permit lead time on welded work.', act: 'price' },
-    { id: 'pe', lens: 'all', sev: 'high', cat: 'Delegated design', title: 'Delegated design — contractor-retained engineer', rx: /((engage|employ|retain)[^.]{0,40}(professional|licensed|registered) engineer|delegated[- ]design)/i, impact: 'PE fees, sealed calcs and a submittal cycle at the front of detailing.', act: 'price' },
-    { id: 'perdiem', lens: 'all', sev: 'high', cat: 'Cost shift', title: 'Back-charge for retests (per diem)', rx: /(per[- ]diem|back[- ]?charged?)/i, impact: 'Carry a retest allowance.', act: 'price' },
-    { id: 'paycoord', lens: 'all', sev: 'high', cat: 'Payment', title: 'Payment held for coordination drawings', rx: /prerequisite for (any )?(progress )?payment/i, impact: 'Cash-flow hold until coordination is signed — carry it as an SOV line.', act: 'clarify' },
-    { id: 'risk', lens: 'all', sev: 'high', cat: 'Coordination', title: 'Pre-coordination work at your risk', rx: /(at (the )?(sub)?contractor'?s risk|regardless of which (was|trade) installed first|will not be considered (a )?changes?)/i, impact: 'No relief for field relocations.', act: 'clarify' },
-    { id: 'temp', lens: 'all', sev: 'high', cat: 'Cost shift', title: 'Installer operates permanent systems during temporary use', rx: /(installer of each permanent service|temporary (use|heating|cooling|hvac)[^.]{0,140}(installer|operat))/i, impact: 'You run temporary conditioning — labor, filters, protection.', act: 'price' },
-    { id: 'startup', lens: 'all', sev: 'med', cat: 'Cost shift', title: 'Repeat start-up before Substantial Completion', rx: /start[- ]?up[^.]{0,140}(prior to|before|one month)[^.]{0,30}substantial completion/i, impact: 'A second factory start-up per unit.', act: 'price' },
-    { id: 'sampling', lens: 'all', sev: 'high', cat: 'Testing', title: '100% functional-test sampling', rx: /100\s*(%|percent)[^.]{0,80}(sampl|functional|tested)/i, impact: 'Staffing at the end of the job; failures redo reports.', act: 'note' },
-    { id: 'clock', lens: 'all', sev: 'med', cat: 'Cx clock', title: 'Deficiency turnaround clock', rx: /within (one|two|three|five|\d+|\(\d+\))\s*(\(\d+\)\s*)?(work(ing)?\s*)?days?[^.]{0,100}(deficienc|correct|resolv|acknowledg)/i, impact: 'Closeout crew availability.', act: 'note' },
-    { id: 'warr', lens: 'all', sev: 'med', cat: 'Warranty', title: 'Extended warranty term', rx: /warrant\w*[^.]{0,80}\b(two|three|five|ten|fifteen|twenty|\d{1,2})[- ]?(\(\d+\)\s*)?[- ]?years?\b/i, impact: 'Confirm the manufacturer passes it through or qualify.', act: 'clarify' },
-    { id: 'anchors', lens: 'all', sev: 'med', cat: 'Means & methods', title: 'Powder-actuated / adhesive anchors restricted', rx: /(powder[- ]actuated|adhesive anchors?)[^.]{0,60}(not|prohibit)/i, impact: 'Hanger labor goes up.', act: 'price' },
-    { id: 'lds', lens: 'all', sev: 'high', cat: 'Commercial', title: 'Liquidated damages', rx: /liquidated damages/i, impact: 'Schedule exposure — confirm amount and flow-down.', act: 'clarify' },
-    { id: 'retain', lens: 'all', sev: 'med', cat: 'Commercial', title: 'Retainage terms', rx: /retainage/i, impact: 'Cash-flow terms.', act: 'note' },
-    { id: 'leed', lens: 'all', sev: 'med', cat: 'LEED', title: 'LEED documentation / IAQ requirements', rx: /(product data reporting form|IAQ (air )?test|indoor air quality[^.]{0,60}(test|photo))/i, impact: 'Admin hours plus corrective-action exposure.', act: 'price' },
+    { id: 'deck', lens: 'sm', sev: 'high', cat: 'Hangers', title: 'Hangers prohibited from metal deck — supplemental steel at every attachment', rx: /(no hangers?[^.]{0,80}metal deck|(attach|suspend)\w*[^.]{0,40}(to|from)[^.]{0,30}metal deck)/i, impact: 'Every hanger needs steel back to structure. On a large footprint this is often the single biggest cost the drawings do not show.', act: 'price', basis: 'Hanger points × supplemental angle installed (typically $120–180 each)' },
+    { id: 'drops', lens: 'sm', sev: 'high', cat: 'Hangers', title: 'Long drops must be angle or channel with sway bracing — no rods or straps', rx: /(do not use (straps|rods)|drops?[^.]{0,60}(exceed|over|greater than)[^.]{0,30}\d+\s*(inch|in\.|")[^.]{0,80}(angle|channel))/i, impact: 'High-bay runs become trapeze and bracing work instead of rod hangers.', act: 'price', basis: 'Drops over the limit × trapeze + sway bracing' },
+    { id: 'sealA', lens: 'sm', sev: 'high', cat: 'Sealing', title: 'Seal Class A required', rx: /seal(ing)?\s+class\s*[:\-]?\s*A\b/i, impact: 'Sealing labor premium — check whether it applies to low-pressure systems too.', act: 'price', basis: '≈2–4% of field labor on low-pressure duct' },
+    { id: 'wg10', lens: 'sm', sev: 'high', cat: 'Pressure class', title: 'High-pressure duct class', t: s => { const m = s.match(/(\d{1,2})\s*(inch|in\.?|")\s*(w\.?g|water gauge)/i); return m ? `${m[1]}" wg duct pressure class` : null; }, rx: /\b(6|8|10)\s*(inch|in\.?|")\s*(w\.?g|water gauge)\.?\s*(positive|\+)/i, impact: 'Heavier gauge, closer reinforcement and full leak testing on the affected runs.', act: 'price', basis: 'Gauge + reinforcement upgrade on affected runs' },
+    { id: 'leak', lens: 'sm', sev: 'high', cat: 'Testing', title: 'Duct leakage testing scope', rx: /(test all (high|medium)[^.]{0,40}duct|leakage test[^.]{0,120}(medium|high|shaft|witness))/i, impact: 'Test crew, rigs, retests and an inspection hold before insulation.', act: 'price', basis: 'Test crew days + rig + retest allowance' },
+    { id: 'spin', lens: 'sm', sev: 'med', cat: 'Fittings', title: 'Spin-in / cinch-lock fittings prohibited', rx: /spin[- ]?in[^.]{0,60}(not (allowed|permitted|acceptable)|prohibit)/i, impact: 'Every takeoff becomes a conical tee, bellmouth or boot.', act: 'price', basis: 'Takeoff count × conical tee / boot delta' },
+    { id: 'snap', lens: 'sm', sev: 'med', cat: 'Shop', title: 'Snaplock / button-punch seams prohibited', rx: /(snap\s?lock|button[- ]punch|pocket lock)[^.]{0,60}not (be )?(permitted|allowed|acceptable)/i, impact: 'Pittsburgh seams only — coil-line setup and seam labor.', act: 'price', basis: 'Shop seam labor delta' },
+    { id: 'door', lens: 'sm', sev: 'med', cat: 'Accessories', title: 'Factory access doors only — no shop-built doors', rx: /(shop|field)[- ]fabricated access doors?[^.]{0,40}not/i, impact: 'Every access door is a purchased item.', act: 'price', basis: 'Door count × factory double-wall premium' },
+    { id: 'flex', lens: 'sm', sev: 'med', cat: 'Flex', title: 'Flex duct length limit', t: s => { const m = s.match(/maximum length of (\d+)\s*(inch|in|")/i) || s.match(/(\d+)\s*(inch|in\.?|")\s*max/i); return m ? `Flex duct limited to ${m[1]}"` : null; }, rx: /(flex(ible)? duct[^.]{0,140}(maximum|max\.?)[^.]{0,30}\d+\s*(inch|in|")|maximum length of \d+\s*(inch|in))/i, impact: 'More hard duct to each diffuser than the plans suggest.', act: 'price', basis: 'Extra hard duct per diffuser' },
+    { id: 'grease', lens: 'sm', sev: 'med', cat: 'Grease duct', title: 'Grease duct construction and testing', rx: /grease duct[^.]{0,120}(UL|welded|liquid[- ]tight|light test|NFPA 96)|grease laden vapors/i, impact: 'Confirm factory-built vs field-welded and who performs the NFPA 96 test.', act: 'clarify', basis: '' },
+    { id: 'outins', lens: 'sm', sev: 'high', cat: 'Insulation', title: 'Outdoor duct insulation with jacket', rx: /(outdoor|exterior|exposed to (the )?weather)[^.]{0,80}duct[^.]{0,120}(jacket|cladding|\d\s*(inch|in\.?|")\s*(thick|board))/i, impact: 'Rooftop duct finish is a large insulation-sub number.', act: 'price', basis: 'Outdoor duct SF × jacketed insulation (sub quote)' },
+    { id: 'castiron', lens: 'plumb', sev: 'high', cat: 'Material', title: 'Cast iron required for condensate drain', rx: /(condensate[^.]{0,100}cast[- ]iron|cast[- ]iron[^.]{0,100}condensate)/i, impact: 'Unusual and expensive vs PVC or copper — confirm intent or carry it.', act: 'price', basis: 'Condensate LF × cast iron vs PVC delta' },
+    { id: 'legion', lens: 'plumb', sev: 'med', cat: 'Testing', title: 'Legionella testing and report required', rx: /legionella/i, impact: 'Lab fees plus disinfection and retest risk before occupancy.', act: 'price', basis: 'Lab fees + disinfection/retest allowance' },
+    { id: 'oilfree', lens: 'plumb', sev: 'med', cat: 'Conflict', title: 'Oil-free air requirement — check against the compressor specified', rx: /oil[- ]free/i, impact: 'Oil-free machines cost roughly double — confirm the basis of design matches.', act: 'rfi', basis: '' },
+    { id: 'oakum', lens: 'plumb', sev: 'med', cat: 'Means & methods', title: 'Lead-and-oakum joints on cast iron', rx: /oakum/i, impact: 'Labor-heavy, and hot work where open flame is restricted.', act: 'note', basis: '' },
+    { id: 'pex', lens: 'plumb', sev: 'info', cat: 'Material', title: 'Copper type mandated / PEX restricted', rx: /(PEX[^.]{0,40}not (permitted|allowed)|type\s+L[^.]{0,40}(only|copper)|copper tubing,?\s*type\s+[LK])/i, impact: 'Sets the material basis for domestic water.', act: 'note', basis: '' },
+    { id: 'vfd', lens: 'hvac', sev: 'med', cat: 'Scope split', title: 'VFDs furnished by the mechanical / plumbing trade', rx: /(variable[- ]frequency[^.]{0,40}(drives?|controllers?)|VFDs?)[^.]{0,140}(furnished|provided) (by|under) Division 2[23]/i, impact: 'The drive purchase lands in your number even though Division 26 installs it.', act: 'clarify', basis: '' },
+    { id: 'thd', lens: 'hvac', sev: 'high', cat: 'Electrical', title: 'Harmonic distortion limit', t: s => { const m = s.match(/(\d(?:\.\d)?)\s*%\s*(total )?harmonic/i); return m ? `Drive harmonics limited to ${m[1]}% THD` : null; }, rx: /(\d(\.\d)?\s*%\s*(total )?harmonic|THD[^.]{0,40}\d\s*%)/i, impact: 'Filters or active front ends on every drive.', act: 'price', basis: 'Drive count × filter / active front end' },
+    { id: 'pads', lens: 'hvac', sev: 'med', cat: 'Scope', title: 'Equipment pads by the mechanical trade', rx: /(provide|furnish)[^.]{0,30}(reinforced )?concrete (equipment )?(pads|bases|housekeeping)/i, impact: 'Concrete scope inside the mechanical number.', act: 'price', basis: 'Pad count × form, pour and pad drawings' },
+    { id: 'curb', lens: 'hvac', sev: 'high', cat: 'Delegated design', title: 'Structural curbs / screens with delegated design', rx: /(curbs?|screen frames?)[^.]{0,140}(wind|seismic)[^.]{0,60}(load|design)/i, impact: 'A structural design-build item hidden in an equipment section.', act: 'price', basis: 'Curb/screen count × design + fabrication' },
+    { id: 'subs', lens: 'all', sev: 'med', cat: 'Closed spec', title: 'Substitutions restricted', rx: /(no substitutions?|substitutions? (for convenience )?(are|is|will) not (be )?(permitted|considered|accepted|allowed)|comparable products? will not be considered)/i, impact: 'Price only the listed manufacturers — no VE swaps after award.', act: 'note', basis: '' },
+    { id: 'nocost', skip: /will be provided at no (extra|additional) cost/i, lens: 'all', sev: 'med', cat: 'Cost shift', title: 'Cost shifted to the trade — "no additional cost"', t: s => /feeder|electrical/i.test(s) ? 'Larger equipment = you pay for the electrical upsizing' : /relocat/i.test(s) ? 'Relocations for access or coordination at your cost' : /retest|defective|correct/i.test(s) ? 'Corrections and retests at your cost' : null, rx: /(at no (additional|extra) cost to (the )?owner|no change orders? (will|shall) be (accepted|considered|issued))/i, impact: 'Read each one — this is where margin quietly leaves the job.', act: 'clarify', basis: '' },
+    { id: 'flame', lens: 'all', sev: 'high', cat: 'Means & methods', title: 'Hot work restricted — fire watch / permits', rx: /(open[- ]flame[^.]{0,60}not (be )?permitted|hot[- ]work permit|fire watch)/i, impact: 'Press fittings for copper, fire-watch labor and permit lead time on welded work.', act: 'price', basis: 'Fire-watch hours + permit lead time on welded/brazed work' },
+    { id: 'pe', lens: 'all', sev: 'high', cat: 'Delegated design', title: 'Contractor-retained engineer for delegated design', t: s => /seismic|restraint/i.test(s) ? 'Seismic restraint design delegated to your engineer' : null, rx: /((engage|employ|retain)[^.]{0,40}(professional|licensed|registered) engineer[^.]{0,160}(design|restraint|seismic|calculation)|delegated[- ]design services)/i, impact: 'PE fee, sealed calculations and a submittal cycle at the front of detailing.', act: 'price', basis: 'PE fee + sealed calcs + submittal cycles' },
+    { id: 'perdiem', lens: 'all', sev: 'med', cat: 'Cost shift', title: 'Retests back-charged at the agent\'s per-diem rate', rx: /(per[- ]diem|back[- ]?charged?)/i, impact: 'Failed or missed tests cost you the commissioning or TAB agent\'s time.', act: 'price', basis: 'Retest allowance at the agent\'s per-diem rate' },
+    { id: 'paycoord', lens: 'all', sev: 'high', cat: 'Payment', title: 'Progress payments held until coordination drawings are complete', rx: /prerequisite for (any )?(progress )?payment/i, impact: 'Cash flow waits on BIM sign-off — carry coordination as its own SOV line.', act: 'clarify', basis: '' },
+    { id: 'risk', lens: 'all', sev: 'high', cat: 'Coordination', title: 'Work before signed coordination is at your risk', rx: /(at (the )?(sub)?contractor'?s risk|regardless of which (was|trade) installed first|will not be considered (a )?changes?)/i, impact: 'No relief for field relocations or "difficult installations".', act: 'clarify', basis: '' },
+    { id: 'temp', lens: 'all', sev: 'high', cat: 'Cost shift', title: 'You operate permanent systems during temporary use', rx: /(installer of each permanent service|temporary use of permanent (equipment|facilities)[^.]{0,160}(installer|contractor|operat|plan))/i, impact: 'Temporary conditioning labor, filters and protection fall on the installer.', act: 'price', basis: 'Weeks of temporary operation × tech hours + filters' },
+    { id: 'startup', lens: 'all', sev: 'med', cat: 'Cost shift', title: 'Second factory start-up before Substantial Completion', rx: /start[- ]?up[^.]{0,140}(prior to|before|one month)[^.]{0,30}substantial completion/i, impact: 'Equipment used temporarily gets started up twice.', act: 'price', basis: 'Unit count × second factory start-up' },
+    { id: 'sampling', lens: 'all', sev: 'med', cat: 'Testing', title: '100% functional-test sampling', rx: /100\s*(%|percent)\s*(sampling|of (the )?(systems|equipment|devices|items)[^.]{0,60}(functional|performance) test)/i, impact: 'End-of-job staffing; failures can redo whole reports.', act: 'note', basis: '' },
+    { id: 'clock', lens: 'all', sev: 'med', cat: 'Cx clock', title: 'Deficiency turnaround clock', t: s => { const m = s.match(/within (one|two|three|five|\d+)\s*(\(\d+\)\s*)?(work(ing)?\s*)?days?/i); return m ? `Deficiencies acknowledged within ${numOf(m[1])} work day${numOf(m[1]) > 1 ? 's' : ''}` : null; }, rx: /within (one|two|three|five|\d+|\(\d+\))\s*(\(\d+\)\s*)?(work(ing)?\s*)?days?[^.]{0,100}(deficienc|correct|resolv|acknowledg)/i, impact: 'Closeout crew must be available on short notice.', act: 'note', basis: '' },
+    { id: 'warr', withSec: true, lens: 'all', sev: 'med', cat: 'Warranty', title: 'Extended warranty term', t: s => { const m = s.match(/\b(two|three|five|ten|fifteen|twenty|\d{1,2})\s*(\(\d+\)\s*)?[- ]?years?/i); return m ? `${numOf(m[1])}-year warranty${(s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i) || [])[2] ? ' — ' + s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i)[2].trim() : ''}` : null; }, rx: /warrant\w*[^.]{0,80}\b(two|three|five|ten|fifteen|twenty|[2-9]|1\d|20)\s*(\(\d+\)\s*)?[- ]?years?\b/i, impact: 'Longer than the standard one year — confirm the manufacturer passes it through or qualify it.', act: 'clarify', basis: '' },
+    { id: 'anchors', lens: 'all', sev: 'med', cat: 'Means & methods', title: 'Powder-actuated / adhesive anchors prohibited', rx: /(powder[- ]actuated|adhesive anchors?)[^.]{0,60}(not|prohibit)/i, impact: 'Mechanical anchors only — more hanger labor.', act: 'price', basis: 'Anchor count × mechanical anchor labor delta' },
+    { id: 'lds', lens: 'all', sev: 'high', cat: 'Commercial', title: 'Liquidated damages', rx: /liquidated damages/i, impact: 'Schedule exposure — confirm the amount and whether it flows down.', act: 'clarify', basis: '' },
+    { id: 'retain', lens: 'all', sev: 'med', cat: 'Commercial', title: 'Retainage terms', rx: /retainage/i, impact: 'Cash-flow terms for the subcontract.', act: 'note', basis: '' },
+    { id: 'leed', lens: 'all', sev: 'med', cat: 'LEED', title: 'LEED documentation and indoor-air-quality testing', rx: /(product data reporting form|IAQ (air )?test|indoor air quality[^.]{0,60}(test|photo)|report from testing and inspecting agency indicating results of IAQ)/i, impact: 'Admin hours plus corrective action if the air test fails.', act: 'price', basis: 'Admin hours + IAQ protection materials' },
   ];
 
   /* ---------------- pdf.js ---------------- */
@@ -173,37 +179,77 @@
 
   /* ---------------- findings ---------------- */
   const norm = s => s.replace(/­/g, '').replace(/\s+/g, ' ');
+  /* tidy PDF extraction artefacts so a clause reads like the page */
+  const tidy = s => s
+    .replace(/(\w) - (\w)/g, '$1-$2')
+    .replace(/ ([’'])\s?s\b/g, '$1s')
+    .replace(/\s+([,.;:)])/g, '$1').replace(/\(\s+/g, '(')
+    .replace(/^[a-z0-9]{1,3}[.)]\s+/i, '')
+    .replace(/\s{2,}/g, ' ').trim()
+    .replace(/\s+[A-Za-z0-9]{1,2}\.$/, '');
   function sentenceAt(t, idx) {
-    let a = Math.max(0, t.lastIndexOf('. ', idx) + 2), b = t.indexOf('. ', idx);
-    if (idx - a > 220) a = idx - 160;
-    if (b < 0 || b - idx > 240) b = idx + 200;
-    return t.slice(a, b + 1).trim();
+    const stop = /(?<=[.;:])\s+(?=[A-Z0-9(])/g;
+    let a = 0, m;
+    stop.lastIndex = 0;
+    while ((m = stop.exec(t)) && m.index < idx) a = m.index + m[0].length;
+    const head = t.slice(idx, idx + 30);
+    if (/^[A-Z0-9 \-]{12,}/.test(head)) a = idx;                       /* matched a heading: start there */
+    if (idx - a > 150) { a = idx - 120; const sp = t.indexOf(' ', a); if (sp > 0 && sp < idx) a = sp + 1; }
+    let b = t.length; stop.lastIndex = idx;
+    if ((m = stop.exec(t))) b = m.index;
+    let s = t.slice(a, Math.min(b, idx + 280)).trim();
+    /* a heading or list stub on its own ("1.4 DELEGATED-DESIGN SERVICES A.") reads as noise: take the next sentence too */
+    if (s.length < 70 && b < t.length) {
+      stop.lastIndex = b + 1;
+      const m2 = stop.exec(t);
+      s = t.slice(a, Math.min(m2 ? m2.index : t.length, a + 320)).trim();
+    }
+    s = tidy(s);
+    if (/^[a-z,;:)\]]/.test(s)) s = '…' + s.replace(/^[,;:)\]]\s*/, '');      /* clause began on the previous page / mid-sentence */
+    return s;
   }
+  const goodSnip = s => s.length >= 70 && s.length <= 300 && !/^…/.test(s);
   const scanDiv = d => YOURS.includes(d) || HOOKS.includes(d);
+  /* in hook divisions (21/25/26/28/40) a clause only counts if it lands on the mechanical trades */
+  const MECH = /Division\s*2[23]|mechanical|HVAC|plumbing|duct|piping|BAS|building automation/i;
 
-  function runRules(pages, pageSec, secById) {
+  function runRules(bodies, pageSec, secById) {
     const hits = {};
-    pages.forEach((raw, i) => {
+    bodies.forEach((raw, i) => {
       const sec = pageSec[i], s = secById[sec];
       if (!s || !scanDiv(s.div)) return;
       const t = norm(raw || '');
+      const hook = HOOKS.includes(s.div);
       RULES.forEach(r => {
         const ok = r.lens === 'all' || s.div === '01' ||
           ((r.lens === 'sm' || r.lens === 'hvac') && ['23', '25', '26'].includes(s.div)) ||
           (r.lens === 'plumb' && ['22', '21', '40'].includes(s.div));
         if (!ok) return;
         const m = t.match(r.rx); if (!m) return;
+        const says = sentenceAt(t, m.index);
+        if (hook && !MECH.test(says)) return;
+        if (r.skip && r.skip.test(says)) return;
         const k = r.id + '|' + sec;
-        if (hits[k]) { hits[k].count++; return; }
-        hits[k] = { rule: r, sec, page: i + 1, count: 1, says: sentenceAt(t, m.index) };
+        if (hits[k]) { hits[k].count++; if (!goodSnip(hits[k].says) && goodSnip(says)) { hits[k].says = says; hits[k].page = i + 1; } return; }
+        hits[k] = { rule: r, sec, page: i + 1, count: 1, says };
       });
     });
+    /* the same boilerplate pasted into several sections becomes one finding that names every section */
+    const groups = {};
+    Object.values(hits).sort((a, b) => a.page - b.page).forEach(h => {
+      const key = h.rule.id + '|' + h.says.replace(/[^a-z]/gi, '').toLowerCase().slice(0, 90);
+      if (groups[key]) groups[key].also.push(h.sec); else groups[key] = Object.assign(h, { also: [] });
+    });
     let n = 0;
-    return Object.values(hits).map(h => {
-      const sl = lensOf(h.sec);
-      return { id: 'R' + String(++n).padStart(3, '0'), rule: h.rule.id, sec: h.sec, page: h.page, para: '', sev: h.rule.sev, cat: h.rule.cat,
-        title: h.rule.title, says: h.says, impact: h.rule.impact + (h.count > 1 ? ` Appears on ${h.count} pages of this section.` : ''),
-        act: h.rule.act, amt: 0, basis: '', lens: sl === 'all' ? 'all' : (sl === 'other' ? h.rule.lens : sl) };
+    return Object.values(groups).map(h => {
+      const sl = lensOf(h.sec), r = h.rule, st = secById[h.sec];
+      let title = r.title;
+      try { title = (r.t && r.t(h.says)) || r.title; } catch (e) {}
+      if (r.withSec && st && !/ — /.test(title)) title += ' — ' + st.title;
+      const extra = (h.count > 1 ? ` Appears on ${h.count} pages of this section.` : '') + (h.also.length ? ` Same requirement repeated in ${h.also.join(', ')}.` : '');
+      return { id: 'R' + String(++n).padStart(3, '0'), rule: r.id, sec: h.sec, page: h.page, para: '', sev: r.sev, cat: r.cat,
+        title, says: h.says, impact: r.impact + extra, also: h.also,
+        act: r.act, amt: 0, basis: r.basis || '', lens: sl === 'all' ? 'all' : (sl === 'other' ? r.lens : sl) };
     }).sort((a, b) => a.page - b.page);
   }
 
@@ -330,7 +376,7 @@
     const { sections, pageSec, bodies } = buildSections(pages);
     const secById = Object.fromEntries(sections.map(s => [s.id, s]));
     onProgress && onProgress('Running spec-trap rules', 0.92);
-    const findings = runRules(pages, pageSec, secById);
+    const findings = runRules(bodies, pageSec, secById);
     onProgress && onProgress('Checking cross-references and template text', 0.96);
     const conflicts = runChecks(pages, pageSec, secById, sections);
     const matrix = runMatrix(pages, pageSec, secById);
