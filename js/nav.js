@@ -36,9 +36,8 @@ const NAV_GROUPS = [
     id: 'bids',
     label: 'Preconstruction',
     items: [
-      { href: '/mccorvey/specreview/', label: 'Spec Review', tabs: [
-        { href: '/mccorvey/specreview/', label: 'Spec Book Review' },
-        { href: '/mccorvey/rfis/',       label: 'RFIs & Bid Letter' },
+      { href: '/mccorvey/specreview/', label: 'Spec Book to Proposal', tabs: [
+        { href: '/mccorvey/specreview/', label: 'Spec Book to Proposal' },
         { href: '/mccorvey/bidreview/',  label: 'Bid Queue & Review ROI' },
       ] },
       { href: '/mccorvey/bidmodel/', label: 'Bidding', tabs: [

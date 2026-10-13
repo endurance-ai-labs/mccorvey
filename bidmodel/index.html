@@ -6,9 +6,9 @@
 <title>Adjustable Bid Modeler — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — type-in bid sheet: every change reprices cost to client, cost to McCorvey and profit instantly, with a manpower check and same-page bid confirmation. Demo environment, fictional data.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013d">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013d">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013d">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013e">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013e">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013e">
 <style>
   /* ---------- summary bar ---------- */
   .bs-roll { position: sticky; z-index: 60; display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 12px 0 10px; background: var(--color-bg); }
@@ -148,12 +148,12 @@
 </main>
 <div class="bs-toast" id="bs-toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013d"></script>
-<script src="/mccorvey/js/util.js?v=20261013d"></script>
-<script src="/mccorvey/js/nav.js?v=20261013d"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013d"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013d"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013d" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013e"></script>
+<script src="/mccorvey/js/util.js?v=20261013e"></script>
+<script src="/mccorvey/js/nav.js?v=20261013e"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013e"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013e"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013e" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Adjustable Bid Modeler' });
@@ -328,6 +328,7 @@ function loadSpec(fresh) { const p = specPayload(fresh); if (p) applySpec(p); }
 function applySpec(h) {
   if (locked()) { S.status = 'draft'; }
   checkpoint();
+  if (window.SpecEngine) S.meta.specKey = SpecEngine.activeBook().key;
   if (h.fresh && h.base) {
     S.lines = h.base.map(b => ({ scope: b.scope, unit: b.unit, qty: b.qty, mat: b.mat, shopUPH: b.shopUPH, fieldUPH: b.fieldUPH, mkup: b.mkup != null ? b.mkup : null, tag: 'Spec book takeoff' }));
     S.meta.project = h.name + ' — HVAC Ductwork';
@@ -411,6 +412,7 @@ function render(keepScroll) {
     </div>
   </div>
 
+  ${S.meta.specKey ? `<a href="/mccorvey/specreview/#proposal" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;text-decoration:none;border:1px solid #14283c;border-left-width:5px;border-radius:12px;padding:11px 16px;margin-bottom:14px;background:var(--color-bg-2)"><span style="flex:1;min-width:200px;font-size:12.5px;color:var(--color-text-muted)"><b style="color:var(--color-cloud-whisper)">Linked to Spec Book to Proposal.</b> Spec adder amounts come from the spec review; adjust rates, markups and base quantities here.</span><span class="pa-btn primary" style="pointer-events:none">Back to proposal →</span></a>` : ''}
   <div class="demo-panel" style="margin-bottom:14px;padding-top:14px;padding-bottom:14px">
     <div class="bs-fields" style="grid-template-columns:2.2fr 1.3fr 1fr 1fr">
       <label class="bs-f"><span>Project</span><input class="cell txt" data-m="project" value="${esc(S.meta.project)}" ${d}></label>

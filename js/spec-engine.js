@@ -348,8 +348,19 @@
       sections, findings, conflicts, diffs: [], matrix, matrixMode: 'extracted', takeoff: null, totalPages: pages.length,
     };
     book.diffs = stampDiffs(book);
+    book.conflicts = staleRfis(book).concat(book.conflicts);
     onProgress && onProgress('Done', 1);
     return { book, raw: { sections, bodies } };
+  }
+  /* sections still stamped older than the set you priced → RFI each one */
+  function staleRfis(book) {
+    return book.sections.filter(s => YOURS.includes(s.div) && s.id !== '00 0000' && s.issue != null && s.issue < book.pricedIssue).map((s, i) => ({
+      id: 'S' + String(i + 1).padStart(2, '0'), kind: 'stale', lens: lensOf(s.id), sev: 'high',
+      title: `${s.id} ${s.title} is still at Issue ${String(s.issue).padStart(2, '0')}`,
+      a: { sec: s.id, page: s.start, para: 'Header', says: `Stamped Issue ${String(s.issue).padStart(2, '0')}${s.date ? ' (' + s.date + ')' : ''}.` },
+      b: { sec: '—', page: null, para: '', says: `Most of the book is at Issue ${String(book.pricedIssue).padStart(2, '0')} or later.` },
+      q: `Section ${s.id} ${s.title} is stamped Issue ${String(s.issue).padStart(2, '0')}, older than the rest of the issued set. Confirm whether a revised section will be issued. Bid is based on the section as issued.`,
+      cost: 'Pricing basis may be out of date.' }));
   }
   function stampDiffs(book) {
     return book.sections.filter(s => s.id !== '00 0000' && s.issue != null && s.issue > book.pricedIssue && (YOURS.includes(s.div) || HOOKS.includes(s.div)))
@@ -393,6 +404,6 @@
     ].filter(x => x !== '').join('\n');
   }
 
-  window.SpecEngine = { analyze, extract, buildSections, diffBooks, stampDiffs, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
+  window.SpecEngine = { analyze, extract, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
     store, activeBook, decisions, saveDecisions, decOf, secTitle, cite, rfiNo, rfiText };
 })();
