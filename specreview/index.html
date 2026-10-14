@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013i">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013i">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013i">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013k">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013k">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013k">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -225,13 +225,13 @@
 <div class="sb-ov" id="ov"><div class="bx"><h3 id="ov-h">Reading spec book</h3><p>Processed entirely in this browser. Nothing is uploaded.</p><div class="pg"><i id="ov-bar"></i></div><div class="st" id="ov-st">Loading PDF reader…</div></div></div>
 <div class="sb-toast" id="toast"></div>
 
-<script src="/mccorvey/js/data.js?v=20261013i"></script>
-<script src="/mccorvey/js/util.js?v=20261013i"></script>
-<script src="/mccorvey/js/nav.js?v=20261013i"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013i"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013i"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261013i"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013i" defer></script>
+<script src="/mccorvey/js/data.js?v=20261013k"></script>
+<script src="/mccorvey/js/util.js?v=20261013k"></script>
+<script src="/mccorvey/js/nav.js?v=20261013k"></script>
+<script src="/mccorvey/js/specbook.js?v=20261013k"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261013k"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261013k"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -389,7 +389,7 @@ function render() {
         <div class="cmd-side">
           <span class="sb-mode ${BOOK.local ? 'local' : ''}"><i></i>${BOOK.local ? 'YOUR BOOK · LOCAL ONLY' : 'SAMPLE BOOK · FICTIONAL'}</span>
           <span class="cmd-range">${iss(BOOK.bookIssue)}${BOOK.bookDate ? ' · ' + fmtDate(BOOK.bookDate) : ''} · priced at ${iss(BOOK.pricedIssue)}</span>
-          <div class="sb-hbtns"><button class="pa-btn" onclick="$('#pick-cur').click()">Load a spec book (PDF)</button>${BOOK.local ? '<button class="pa-btn" onclick="useSample()">Back to sample</button>' : ''}</div>
+          <div class="sb-hbtns"><button class="pa-btn" onclick="$('#pick-cur').click()">Load a spec book (PDF)</button>${BOOK.local ? '<button class="pa-btn" onclick="useSample()">Back to sample</button>' : ''}<button class="pa-btn" onclick="resetDemo()" title="Clear every decision on this book and start again at step 1">Reset demo</button></div>
         </div>
       </div>
       <div class="cmd-tiles">
@@ -871,6 +871,24 @@ async function loadPrior(file) {
     E.store.sset('msm-spec-local', BOOK);
     ov(false); go('changes'); toast(`${BOOK.diffs.length} sections changed versus ${file.name}`);
   } catch (e) { ov(false); toast('Could not compare: ' + e.message); console.error(e); }
+}
+function resetDemo() {
+  if (!confirm('Reset this book to step 1? Every decision, confirmed change, RFI status and bid detail on it is cleared, and the bid sheet goes back to what it was before.')) return;
+  ['msm-spec-dec-', 'msm-spec-meta-', 'msm-spec-rfi-', 'msm-spec-letter-'].forEach(k => { try { localStorage.removeItem(k + BOOK.key); } catch (e) {} });
+  /* put back the bid sheet that was there before this book built one */
+  try {
+    const S = BC.load();
+    if (S && S.meta.specKey === BOOK.key) {
+      let bk = localStorage.getItem(BC.KEY_STATE + '-backup');
+      try { const b = JSON.parse(bk || 'null'); if (b && b.meta && String(b.meta.project || '').startsWith(BOOK.name)) bk = null; } catch (e) { bk = null; }
+      if (bk) { localStorage.setItem(BC.KEY_STATE, bk); localStorage.setItem(BC.KEY_REVS, localStorage.getItem(BC.KEY_REVS + '-backup') || '[]'); }
+      else { localStorage.removeItem(BC.KEY_STATE); localStorage.setItem(BC.KEY_REVS, '[]'); }
+    }
+  } catch (e) {}
+  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null });
+  step = 'load'; history.replaceState(null, '', '#load');
+  loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+  toast('Demo reset — back to step 1');
 }
 function useSample() { E.store.sset('msm-spec-active', 'sample'); BOOK = window.SPECBOOK; RAW = PRIOR = null; step = null; loadState(); render(); toast('Sample book loaded'); }
 $('#pick-cur').onchange = e => { loadBook(e.target.files[0]); e.target.value = ''; };
