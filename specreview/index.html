@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013k">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013k">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013k">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261015a">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261015a">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261015a">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -181,6 +181,117 @@
   .pdoc .sig { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:38px; font-size:11.2px; color:#5a6676; }
   .pdoc .sig div { border-top:1px solid #9aa6b2; padding-top:6px; }
 
+  /* cite chips that open the spec book */
+  button.cite { font-family:inherit; border:1px solid transparent; cursor:pointer; }
+  button.cite:hover { border-color:#14283c; background:#fff; }
+  [data-theme="dark"] button.cite:hover { border-color:#cfe0f2; background:#14283c; }
+  .fd-links { display:flex; gap:14px; align-items:center; flex-wrap:wrap; margin-top:6px; }
+  .fd-links details { margin:0; }
+  .fd-open { font:inherit; font-size:11px; font-weight:800; color:#14283c; background:none; border:0; padding:0; cursor:pointer; text-decoration:underline; text-underline-offset:3px; }
+  [data-theme="dark"] .fd-open { color:#cfe0f2; }
+  .fd.high .fd-open { color:#c8102e; }
+  .fd-links details[open] { flex-basis:100%; }
+
+  /* document viewer */
+  .dv { position:fixed; inset:0; z-index:3000; display:none; }
+  .dv.show { display:block; }
+  .dv-bg { position:absolute; inset:0; background:rgba(8,16,28,.55); }
+  .dv-pane { position:absolute; top:0; right:0; bottom:0; width:min(760px, 100vw); background:var(--color-bg); display:flex; flex-direction:column; box-shadow:-12px 0 40px rgba(8,16,28,.25); }
+  .dv-bar { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:12px 16px; background:#14283c; color:#fff; }
+  .dv-bar b { font-size:13.5px; } .dv-bar span { font-size:11.5px; opacity:.8; }
+  .dv-bar .sp { margin-left:auto; display:flex; gap:6px; }
+  .dv-bar button { font:inherit; font-size:11.5px; font-weight:700; color:#fff; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.25); border-radius:8px; padding:6px 10px; cursor:pointer; }
+  .dv-bar button:hover:not(:disabled) { background:rgba(255,255,255,.18); }
+  .dv-bar button:disabled { opacity:.35; cursor:default; }
+  .dv-body { flex:1; overflow:auto; padding:20px; background:#d9dee4; }
+  [data-theme="dark"] .dv-body { background:#0a1420; }
+  .dv-page { background:#fff; color:#1b2430; max-width:640px; margin:0 auto; padding:34px 44px 26px; min-height:640px; display:flex; flex-direction:column; font-family:Georgia, 'Times New Roman', serif; font-size:13px; line-height:1.65; box-shadow:0 4px 18px rgba(10,22,38,.18); }
+  .dv-ph { display:flex; justify-content:space-between; gap:12px; font-family:Arial, sans-serif; font-size:9.5px; letter-spacing:.06em; color:#5a6676; border-bottom:1px solid #9aa6b2; padding-bottom:6px; text-transform:uppercase; }
+  .dv-ph .stamp { color:#c8102e; font-weight:700; }
+  .dv-st { text-align:center; font-family:Arial, sans-serif; font-weight:700; font-size:13px; letter-spacing:.05em; margin:18px 0 14px; }
+  .dv-part { font-family:Arial, sans-serif; font-weight:700; font-size:11.5px; letter-spacing:.06em; margin:14px 0 6px; }
+  .dv-cl { margin:0 0 12px; padding:6px 8px; border-radius:4px; position:relative; }
+  .dv-cl .pn { font-weight:700; margin-right:8px; }
+  .dv-cl.hl { background:#fff3b0; box-shadow:0 0 0 2px #f0b429; }
+  .dv-cl del { color:#a30d26; } .dv-cl ins { text-decoration:none; background:rgba(47,158,110,.18); }
+  .dv-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:4px; font-family:Arial, sans-serif; }
+  .dv-tags span { font-size:9px; font-weight:800; letter-spacing:.07em; padding:2px 7px; border-radius:4px; background:#e8edf3; color:#14283c; }
+  .dv-tags span.high { background:#c8102e; color:#fff; } .dv-tags span.chg { background:#e3f4ec; color:#1d7a52; }
+  .dv-gap { margin:4px 0 12px; height:42px; background:repeating-linear-gradient(#fff 0 9px, #eef1f4 9px 11px); opacity:.9; }
+  .dv-pf { margin-top:auto; padding-top:10px; border-top:1px solid #e3e8ee; display:flex; justify-content:space-between; font-family:Arial, sans-serif; font-size:9.5px; color:#5a6676; }
+  .dv-list { max-width:640px; margin:16px auto 0; }
+  .dv-list h4 { margin:0 0 8px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:#5a6676; }
+  [data-theme="dark"] .dv-list h4 { color:#9aa6b2; }
+  .dv-list button { display:grid; grid-template-columns:70px minmax(0,1fr); gap:10px; width:100%; text-align:left; font:inherit; font-size:12px; padding:8px 10px; margin-bottom:5px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); cursor:pointer; }
+  .dv-list button.on { border-color:#14283c; box-shadow:0 0 0 1px #14283c inset; }
+  .dv-list button b { font-variant-numeric:tabular-nums; }
+  .dv-note { max-width:640px; margin:10px auto 0; font-size:11px; color:#5a6676; text-align:center; }
+
+  /* RFIs explainer */
+  .rx-flow { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; margin-bottom:14px; }
+  .rx-flow > div { border:1px solid var(--color-border); border-radius:12px; padding:13px 15px; background:var(--color-bg-2); position:relative; }
+  .rx-flow .n { font-size:10px; font-weight:800; letter-spacing:.1em; color:#c8102e; text-transform:uppercase; }
+  .rx-flow b { display:block; font-size:13.5px; color:var(--color-cloud-whisper); margin:3px 0 4px; }
+  .rx-flow p { margin:0; font-size:12px; line-height:1.55; color:var(--color-text-muted); }
+  .rtype { font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; background:var(--color-bg-3); color:var(--color-cloud-whisper); border:1px solid var(--color-border); white-space:nowrap; text-transform:uppercase; }
+  .rx-sides { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px; margin-top:9px; }
+  .rx-side { border-left:3px solid #14283c; background:var(--color-bg); border-radius:0 8px 8px 0; padding:8px 11px; font-size:12.2px; line-height:1.55; color:var(--color-cloud-whisper); }
+  .rx-side .h { display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:3px; font-size:10px; font-weight:800; letter-spacing:.08em; color:var(--color-slate-hint); text-transform:uppercase; }
+  .rx-side:nth-child(2) { border-left-color:#c8102e; } .rx-side:nth-child(3) { border-left-color:var(--color-amber); }
+  .rx-meta { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; font-size:12px; line-height:1.5; color:var(--color-text-muted); }
+  .rx-meta b { display:block; font-size:9.5px; letter-spacing:.09em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .rx-meta .ans { color:#2f9e6e; }
+  .rfi-age { font-size:11px; color:var(--color-text-muted); white-space:nowrap; }
+
+  /* Changes */
+  .cx-hero { border-radius:14px; padding:18px 20px; background:#14283c; color:#fff; margin-bottom:14px; }
+  .cx-hero h3 { margin:0 0 4px; font-size:17px; }
+  .cx-hero p { margin:0; font-size:12.5px; line-height:1.55; color:rgba(255,255,255,.8); max-width:860px; }
+  .cx-tl { display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); margin:18px 0 4px; position:relative; }
+  .cx-tl::before { content:''; position:absolute; left:6%; right:6%; top:9px; height:2px; background:rgba(255,255,255,.2); }
+  .cx-ti { text-align:center; position:relative; font-size:11px; color:rgba(255,255,255,.7); padding:0 4px; }
+  .cx-ti i { display:block; width:14px; height:14px; border-radius:50%; margin:3px auto 7px; background:#3a5068; border:2px solid #14283c; box-shadow:0 0 0 2px rgba(255,255,255,.25); }
+  .cx-ti.after i { background:#f0b429; } .cx-ti.priced i { background:#fff; } .cx-ti.cur i { background:#c8102e; box-shadow:0 0 0 2px #fff; }
+  .cx-ti b { display:block; color:#fff; font-size:11.5px; }
+  .cx-ti .c { display:inline-block; margin-top:4px; font-size:10px; font-weight:800; padding:2px 7px; border-radius:99px; background:rgba(240,180,41,.18); color:#f0b429; }
+  .cx-ti.priced .c { background:rgba(255,255,255,.14); color:#fff; }
+  .cx-big { display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin-top:14px; padding:11px 14px; border-radius:10px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14); font-size:12.5px; }
+  .cx-big .v { font-size:20px; font-weight:800; color:#ff8a9c; font-variant-numeric:tabular-nums; }
+  .cx-big a { color:#fff; font-weight:700; }
+  .cx-bars { display:flex; flex-direction:column; gap:6px; }
+  .cx-bar { display:grid; grid-template-columns:minmax(0,230px) 1fr 1fr 90px; gap:0; align-items:center; font-size:12px; cursor:pointer; padding:3px 0; border-radius:6px; }
+  .cx-bar:hover { background:var(--color-bg-3); }
+  .cx-bar .nm { color:var(--color-cloud-whisper); font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding:0 10px 0 4px; }
+  .cx-bar .nm span { font-weight:500; color:var(--color-text-muted); }
+  .cx-bar .l, .cx-bar .r { height:14px; display:flex; }
+  .cx-bar .l { justify-content:flex-end; border-right:1px solid var(--color-border); }
+  .cx-bar .l i { background:#2f9e6e; border-radius:3px 0 0 3px; } .cx-bar .r i { background:#c8102e; border-radius:0 3px 3px 0; }
+  .cx-bar .v { text-align:right; font-weight:800; font-variant-numeric:tabular-nums; padding-right:6px; }
+  .cx-bar.ok .nm::after { content:' ✓'; color:#2f9e6e; }
+  .chg .was del.w { background:rgba(200,16,46,.12); border-radius:3px; padding:0 2px; }
+  .chg .was.word { color:var(--color-cloud-whisper); }
+  .chg .was.word del { text-decoration:line-through; }
+
+  /* confirm dialog */
+  .sb-cfm { position:fixed; inset:0; background:rgba(8,16,28,.6); z-index:3100; display:none; align-items:center; justify-content:center; padding:16px; }
+  .sb-cfm.show { display:flex; }
+  .sb-cfm .bx { width:min(520px, 100%); background:var(--color-bg); border-radius:14px; padding:22px 24px; box-shadow:0 20px 50px rgba(8,16,28,.35); }
+  .sb-cfm h3 { margin:0 0 6px; font-size:16.5px; color:var(--color-cloud-whisper); }
+  .sb-cfm p { margin:0 0 12px; font-size:12.5px; line-height:1.55; color:var(--color-text-muted); }
+  .sb-cfm ul { margin:0 0 14px; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+  .sb-cfm li { display:flex; justify-content:space-between; gap:12px; font-size:12.8px; color:var(--color-cloud-whisper); padding:8px 11px; border-radius:9px; background:var(--color-bg-2); border:1px solid var(--color-border); }
+  .sb-cfm li b { font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .sb-cfm .warn { font-size:12px; padding:9px 11px; border-radius:9px; background:var(--color-amber-bg); color:var(--color-amber); border:1px solid var(--color-amber); margin-bottom:14px; line-height:1.5; }
+  .sb-cfm .row { display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap; }
+  .sb-cfm .row .pa-btn { height:40px; padding:0 18px; }
+
+  @media (max-width: 700px) {
+    .rx-flow, .rx-meta { grid-template-columns:1fr; }
+    .cx-bar { grid-template-columns:110px 1fr 1fr 70px; }
+    .cx-tl { overflow-x:auto; grid-auto-columns:96px; }
+    .dv-body { padding:10px; } .dv-page { padding:22px 18px; }
+  }
+
   .sb-empty { padding:26px; text-align:center; color:var(--color-text-muted); font-size:12.5px; border:1px dashed var(--color-border); border-radius:12px; }
   .sb-ov { position:fixed; inset:0; background:rgba(8,16,28,.72); z-index:500; display:none; align-items:center; justify-content:center; }
   .sb-ov.show { display:flex; }
@@ -189,7 +300,7 @@
   .sb-ov .pg { height:8px; border-radius:99px; background:rgba(255,255,255,.12); overflow:hidden; }
   .sb-ov .pg i { display:block; height:100%; width:0; background:linear-gradient(90deg,#c8102e,#f0566e); transition:width .2s; }
   .sb-ov .st { margin-top:10px; font-size:12px; color:rgba(255,255,255,.85); }
-  .sb-toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:#14283c; color:#fff; padding:11px 18px; border-radius:11px; font-size:12.5px; font-weight:700; opacity:0; transition:.25s; z-index:600; max-width:90vw; }
+  .sb-toast { position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); background:#14283c; color:#fff; padding:11px 18px; border-radius:11px; font-size:12.5px; font-weight:700; opacity:0; transition:.25s; z-index:3200; max-width:90vw; }
   .sb-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   @media (max-width: 1000px) {
@@ -224,14 +335,16 @@
 <input type="file" id="pick-prior" accept="application/pdf" hidden>
 <div class="sb-ov" id="ov"><div class="bx"><h3 id="ov-h">Reading spec book</h3><p>Processed entirely in this browser. Nothing is uploaded.</p><div class="pg"><i id="ov-bar"></i></div><div class="st" id="ov-st">Loading PDF reader…</div></div></div>
 <div class="sb-toast" id="toast"></div>
+<div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
+<div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261013k"></script>
-<script src="/mccorvey/js/util.js?v=20261013k"></script>
-<script src="/mccorvey/js/nav.js?v=20261013k"></script>
-<script src="/mccorvey/js/specbook.js?v=20261013k"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261013k"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261013k"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
+<script src="/mccorvey/js/data.js?v=20261015a"></script>
+<script src="/mccorvey/js/util.js?v=20261015a"></script>
+<script src="/mccorvey/js/nav.js?v=20261015a"></script>
+<script src="/mccorvey/js/specbook.js?v=20261015a"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261015a"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261015a"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261015a" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -245,7 +358,7 @@ let DEC, META, RS;
 const STEPS = [['load', 'Set up'], ['decide', 'Decide'], ['changes', 'Changes'], ['rfis', 'RFIs'], ['proposal', 'Proposal']];
 const HASH_ALIAS = { triage: 'load', findings: 'decide', matrix: 'decide', adders: 'proposal', letter: 'proposal' };
 let step = (() => { const h = (location.hash || '').slice(1); const k = HASH_ALIAS[h] || h; return STEPS.some(s => s[0] === k) ? k : null; })();
-const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null };
+const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all' };
 
 function loadState() {
   DEC = E.decisions(BOOK);
@@ -315,7 +428,104 @@ const QUAL = {
   H25: 'Ductwork will be delivered and installed clean and capped per SMACNA IAQ guidelines. NADCA cleaning is not included.',
   H27: 'Division 40 process piping (PCC-9) is excluded.',
 };
-const qualText = f => QUAL[f.id] || `${f.title}: pricing is limited to the requirement as written in Section ${f.sec}; costs beyond it are excluded until confirmed at award.`;
+const assumeOf = c => (c.q.match(/(Bid (assumes|excludes|includes|is based)[^.]*\.)/) || [])[1] || 'Bid is based on the documents as issued pending response.';
+
+/* ===================== SPEC BOOK VIEWER ===================== */
+let FILE_URL = null, DV = null;
+const citeBtn = (sec, para, page, key) => page
+  ? `<button class="cite" onclick="openDoc('${sec}',${page},'${key || ''}')" title="Open the spec book at this page">${E.cite(sec, para, page)} ↗</button>`
+  : `<span class="cite">${E.cite(sec, para, page)}</span>`;
+const PARTS = { 1: 'PART 1 — GENERAL', 2: 'PART 2 — PRODUCTS', 3: 'PART 3 — EXECUTION' };
+function clausesIn(sec) {
+  const m = new Map();
+  const put = (page, para, text, tag, key, extra) => {
+    if (!page) return;
+    const k = page + '|' + para;
+    const c = m.get(k) || Object.assign({ page, para, text, tags: [], keys: [] }, extra);
+    if (extra && extra.before != null && c.before == null) Object.assign(c, extra, { text });
+    c.tags.push(tag); c.keys.push(key); m.set(k, c);
+  };
+  BOOK.findings.filter(f => f.sec === sec).forEach(f => put(f.page, f.para, f.says, { t: 'FINDING · ' + sevL[f.sev], c: f.sev === 'high' ? 'high' : '', label: f.title }, 'f-' + f.id));
+  BOOK.conflicts.forEach(c => ['a', 'b', 'c'].forEach(k => { const x = c[k]; if (x && x.sec === sec) put(x.page, x.para, x.says, { t: 'RFI · ' + rtLabel(c), c: c.sev === 'high' ? 'high' : '', label: c.title }, 'c-' + c.id + k); }));
+  BOOK.diffs.filter(d => d.sec === sec).forEach(d => d.changes.forEach((ch, i) => put(ch.page, ch.para, ch.after || ch.before, { t: 'CHANGED ' + iss(d.to).toUpperCase() + (BOOK.sample && ch.amt ? ' · ' + (ch.amt > 0 ? '+' : '') + money(ch.amt) : ''), c: 'chg', label: 'Changed in ' + iss(d.to) }, 'd-' + sec + '-' + i, { before: ch.before, after: ch.after })));
+  return [...m.values()].sort((a, b) => a.page - b.page || String(a.para).localeCompare(String(b.para), undefined, { numeric: true }));
+}
+function openDoc(sec, page, key) {
+  if (BOOK.local) {
+    if (FILE_URL) { window.open(FILE_URL + '#page=' + page, '_blank', 'noopener'); return; }
+    toast('Drop the PDF again to open its pages. The file is kept in this tab\'s memory only.'); return;
+  }
+  DV = { sec, page: +page, key }; renderDoc();
+  $('#dv').classList.add('show'); document.body.style.overflow = 'hidden';
+}
+function closeDoc() { $('#dv').classList.remove('show'); document.body.style.overflow = ''; DV = null; }
+function docPage(p, key) { DV.page = p; DV.key = key || ''; renderDoc(); }
+function renderDoc() {
+  const s = BOOK.sections.find(x => x.id === DV.sec) || { id: DV.sec, title: '', start: DV.page, end: DV.page, pages: 1 };
+  const all = clausesIn(DV.sec), pages = [...new Set(all.map(c => c.page))];
+  const here = all.filter(c => c.page === DV.page);
+  const pi = pages.indexOf(DV.page), prev = pages[pi - 1], next = pages[pi + 1];
+  const issue = BOOK.issues && BOOK.issues[s.issue];
+  let lastPart = null;
+  const body = here.map((c, i) => {
+    const part = PARTS[String(c.para)[0]];
+    const ph = part && part !== lastPart ? `<div class="dv-part">${part}</div>` : ''; if (part) lastPart = part;
+    let txt = esc(c.text);
+    if (c.before != null && c.after != null) {
+      if (c.before && c.after) { const w = wdiff(c.before, c.after); txt = w[1] + `<span style="display:block;margin-top:5px;font-size:11.5px;color:#7b8794"><span style="font-family:Arial;font-size:9px;font-weight:700;letter-spacing:.06em">PRIOR ISSUE READ:</span> ${w[0]}</span>`; }
+      else if (c.after) txt = `<ins>${esc(c.after)}</ins>`; else txt = `<del>${esc(c.before)}</del>`;
+    }
+    const hl = DV.key ? c.keys.includes(DV.key) : i === 0;
+    return `${i ? '<div class="dv-gap"></div>' : ''}${ph}<p class="dv-cl ${hl ? 'hl' : ''}" ${hl ? 'id="dv-hl"' : ''}><span class="pn">${esc(c.para)}</span>${txt}<span class="dv-tags">${c.tags.map(t => `<span class="${t.c}">${esc(t.t)}</span>`).join('')}</span></p>`;
+  }).join('');
+  $('#dv-pane').innerHTML = `
+    <div class="dv-bar"><b>${s.id} ${esc(s.title)}</b><span>Book page ${pgs(DV.page)} of ${pgs(BOOK.totalPages)}</span>
+      <span class="sp"><button ${prev ? '' : 'disabled'} onclick="docPage(${prev || 0})">‹ Prev flagged</button><button ${next ? '' : 'disabled'} onclick="docPage(${next || 0})">Next flagged ›</button><button onclick="closeDoc()" aria-label="Close">Close</button></span></div>
+    <div class="dv-body">
+      <div class="dv-page">
+        <div class="dv-ph"><span>${esc(BOOK.name)}</span><span class="stamp">${issue ? esc(issue.label) + ' · ' + fmtDate(issue.date) : iss(s.issue)}</span></div>
+        <div class="dv-st">SECTION ${s.id}<br>${esc(String(s.title).toUpperCase())}</div>
+        <div class="dv-gap"></div>
+        ${body || '<p class="dv-cl">No flagged clauses on this page.</p>'}
+        <div class="dv-gap"></div>
+        <div class="dv-pf"><span>${s.id} – ${DV.page - s.start + 1} of ${s.pages}</span><span>Book p. ${pgs(DV.page)}</span></div>
+      </div>
+      <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>¶${esc(c.para)} · ${esc(c.tags[0].label)}</span></button>`).join('')}</div>
+      <div class="dv-note">Sample book is fictional. On your own book this link opens the PDF itself at the cited page.</div>
+    </div>`;
+  const h = document.getElementById('dv-hl'); if (h) setTimeout(() => h.scrollIntoView({ block: 'center' }), 30);
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (DV) closeDoc(); closeCfm(); } });
+
+/* word-level redline: [beforeHTML, afterHTML] */
+function wdiff(a, b) {
+  const A = String(a).split(/\s+/).filter(Boolean), B = String(b).split(/\s+/).filter(Boolean);
+  const n = A.length, m = B.length, L = Array.from({ length: n + 1 }, () => new Int16Array(m + 1));
+  for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) L[i][j] = A[i] === B[j] ? L[i + 1][j + 1] + 1 : Math.max(L[i + 1][j], L[i][j + 1]);
+  const x = [], y = []; let i = 0, j = 0;
+  while (i < n && j < m) {
+    if (A[i] === B[j]) { x.push(esc(A[i])); y.push(esc(B[j])); i++; j++; }
+    else if (L[i + 1][j] >= L[i][j + 1]) x.push(`<del class="w">${esc(A[i++])}</del>`);
+    else y.push(`<ins>${esc(B[j++])}</ins>`);
+  }
+  while (i < n) x.push(`<del class="w">${esc(A[i++])}</del>`);
+  while (j < m) y.push(`<ins>${esc(B[j++])}</ins>`);
+  /* merge runs so a changed phrase reads as one mark */
+  return [x.join(' ').replace(/<\/del> <del class="w">/g, ' '), y.join(' ').replace(/<\/ins> <ins>/g, ' ')];
+}
+
+/* what kind of gap each RFI is */
+const RTYPES = {
+  conflict: ['Contradiction', 'Two places in the book say different things'],
+  missing: ['Missing section', 'The book points to a section that is missing or does not cover it'],
+  unassigned: ['Nobody assigned', 'Work the book requires but gives to no trade'],
+  blank: ['Left blank', 'A placeholder or "TBD" in the issued set'],
+  undefined: ['Undefined', 'A requirement referenced but never defined'],
+  stale: ['Out-of-date section', 'Still stamped an older issue than the rest of the set'],
+};
+const rtype = c => c.type || (c.kind === 'stale' ? 'stale' : c.kind === 'missing' ? 'missing' : 'conflict');
+const rtLabel = c => RTYPES[rtype(c)][0].toUpperCase();
+const qualText = f =>QUAL[f.id] || `${f.title}: pricing is limited to the requirement as written in Section ${f.sec}; costs beyond it are excluded until confirmed at award.`;
 
 /* ===================== PREFLIGHT ===================== */
 function checks() {
@@ -350,7 +560,7 @@ function checks() {
   if (drafts.length) add('warn', 'rfis', `${drafts.length} RFI${drafts.length > 1 ? 's' : ''} not sent yet`, 'Open RFIs print as bid assumptions.', "go('rfis')", 'Send');
 
   const S = sheet();
-  if (!S) add('error', 'proposal', 'Bid sheet is not built from this spec book', BOOK.takeoff ? 'One click builds it from the takeoff plus your priced adders.' : 'One click adds your priced adders to the current bid sheet.', 'buildSheet()', 'Build');
+  if (!S) add('error', 'proposal', 'Bid sheet is not built from this spec book', BOOK.takeoff ? 'Review what will be built, then confirm.' : 'One click adds your priced adders to the current bid sheet.', 'buildSheet()', 'Build');
   else {
     const dif = BC.adderDiff(S, ADDERS());
     if (dif.length) add('error', 'proposal', `${dif.length} spec adder${dif.length > 1 ? 's' : ''} out of sync with the bid sheet`, dif.slice(0, 2).map(x => x.title + (x.kind === 'amount' ? ` (sheet ${money(x.sheet)}, spec ${money(x.spec)})` : ' (' + x.kind + ')')).join(' · '), 'syncSheet()', 'Sync');
@@ -513,10 +723,10 @@ function fdHTML(f) {
   const d = dec(f), d01 = /^0[01]/.test(f.sec);
   return `<div class="fd ${f.sev} ${d.ok ? 'ok' : ''}" id="f-${f.id}">
     <div>
-      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b><span class="cite">${E.cite(f.sec, f.para, f.page)}</span>
+      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}
         ${d01 ? '<span class="bdg d01">FROM DIV 01</span>' : ''}${f.chg ? `<span class="bdg chg">CHANGED ${iss(f.chg).toUpperCase()}</span>` : ''}</div>
       <div class="fd-imp">${esc(f.impact)}</div>
-      <details><summary>Show the clause</summary><div class="says">“${esc(f.says)}”</div></details>
+      <div class="fd-links">${f.page ? `<button class="fd-open" onclick="openDoc('${f.sec}',${f.page},'f-${f.id}')">Open in spec book, p. ${pgs(f.page)} ↗</button>` : ''}<details><summary>Show the clause</summary><div class="says">“${esc(f.says)}”</div></details></div>
     </div>
     <div class="fd-side">
       <span class="seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''} ${f.act === k ? 'rec' : ''}" title="${f.act === k ? 'Recommended' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>
@@ -561,7 +771,28 @@ function paneChanges() {
   const D = DIFFS();
   const up = D.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.max(0, c.amt || 0), 0), 0);
   const dn = D.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.min(0, c.amt || 0), 0), 0);
-  return `
+  const secTot = d => d.changes.reduce((a, c) => a + (c.amt || 0), 0);
+  const nChg = D.reduce((a, d) => a + d.changes.length, 0);
+  const issNos = Object.keys(BOOK.issues || {}).map(Number).sort((a, b) => a - b);
+  const byIssue = n => D.filter(d => d.to === n).length;
+  let big = null; D.forEach(d => d.changes.forEach(c => { if (!big || (c.amt || 0) > (big.c.amt || 0)) big = { d, c }; }));
+  const maxAbs = Math.max(1, ...D.map(d => Math.abs(secTot(d))));
+  const bars = D.slice().sort((a, b) => Math.abs(secTot(b)) - Math.abs(secTot(a)));
+  const CXF = [['all', 'All', () => true], ['cost', 'Adds cost', d => secTot(d) > 0], ['credit', 'Credits', d => secTot(d) < 0], ['out', 'Outside your division', d => d.crossDiv || /^0[01]/.test(d.sec)], ['open', 'Not confirmed', d => !acked(d)]];
+  const fx = (CXF.find(x => x[0] === UI.cx) || CXF[0])[2];
+  const DS = D.filter(fx);
+  const hero = BOOK.sample && D.length ? `
+    <div class="cx-hero">
+      <h3>The book changed ${issNos.filter(n => n > BOOK.pricedIssue).length} times after you priced it. Nothing in it says what moved.</h3>
+      <p>${D.length} sections were reissued with a new header date only: no clouds, no deltas, no narrative. The engine compares every sentence against the issue you priced and puts a dollar figure on each change, so the estimator confirms ${nChg} specific edits instead of rereading ${pgs(D.reduce((a, d) => a + ((BOOK.sections.find(s => s.id === d.sec) || {}).pages || 0), 0))} pages.</p>
+      <div class="cx-tl">${issNos.map(n => `<div class="cx-ti ${n === BOOK.pricedIssue ? 'priced' : ''} ${n === BOOK.bookIssue ? 'cur' : ''} ${n > BOOK.pricedIssue && n !== BOOK.bookIssue ? 'after' : ''}"><i></i><b>${iss(n)}</b>${fmtDate(BOOK.issues[n].date)}<br>${esc(BOOK.issues[n].label.split('— ')[1] || '')}${n === BOOK.pricedIssue ? '<br><span class="c">YOU PRICED</span>' : byIssue(n) ? `<br><span class="c">${byIssue(n)} changed</span>` : ''}</div>`).join('')}</div>
+      ${big && big.c.amt > 0 ? `<div class="cx-big"><span class="v">+${money(big.c.amt)}</span><span>from one sentence in ${big.d.sec} ¶${esc(big.c.para)}: ${esc(big.c.after)}</span><a href="javascript:void 0" onclick="openDoc('${big.d.sec}',${big.c.page},'d-${big.d.sec}-${big.d.changes.indexOf(big.c)}')">Open the page ↗</a></div>` : ''}
+    </div>
+    <div class="demo-panel" style="margin-bottom:14px">
+      <div class="demo-panel-head"><h2>Where the money moved</h2><span class="k">net ${(up + dn) >= 0 ? '+' : ''}${money(up + dn)} · click a row to jump to it</span></div>
+      <div class="cx-bars">${bars.map(d => { const t = secTot(d), w = Math.abs(t) / maxAbs * 100; return `<div class="cx-bar ${acked(d) ? 'ok' : ''}" onclick="jumpChg('${d.sec}')"><div class="nm">${d.sec} <span>${esc(E.secTitle(BOOK, d.sec))}</span></div><div class="l">${t < 0 ? `<i style="width:${Math.max(2, w)}%"></i>` : ''}</div><div class="r">${t > 0 ? `<i style="width:${Math.max(2, w)}%"></i>` : ''}</div><div class="v ${t > 0 ? 'up' : t < 0 ? 'dn' : ''}">${t ? (t > 0 ? '+' : '') + moneyK(t) : '$0'}</div></div>`; }).join('')}</div>
+    </div>` : '';
+  return `${hero}
     <div class="sb-kpis">
       <div class="sb-kpi red"><div class="l">Sections changed</div><div class="v">${D.length}</div><div class="s">${iss(BOOK.pricedIssue)} → ${iss(BOOK.bookIssue)}</div></div>
       <div class="sb-kpi green"><div class="l">Confirmed</div><div class="v">${D.filter(acked).length} / ${D.length}</div><div class="s">each must be confirmed</div></div>
@@ -571,22 +802,22 @@ function paneChanges() {
     <div class="sb-tools">
       ${D.some(d => !acked(d)) ? `<button class="pa-btn primary" onclick="ackAll()">Confirm all ${D.filter(d => !acked(d)).length} remaining</button>` : (D.length ? '<span class="fd-ok">✓ ALL CHANGES CONFIRMED</span>' : '')}
       ${BOOK.local ? `<button class="pa-btn" onclick="$('#pick-prior').click()">${PRIOR ? 'Compare a different prior issue' : 'Load prior issue to see each sentence'}</button>` : ''}
-      <span class="ynote" style="margin-left:auto">Reissued sections only carry a new header date. Nothing in the text marks what moved.</span>
+      <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${CXF.filter(x => x[0] === 'all' || D.some(x[2]) || UI.cx === x[0]).map(([k, l, f]) => `<button class="sb-chip ${UI.cx === k ? 'on' : ''}" onclick="UI.cx='${k}';rerender()">${l}<b>${D.filter(f).length}</b></button>`).join('')}</span>
     </div>
-    ${D.length ? D.map(d => {
+    ${DS.length ? DS.map(d => {
       const tot = d.changes.reduce((a, c) => a + (c.amt || 0), 0), ok = acked(d);
-      return `<div class="dsec ${ok ? 'ok' : ''}">
+      return `<div class="dsec ${ok ? 'ok' : ''}" id="x-${d.sec.replace(/\W/g, '')}">
         <div class="hd"><span class="bdg chg">${d.isNew ? 'NEW SECTION' : iss(d.from) + ' → ' + iss(d.to)}</span><b>${d.sec} — ${esc(E.secTitle(BOOK, d.sec))}</b>${d.crossDiv ? '<span class="bdg d01">OUTSIDE YOUR DIVISION</span>' : ''}
           <span class="tot ${tot > 0 ? 'up' : tot < 0 ? 'dn' : ''}">${BOOK.sample ? (tot > 0 ? '+' : '') + money(tot) : ''}</span>
           <label class="ack"><input type="checkbox" ${ok ? 'checked' : ''} onchange="ack('${d.sec}',this.checked)">${ok ? 'Confirmed in price' : 'Confirm in price'}</label></div>
         ${d.stampOnly && !d.changes.length ? `<div style="padding:11px 15px;font-size:12.2px;color:var(--color-text-muted)">Header stamp moved from ${iss(d.from)} to ${iss(d.to)}. ${PRIOR ? 'No sentence-level differences found against the prior issue.' : 'Load the prior issue to see exactly what changed, or read the section before confirming.'}</div>` : ''}
-        ${d.changes.map(c => `<div class="chg">
-          <div class="was"><span class="lab">Was${c.para ? ' · ¶' + c.para : ''}</span>${c.before ? `<del>${esc(c.before)}</del>` : '<i>Not in prior issue</i>'}</div>
-          <div class="now"><span class="lab">Now${c.page ? ' · p.' + pgs(c.page) : ''}</span>${c.after ? `<ins>${esc(c.after)}</ins>` : '<i>Deleted</i>'}${c.note ? `<div class="ynote" style="margin-top:5px">${esc(c.note)}</div>` : ''}</div>
+        ${d.changes.map((c, ci) => { const w = c.before && c.after ? wdiff(c.before, c.after) : null; return `<div class="chg">
+          <div class="was ${w ? 'word' : ''}"><span class="lab">Was · ${iss(d.from)}${c.para ? ' · ¶' + c.para : ''}</span>${w ? w[0] : c.before ? `<del>${esc(c.before)}</del>` : '<i>Not in prior issue</i>'}</div>
+          <div class="now"><span class="lab">Now · ${iss(d.to)}${c.page ? ` · <a href="javascript:void 0" onclick="openDoc('${d.sec}',${c.page},'d-${d.sec}-${ci}')">p. ${pgs(c.page)} ↗</a>` : ''}</span>${w ? w[1] : c.after ? `<ins>${esc(c.after)}</ins>` : '<i>Deleted</i>'}${c.note ? `<div class="ynote" style="margin-top:5px">${esc(c.note)}</div>` : ''}</div>
           <div class="imp ${c.amt > 0 ? 'up' : c.amt < 0 ? 'dn' : ''}">${BOOK.sample ? (c.amt ? (c.amt > 0 ? '+' : '') + money(c.amt) : '$0') : '—'}${c.find ? `<div style="font-size:10.5px;font-weight:600;margin-top:3px"><a href="javascript:void 0" onclick="jumpFinding('${c.find}')">see finding</a></div>` : ''}</div>
-        </div>`).join('')}
+        </div>`; }).join('')}
       </div>`;
-    }).join('') : '<div class="sb-empty">Nothing in this trade changed after the issue you priced.</div>'}`;
+    }).join('') : `<div class="sb-empty">${D.length ? 'No changes match this filter.' : 'Nothing in this trade changed after the issue you priced.'}</div>`}`;
 }
 
 /* ---------- 4 · RFIs ---------- */
@@ -595,22 +826,40 @@ function paneRfis() {
   const N = rfiNums();
   const ST = [['draft', 'Draft'], ['sent', 'Sent to CM'], ['answered', 'Answered'], ['closed', 'Closed']];
   const drafts = C.filter(c => inLog(c) && rs(c.id).status === 'draft');
+  const L = C.filter(inLog), cntS = s => L.filter(c => s.includes(rs(c.id).status)).length;
+  const types = Object.keys(RTYPES).filter(t => C.some(c => rtype(c) === t));
+  const shown = C.filter(c => !UI.rtype || rtype(c) === UI.rtype);
+  const sideLbl = ['Section A says', 'Section B says', 'Also cited'];
   return `
-    <div class="sb-tools">
-      ${drafts.length ? `<button class="pa-btn primary" onclick="copyDrafts()">Copy ${drafts.length} draft RFI${drafts.length > 1 ? 's' : ''} for the CM</button><button class="pa-btn" onclick="markSent()">Mark ${drafts.length} as sent today</button>` : '<span class="fd-ok">✓ NO UNSENT RFIS</span>'}
-      <span class="ynote" style="margin-left:auto">Addressed to the CM (sub RFIs sent direct come back unanswered). Anything still open on bid day prints as an assumption.</span>
+    <div class="rx-flow">
+      <div><span class="n">1 · Found in the book</span><b>Questions you cannot price around</b><p>Places where the book contradicts itself, points to a section that doesn't cover it, leaves work with no trade, or still says TBD. Each card shows the exact clauses side by side.</p></div>
+      <div><span class="n">2 · Sent through the CM</span><b>Numbered RFIs, ready to send</b><p>Each one is drafted in the CM's format with page cites. Sub RFIs go through the CM because ones sent directly come back unanswered.</p></div>
+      <div><span class="n">3 · Locked into the proposal</span><b>Answered or assumed, never silent</b><p>An answer prints in the proposal. Anything still open on bid day prints as the stated bid assumption, so the number is defined either way.</p></div>
     </div>
-    ${C.length ? C.map(c => {
-      const on = inLog(c), r = rs(c.id), open = UI.openRfi === c.id;
-      const refs = ['a', 'b', 'c'].map(k => c[k]).filter(x => x && x.sec && x.sec !== '—').map(x => `<span class="cite">${E.cite(x.sec, x.para, x.page)}</span>`).join('');
+    <div class="sb-kpis">
+      <div class="sb-kpi"><div class="l">In RFI log</div><div class="v">${L.length}</div><div class="s">${C.length - L.length ? C.length - L.length + ' dropped' : 'from ' + C.length + ' found'}</div></div>
+      <div class="sb-kpi amber"><div class="l">Drafted, not sent</div><div class="v">${cntS(['draft'])}</div><div class="s">send before bid day</div></div>
+      <div class="sb-kpi"><div class="l">Awaiting CM</div><div class="v">${cntS(['sent'])}</div><div class="s">print as assumptions if open</div></div>
+      <div class="sb-kpi green"><div class="l">Answered</div><div class="v">${cntS(['answered', 'closed'])}</div><div class="s">answer prints in proposal</div></div>
+    </div>
+    <div class="sb-tools">
+      <button class="sb-chip ${!UI.rtype ? 'on' : ''}" onclick="UI.rtype=null;rerender()">All<b>${C.length}</b></button>
+      ${types.map(t => `<button class="sb-chip ${UI.rtype === t ? 'on' : ''}" title="${esc(RTYPES[t][1])}" onclick="UI.rtype='${t}';rerender()">${RTYPES[t][0]}<b>${C.filter(c => rtype(c) === t).length}</b></button>`).join('')}
+      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${drafts.length ? `<button class="pa-btn primary" onclick="copyDrafts()">Copy ${drafts.length} draft RFI${drafts.length > 1 ? 's' : ''} for the CM</button><button class="pa-btn" onclick="markSent()">Mark ${drafts.length} as sent today</button>` : '<span class="fd-ok">✓ NO UNSENT RFIS</span>'}</span>
+    </div>
+    ${shown.length ? shown.map(c => {
+      const on = inLog(c), r = rs(c.id), open = UI.openRfi === c.id, t = rtype(c);
+      const sides = ['a', 'b', 'c'].map(k => c[k]).filter(Boolean);
+      const age = r.sent ? -daysTo(r.sent) : null;
       return `<div class="rfi ${on ? '' : 'off'}" id="c-${c.id}">
         <div class="rfi-h">
           <label class="tgl" title="${on ? 'In the RFI log — uncheck to drop' : 'Add to the RFI log'}"><input type="checkbox" ${on ? 'checked' : ''} onchange="toggleRfi('${c.id}',this.checked)"></label>
-          ${on ? `<span class="no">${E.rfiNo(N[c.id])}</span>` : ''}<span class="sev ${c.sev}">${sevL[c.sev]}</span><b>${esc(c.title)}</b>
-          <span class="sp">${on ? `<select onchange="setStatus('${c.id}',this.value)">${ST.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select>` : '<span class="ynote">not in log</span>'}
-            <button class="pa-btn" style="height:30px;font-size:11.5px" onclick="UI.openRfi=UI.openRfi==='${c.id}'?null:'${c.id}';rerender()">${open ? 'Hide' : 'View'}</button></span>
+          ${on ? `<span class="no">${E.rfiNo(N[c.id])}</span>` : ''}<span class="sev ${c.sev}">${sevL[c.sev]}</span><span class="rtype" title="${esc(RTYPES[t][1])}">${RTYPES[t][0]}</span><b>${esc(c.title)}</b>
+          <span class="sp">${on && r.status !== 'draft' && age != null ? `<span class="rfi-age">sent ${fmtDate(r.sent)} · ${age} day${age === 1 ? '' : 's'}</span>` : ''}${on ? `<select onchange="setStatus('${c.id}',this.value)">${ST.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select>` : '<span class="ynote">not in log</span>'}
+            <button class="pa-btn" style="height:30px;font-size:11.5px" onclick="UI.openRfi=UI.openRfi==='${c.id}'?null:'${c.id}';rerender()">${open ? 'Hide RFI text' : 'RFI text + answer'}</button></span>
         </div>
-        <div class="rfi-refs">${refs}</div>
+        <div class="rx-sides">${sides.map((x, i) => `<div class="rx-side"><div class="h">${x.sec && x.sec !== '—' ? sideLbl[i] + ' ' + citeBtn(x.sec, x.para, x.page, 'c-' + c.id + ['a', 'b', 'c'][i]) : 'Rest of the book'}</div>${esc(x.says)}</div>`).join('')}</div>
+        <div class="rx-meta"><div><b>What's at stake</b>${esc(c.cost || 'To be determined.')}</div>${['answered', 'closed'].includes(r.status) && r.answer ? `<div class="ans"><b>CM answer · prints in proposal</b>${esc(r.answer)}</div>` : `<div><b>Until answered, the proposal says</b>${esc(assumeOf(c))}</div>`}</div>
         ${open ? `<pre>${esc(E.rfiText(rfiBook(), c, N[c.id] || 0))}</pre>
           <textarea placeholder="CM's answer — once entered, it prints in the proposal instead of an assumption" oninput="setAnswer('${c.id}',this.value)">${esc(r.answer || '')}</textarea>` : ''}
       </div>`;
@@ -668,7 +917,7 @@ function proposalHTML(S, T) {
   const pending = C.filter(c => !answered.includes(c));
   const D = DIFFS().filter(acked);
   const p = currentPersona() || { name: 'Preconstruction', title: '' };
-  const assume = c => (c.q.match(/(Bid (assumes|excludes|includes|is based)[^.]*\.)/) || [])[1] || 'Bid is based on the documents as issued pending response.';
+  const assume = assumeOf;
   const cite = f => `<span class="ref">(${E.cite(f.sec, f.para, f.page)})</span>`;
   const due = META.due ? new Date(META.due + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—';
   const hasAlts = !!(S && T && S.lines.some(l => !BC.inc(l)));
@@ -782,6 +1031,13 @@ function allowAll() {
 }
 function acceptSec(sec) { acceptList(FS().filter(f => f.sec === sec)); }
 function jumpFinding(id) { UI.filter = 'all'; UI.q = ''; go('decide'); setTimeout(() => { const el = document.getElementById('f-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800); } }, 350); }
+function jumpChg(sec) {
+  const id = 'x-' + sec.replace(/\W/g, '');
+  if (!document.getElementById(id)) { UI.cx = 'all'; rerender(); }
+  const el = document.getElementById(id); if (!el) return;
+  window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 230, behavior: 'smooth' });
+  el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800);
+}
 function ack(sec, on) { DEC['chg:' + sec] = { ack: on }; saveDec(); rerender(); }
 function ackAll() { DIFFS().forEach(d => DEC['chg:' + d.sec] = { ack: true }); saveDec(); rerender(); toast('All changes confirmed in price'); }
 function toggleRfi(id, on) { DEC[id] = Object.assign({}, DEC[id], { act: on ? 'on' : 'off' }); saveDec(); rerender(); }
@@ -790,7 +1046,26 @@ function setAnswer(id, v) { RS[id] = Object.assign(rs(id), { answer: v, status: 
 function rfiBook() { return Object.assign({}, BOOK, { cm: META.gc || BOOK.cm, bid: { bidNo: META.bidNo } }); }
 function copyDrafts() { const N = rfiNums(); cp(CONFS().filter(c => inLog(c) && rs(c.id).status === 'draft').map(c => E.rfiText(rfiBook(), c, N[c.id])).join('\n\n' + '-'.repeat(60) + '\n\n'), 'Draft RFIs copied — paste into the CM\'s RFI log or email'); }
 function markSent() { CONFS().filter(c => inLog(c) && rs(c.id).status === 'draft').forEach(c => RS[c.id] = Object.assign(rs(c.id), { status: 'sent', sent: today() })); saveRS(); rerender(); toast('Marked as sent today'); }
+/* Build asks first: it replaces the working bid sheet, so show exactly what will happen */
 function buildSheet() {
+  const A = ADDERS(), cur = BC.load(), linked = sheet();
+  const tot = A.reduce((a, x) => a + x.amt, 0);
+  $('#cfm-bx').innerHTML = `
+    <h3>${linked ? 'Rebuild the bid sheet?' : BOOK.takeoff ? 'Build the bid sheet from this book?' : 'Link the bid sheet to this book?'}</h3>
+    <p>${BOOK.takeoff ? 'This starts a new bid sheet for ' + esc(BOOK.name) + ' from the base takeoff, then adds every priced spec adder tagged with its cite.' : 'This links your current bid sheet to ' + esc(BOOK.name) + ' and adds every priced spec adder tagged with its cite.'}</p>
+    <ul>
+      ${BOOK.takeoff ? `<li><span>Base takeoff lines</span><b>${BOOK.takeoff.length}</b></li>` : ''}
+      <li><span>Priced spec adders</span><b>${A.length} · ${money(tot)}</b></li>
+      ${ALLOWS().length ? `<li><span>Allowances (listed, not priced)</span><b>${ALLOWS().length}</b></li>` : ''}
+      ${cur && BOOK.takeoff ? `<li><span>Current sheet saved as a backup</span><b>${esc(String(cur.meta.project || 'Untitled').slice(0, 34))}</b></li>` : ''}
+    </ul>
+    ${linked ? '<div class="warn">A bid sheet is already linked to this book. Rebuilding replaces any rates, quantities or markups you changed in the Bid Modeler. To update only the spec adders, use Sync instead.</div>' : ''}
+    <div class="row"><button class="pa-btn" onclick="closeCfm()">Cancel</button>${linked ? '<button class="pa-btn" onclick="closeCfm();syncSheet()">Sync adders only</button>' : ''}<button class="pa-btn primary" id="cfm-go" onclick="this.disabled=true;closeCfm();doBuildSheet()">${linked ? 'Rebuild bid sheet' : 'Confirm and build'}</button></div>`;
+  $('#cfm').classList.add('show');
+  setTimeout(() => { const b = document.getElementById('cfm-go'); if (b) b.focus(); }, 30);
+}
+function closeCfm() { const c = document.getElementById('cfm'); if (c) c.classList.remove('show'); }
+function doBuildSheet() {
   let S;
   const meta = { project: BOOK.name + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
   if (BOOK.takeoff) S = BC.startSheet(meta, BOOK.takeoff);
@@ -854,6 +1129,8 @@ async function loadBook(file) {
     const t0 = performance.now();
     const r = await E.analyze(file, prog);
     BOOK = r.book; RAW = r.raw; PRIOR = null;
+    if (FILE_URL) URL.revokeObjectURL(FILE_URL);
+    FILE_URL = URL.createObjectURL(file);
     E.store.sset('msm-spec-local', BOOK); E.store.sset('msm-spec-active', 'local');
     step = 'load'; loadState(); ov(false); render();
     toast(`Read ${pgs(BOOK.totalPages)} pages in ${((performance.now() - t0) / 1000).toFixed(0)}s — fill in the bid setup to start`);
@@ -885,7 +1162,7 @@ function resetDemo() {
       else { localStorage.removeItem(BC.KEY_STATE); localStorage.setItem(BC.KEY_REVS, '[]'); }
     }
   } catch (e) {}
-  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null });
+  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all' });
   step = 'load'; history.replaceState(null, '', '#load');
   loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('Demo reset — back to step 1');
