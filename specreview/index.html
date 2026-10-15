@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261015a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261015a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261015a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261015b">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261015b">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261015b">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -292,6 +292,20 @@
     .dv-body { padding:10px; } .dv-page { padding:22px 18px; }
   }
 
+  /* price book */
+  .fd-pb { width:300px; max-width:100%; border:1px solid var(--color-border); border-left:3px solid #2f9e6e; border-radius:8px; padding:7px 10px; background:var(--color-bg); font-size:11.5px; color:var(--color-text-muted); text-align:left; }
+  .fd-pb.over { border-left-color:var(--color-amber); }
+  .fd-pb .h { display:flex; justify-content:space-between; gap:8px; align-items:center; font-size:9.5px; font-weight:800; letter-spacing:.07em; color:var(--color-slate-hint); }
+  .fd-pb .h b { color:#2f9e6e; }
+  .fd-pb .h button { font:inherit; font-size:10px; font-weight:800; color:var(--color-amber); background:none; border:0; cursor:pointer; text-decoration:underline; padding:0; }
+  .fd-pb .c { font-size:12.5px; color:var(--color-cloud-whisper); margin:3px 0 2px; font-variant-numeric:tabular-nums; }
+  .fd-pb .n { font-size:10.8px; line-height:1.45; }
+  .pb-ban { display:flex; gap:14px; align-items:center; flex-wrap:wrap; padding:13px 16px; margin-bottom:14px; border-radius:12px; border:1px solid #2f9e6e; background:rgba(47,158,110,.07); font-size:12.8px; line-height:1.55; color:var(--color-cloud-whisper); }
+  .pb-ban > div:first-child { flex:1; min-width:260px; }
+  .pb-ban .b { display:flex; gap:8px; flex-wrap:wrap; }
+  .pb-rates { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--color-text-muted); margin-bottom:10px; }
+  .pb-rates b { color:var(--color-cloud-whisper); }
+
   .sb-empty { padding:26px; text-align:center; color:var(--color-text-muted); font-size:12.5px; border:1px dashed var(--color-border); border-radius:12px; }
   .sb-ov { position:fixed; inset:0; background:rgba(8,16,28,.72); z-index:500; display:none; align-items:center; justify-content:center; }
   .sb-ov.show { display:flex; }
@@ -338,13 +352,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261015a"></script>
-<script src="/mccorvey/js/util.js?v=20261015a"></script>
-<script src="/mccorvey/js/nav.js?v=20261015a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261015a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261015a"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261015a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261015a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261015b"></script>
+<script src="/mccorvey/js/util.js?v=20261015b"></script>
+<script src="/mccorvey/js/nav.js?v=20261015b"></script>
+<script src="/mccorvey/js/specbook.js?v=20261015b"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261015b"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261015b"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261015b"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261015b" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -358,7 +373,7 @@ let DEC, META, RS;
 const STEPS = [['load', 'Set up'], ['decide', 'Decide'], ['changes', 'Changes'], ['rfis', 'RFIs'], ['proposal', 'Proposal']];
 const HASH_ALIAS = { triage: 'load', findings: 'decide', matrix: 'decide', adders: 'proposal', letter: 'proposal' };
 let step = (() => { const h = (location.hash || '').slice(1); const k = HASH_ALIAS[h] || h; return STEPS.some(s => s[0] === k) ? k : null; })();
-const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all' };
+const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false };
 
 function loadState() {
   DEC = E.decisions(BOOK);
@@ -730,10 +745,41 @@ function fdHTML(f) {
     </div>
     <div class="fd-side">
       <span class="seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''} ${f.act === k ? 'rec' : ''}" title="${f.act === k ? 'Recommended' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>
-      ${d.act === 'price' ? `<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${d.allow ? '<span class="bdg chg">ALLOWANCE · TBD</span>' : ''}<label class="amt">Adder $<input data-amt="${f.id}" class="${d.amt > 0 || d.allow ? '' : 'miss'}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="${d.allow ? 'optional' : 'required'}" inputmode="decimal"></label>${d.amt > 0 ? '' : `<button class="pa-btn" style="height:30px;font-size:11px" onclick="setAllow('${f.id}',${!d.allow})">${d.allow ? 'Undo allowance' : 'Carry as allowance'}</button>`}</span>${f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : ''}` : ''}
+      ${d.act === 'price' ? `<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${d.allow ? '<span class="bdg chg">ALLOWANCE · TBD</span>' : ''}<label class="amt">Adder $<input data-amt="${f.id}" class="${d.amt > 0 || d.allow ? '' : 'miss'}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="${d.allow ? 'optional' : 'required'}" inputmode="decimal"></label>${d.amt > 0 ? '' : `<button class="pa-btn" style="height:30px;font-size:11px" onclick="setAllow('${f.id}',${!d.allow})">${d.allow ? 'Undo allowance' : 'Carry as allowance'}</button>`}</span>${pbTrail(f, d)}` : ''}
       ${d.ok ? `<span class="fd-ok">✓ REVIEWED${d.allow ? ' · ALLOWANCE' : ''}</span>` : `<button class="pa-btn primary" style="height:30px;font-size:11.5px" onclick="confirmF('${f.id}')">Confirm: ${ACTS.find(a => a[0] === d.act)[1]}</button>`}
     </div>
   </div>`;
+}
+const PB = window.PRICEBOOK;
+const pbOver = f => f.pb && DEC[f.id] && DEC[f.id].amt != null && Math.round(+DEC[f.id].amt) !== f.amt;
+const unitFmt = n => !n ? '—' : '$' + (n >= 1000 ? Math.round(n).toLocaleString() : n < 1 ? n.toFixed(4) : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+function pbTrail(f, d) {
+  if (!f.pb) return f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : '';
+  const it = PB.BY[f.pb.code];
+  return `<div class="fd-pb ${pbOver(f) ? 'over' : ''}">
+    <div class="h"><span>${PB.NAME.toUpperCase()} · ${it.code}</span>${pbOver(f) ? `<button onclick="resetPB('${f.id}')">Reset to ${money(f.amt)}</button>` : '<b>AUTO-PRICED</b>'}</div>
+    <div class="c">${Number(f.pb.qty).toLocaleString()} ${esc(it.unit)} × ${unitFmt(it.unitCost)} = <b>${money(f.amt)}</b></div>
+    <div class="n">${esc(it.item)}</div>
+    <div class="n">Qty: ${esc(f.pb.qtyNote)}</div>
+  </div>`;
+}
+function pbTable() {
+  const used = {}; BOOK.findings.forEach(f => { if (f.pb) (used[f.pb.code] = used[f.pb.code] || []).push(f.id); });
+  return `<div class="demo-panel" style="margin-bottom:16px"><div class="demo-panel-head"><h2>${PB.NAME}</h2><span class="k">${PB.EDITION} · unit cost = material + labor hours × crew rate</span></div>
+    <div class="pb-rates">${Object.values(PB.RATES).filter(r => r.rate).map(r => `<span>${esc(r.label)} <b>${unitFmt(r.rate)}/hr</b></span>`).join('')}</div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:420px"><table class="demo-tbl tbl-left"><thead><tr><th>Code</th><th>Item</th><th>Unit</th><th style="text-align:right">Material / sub</th><th style="text-align:right">Labor hrs</th><th style="text-align:right">Unit cost</th><th>Used on</th></tr></thead>
+    <tbody>${PB.ITEMS.map(i => `<tr><td><b>${i.code}</b></td><td style="font-size:12px">${esc(i.item)}</td><td>${esc(i.unit)}</td><td style="text-align:right">${unitFmt(i.mat)}</td><td style="text-align:right">${i.hrs ? i.hrs + ' ' + i.crew : '—'}</td><td style="text-align:right;font-weight:800">${unitFmt(i.unitCost)}</td><td style="font-size:11.5px">${(used[i.code] || []).map(id => `<a href="javascript:void 0" onclick="jumpFinding('${id}')">${id}</a>`).join(' ')}</td></tr>`).join('')}</tbody></table></div>
+    <div class="ynote" style="margin-top:8px">Demo rates for the walkthrough. Swap in McCorvey's own price book and every spec adder, the bid sheet and the proposal reprice automatically.</div></div>`;
+}
+function resetPB(id) { if (DEC[id]) delete DEC[id].amt; saveDec(); repaintCard(id); toast('Back to the price book amount'); }
+function pbBanner(F) {
+  if (!PB || !F.some(f => f.pb)) return '';
+  const pr = F.filter(f => f.pb && dec(f).act === 'price'), tot = pr.reduce((a, f) => a + dec(f).amt, 0);
+  const open = F.filter(f => !dec(f).ok).length, over = F.filter(pbOver).length;
+  return `<div class="pb-ban">
+    <div><b>Nothing to type.</b> Every finding has a recommended decision, and ${pr.length} priced items are costed from the ${PB.NAME}: <b>${money(tot)}</b>${over ? `, ${over} with a manual override` : ''}. Review the highs, or accept everything as recommended.</div>
+    <div class="b">${open ? `<button class="pa-btn primary" onclick="acceptAll()">Accept all ${open} as recommended</button>` : '<span class="fd-ok">✓ ALL DECIDED</span>'}<button class="pa-btn" onclick="UI.showPB=!UI.showPB;rerender()">${UI.showPB ? 'Hide price book' : 'View price book'}</button></div>
+  </div>${UI.showPB ? pbTable() : ''}`;
 }
 function paneDecide() {
   const F = FS(), q = UI.q.toLowerCase();
@@ -745,6 +791,7 @@ function paneDecide() {
   const shownOpen = list.filter(f => !dec(f).ok).length;
   return `
     ${progHTML()}
+    ${pbBanner(F)}
     <div class="sb-tools">
       ${[['needs', 'Needs review'], ['high', 'High'], ['price', 'Priced'], ['noamt', 'Missing $'], ['allow', 'Allowances'], ['all', 'All']].filter(([k]) => !['noamt', 'allow'].includes(k) || cnt(k) || UI.filter === k).map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
       <input type="search" id="fq" placeholder="Search — hanger, warranty, 23 3113…" value="${esc(UI.q)}">
@@ -1162,7 +1209,7 @@ function resetDemo() {
       else { localStorage.removeItem(BC.KEY_STATE); localStorage.setItem(BC.KEY_REVS, '[]'); }
     }
   } catch (e) {}
-  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all' });
+  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false });
   step = 'load'; history.replaceState(null, '', '#load');
   loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('Demo reset — back to step 1');
