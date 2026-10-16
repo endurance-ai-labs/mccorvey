@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016s">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016s">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016s">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016t">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016t">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016t">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -171,6 +171,7 @@
   .pf-head { display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:14px 16px; border-radius:12px; margin-bottom:12px; color:#fff; background:#c8102e; }
   .pf-head.ready { background:#2f9e6e; }
   .pf-head b { font-size:15px; } .pf-head span { font-size:12px; opacity:.92; }
+  .pf-head .pf-all { margin-left:auto; height:34px; background:#fff; color:#c8102e; border-color:#fff; font-weight:800; }
   .pr-tiles { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin-bottom:12px; }
   .pr-tiles .sb-kpi .v { font-size:19px; }
 
@@ -504,16 +505,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016s"></script>
-<script src="/mccorvey/js/util.js?v=20261016s"></script>
-<script src="/mccorvey/js/nav.js?v=20261016s"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016s"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016s"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016s"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016s"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016s"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016s"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016s" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016t"></script>
+<script src="/mccorvey/js/util.js?v=20261016t"></script>
+<script src="/mccorvey/js/nav.js?v=20261016t"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016t"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016t"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016t"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016t"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016t"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016t"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016t" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -969,7 +970,7 @@ function render() {
         <div class="cmd-side">
           <span class="sb-mode ${BOOK.local ? 'local' : ''}"><i></i>${BOOK.local ? 'YOUR BOOK · LOCAL ONLY' : 'SAMPLE BOOK · FICTIONAL'}</span>
           <span class="cmd-range">${iss(BOOK.bookIssue)}${BOOK.bookDate ? ' · ' + fmtDate(BOOK.bookDate) : ''} · priced at ${iss(BOOK.pricedIssue)}</span>
-          <div class="sb-hbtns"><button class="pa-btn" onclick="$('#pick-cur').click()">Load a spec book (PDF)</button>${BOOK.local ? '<button class="pa-btn" onclick="useSample()">Back to sample</button>' : ''}<button class="pa-btn" onclick="resetDemo()" title="Clear every decision on this book and start again at step 1">Reset demo</button></div>
+          <div class="sb-hbtns"><button class="pa-btn" onclick="$('#pick-cur').click()">Load a spec book (PDF)</button>${BOOK.local ? '<button class="pa-btn" onclick="useSample()">Back to sample</button>' : ''}${stepOpen('proposal') ? '<button class="pa-btn" onclick="fastForward()" title="Every step with the recommended choices, straight to the proposal">Jump to finished proposal</button>' : ''}<button class="pa-btn" onclick="resetDemo()" title="Clear every decision on this book and start again at step 1">Reset demo</button></div>
         </div>
       </div>
       <div class="cmd-tiles">
@@ -1004,7 +1005,9 @@ function stepsHTML(CK) {
 }
 function navHTML() {
   const i = STEPS.findIndex(s => s[0] === step), prev = STEPS[i - 1], next = STEPS[i + 1];
-  return `<div class="sb-nav">${prev ? `<button class="pa-btn" onclick="go('${prev[0]}')">← ${prev[1]}</button>` : '<span></span>'}${next ? `<button class="pa-btn primary" onclick="${step === 'load' ? 'startReview()' : `go('${next[0]}')`}">${step === 'load' ? 'Start review' : 'Next: ' + next[1]} →</button>` : ''}</div>`;
+  const open = stepOpen(step), lbl = { decide: 'Accept the rest as recommended', changes: 'Confirm the rest', rfis: 'Send the RFIs' }[step];
+  const why = { decide: 'Every finding you have not decided takes its recommended decision', changes: 'Every change you have not confirmed is confirmed as in your price', rfis: 'Adds an RFI for any stale section and marks the drafts sent' }[step];
+  return `<div class="sb-nav">${prev ? `<button class="pa-btn" onclick="go('${prev[0]}')">← ${prev[1]}</button>` : '<span></span>'}${next ? `<button class="pa-btn primary" ${open && why ? `title="${why}"` : ''} onclick="${step === 'load' ? 'startReview()' : `advance('${next[0]}')`}">${step === 'load' ? 'Start review' : open && lbl ? `${lbl} · Next: ${next[1]}` : 'Next: ' + next[1]} →</button>` : ''}</div>`;
 }
 function pane(CK) {
   if (step === 'decide') return paneDecide();
@@ -1478,7 +1481,7 @@ function paneProposal(CK) {
     <div class="demo-two" style="margin-bottom:18px;align-items:start">
       <div class="demo-panel">
         <div class="demo-panel-head"><h2>Preflight</h2><span class="k">${errs.length} to fix · ${warns.length} to note</span></div>
-        <div class="pf-head ${errs.length ? '' : 'ready'}"><b>${errs.length ? errs.length + ' issue' + (errs.length > 1 ? 's' : '') + ' before this can go out' : 'Ready to issue'}</b><span>${errs.length ? 'Each one has a fix button.' : 'Every finding decided, every change confirmed, pricing in sync.'}</span></div>
+        <div class="pf-head ${errs.length ? '' : 'ready'}"><b>${errs.length ? errs.length + ' issue' + (errs.length > 1 ? 's' : '') + ' before this can go out' : 'Ready to issue'}</b><span>${errs.length ? 'Each one has a fix button, or clear them all at once.' : 'Every finding decided, every change confirmed, pricing in sync.'}</span>${errs.length ? '<button class="pa-btn pf-all" onclick="fastForward()" title="Accepts the recommended decisions, confirms the changes, sends the RFIs, confirms the bid package and builds the bid sheet">Fix all for the demo</button>' : ''}</div>
         <div class="pf">${CK.map(c => `<div class="pf-row ${c.level}"><i>${c.level === 'error' ? '!' : '•'}</i><div>${esc(c.msg)}${c.sub ? `<small>${esc(c.sub)}</small>` : ''}</div>${c.fix ? `<button class="pa-btn ${c.level === 'error' ? 'primary' : ''}" onclick="${c.fix}">${c.fixLbl}</button>` : '<span></span>'}</div>`).join('')}
           ${!CK.length ? '<div class="pf-row ok"><i>✓</i><div>All checks passed</div><span></span></div>' : ''}</div>
       </div>
@@ -1785,9 +1788,64 @@ function go(k, focus) {
 }
 function rerender() { const y = window.scrollY; $('#pane').innerHTML = pane(checks()); $('#sbnav').innerHTML = navHTML(); refreshChrome(); bind(); window.scrollTo(0, y); }
 function startReview() {
-  const miss = ['gc', 'bidNo', 'due'].filter(k => !META[k]);
-  if (miss.length) { toast('Fill in the bid setup first'); const el = document.getElementById('m-' + miss[0]); if (el) { el.focus(); el.classList.add('miss'); } return; }
-  META.started = true; saveMeta(); go('decide');
+  const miss = ['gc', 'bidNo', 'due'].filter(k => !META[k]).length || (META.due && daysTo(META.due) < 0);
+  finishStep('load'); go('decide');
+  if (miss) toast('Bid info filled in for the demo. Edit it any time in Set up.');
+}
+/* ---- demo autopilot: a step's recommended choices in one click, so a walkthrough never stalls ----
+   The same actions as the step's own buttons: accept recommended decisions, confirm changes, send RFIs, build the sheet. */
+const plusDays = n => { const d = new Date(today() + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+function stepOpen(k) {
+  if (k === 'load') return !META.started;
+  if (k === 'decide') return FS().some(f => !dec(f).ok);
+  if (k === 'changes') return DIFFS().some(d => !acked(d));
+  if (k === 'rfis') return checks().some(c => c.step === 'rfis');
+  return checks().some(c => c.level === 'error');
+}
+function finishStep(k) {
+  const did = [];
+  if (k === 'load') {
+    if (!META.gc) { const g = gcList()[0]; META.gc = g ? g.n : 'Hartwell Builders'; }
+    if (!META.bidNo) META.bidNo = 'MSM-' + today().slice(0, 4) + '-' + (1000 + [...String(BOOK.key)].reduce((a, c) => (a * 31 + c.charCodeAt(0)) % 9000, 0));
+    if (!META.due || daysTo(META.due) < 0) META.due = plusDays(14);
+    META.started = true; saveMeta();
+  }
+  if (k === 'decide') {
+    let n = 0, al = 0;
+    FS().forEach(f => { const d = dec(f); if (d.ok) return; if (needsAmt(f)) { DEC[f.id] = Object.assign({}, DEC[f.id], { act: 'price', allow: true, ok: true }); al++; } else { DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; } });
+    saveDec(); if (n) did.push(`${n} finding${n > 1 ? 's' : ''} accepted as recommended`); if (al) did.push(`${al} carried as allowances`);
+  }
+  if (k === 'changes') {
+    const D = DIFFS().filter(d => !acked(d)); D.forEach(d => DEC['chg:' + d.sec] = { ack: true });
+    saveDec(); if (D.length) did.push(`${D.length} changed section${D.length > 1 ? 's' : ''} confirmed in price`);
+  }
+  if (k === 'rfis') {
+    const C = CONFS(), on = c => s => ['a', 'b', 'c'].some(x => c[x] && c[x].sec === s.id);
+    let added = 0;
+    staleSecs().forEach(st => { if (C.some(c => inLog(c) && on(c)(st))) return; const c = C.find(c => on(c)(st)); if (c) { DEC[c.id] = Object.assign({}, DEC[c.id], { act: 'on' }); added++; } });
+    saveDec();
+    const dr = CONFS().filter(c => inLog(c) && rs(c.id).status === 'draft'); dr.forEach(c => RS[c.id] = Object.assign(rs(c.id), { status: 'sent', sent: today() }));
+    saveRS(); if (added) did.push(`${added} RFI${added > 1 ? 's' : ''} added for stale sections`); if (dr.length) did.push(`${dr.length} RFI${dr.length > 1 ? 's' : ''} marked sent`);
+  }
+  if (k === 'proposal') {
+    if (!META.pkgOk || (BOOK.inputs && !META.attachOk)) did.push('bid package and attachments confirmed');
+    META.pkgOk = true; if (BOOK.inputs) META.attachOk = true; saveMeta();
+    const S = sheet();
+    if (!S) { doBuildSheet(true); did.push('bid sheet built'); }
+    else if (BC.adderDiff(S, ADDERS()).length) { Object.assign(S.meta, { gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30 }); if (S.status === 'confirmed') S.status = 'draft'; BC.syncAdders(S, ADDERS()); BC.save(S); did.push('spec adders synced'); }
+  }
+  return did;
+}
+function advance(next) {
+  const did = stepOpen(step) ? finishStep(step) : [];
+  go(next); if (did.length) toast(did.join(' · '));
+}
+/* every step at once: for a short demo, or to clear the preflight in one click */
+function fastForward() {
+  const did = ['load', 'decide', 'changes', 'rfis', 'proposal'].flatMap(finishStep);
+  go('proposal');
+  const left = checks().filter(c => c.level === 'error');
+  toast(left.length ? `Done except ${left.length}: ${left[0].msg}` : 'Proposal ready to issue' + (did.length ? ' · ' + did.slice(0, 3).join(' · ') : ''));
 }
 function setLens(k) {
   META.lens = k; saveMeta(); render();
@@ -1927,12 +1985,13 @@ function buildSheet() {
   setTimeout(() => { const b = document.getElementById('cfm-go'); if (b) b.focus(); }, 30);
 }
 function closeCfm() { const c = document.getElementById('cfm'); if (c) c.classList.remove('show'); }
-function doBuildSheet() {
+function doBuildSheet(quiet) {
   let S;
   const meta = { project: BOOK.name + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : META.lens === 'mech' ? 'Plumbing + HVAC' : META.lens === 'all' ? 'Mechanical' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
   if (BOOK.takeoff) S = BC.startSheet(meta, BOOK.takeoff);
   else { S = BC.load() || BC.startSheet(meta, []); Object.assign(S.meta, meta); }
   const r = BC.syncAdders(S, ADDERS()); BC.save(S);
+  if (quiet) return;
   rerender(); toast(`Bid sheet ${BOOK.takeoff ? 'built from the takeoff' : 'linked'} · ${r.added} spec adders added`);
 }
 function syncSheet() {
