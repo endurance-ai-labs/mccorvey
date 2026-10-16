@@ -6,8 +6,8 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016c">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016c">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016e">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016e">
 <link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016d">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
@@ -49,9 +49,12 @@
   .sb-f input:focus, .sb-f select:focus, .sb-f textarea:focus { outline:none; border-color:var(--color-blue); }
   .sb-f input.miss { border-color:#c8102e; background:rgba(200,16,46,.05); }
   .sb-f.wide { grid-column:span 2; } .sb-f.full { grid-column:1 / -1; }
-  .sb-lens { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; }
+  .sb-lens { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; }
   .sb-lens button { font:inherit; font-size:12.5px; font-weight:700; padding:11px 10px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg); color:var(--color-text-muted); cursor:pointer; }
   .sb-lens button.on { background:#14283c; color:#fff; border-color:#14283c; }
+  .sb-lens button { padding:10px 8px; }
+  .sb-lens button b { display:block; font-size:13px; line-height:1.25; }
+  .sb-lens button span { display:block; font-size:10.5px; font-weight:600; opacity:.75; margin-top:2px; white-space:nowrap; }
   .sb-lens button:hover:not(.on) { border-color:var(--color-blue); color:var(--color-blue); }
 
   .sb-bars { display:flex; flex-direction:column; gap:9px; }
@@ -98,7 +101,7 @@
   .fd details { margin-top:6px; }
   .fd summary { font-size:11px; font-weight:700; color:var(--color-blue); cursor:pointer; }
   .fd .says { font-size:12.2px; line-height:1.6; color:var(--color-cloud-whisper); padding:8px 12px; border-left:3px solid var(--color-border); background:var(--color-bg); border-radius:0 8px 8px 0; margin-top:6px; }
-  .fd-side { display:flex; flex-direction:column; align-items:flex-end; gap:7px; }
+  .fd-side { display:flex; flex-direction:column; align-items:flex-end; gap:7px; max-width:min(360px, 52vw); min-width:0; }
   .cite { font-size:10.5px; font-weight:800; color:#14283c; background:#e8edf3; border-radius:5px; padding:3px 8px; white-space:nowrap; font-variant-numeric:tabular-nums; }
   [data-theme="dark"] .cite { color:#cfe0f2; background:#1f3248; }
   .bdg { font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; white-space:nowrap; }
@@ -395,14 +398,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016c"></script>
-<script src="/mccorvey/js/util.js?v=20261016c"></script>
-<script src="/mccorvey/js/nav.js?v=20261016c"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016c"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016c"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016c"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016c"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016c" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016e"></script>
+<script src="/mccorvey/js/util.js?v=20261016e"></script>
+<script src="/mccorvey/js/nav.js?v=20261016e"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016e"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016e"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016e"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016e"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016e" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -478,7 +481,7 @@ function rfiNums() { const N = {}; let n = 0; BOOK.conflicts.forEach(c => { if (
 const ADDERS = () => FS().filter(f => dec(f).act === 'price' && dec(f).amt > 0).map(f => ({ id: f.id, title: f.title, amt: +dec(f).amt || 0, tag: 'Spec · ' + E.cite(f.sec, f.para, f.page) }));
 const ALLOWS = () => FS().filter(f => dec(f).act === 'price' && dec(f).allow);
 const staleSecs = () => BOOK.sections.filter(s => isYours(s) && s.id !== '00 0000' && s.issue != null && s.issue < BOOK.pricedIssue && lensOk(E.lensOf(s.id)));
-const SCOPE = { sm: 'HVAC sheet metal ductwork and accessories', hvac: 'Division 23 HVAC', plumb: 'Division 22 plumbing', all: 'Divisions 22 and 23 mechanical' };
+const SCOPE = { sm: 'HVAC sheet metal ductwork and accessories', hvac: 'Division 23 HVAC', plumb: 'Division 22 plumbing', mech: 'Division 22 plumbing and Division 23 HVAC', all: 'Divisions 22 and 23 mechanical' };
 function sheet() { const S = BC.load(); return S && S.meta.specKey === BOOK.key ? S : null; }
 
 /* customer-facing wording for Qualify / Exclude decisions (sample book) */
@@ -591,7 +594,7 @@ const RTYPES = {
   undefined: ['Undefined', 'A requirement referenced but never defined'],
   stale: ['Out-of-date section', 'Still stamped an older issue than the rest of the set'],
 };
-const rtype = c => c.type || (c.kind === 'stale' ? 'stale' : c.kind === 'missing' ? 'missing' : 'conflict');
+const rtype = c => c.type || (c.kind === 'stale' ? 'stale' : c.kind === 'missing' ? 'missing' : c.kind === 'template' ? 'blank' : 'conflict');
 const rtLabel = c => RTYPES[rtype(c)][0].toUpperCase();
 const qualText = f =>QUAL[f.id] || `${f.title}: pricing is limited to the requirement as written in Section ${f.sec}; costs beyond it are excluded until confirmed at award.`;
 
@@ -738,7 +741,7 @@ function paneLoad() {
     ['Div 21/25/26/28/40 — Hooks', E.HOOKS, '#14283c', 'scanned for scope that lands on you'],
     ['Everything else', null, '#9aa6b2', 'indexed, not read'],
   ].map(([k, d, c, n]) => { const ss = secs.filter(s => d ? d.includes(s.div) : !(E.YOURS.includes(s.div) || E.HOOKS.includes(s.div))); return { k, c, n, d, cnt: ss.length, pages: ss.reduce((a, s) => a + s.pages, 0) }; });
-  const inTrade = g => !g.d ? false : META.lens === 'all' || !g.d.some(x => (META.lens === 'plumb' ? ['23'] : ['22']).includes(x));
+  const inTrade = g => !g.d ? false : META.lens === 'all' || META.lens === 'mech' || !g.d.some(x => (META.lens === 'plumb' ? ['23'] : ['22']).includes(x));
   const max = Math.max(...groups.map(g => g.pages));
   const issues = [...new Set(secs.map(s => s.issue).filter(x => x != null))].sort((a, b) => a - b);
   if (!issues.includes(BOOK.pricedIssue)) issues.push(BOOK.pricedIssue);
@@ -761,7 +764,7 @@ function paneLoad() {
     <div class="demo-panel" style="margin-bottom:18px">
       <div class="demo-panel-head"><h2>Bid setup</h2><span class="k">used on the proposal and every RFI</span></div>
       <div class="sb-f full" style="margin-bottom:14px"><span>Trade you are bidding</span>
-        <div class="sb-lens">${Object.entries(E.LENSES).map(([k, v]) => `<button class="${META.lens === k ? 'on' : ''}" onclick="setLens('${k}')">${v.label}</button>`).join('')}</div>
+        <div class="sb-lens">${Object.entries(E.LENSES).map(([k, v]) => `<button class="${META.lens === k ? 'on' : ''}" onclick="setLens('${k}')"><b>${(v.btn || [v.label])[0]}</b>${v.btn ? `<span>${v.btn[1]}</span>` : ''}</button>`).join('')}</div>
         ${lensSummary()}
       </div>
       <div class="sb-form">
@@ -1101,7 +1104,7 @@ function paneProposal(CK) {
 const bulletins = () => { const B = Object.entries(BOOK.issues || {}).filter(([n, v]) => +n <= BOOK.bookIssue && /Bulletin/.test(v.label)).map(([, v]) => v.label.split('— ')[1]); return B.length ? ', including ' + (B.length > 1 ? B.slice(0, -1).join(', ') + ' and ' + B[B.length - 1] : B[0]) : ''; };
 function proposalHTML(S, T) {
   const F = FS(), N = rfiNums();
-  const priced = F.filter(f => dec(f).act === 'price');
+  const priced = F.filter(f => dec(f).act === 'price' && !dec(f).allow);
   const quals = F.filter(f => dec(f).act === 'clarify'), excl = F.filter(f => dec(f).act === 'exclude');
   const C = CONFS().filter(inLog);
   const answered = C.filter(c => ['answered', 'closed'].includes(rs(c.id).status) && rs(c.id).answer);
@@ -1194,7 +1197,7 @@ function lensSummary() {
 function gcList() {
   const L = [];
   const add = (n, note) => { n = (n || '').trim(); const same = (x, y) => x === y || (x.startsWith(y + ' ') && !/ JV$/.test(x)) || (y.startsWith(x + ' ') && !/ JV$/.test(y)); if (n && !L.some(x => same(x.n, n))) L.push({ n, note }); };
-  if (BOOK.cm) add(BOOK.cm, 'named in the spec book');
+  if (BOOK.cm && !/^(the )?(construction manager|general contractor|contractor|owner|cm|gc)$/i.test(BOOK.cm.trim())) add(BOOK.cm, 'named in the spec book');
   const seen = {};
   (window.JOBS || []).concat(window.BID_PIPELINE || []).forEach(j => { const m = String(j.owner || '').match(/(?:GC|CM): ([^)]+)/); if (m) seen[m[1].trim()] = 1; });
   Object.keys(seen).sort((a, b) => b.length - a.length).forEach(n => add(n, ''));
@@ -1306,7 +1309,7 @@ function buildSheet() {
 function closeCfm() { const c = document.getElementById('cfm'); if (c) c.classList.remove('show'); }
 function doBuildSheet() {
   let S;
-  const meta = { project: BOOK.name + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
+  const meta = { project: BOOK.name + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : META.lens === 'mech' ? 'Plumbing + HVAC' : META.lens === 'all' ? 'Mechanical' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
   if (BOOK.takeoff) S = BC.startSheet(meta, BOOK.takeoff);
   else { S = BC.load() || BC.startSheet(meta, []); Object.assign(S.meta, meta); }
   const r = BC.syncAdders(S, ADDERS()); BC.save(S);

@@ -31,10 +31,11 @@
     return 'other';
   }
   const LENSES = {
-    all:   { label: 'All trades', show: ['all', 'sm', 'hvac', 'plumb', 'other'] },
-    sm:    { label: 'Sheet Metal (duct)', show: ['all', 'sm'] },
-    hvac:  { label: 'HVAC — Div 23', show: ['all', 'sm', 'hvac'] },
-    plumb: { label: 'Plumbing — Div 22', show: ['all', 'plumb'] },
+    sm:    { label: 'Sheet Metal (duct)', btn: ['Sheet Metal', 'duct · Div 23'], show: ['all', 'sm'] },
+    hvac:  { label: 'HVAC — Div 23', btn: ['HVAC', 'Div 23'], show: ['all', 'sm', 'hvac'] },
+    plumb: { label: 'Plumbing — Div 22', btn: ['Plumbing', 'Div 22'], show: ['all', 'plumb'] },
+    mech:  { label: 'Plumbing + HVAC — Div 22 + 23', btn: ['Plumbing + HVAC', 'Div 22 + 23'], show: ['all', 'sm', 'hvac', 'plumb'] },
+    all:   { label: 'All trades', btn: ['All trades', 'every division'], show: ['all', 'sm', 'hvac', 'plumb', 'other'] },
   };
   const inLens = (itemLens, lens) => (LENSES[lens] || LENSES.all).show.includes(itemLens || 'other');
 
