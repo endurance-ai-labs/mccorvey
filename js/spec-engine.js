@@ -521,15 +521,18 @@
   }
   function decOf(book, f, D) { D = D || decisions(book); const d = D[f.id] || {}; return { act: d.act || f.act, amt: amtOf(f, d) }; }
   function secTitle(book, id) { const s = book.sections.find(x => x.id === id); return s ? s.title : ''; }
-  const cite = (sec, para, page) => `${sec}${para ? ' ¶' + para : ''}${page ? ' · p.' + Number(page).toLocaleString() : ''}`;
+  /* "para 3.13.F", not "¶3.13.F": at chip size the pilcrow reads as a 1 ("13.13.F"). A section's issue stamp is not a paragraph. */
+  const cite = (sec, para, page) => `${sec}${para ? (para === 'Header' ? ' · issue stamp' : ' para ' + para) : ''}${page ? ' · p.' + Number(page).toLocaleString() : ''}`;
   function rfiNo(n) { return 'RFI-MSM-' + String(n).padStart(3, '0'); }
   function rfiText(book, c, n) {
     const refs = ['a', 'b', 'c'].map(k => c[k]).filter(x => x && x.sec && x.sec !== '—').map(x => cite(x.sec, x.para, x.page)).join('; ');
-    const assume = (c.q.match(/(Bid (assumes|excludes|includes|is based)[^.]*\.)/) || [])[1] || '';
-    const q = assume ? c.q.replace(assume, '').trim() : c.q;
+    /* c.qText / c.assume carry McCorvey's own wording when edited; c.rev numbers a re-sent RFI */
+    const sugA = (c.q.match(/(Bid (assumes|excludes|includes|is based)[^.]*\.)/) || [])[1] || '';
+    const assume = c.assume != null ? c.assume : sugA;
+    const q = c.qText != null ? c.qText : (sugA ? c.q.replace(sugA, '').trim() : c.q);
     const today = new Date().toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' });
     return [
-      `REQUEST FOR INFORMATION  ${rfiNo(n)}`,
+      `REQUEST FOR INFORMATION  ${rfiNo(n)}${c.rev ? '  Rev ' + c.rev : ''}`,
       `To: ${book.cm || 'Construction Manager'} (route via CM per Section 01 3100)`,
       `From: McCorvey Sheet Metal Works — Preconstruction`,
       `Project: ${book.name}${book.bid && book.bid.bidNo ? '   Bid: ' + book.bid.bidNo : ''}`,
