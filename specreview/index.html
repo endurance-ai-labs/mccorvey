@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016b">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016b">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016b">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016c">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016c">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016d">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -17,7 +17,7 @@
   .sb-hbtns .pa-btn { background:rgba(255,255,255,.08); color:#fff; border-color:rgba(255,255,255,.22); }
   .sb-hbtns .pa-btn:hover { background:rgba(255,255,255,.16); color:#fff; border-color:#fff; }
 
-  .sb-steps { display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:8px; margin:0 0 18px; position:sticky; top:var(--sb-dock, 150px); z-index:40; background:var(--color-bg); padding:8px 0; }
+  .sb-steps { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; margin:0 0 18px; position:sticky; top:var(--sb-dock, 150px); z-index:40; background:var(--color-bg); padding:8px 0; }
   .sb-step { display:flex; gap:10px; align-items:center; text-align:left; font:inherit; border:1px solid var(--color-border); background:var(--color-bg-2); border-radius:12px; padding:10px 12px; cursor:pointer; min-width:0; }
   .sb-step:hover { border-color:var(--color-blue); }
   .sb-step .k { flex:none; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12.5px; background:var(--color-bg-3); color:var(--color-text-muted); }
@@ -308,22 +308,21 @@
   .in-tbl td:first-child { min-width:170px; } .in-tbl td:last-child { white-space:nowrap; }
   .in-b { display:inline-block; font-size:9px; font-weight:800; letter-spacing:.07em; padding:2px 7px; border-radius:4px; border:1px solid var(--color-border); background:var(--color-bg-3); color:var(--color-text-muted); white-space:nowrap; margin-left:6px; vertical-align:middle; }
   td > .in-b { margin-left:0; }
-  .in-b.sole, .in-b.cm { color:#c8102e; border-color:#c8102e; background:rgba(200,16,46,.06); }
-  .in-b.rfi { color:var(--color-amber); border-color:var(--color-amber); background:var(--color-amber-bg); }
-  .in-b.book, .in-b.flow { color:#2f9e6e; border-color:#2f9e6e; background:rgba(47,158,110,.07); }
+  .in-b.sole { color:#c8102e; border-color:#c8102e; background:rgba(200,16,46,.06); }
   .in-rules { display:flex; flex-direction:column; gap:6px; }
   .in-rules > div { display:flex; gap:10px; align-items:center; flex-wrap:wrap; padding:8px 11px; border:1px solid var(--color-border); border-radius:9px; background:var(--color-bg-2); font-size:12.5px; color:var(--color-cloud-whisper); }
   .in-rules span { flex:1; min-width:220px; }
   .in-rules b { font-variant-numeric:tabular-nums; } .in-rules em { font-size:11px; color:var(--color-text-muted); font-style:normal; }
   .in-rules a { font-size:11px; font-weight:700; }
-  .in-bf { display:flex; flex-direction:column; gap:7px; }
-  .in-bf > div { display:grid; grid-template-columns:22px minmax(0,1fr) auto; gap:10px; align-items:start; padding:10px 12px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-bg-2); }
-  .in-bf > div.ok { border-color:#2f9e6e; background:rgba(47,158,110,.05); }
-  .in-bf b { font-size:13px; color:var(--color-cloud-whisper); }
-  .in-bf p { margin:4px 0 0; font-size:12px; line-height:1.5; color:var(--color-text-muted); }
-  .in-bf .c { text-align:right; }
-  .in-flow { width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800; color:#2f9e6e; }
-  @media (max-width:700px) { .in-bf > div { grid-template-columns:22px minmax(0,1fr); } .in-bf .c { grid-column:2; text-align:left; } }
+  .se-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:12px; }
+  .se-card { border:1px solid var(--color-border); border-radius:12px; padding:14px 16px; background:var(--color-bg); display:flex; flex-direction:column; gap:6px; }
+  .se-card.on { border-color:#14283c; box-shadow:0 0 0 1px #14283c inset; }
+  .se-card b { font-size:14px; color:var(--color-cloud-whisper); }
+  .se-card p { margin:0; font-size:12.3px; line-height:1.5; color:var(--color-text-muted); }
+  .se-card .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:auto; padding-top:6px; }
+  .se-card .row .pa-btn { flex:1 1 auto; justify-content:center; }
+  .se-detail { margin-top:14px; }
+  .se-detail .demo-panel { border:0; padding:0; background:none; box-shadow:none; margin:0 0 14px; }
 
   /* bid requirement */
   .fd-req { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; margin-top:6px; font-size:11.5px; line-height:1.45; color:var(--color-text-muted); }
@@ -362,7 +361,7 @@
   .sb-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
   @media (max-width: 1000px) {
-    .sb-steps { grid-template-columns:repeat(6, minmax(128px,1fr)); overflow-x:auto; scrollbar-width:none; }
+    .sb-steps { grid-template-columns:repeat(5, minmax(128px,1fr)); overflow-x:auto; scrollbar-width:none; }
     .sb-form { grid-template-columns:1fr 1fr; }
     .sb-kpis, .pr-tiles { grid-template-columns:1fr 1fr; }
   }
@@ -396,14 +395,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016b"></script>
-<script src="/mccorvey/js/util.js?v=20261016b"></script>
-<script src="/mccorvey/js/nav.js?v=20261016b"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016b"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016b"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016b"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016b"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016b" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016c"></script>
+<script src="/mccorvey/js/util.js?v=20261016c"></script>
+<script src="/mccorvey/js/nav.js?v=20261016c"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016c"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016c"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016c"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016c"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016c" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -414,10 +413,10 @@ const E = window.SpecEngine, BC = window.BidCalc;
 let BOOK = E.activeBook();
 let RAW = null, PRIOR = null;           /* extracted text: memory only */
 let DEC, META, RS;
-const STEPS = [['load', 'Set up'], ['inputs', 'Bid inputs'], ['decide', 'Decide'], ['changes', 'Changes'], ['rfis', 'RFIs'], ['proposal', 'Proposal']];
-const HASH_ALIAS = { triage: 'load', findings: 'decide', matrix: 'decide', adders: 'proposal', letter: 'proposal' };
+const STEPS = [['load', 'Set up'], ['decide', 'Decide'], ['changes', 'Changes'], ['rfis', 'RFIs'], ['proposal', 'Proposal']];
+const HASH_ALIAS = { inputs: 'load', triage: 'load', findings: 'decide', matrix: 'decide', adders: 'proposal', letter: 'proposal' };
 let step = (() => { const h = (location.hash || '').slice(1); const k = HASH_ALIAS[h] || h; return STEPS.some(s => s[0] === k) ? k : null; })();
-const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, inTab: 'duct' };
+const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false };
 
 function loadState() {
   DEC = E.decisions(BOOK);
@@ -434,7 +433,7 @@ function loadState() {
     }
     E.store.set('msm-spec-rfi-' + BOOK.key, RS);
   }
-  if (!step) step = META.started ? 'inputs' : 'load';
+  if (!step) step = META.started ? 'decide' : 'load';
 }
 const saveDec = () => E.saveDecisions(BOOK, DEC);
 const saveMeta = () => { E.store.set('msm-spec-meta-' + BOOK.key, META); E.store.set('msm-spec-lens', META.lens); };
@@ -606,7 +605,7 @@ function checks() {
   else if (daysTo(META.due) < 0) add('error', 'load', 'Bid due date has passed', fmtDate(META.due), "go('load','due')", 'Fix date');
   else if (daysTo(META.due) <= 3) add('warn', 'load', `Bid due in ${daysTo(META.due)} day${daysTo(META.due) === 1 ? '' : 's'}`, fmtDate(META.due));
 
-  if (BOOK.inputs) { const c = bfCount(); if (c.ready < c.total) add('warn', 'inputs', `${c.total - c.ready} bid form item${c.total - c.ready > 1 ? 's' : ''} not marked ready`, c.cm ? `${c.cm} are not in the spec book: get them from the CM's bid package.` : '', "go('inputs','bidform')", 'Review'); }
+  /* bid form items the spec book cannot settle: one confirm each, checked before the proposal goes out */
   const F = FS();
   const hi = F.filter(f => f.sev === 'high' && !dec(f).ok);
   if (hi.length) add('error', 'decide', `${hi.length} high-severity finding${hi.length > 1 ? 's' : ''} not reviewed`, 'Each needs a Price / RFI / Qualify / Exclude decision.', "go('decide','needs')", 'Review');
@@ -632,6 +631,8 @@ function checks() {
   if (drafts.length) add('warn', 'rfis', `${drafts.length} RFI${drafts.length > 1 ? 's' : ''} not sent yet`, 'Open RFIs print as bid assumptions.', "go('rfis')", 'Send');
 
   const S = sheet();
+  if (!META.pkgOk) add('error', 'proposal', 'Confirm the bid package items that are not in the spec book', `Bonds, insurance limits, bid validity, due time and delivery method: check the bid instructions from ${META.gc || 'the GC'}.`, "confirmPF('pkgOk')", 'Confirm');
+  if (BOOK.inputs && !META.attachOk) add('error', 'proposal', 'Confirm the attachments the spec book requires with the bid', ATTACH().map(r => `${r.item} (${r.sec})`).join(' · '), "confirmPF('attachOk')", 'Confirm');
   if (!S) add('error', 'proposal', 'Bid sheet is not built from this spec book', BOOK.takeoff ? 'Review what will be built, then confirm.' : 'One click adds your priced adders to the current bid sheet.', 'buildSheet()', 'Build');
   else {
     const dif = BC.adderDiff(S, ADDERS());
@@ -649,7 +650,7 @@ function stepState(k, CK) {
   const mine = k === 'proposal' ? CK : CK.filter(c => c.step === k);
   if (mine.some(c => c.level === 'error')) return 'err';
   if (mine.some(c => c.level === 'warn')) return 'warn';
-  if ((k === 'load' || k === 'inputs') && !META.started) return '';
+  if (k === 'load' && !META.started) return '';
   return 'done';
 }
 
@@ -666,7 +667,7 @@ function render() {
         <div>
           <div class="cmd-eyebrow">MSM BRAIN — SPEC BOOK TO PROPOSAL · PRECONSTRUCTION</div>
           <h1 class="cmd-title">${esc(BOOK.name)}</h1>
-          <div class="cmd-sub">${esc(BOOK.sub)}. Six steps from spec book to an issued proposal: what the book requires laid out, every finding decided, every change confirmed, every open question an RFI, and a preflight check that will not let a proposal go out with a gap.</div>
+          <div class="cmd-sub">${esc(BOOK.sub)}. Five steps from spec book to an issued proposal: every finding decided, every change confirmed, every open question an RFI, and a preflight check that will not let a proposal go out with a gap.</div>
         </div>
         <div class="cmd-side">
           <span class="sb-mode ${BOOK.local ? 'local' : ''}"><i></i>${BOOK.local ? 'YOUR BOOK · LOCAL ONLY' : 'SAMPLE BOOK · FICTIONAL'}</span>
@@ -694,7 +695,6 @@ function stepsHTML(CK) {
   const e = CK.filter(c => c.level === 'error').length;
   const sub = {
     load: META.started ? E.LENSES[META.lens].label : 'Book, trade, bid info',
-    inputs: BOOK.inputs ? `${bfCount().ready} of ${bfCount().total} bid items ready` : 'Sample book only',
     decide: `${rev} of ${F.length} reviewed`,
     changes: `${D.filter(acked).length} of ${D.length} confirmed`,
     rfis: `${CONFS().filter(inLog).length} in log`,
@@ -710,7 +710,6 @@ function navHTML() {
   return `<div class="sb-nav">${prev ? `<button class="pa-btn" onclick="go('${prev[0]}')">← ${prev[1]}</button>` : '<span></span>'}${next ? `<button class="pa-btn primary" onclick="${step === 'load' ? 'startReview()' : `go('${next[0]}')`}">${step === 'load' ? 'Start review' : 'Next: ' + next[1]} →</button>` : ''}</div>`;
 }
 function pane(CK) {
-  if (step === 'inputs') return paneInputs();
   if (step === 'decide') return paneDecide();
   if (step === 'changes') return paneChanges();
   if (step === 'rfis') return paneRfis();
@@ -773,6 +772,7 @@ function paneLoad() {
         <label class="sb-f"><span>Proposal valid (days)</span><input type="number" min="1" data-meta="valid" value="${esc(META.valid)}"></label>
       </div>
     </div>
+    ${startEstimate()}
     <div class="demo-panel" style="margin-bottom:6px">
       <div class="demo-panel-head"><h2>What's in this book</h2><span style="display:flex;gap:8px;align-items:center"><span class="k">${pgs(BOOK.totalPages)} pages · ${secs.length} sections</span><button class="pa-btn" onclick="UI.showSecs=!UI.showSecs;rerender()">${UI.showSecs ? 'Hide sections' : 'Browse sections'}</button></span></div>
       <div class="sb-bars">${groups.map(g => `<div class="sb-bar ${inTrade(g) ? '' : 'off'}"><div class="nm">${g.k}<span>${g.cnt} sections · ${inTrade(g) || !g.d ? g.n : 'not in this trade'}</span></div><div class="tr"><i style="width:${Math.max(2, g.pages / max * 100)}%;background:${g.c}"></i></div><div class="v">${pgs(g.pages)}</div></div>`).join('')}</div>
@@ -790,24 +790,40 @@ function secTable() {
       <td style="text-align:right">${cnt[s.id] || '—'}</td></tr>`; }).join('')}</tbody></table></div>`;
 }
 
-/* ---------- 2 · bid inputs ---------- */
-const IN_TABS = [['duct', 'Duct construction'], ['mfr', 'Approved manufacturers'], ['bidform', 'Bid form checklist'], ['deliv', 'Submittals, tests & closeout']];
+/* ---------- spec book extracts: Start the estimate (Set up) + PM handoff (Proposal) ---------- */
 const MST = { listed: ['NAMED ONLY', 'Only the named makers can be priced: 01 2500 bars substitutions for convenience.'], sole: ['SOLE SOURCE', 'One maker, no equals, no pricing leverage.'], others: ['BY OTHERS', ''] };
-const BSRC = { book: ['IN THE BOOK', ''], cm: ['NOT IN THE BOOK', ''], rfi: ['OPEN · RFI', ''], flow: ['BUILT HERE', ''] };
 const inRows = k => BOOK.inputs ? BOOK.inputs[k].filter(r => lensOk(r.lens)) : [];
-const bfReady = r => !!(META.bf || {})[r.id];
-const bfCount = () => { const R = inRows('bidform').filter(r => r.src !== 'flow'); return { ready: R.filter(bfReady).length, total: R.length, cm: R.filter(r => r.src === 'cm' && !bfReady(r)).length }; };
 const inCite = (r, key) => r.sec ? citeBtn(r.sec, r.para, r.page, r.find ? 'f-' + r.find : key) : '';
-function paneInputs() {
-  if (!BOOK.inputs) return `<div class="sb-empty">These four lists are built for the sample book. Pulling them automatically from your own PDF is not built yet. Your book's findings, changes and RFIs are in the next steps.</div>`;
-  const t = UI.inTab || 'duct';
-  const body = t === 'mfr' ? inMfr() : t === 'bidform' ? inBid() : t === 'deliv' ? inDeliv() : inDuct();
-  return `
-    <div class="ynote" style="margin:0 0 12px">What the book says McCorvey has to build, buy, submit and test, in four lists with a page cite on every row. Use them to set up the estimate and send vendor quote requests before deciding the findings.</div>
-    <div class="sb-tools">${IN_TABS.map(([k, l]) => `<button class="sb-chip ${t === k ? 'on' : ''}" onclick="UI.inTab='${k}';rerender()">${l}<b>${inRows(k).length}</b></button>`).join('')}
-      <span style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">${t === 'mfr' ? '<button class="pa-btn primary" onclick="copyQuotes()">Copy quote requests by vendor</button>' : ''}<button class="pa-btn" onclick="copyInputs('${t}')">Copy table for Excel</button></span></div>
-    ${body}`;
+const ATTACH = () => BOOK.inputs ? BOOK.inputs.bidform.filter(r => r.src === 'book' && !['b01', 'b02'].includes(r.id)) : [];
+function vendorMap() {
+  const V = {};
+  inRows('mfr').filter(r => r.st !== 'others').forEach(r => [r.bod].concat(r.also ? r.also.split(', ') : []).forEach(m => (V[m] = V[m] || []).push(`${r.prod} (${E.cite(r.sec, r.para, r.page)})`)));
+  return V;
 }
+function startEstimate() {
+  if (!BOOK.inputs) return `<div class="ynote" style="margin:0 0 18px">On your own book, the duct construction schedule and the vendor list are not extracted yet. Findings, changes and RFIs are.</div>`;
+  const D = inRows('duct'), M = inRows('mfr').filter(r => r.st !== 'others'), V = Object.keys(vendorMap()).length, sole = M.filter(r => r.st === 'sole').length;
+  if (!D.length && !M.length) return '';
+  const card = (k, title, txt, primary, pLbl, vLbl) => `<div class="se-card ${UI.se === k ? 'on' : ''}"><b>${title}</b><p>${txt}</p><div class="row"><button class="pa-btn primary" onclick="${primary}">${pLbl}</button><button class="pa-btn" onclick="UI.se=UI.se==='${k}'?null:'${k}';rerender()">${UI.se === k ? 'Hide' : vLbl}</button></div></div>`;
+  return `<div class="demo-panel" style="margin-bottom:18px">
+    <div class="demo-panel-head"><h2>Start the estimate</h2><span class="k">do these first: vendor quotes take days to come back</span></div>
+    <div class="se-cards">
+      ${D.length ? card('duct', 'Duct construction schedule', `${D.length} systems: pressure class, seal class, material, construction, insulation and leak test for each. Set up the takeoff from this.`, "copyInputs('duct')", 'Copy for takeoff (Excel)', 'View schedule') : ''}
+      ${M.length ? card('mfr', 'Vendor quote requests', `${M.length} products, grouped into quote requests for the ${V} makers the book names${sole ? ` (${sole} sole source)` : ''}. Only named makers can be priced.`, 'copyQuotes()', 'Copy quote requests by vendor', 'View manufacturers') : ''}
+    </div>
+    ${UI.se === 'duct' && D.length ? `<div class="se-detail">${inDuct()}</div>` : UI.se === 'mfr' && M.length ? `<div class="se-detail">${inMfr()}</div>` : ''}
+  </div>`;
+}
+function handoffHTML() {
+  const R = inRows('deliv');
+  if (!R.length) return '';
+  return `<div class="demo-panel" style="margin:16px 0 6px">
+    <div class="demo-panel-head"><h2>After award: handoff to the PM</h2><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="pa-btn" onclick="UI.handoff=!UI.handoff;rerender()">${UI.handoff ? 'Hide' : 'Show'} ${R.length} items</button><button class="pa-btn" onclick="copyInputs('deliv')">Copy for Excel</button></span></div>
+    <div class="ynote">Every submittal, test and closeout item the book requires, with when it is due and who reviews or witnesses it. Not needed to bid; ready for the PM the day the job is won.</div>
+    ${UI.handoff ? `<div class="se-detail">${inDeliv()}</div>` : ''}
+  </div>`;
+}
+function confirmPF(k) { META[k] = true; saveMeta(); rerender(); toast(k === 'pkgOk' ? 'Bid package items confirmed' : 'Attachments confirmed and listed in the proposal'); }
 function inDuct() {
   const R = inRows('duct');
   if (!R.length) return '<div class="sb-empty">No duct systems in this trade. Switch the trade to Sheet metal or HVAC in Set up.</div>';
@@ -832,20 +848,6 @@ function inMfr() {
     <div class="ynote" style="margin-top:8px">${esc(MST.listed[1])} An unnamed maker on a basis-of-design spec is treated as a substitution (01 6000), so check every vendor you plan to use is on this list.</div>
   </div>`;
 }
-function inBid() {
-  const R = inRows('bidform'), c = bfCount();
-  return `<div class="sb-prog"><b>${c.ready} of ${c.total}</b> ready<div class="tr"><i style="width:${c.total ? c.ready / c.total * 100 : 0}%"></i></div><span>${c.cm} still to get from ${esc(META.gc || 'the CM')}</span></div>
-    <div class="demo-panel" style="margin-bottom:6px">
-      <div class="demo-panel-head"><h2>Bid form checklist</h2><span class="k">what the bid has to include · tick each one when it is ready</span></div>
-      <div class="in-bf">${R.map(r => {
-        const note = r.id === 'b10' ? `${r.note} The proposal currently says ${esc(META.valid)} days.` : r.src === 'cm' ? `${r.note} Get it from the bid package issued by ${esc(META.gc || 'the CM')}.` : r.note;
-        return `<div class="${bfReady(r) ? 'ok' : ''}">
-          ${r.src === 'flow' ? `<span class="in-flow">${checks().some(x => x.level === 'error') ? '…' : '✓'}</span>` : `<label class="tgl"><input type="checkbox" ${bfReady(r) ? 'checked' : ''} onchange="bfToggle('${r.id}',this.checked)"></label>`}
-          <div><b>${esc(r.item)}</b><span class="in-b ${r.src}">${BSRC[r.src][0]}</span><p>${esc(note)}</p></div>
-          <div class="c">${r.src === 'flow' ? `<a href="javascript:void 0" onclick="go('proposal')">Proposal step →</a>` : inCite(r, 'i-bidform' + BOOK.inputs.bidform.indexOf(r))}</div>
-        </div>`; }).join('')}</div>
-    </div>`;
-}
 function inDeliv() {
   const R = inRows('deliv');
   return ['Submittal', 'Test', 'Closeout'].map(t => { const G = R.filter(r => r.t === t); return G.length ? `<div class="demo-panel" style="margin-bottom:12px">
@@ -854,20 +856,17 @@ function inDeliv() {
       <tbody>${G.map(r => `<tr><td><b>${esc(r.d)}</b></td><td>${esc(r.when)}</td><td>${esc(r.who)}</td><td>${inCite(r, 'i-deliv' + BOOK.inputs.deliv.indexOf(r))}</td></tr>`).join('')}</tbody></table></div>
     </div>` : ''; }).join('') || '<div class="sb-empty">Nothing listed for this trade.</div>';
 }
-function bfToggle(id, on) { META.bf = Object.assign({}, META.bf, { [id]: on }); saveMeta(); rerender(); }
 function copyInputs(t) {
   const cit = r => r.sec ? E.cite(r.sec, r.para, r.page) : 'Not in book';
   const C = {
     duct: [['System', 'Pressure class', 'Seal', 'Leakage class', 'Material', 'Construction', 'Insulation', 'Leak test', 'Cite'], r => [r.sys, r.press, r.seal, r.leak, r.mat, r.cons, r.ins, r.test, cit(r)]],
     mfr: [['Product', 'Basis of design', 'Also named', 'Rule', 'Cite'], r => [r.prod, r.bod, r.also, MST[r.st][0] + (r.who ? ' (' + r.who + ')' : ''), cit(r)]],
-    bidform: [['Item', 'Source', 'Note', 'Ready', 'Cite'], r => [r.item, BSRC[r.src][0], r.note, bfReady(r) ? 'Yes' : 'No', cit(r)]],
     deliv: [['Type', 'Deliverable', 'When', 'Reviewed / witnessed by', 'Cite'], r => [r.t, r.d, r.when, r.who, cit(r)]],
   }[t];
   cp([C[0]].concat(inRows(t).map(C[1])).map(a => a.map(x => String(x || '').replace(/\t|\n/g, ' ')).join('\t')).join('\n'), 'Table copied: paste into Excel');
 }
 function copyQuotes() {
-  const V = {};
-  inRows('mfr').filter(r => r.st !== 'others').forEach(r => [r.bod].concat(r.also ? r.also.split(', ') : []).forEach(m => (V[m] = V[m] || []).push(`${r.prod} (${E.cite(r.sec, r.para, r.page)})`)));
+  const V = vendorMap();
   cp(Object.keys(V).sort().map(m => `${m}\n${V[m].map(x => '  - ' + x).join('\n')}`).join('\n\n'), `Quote requests copied for ${Object.keys(V).length} vendors`);
 }
 
@@ -1096,8 +1095,10 @@ function paneProposal(CK) {
           <button class="pa-btn" onclick="copyProposal()">Copy text</button>
         </span></div>
       <div id="pdoc" class="pdoc ${errs.length ? 'draft' : ''}">${proposalHTML(S, T)}</div>
-    </div>`;
+    </div>
+    ${handoffHTML()}`;
 }
+const bulletins = () => { const B = Object.entries(BOOK.issues || {}).filter(([n, v]) => +n <= BOOK.bookIssue && /Bulletin/.test(v.label)).map(([, v]) => v.label.split('— ')[1]); return B.length ? ', including ' + (B.length > 1 ? B.slice(0, -1).join(', ') + ' and ' + B[B.length - 1] : B[0]) : ''; };
 function proposalHTML(S, T) {
   const F = FS(), N = rfiNums();
   const priced = F.filter(f => dec(f).act === 'price');
@@ -1134,7 +1135,7 @@ function proposalHTML(S, T) {
     <div class="meta">
       <b>To</b><span>${esc(META.gc || '—')}</span><b>Bid No.</b><span>${esc(META.bidNo || '—')}</span>
       <b>Scope</b><span>${scope}</span><b>Date</b><span>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-      <b>Documents</b><span>Specifications ${iss(BOOK.bookIssue)}${BOOK.bookDate ? ', ' + fmtDate(BOOK.bookDate) : ''}</span><b>Bid due</b><span>${due} · valid ${esc(META.valid)} days</span>
+      <b>Documents</b><span>Specifications ${iss(BOOK.bookIssue)}${BOOK.bookDate ? ', ' + fmtDate(BOOK.bookDate) : ''}${bulletins()}</span><b>Bid due</b><span>${due} · valid ${esc(META.valid)} days</span>
     </div>
     <p style="margin:12px 0 0">McCorvey Sheet Metal Works is pleased to submit this proposal to furnish, fabricate, deliver and install the ${scope} scope for ${esc(BOOK.name)}, in accordance with the specifications listed above and the qualifications below.</p>
     <h3>1. Base bid</h3>
@@ -1156,13 +1157,14 @@ function proposalHTML(S, T) {
       <li>Work required by specification sections referenced but not issued with the bid documents.</li></ol>
     ${h('Commercial terms')}
     <ol><li>Proposal valid ${esc(META.valid)} days from the date above. Steel pricing subject to mill surcharge adjustment after validity.</li>
-      <li>Progress billing monthly on AIA G702/G703. Retainage, liquidated damages, bonds, insurance and warranty terms subject to mutually agreeable subcontract terms.</li></ol>
+      <li>Progress billing monthly on AIA G702/G703. Retainage, liquidated damages, bonds, insurance and warranty terms subject to mutually agreeable subcontract terms.</li>
+      ${BOOK.inputs ? '<li>Schedule of values broken out by building and floor per Section 01 2900, with coordination drawings as a separate line.</li>' : ''}</ol>
+    ${BOOK.inputs && META.attachOk ? `<p style="margin:12px 0 0"><b>Enclosures:</b> ${ATTACH().map(r => esc(r.item.replace(/ named$/, ''))).join('; ')}.</p>` : ''}
     <div class="sig"><div>${esc(p.name)}${p.title ? ', ' + esc(p.title) : ''}<br>McCorvey Sheet Metal Works, L.P.</div><div>Accepted — ${esc(META.gc || 'Contractor')}<br>Name, title &amp; date</div></div>`;
 }
 
 /* ===================== ACTIONS ===================== */
 function go(k, focus) {
-  if (focus === 'bidform') { UI.inTab = 'bidform'; k = 'inputs'; }
   if (focus === 'needs' || focus === 'noamt' || focus === 'req') { UI.filter = focus; k = 'decide'; }
   step = k; history.replaceState(null, '', '#' + k); render();
   const top = document.getElementById('steps');
@@ -1173,7 +1175,7 @@ function rerender() { const y = window.scrollY; $('#pane').innerHTML = pane(chec
 function startReview() {
   const miss = ['gc', 'bidNo', 'due'].filter(k => !META[k]);
   if (miss.length) { toast('Fill in the bid setup first'); const el = document.getElementById('m-' + miss[0]); if (el) { el.focus(); el.classList.add('miss'); } return; }
-  META.started = true; saveMeta(); go('inputs');
+  META.started = true; saveMeta(); go('decide');
 }
 function setLens(k) {
   META.lens = k; saveMeta(); render();
@@ -1185,7 +1187,7 @@ function lensSummary() {
   const pages = BOOK.sections.filter(s => isYours(s) && lensOk(E.lensOf(s.id))).reduce((a, s) => a + s.pages, 0);
   const cell = (v, l, k) => `<button onclick="go('${k}')"><b>${v}</b><span>${l}</span></button>`;
   return `<div class="sb-scope"><span class="h">In scope for ${esc(E.LENSES[META.lens].label)}</span><div>
-    ${cell(pgs(pages), 'pages to read', 'inputs')}${cell(F.length, 'findings · ' + req + ' required', 'decide')}${cell(moneyK(pr.reduce((a, f) => a + dec(f).amt, 0)), 'priced spec adders', 'decide')}${cell(DIFFS().length, 'changed sections', 'changes')}${cell(CONFS().filter(inLog).length, 'RFIs', 'rfis')}
+    ${cell(pgs(pages), 'pages to read', 'load')}${cell(F.length, 'findings · ' + req + ' required', 'decide')}${cell(moneyK(pr.reduce((a, f) => a + dec(f).amt, 0)), 'priced spec adders', 'decide')}${cell(DIFFS().length, 'changed sections', 'changes')}${cell(CONFS().filter(inLog).length, 'RFIs', 'rfis')}
   </div></div>`;
 }
 /* GC / CM list: the CM named in the book, then GCs McCorvey already works with in this portal */
@@ -1399,7 +1401,7 @@ function resetDemo() {
       else { localStorage.removeItem(BC.KEY_STATE); localStorage.setItem(BC.KEY_REVS, '[]'); }
     }
   } catch (e) {}
-  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, inTab: 'duct' });
+  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false });
   step = 'load'; history.replaceState(null, '', '#load');
   loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('Demo reset — back to step 1');
