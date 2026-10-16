@@ -137,6 +137,11 @@ function setRole(id) {
   window.location.reload();
 }
 function signOutUser() { try { localStorage.removeItem('msm-role'); } catch (e) {} window.location.reload(); }
+/* ---- restart the whole demo: forget the access code, the user and every demo change on this browser (theme kept), then open the landing page ---- */
+function restartDemo() {
+  try { [localStorage, sessionStorage].forEach(st => Object.keys(st).filter(k => k.startsWith('msm-') && k !== 'msm-theme').forEach(k => st.removeItem(k))); } catch (e) {}
+  window.location.href = '/mccorvey/welcome/';
+}
 
 /* ---- access gate: portal code required before the user picker ---- */
 function gateOK() { try { return localStorage.getItem('msm-gate') === 'ok'; } catch (e) { return false; } }

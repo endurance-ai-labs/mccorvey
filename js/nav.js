@@ -287,6 +287,7 @@ function renderTopbar(opts = {}) {
               ${PERSONAS.map(p => `<a href="#" class="nav-dropdown-item" style="padding:6px 0;${p.id === me.id ? 'color:var(--color-blue);font-weight:700' : ''}" onclick="event.preventDefault();setRole('${p.id}')">${p.id === me.id ? '● ' : '○ '}${p.name} — ${p.title}</a>`).join('')}
             </div>
             <div class="nav-dropdown-divider"></div>
+            <a href="#" class="nav-dropdown-item" onclick="event.preventDefault();restartDemo()" title="Clears the access code, the user and every demo change on this browser, then opens the landing page">Restart demo</a>
             <a href="#" class="nav-dropdown-item" onclick="event.preventDefault();signOutUser()">Sign out</a>
           </div>
         </div>
