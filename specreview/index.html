@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016g">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016g">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016g">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016i">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016i">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016i">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -352,6 +352,27 @@
   .se-detail { margin-top:14px; }
   .se-detail .demo-panel { border:0; padding:0; background:none; box-shadow:none; margin:0 0 14px; }
 
+  /* CSI Parts */
+  .bdg.pt { border:1px solid currentColor; background:transparent; }
+  .bdg.pt.p1, .sb-chip.pt.p1 { color:#5b6b82; } .bdg.pt.p2, .sb-chip.pt.p2 { color:#1f5fa8; } .bdg.pt.p3, .sb-chip.pt.p3 { color:#1d7a52; }
+  [data-theme="dark"] .bdg.pt.p1 { color:#a9b7ca; } [data-theme="dark"] .bdg.pt.p2 { color:#8fb8ea; } [data-theme="dark"] .bdg.pt.p3 { color:#7fd1a8; }
+  .sb-chip.pt.on { color:#fff; } .sb-chip.pt.p1.on { background:#5b6b82; border-color:#5b6b82; } .sb-chip.pt.p2.on { background:#1f5fa8; border-color:#1f5fa8; } .sb-chip.pt.p3.on { background:#1d7a52; border-color:#1d7a52; }
+  .sb-parts { display:inline-flex; gap:6px; align-items:center; flex-wrap:wrap; padding-left:8px; border-left:1px solid var(--color-border); }
+  .sb-parts-l { font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .sb-part-h { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; margin:10px 0 6px; padding:0 2px 4px; border-bottom:1px dashed var(--color-border); }
+  .sb-part-h b { font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .sb-part-h span { font-size:11px; color:var(--color-text-muted); }
+  .pt-tiles { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:12px; }
+  .pt-tile { font:inherit; text-align:left; display:flex; flex-direction:column; gap:3px; border:1px solid var(--color-border); border-top:4px solid #5b6b82; border-radius:12px; padding:12px 14px; background:var(--color-bg); cursor:pointer; min-width:0; }
+  .pt-tile.p2 { border-top-color:#1f5fa8; } .pt-tile.p3 { border-top-color:#1d7a52; }
+  .pt-tile:hover { border-color:var(--color-blue); }
+  .pt-tile .h { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .pt-tile b { font-size:24px; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .pt-tile .s, .pt-tile .d { font-size:11.5px; color:var(--color-text-muted); }
+  .pt-tile .a { font-size:13px; font-weight:800; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .pt-tile .x { font-size:11.5px; font-weight:700; color:var(--color-cloud-whisper); margin-top:2px; }
+  @media (max-width:700px) { .pt-tiles { grid-template-columns:1fr; } .sb-parts { border-left:0; padding-left:0; } }
+
   /* bid requirement */
   .fd-req { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; margin-top:6px; font-size:11.5px; line-height:1.45; color:var(--color-text-muted); }
   .fd-req b { flex:none; font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; border:1px solid currentColor; }
@@ -436,16 +457,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016g"></script>
+<script src="/mccorvey/js/data.js?v=20261016i"></script>
 <script src="/mccorvey/js/util.js?v=20261016h"></script>
 <script src="/mccorvey/js/nav.js?v=20261016h"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016g"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016g"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016g"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016g"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016g"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016g"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016g" defer></script>
+<script src="/mccorvey/js/specbook.js?v=20261016i"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016i"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016i"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016i"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016i"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016i"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016i" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -462,7 +483,7 @@ let DEC, META, RS;
 const STEPS = [['load', 'Set up'], ['decide', 'Decide'], ['changes', 'Changes'], ['rfis', 'RFIs'], ['proposal', 'Proposal']];
 const HASH_ALIAS = { inputs: 'load', triage: 'load', findings: 'decide', matrix: 'decide', adders: 'proposal', letter: 'proposal' };
 let step = (() => { const h = (location.hash || '').slice(1); const k = HASH_ALIAS[h] || h; return STEPS.some(s => s[0] === k) ? k : null; })();
-const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false };
+const UI = { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false, part: null };
 
 function loadState() {
   DEC = E.decisions(BOOK);
@@ -518,6 +539,17 @@ const needsAmt = f => { const d = dec(f); return d.act === 'price' && !(d.amt > 
 const CONFS = () => BOOK.conflicts.filter(c => lensOk(c.lens));
 const inLog = c => (DEC[c.id] || {}).act !== 'off';
 const rs = id => Object.assign({ status: 'draft', sent: '', answer: '' }, RS[id]);
+/* CSI Parts: what each one drives in the estimate */
+const PARTN = { 1: 'General', 2: 'Products', 3: 'Execution' };
+const PART_DRIVES = { 1: 'submittals, warranties, coordination, commercial terms', 2: 'materials, named makers, vendor quotes', 3: 'installation, testing, field labor' };
+const partOf = f => f.part || (/^[123]\./.test(f.para || '') ? +f.para[0] : null);
+/* field hours behind a finding: its build-up on your own book, the price book line on the sample */
+function laborHrsOf(f) {
+  if (window.BuildUps && BuildUps.has(f) && dec(f).act === 'price') return BuildUps.build(f).laborHrs || 0;
+  if (f.pb && window.PRICEBOOK && dec(f).act === 'price') { const it = PRICEBOOK.BY[f.pb.code]; return it && it.hrs ? it.hrs * f.pb.qty : 0; }
+  return 0;
+}
+function goPart(n) { UI.part = n; UI.filter = 'all'; go('decide'); }
 const HASAMT = () => BOOK.sample || BOOK.diffs.some(d => d.illustrative);
 const ILLUS = () => !BOOK.sample && DIFFS().some(d => d.illustrative);
 const DIFFS = () => BOOK.diffs.filter(d => lensOk(d.lens));
@@ -904,17 +936,34 @@ function paneLoad() {
       <div class="demo-panel-head"><h2>What's in this book</h2><span style="display:flex;gap:8px;align-items:center"><span class="k">${pgs(BOOK.totalPages)} pages · ${secs.length} sections</span><button class="pa-btn" onclick="UI.showSecs=!UI.showSecs;rerender()">${UI.showSecs ? 'Hide sections' : 'Browse sections'}</button></span></div>
       <div class="sb-bars">${groups.map(g => `<div class="sb-bar ${inTrade(g) ? '' : 'off'}"><div class="nm">${g.k}<span>${g.cnt} sections · ${inTrade(g) || !g.d ? g.n : 'not in this trade'}</span></div><div class="tr"><i style="width:${Math.max(2, g.pages / max * 100)}%;background:${g.c}"></i></div><div class="v">${pgs(g.pages)}</div></div>`).join('')}</div>
       ${UI.showSecs ? secTable() : ''}
-    </div>`;
+    </div>
+    ${partsPanel()}`;
+}
+function partsPanel() {
+  const F = FS(); if (!F.some(partOf)) return '';
+  const tile = n => {
+    const P = F.filter(f => partOf(f) === n), hi = P.filter(f => f.sev === 'high').length, req = P.filter(f => reqOf(f) === 'must').length;
+    const pr = P.filter(f => dec(f).act === 'price'), amt = pr.reduce((a, f) => a + dec(f).amt, 0);
+    const drv = n === 1 ? `${P.filter(f => ['clarify', 'exclude'].includes(dec(f).act)).length} write proposal terms (qualify / exclude)`
+      : n === 2 ? `${pr.length} priced material items${BOOK.inputs ? ' · <a href="javascript:void 0" onclick="UI.se=\'mfr\';rerender();document.querySelector(\'.se-cards\').scrollIntoView({block:\'center\'})">vendor quote list</a>' : ''}`
+      : `≈ ${Math.round(P.reduce((a, f) => a + laborHrsOf(f), 0)).toLocaleString()} field hours priced`;
+    return `<button class="pt-tile p${n}" onclick="goPart(${n})"><span class="h">Part ${n} · ${PARTN[n]}</span><b>${P.length}</b><span class="s">findings · ${hi} high · ${req} required</span><span class="a">${amt ? money(amt) : '—'} priced</span><span class="d">${PART_DRIVES[n]}</span><span class="x">${drv}</span></button>`;
+  };
+  return `<div class="demo-panel" style="margin:18px 0 6px">
+    <div class="demo-panel-head"><h2>By Part: General · Products · Execution</h2><span class="k">every section is written in three parts · click one to review it in Decide</span></div>
+    <div class="pt-tiles">${[1, 2, 3].map(tile).join('')}</div>
+    ${BOOK.local && !F.every(partOf) ? `<div class="ynote" style="margin-top:8px">${(n => n + (n === 1 ? ' finding sits' : ' findings sit'))(F.filter(f => !partOf(f)).length)} where the book prints no PART heading.</div>` : ''}
+  </div>`;
 }
 function secTable() {
   const cnt = {}; BOOK.findings.forEach(f => cnt[f.sec] = (cnt[f.sec] || 0) + 1);
   const re = new Set(BOOK.diffs.map(d => d.sec));
   const rows = BOOK.sections.filter(s => isYours(s) || E.HOOKS.includes(s.div));
   return `<div class="demo-tbl-wrap grid-scroll" style="max-height:480px;margin-top:16px"><table class="demo-tbl tbl-left">
-    <thead><tr><th>Section</th><th>Title</th><th style="text-align:right">Pages</th><th>Stamp</th><th style="text-align:right">Findings</th></tr></thead>
+    <thead><tr><th>Section</th><th>Title</th><th style="text-align:right">Pages</th><th>Stamp</th><th style="text-align:right">Findings</th><th style="text-align:right" title="Part 1 General">Gen.</th><th style="text-align:right" title="Part 2 Products">Prod.</th><th style="text-align:right" title="Part 3 Execution">Exec.</th></tr></thead>
     <tbody>${rows.map(s => { const stale = !re.has(s.id) && s.issue != null && s.issue < BOOK.pricedIssue; return `<tr><td><b>${s.id}</b></td><td>${esc(s.title)}</td><td style="text-align:right;white-space:nowrap">pp. ${pgs(s.start)}–${pgs(s.end)}</td>
       <td><span class="bdg ${re.has(s.id) ? 'chg' : ''}" style="${stale ? 'background:var(--color-amber-bg);color:var(--color-amber)' : ''}">${re.has(s.id) ? 'REISSUED · ' : stale ? 'STALE · ' : ''}${iss(s.issue)}</span></td>
-      <td style="text-align:right">${cnt[s.id] || '—'}</td></tr>`; }).join('')}</tbody></table></div>`;
+      <td style="text-align:right">${cnt[s.id] || '—'}</td>${[1, 2, 3].map(n => { const c = BOOK.findings.filter(f => f.sec === s.id && partOf(f) === n).length, r = s.parts && s.parts[n]; return `<td style="text-align:right;white-space:nowrap" title="${r ? 'Part ' + n + ' on pp. ' + r[0] + '–' + r[1] : ''}">${c || '—'}${r ? `<small style="display:block;color:var(--color-text-muted)">pp. ${pgs(r[0])}–${pgs(r[1])}</small>` : ''}</td>`; }).join('')}</tr>`; }).join('')}</tbody></table></div>`;
 }
 
 /* ---------- spec book extracts: Start the estimate (Set up) + PM handoff (Proposal) ---------- */
@@ -1006,7 +1055,7 @@ function fdHTML(f) {
   const d = dec(f), d01 = /^0[01]/.test(f.sec);
   return `<div class="fd ${f.sev} ${d.ok ? 'ok' : ''}" id="f-${f.id}">
     <div>
-      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}
+      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}${partOf(f) ? `<span class="bdg pt p${partOf(f)}" title="${PART_DRIVES[partOf(f)]}">PART ${partOf(f)} · ${PARTN[partOf(f)].toUpperCase()}</span>` : ''}
         ${d01 ? '<span class="bdg d01">FROM DIV 01</span>' : ''}${f.chg ? `<span class="bdg chg">CHANGED ${iss(f.chg).toUpperCase()}</span>` : ''}</div>
       <div class="fd-imp">${esc(f.impact)}</div>
       <div class="fd-req ${reqOf(f)}"><b>${REQS[reqOf(f)][0]}</b><span>${REQS[reqOf(f)][1]}</span></div>${reqOf(f) === 'must' && d.act === 'exclude' ? '<div class="fd-warn">Excluding a required item makes the bid non-compliant. Price it, or qualify it with the GC first.</div>' : ''}
@@ -1095,10 +1144,17 @@ function pbQtyBanner(F) {
     <div class="b">${open ? `<button class="pa-btn primary" onclick="acceptAll()">Accept all ${open} as recommended</button>` : '<span class="fd-ok">✓ ALL DECIDED</span>'}<button class="pa-btn" onclick="UI.showPB=!UI.showPB;rerender()">${UI.showPB ? 'Hide price book' : 'View price book'}</button></div>
   </div>${UI.showPB ? pbTable() : ''}`;
 }
+/* inside a section, findings sorted and headed by Part so General / Products / Execution read separately */
+function partGroups(items) {
+  const parts = [...new Set(items.map(partOf))];
+  if (parts.length < 2) return items.map(fdHTML).join('');
+  const order = n => n || 9;
+  return parts.sort((a, b) => order(a) - order(b)).map(n => { const G = items.filter(f => partOf(f) === n); return `<div class="sb-part-h">${n ? `<b>Part ${n} · ${PARTN[n]}</b><span>${PART_DRIVES[n]} · ${G.length} finding${G.length > 1 ? 's' : ''}</span>` : `<b>Part not stated</b><span>${G.length}</span>`}</div>${G.map(fdHTML).join('')}`; }).join('');
+}
 function paneDecide() {
   const F = FS(), q = UI.q.toLowerCase();
   const isK = (k, f) => k === 'needs' ? !dec(f).ok : k === 'req' ? reqOf(f) === 'must' : k === 'high' ? f.sev === 'high' : k === 'price' ? dec(f).act === 'price' : k === 'noamt' ? needsAmt(f) : k === 'allow' ? dec(f).act === 'price' && dec(f).allow : true;
-  const list = F.filter(f => isK(UI.filter, f) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q)));
+  const list = F.filter(f => isK(UI.filter, f) && (!UI.part || partOf(f) === UI.part) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q)));
   const groups = []; list.forEach(f => { let g = groups.find(x => x.sec === f.sec); if (!g) groups.push(g = { sec: f.sec, items: [] }); g.items.push(f); });
   const cnt = k => F.filter(f => isK(k, f)).length;
   const mx = BOOK.matrix.filter(m => lensOk(m.lens));
@@ -1108,6 +1164,7 @@ function paneDecide() {
     ${pbBanner(F)}
     <div class="sb-tools">
       ${[['needs', 'Needs review'], ['high', 'High'], ['req', 'Required to bid'], ['price', 'Priced'], ['noamt', 'Missing $'], ['allow', 'Allowances'], ['all', 'All']].filter(([k]) => !['noamt', 'allow'].includes(k) || cnt(k) || UI.filter === k).map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
+      ${F.some(partOf) ? `<span class="sb-parts"><span class="sb-parts-l">Part</span>${[1, 2, 3].map(n => `<button class="sb-chip pt p${n} ${UI.part === n ? 'on' : ''}" title="${PART_DRIVES[n]}" onclick="UI.part=UI.part===${n}?null:${n};rerender()">${PARTN[n]}<b>${F.filter(f => partOf(f) === n && isK(UI.filter, f)).length}</b></button>`).join('')}</span>` : ''}
       <input type="search" id="fq" placeholder="Search — hanger, warranty, 23 3113…" value="${esc(UI.q)}">
       <button class="pa-btn" onclick="UI.showMatrix=!UI.showMatrix;rerender()">${UI.showMatrix ? 'Hide who does what' : 'Who does what'}</button>
       ${shownOpen ? `<button class="pa-btn primary" onclick="acceptShown()">Accept recommended (${shownOpen})</button>` : ''}
@@ -1118,7 +1175,7 @@ function paneDecide() {
     ${groups.length ? groups.map(g => {
       const s = BOOK.sections.find(x => x.id === g.sec) || { title: '', start: '', end: '' };
       const open = g.items.filter(f => !dec(f).ok).length;
-      return `<div class="sb-grp"><div class="sb-grp-h"><b>${g.sec} ${esc(s.title)}</b><span>pp. ${pgs(s.start)}–${pgs(s.end)} · ${g.items.length} finding${g.items.length > 1 ? 's' : ''}</span>${open ? `<button class="pa-btn" onclick="acceptSec('${g.sec}')">Accept section (${open})</button>` : ''}</div>${g.items.map(fdHTML).join('')}</div>`;
+      return `<div class="sb-grp"><div class="sb-grp-h"><b>${g.sec} ${esc(s.title)}</b><span>pp. ${pgs(s.start)}–${pgs(s.end)} · ${g.items.length} finding${g.items.length > 1 ? 's' : ''}</span>${open ? `<button class="pa-btn" onclick="acceptSec('${g.sec}')">Accept section (${open})</button>` : ''}</div>${partGroups(g.items)}</div>`;
     }).join('') : `<div class="sb-empty">${UI.filter === 'needs' ? 'Every finding in this trade is reviewed. Next: confirm what changed.' : 'No findings match.'}</div>`}`;
 }
 function matrixHTML(rows) {
@@ -1440,7 +1497,7 @@ function acceptList(list) {
 function acceptAll(nonHighOnly) { acceptList(FS().filter(f => !nonHighOnly || f.sev !== 'high')); }
 function acceptShown() {
   const q = UI.q.toLowerCase();
-  acceptList(FS().filter(f => (UI.filter === 'all' || (UI.filter === 'needs' && !dec(f).ok) || (UI.filter === 'high' && f.sev === 'high') || (UI.filter === 'req' && reqOf(f) === 'must') || (UI.filter === 'price' && dec(f).act === 'price')) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q))));
+  acceptList(FS().filter(f => (!UI.part || partOf(f) === UI.part) && (UI.filter === 'all' || (UI.filter === 'needs' && !dec(f).ok) || (UI.filter === 'high' && f.sev === 'high') || (UI.filter === 'req' && reqOf(f) === 'must') || (UI.filter === 'price' && dec(f).act === 'price')) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q))));
 }
 function setAllow(id, on) {
   const f = BOOK.findings.find(x => x.id === id);
@@ -1616,7 +1673,7 @@ function resetDemo() {
       else { localStorage.removeItem(BC.KEY_STATE); localStorage.setItem(BC.KEY_REVS, '[]'); }
     }
   } catch (e) {}
-  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false });
+  Object.assign(UI, { filter: 'needs', q: '', showMatrix: false, showSecs: false, openRfi: null, rtype: null, cx: 'all', showPB: false, se: null, handoff: false, part: null });
   step = 'load'; history.replaceState(null, '', '#load');
   loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('Demo reset — back to step 1');

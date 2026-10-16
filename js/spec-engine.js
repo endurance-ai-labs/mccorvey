@@ -407,6 +407,40 @@
   }
 
   /* ---------------- analyze a whole book ---------------- */
+  /* ---------------- CSI Parts: 1 General · 2 Products · 3 Execution ----------------
+     Read from the book's own PART headings; each finding gets the Part it sits in and
+     the nearest paragraph number before its clause, and each section its Part page ranges. */
+  const PART_RE = /PART\s*([123])\s*[-–—:.]*\s*(GENERAL|PRODUCTS|EXECUTION)/gi;
+  const flat = t => String(t || '').replace(/\s+/g, ' ');
+  function assignParts(sections, bodies, findings) {
+    const heads = {};
+    sections.forEach(s => {
+      const H = []; let cur = null;
+      for (let p = s.start; p <= s.end; p++) {
+        const t = flat(bodies[p - 1]); PART_RE.lastIndex = 0; let m;
+        H.push({ page: p, idx: -1, part: cur });
+        while ((m = PART_RE.exec(t))) { cur = +m[1]; H.push({ page: p, idx: m.index, part: cur }); }
+      }
+      heads[s.id] = H;
+      const rng = {};
+      H.forEach(h => { if (!h.part) return; const r = rng[h.part] = rng[h.part] || [h.page, h.page]; r[0] = Math.min(r[0], h.page); r[1] = Math.max(r[1], h.page); });
+      if (Object.keys(rng).length) s.parts = rng;
+    });
+    findings.forEach(f => {
+      const H = heads[f.sec]; if (!H) return;
+      const t = flat(bodies[f.page - 1]), key = flat(f.says).replace(/^…/, '').slice(0, 28);
+      const at = key ? t.indexOf(key) : -1, pos = at >= 0 ? at : t.length;
+      let part = null;
+      H.forEach(h => { if (h.page < f.page || (h.page === f.page && h.idx <= pos)) { if (h.part) part = h.part; } });
+      if (part) f.part = part;
+      if (!f.para && at > 0) {
+        const nums = t.slice(Math.max(0, at - 500), at).match(/\b[123]\.\d{1,2}(?:\.[A-Z](?:\.\d{1,2})?)?(?=\s)/g);
+        const near = nums && nums[nums.length - 1];
+        if (near && (!part || +near[0] === part)) f.para = near;
+      }
+      if (!f.part && /^[123]\./.test(f.para || '')) f.part = +f.para[0];
+    });
+  }
   async function analyze(file, onProgress) {
     const pages = await extract(file, (d, n) => onProgress && onProgress('Reading page ' + d.toLocaleString() + ' of ' + n.toLocaleString(), d / n * 0.85));
     onProgress && onProgress('Mapping sections and issue stamps', 0.88);
@@ -415,6 +449,7 @@
     onProgress && onProgress('Running spec-trap rules', 0.92);
     const lex = wordCounts(bodies);
     const findings = runRules(bodies, pageSec, secById, lex);
+    assignParts(sections, bodies, findings);
     onProgress && onProgress('Checking cross-references and template text', 0.96);
     const conflicts = runChecks(pages, pageSec, secById, sections);
     const matrix = runMatrix(pages, pageSec, secById, lex);
@@ -496,6 +531,7 @@
     ].filter(x => x !== '').join('\n');
   }
 
-  window.SpecEngine = { analyze, extract, openPdf, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
+  const PARTS = { 1: 'General', 2: 'Products', 3: 'Execution' };
+  window.SpecEngine = { PARTS, assignParts, analyze, extract, openPdf, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
     mend, wordCounts, store, activeBook, decisions, saveDecisions, amtOf, decOf, secTitle, cite, rfiNo, rfiText };
 })();
