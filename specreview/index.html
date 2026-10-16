@@ -196,6 +196,11 @@
   .pdoc .ref { color:#5a6676; font-size:11px; white-space:nowrap; }
   .pdoc .sig { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:38px; font-size:11.2px; color:#5a6676; }
   .pdoc .sig div { border-top:1px solid #9aa6b2; padding-top:6px; }
+  .pdoc .sig .sig-on { border-top-color:#14283c; }
+  .pdoc .sig .sig-meta { display:block; margin-top:4px; }
+  .pdoc .sig .sig-clear { display:inline-block; margin-top:3px; font-size:10px; color:#97a0ad; }
+  .pdoc .sig .sig-void { display:block; margin-top:4px; font-size:10px; color:#c8102e; font-weight:700; }
+  .pdoc .sig .sig-btn { margin:-34px 0 8px; }
 
   /* cite chips that open the spec book */
   button.cite { font-family:inherit; border:1px solid transparent; cursor:pointer; }
@@ -1485,6 +1490,7 @@ function paneProposal(CK) {
       <div class="demo-panel-head"><h2>Proposal</h2>
         <span style="display:flex;gap:8px;flex-wrap:wrap">
           <button class="pa-btn primary" ${errs.length ? 'disabled title="Fix the preflight issues first"' : ''} onclick="issueProposal()">${errs.length ? 'Fix ' + errs.length + ' issue' + (errs.length > 1 ? 's' : '') + ' to issue' : 'Issue proposal (print / PDF)'}</button>
+          <button class="pa-btn" ${errs.length ? 'disabled title="Fix the preflight issues first"' : 'title="Signs McCorvey’s line and simulates the GC’s acceptance (demo)"'} onclick="autoSign()">Auto-sign (demo)</button>
           <button class="pa-btn" onclick="copyProposal()">Copy text</button>
           <button class="pa-btn" onclick="newRevision()" title="Keep this as a superseded revision and start the next one">Start Rev ${String.fromCharCode(revOf().charCodeAt(0) + 1)}</button>
         </span></div>
@@ -1516,7 +1522,7 @@ function wordingPanel() {
 /* proposal number and revision */
 const propNo = () => (META.bidNo || 'MSM') + '-P';
 const revOf = () => META.rev || 'A';
-function newRevision() { const r = revOf(); META.revs = (META.revs || []).concat([{ rev: r, date: today() }]); META.rev = String.fromCharCode(r.charCodeAt(0) + 1); saveMeta(); rerender(); toast(`Revision ${META.rev} started; Rev ${r} is kept in the history`); }
+function newRevision() { const r = revOf(); META.revs = (META.revs || []).concat([{ rev: r, date: today() }]); META.rev = String.fromCharCode(r.charCodeAt(0) + 1); META.sig = {}; saveMeta(); rerender(); toast(`Revision ${META.rev} started; Rev ${r} is kept in the history`); }
 /* scope of work by system, from the bid sheet's base lines */
 const SYS = [['Insulation and liner', /liner|insulation|wrap/i], ['Duct accessories', /damper|access door|flex/i], ['Air distribution devices', /air device|GRD|diffuser|grille|register/i], ['Coordination, rigging and field support', /BIM|shop drawing|coordination|rigging|lift/i], ['Ductwork', /duct|spiral|stainless|exhaust/i]];
 function scopeBySystem(S) {
@@ -1562,7 +1568,7 @@ function proposalHTML(S, T) {
   const h = t => `<h3>${++n}. ${t}</h3>`;
   const notes = (META.notes || '').split('\n').map(s => s.trim()).filter(Boolean);
   const scope = SCOPE[META.lens];
-  return `
+  const body = `
     <div class="lh"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works"><div class="ad">McCorvey Sheet Metal Works, L.P.<br>8610 Wallisville Road, Houston, TX 77029<br>(713) 672-7545</div></div>
     <h2>Proposal — ${esc(BOOK.name)}</h2>
     <div class="meta">
@@ -1621,8 +1627,49 @@ function proposalHTML(S, T) {
       <li>Progress billing monthly on AIA G702/G703. Retainage, liquidated damages, bonds, insurance and warranty terms subject to mutually agreeable subcontract terms.</li>
       ${BOOK.inputs ? '<li>Schedule of values broken out by building and floor per Section 01 2900, with coordination drawings as a separate line.</li>' : ''}</ol>
     ${BOOK.inputs && META.attachOk ? `<p style="margin:12px 0 0"><b>Enclosures:</b> ${ATTACH().map(r => esc(r.item.replace(/ named$/, ''))).join('; ')}.</p>` : ''}
-    <div class="sig"><div>${esc(p.name)}${p.title ? ', ' + esc(p.title) : ''}<br>McCorvey Sheet Metal Works, L.P.</div><div>Accepted — ${esc(META.gc || 'Contractor')}<br>Name, title &amp; date</div></div>`;
+`;
+  return body + sigHTML(p, fpOf(body));
 }
+
+/* ---- demo e-signature: one click signs the proposal ----
+   McCorvey's line signs as the signed-in persona; the GC's line simulates the customer's acceptance with a fictional
+   signer. A signature is bound to the revision and to the proposal's text (fpOf), so any change after signing voids
+   it and the line asks to be signed again. Demo only: no signature is sent or stored anywhere but this browser. */
+const GC_SIGNER = { name: 'Morgan Avery', title: 'Vice President, Preconstruction' };
+const fpOf = (html) => { const t = String(html).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); let h = 5381; for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0; return (h >>> 0).toString(36); };
+let SIG_FP = '';
+const sigNow = () => new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+const sigRaw = (slot) => (META.sig || {})[slot] || null;
+const sigOk = (slot) => { const s = sigRaw(slot); return s && s.rev === revOf() && s.fp === SIG_FP ? s : null; };
+function sigLine(slot, cap) {
+  const s = sigOk(slot), was = sigRaw(slot);
+  if (s) return `<div class="sig-on"><span class="sig-script">${esc(s.name)}</span>${cap}<span class="sig-meta">E-signed (demo) · ${esc(s.at)} · Rev ${esc(s.rev)}</span><a href="#" class="sig-clear no-print" onclick="event.preventDefault();clearSig('${slot}')" title="Remove this signature (demo)">Remove signature</a></div>`;
+  const why = SIG_BLOCK || (slot === 'gc' && !sigOk('mc') ? 'McCorvey signs first' : '');
+  return `<div><button class="sig-btn no-print${why ? ' locked' : ''}"${why ? ` title="${esc(why)}"` : ''} onclick="eSign('${slot}')">${slot === 'mc' ? 'E-sign' : 'Simulate GC acceptance'}</button>${cap}${was ? '<span class="sig-void no-print">The signature on file was for an earlier version of this proposal, so it no longer applies. Sign again.</span>' : ''}</div>`;
+}
+let SIG_BLOCK = '';
+function sigHTML(p, fp) {
+  SIG_FP = fp;
+  SIG_BLOCK = checks().some(c => c.level === 'error') ? 'Fix the preflight issues before signing' : '';
+  const mc = sigOk('mc'), gc = sigOk('gc');
+  return `<div class="sig">${sigLine('mc', `${esc(mc ? mc.name : p.name)}${(mc ? mc.title : p.title) ? ', ' + esc(mc ? mc.title : p.title) : ''}<br>McCorvey Sheet Metal Works, L.P.`)}${sigLine('gc', `Accepted — ${esc(META.gc || 'Contractor')}<br>${gc ? esc(gc.name) + ', ' + esc(gc.title) : 'Name, title &amp; date'}`)}</div>`;
+}
+function eSign(slot, quiet) {
+  if (checks().some(c => c.level === 'error')) { toast('Fix the preflight issues before signing'); return false; }
+  if (slot === 'gc' && !sigOk('mc')) { toast('McCorvey signs first; then the GC can accept'); return false; }
+  const p = currentPersona() || { name: 'Preconstruction', title: '' };
+  const who = slot === 'mc' ? { name: p.name, title: p.title || '' } : GC_SIGNER;
+  META.sig = Object.assign({}, META.sig, { [slot]: { name: who.name, title: who.title, at: sigNow(), rev: revOf(), fp: SIG_FP } });
+  saveMeta();
+  if (!quiet) { rerender(); toast(slot === 'mc' ? 'Proposal e-signed for McCorvey (demo)' : 'GC acceptance simulated (demo)'); }
+  return true;
+}
+function autoSign() {
+  if (!sigOk('mc') && !eSign('mc', true)) return;
+  if (!sigOk('gc')) eSign('gc', true);
+  rerender(); toast('Proposal signed by McCorvey and accepted by the GC (demo)');
+}
+function clearSig(slot) { const s = Object.assign({}, META.sig); delete s[slot]; if (slot === 'mc') delete s.gc; META.sig = s; saveMeta(); rerender(); }
 
 /* ===================== ACTIONS ===================== */
 function go(k, focus) {
@@ -1817,7 +1864,8 @@ function clearPrintRoot() {
 }
 window.addEventListener('beforeprint', () => { if (step === 'proposal') buildPrintRoot(); });
 window.addEventListener('afterprint', clearPrintRoot);
-function copyProposal() { cp($('#pdoc').innerText, 'Proposal text copied'); }
+/* the text as printed: on-screen controls (sign buttons, notes) are left out */
+function copyProposal() { const c = $('#pdoc').cloneNode(true); c.querySelectorAll('.no-print').forEach(n => n.remove()); document.body.appendChild(c); c.style.cssText = 'position:fixed;left:-9999px;top:0'; const t = c.innerText; c.remove(); cp(t, 'Proposal text copied'); }
 function cp(txt, msg) { const done = () => toast(msg); if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, () => fb(txt, done)); else fb(txt, done); }
 function fb(txt, cb) { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); cb(); }
 
