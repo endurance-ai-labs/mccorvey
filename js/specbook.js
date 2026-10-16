@@ -514,6 +514,97 @@
     { scope: 'BIM coordination & shop drawings (LOD 400)', unit: 'LS', qty: 1, mat: 210000, shopUPH: 0, fieldUPH: 0 },
   ];
 
+
+  /* -------------------------------------------------------------------
+     BID INPUTS — what the estimator prices from and what the bid must
+     carry, pulled from the book. Each row cites sec + page offset (or a
+     finding via `find`). Manufacturer names are real product makers used
+     the way specs list them; the selections are fictional.
+     ------------------------------------------------------------------- */
+  const DUCT = [
+    { sys: 'Supply: AHU discharge to first fire/smoke damper', press: '+10 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'SMACNA T-24/T-25 gauges; 4-bolt flanges, spot-welded', ins: '2 in. external wrap', test: '100% before insulation', sec: '23 3113', off: 5, para: '2.4.A.1' },
+    { sys: 'Supply: fire/smoke damper to VAV terminal', press: '+4 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'Pittsburgh seams; no snaplock or button punch', ins: '1.5 in. external wrap', test: '100% (medium pressure)', sec: '23 3113', off: 5, para: '2.4.A.2' },
+    { sys: 'Supply: VAV terminal to diffusers', press: '+2 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'Conical or bellmouth takeoffs; flex 48 to 72 in.', ins: '1.5 in. external wrap', test: '2 sections per air system', sec: '23 3113', off: 5, para: '2.4.A.3' },
+    { sys: 'Return', press: '−2 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'No flex on return', ins: 'Production areas only (23 0700 ¶3.9.E)', test: '2 sections per air system', sec: '23 3113', off: 5, para: '2.4.B' },
+    { sys: 'Outside air and relief', press: '−2 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'Insulated blank-offs at louvers', ins: '2 in. wrap; production areas included', test: '2 sections per air system', sec: '23 3113', off: 6, para: '2.4.C' },
+    { sys: 'General exhaust', press: '−2 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'No flex on exhaust', ins: 'None', test: '2 sections per air system', sec: '23 3113', off: 6, para: '2.4.D' },
+    { sys: 'Outdoor supply and return (rooftop)', press: '±3 in. wg', seal: 'A', leak: '6 rect / 3 round', mat: 'G90 galvanized', cons: 'Wind restraint per 23 0548 ¶3.4', ins: '3 in. board + metal-clad jacket', test: '100%', sec: '23 3113', off: 6, para: '2.4.E' },
+    { sys: 'Stair pressurization (Building C)', press: '+4 in. wg', seal: 'A', leak: '3', mat: 'G90 galvanized', cons: 'Smoke-control system', ins: 'None', test: 'Before concealment, special inspector witness', sec: '23 3113', off: 6, para: '2.4.F' },
+    { sys: 'Shaft risers (all systems)', press: 'Per system', seal: 'A', leak: 'Per system', mat: 'G90 galvanized', cons: 'Drive slips allowed in shafts only', ins: 'Per system', test: '100% of shaft duct', sec: '23 3113', off: 28, para: '3.16.D' },
+    { sys: 'Kitchen grease exhaust (concealed)', press: 'NFPA 96', seal: 'Liquid-tight', leak: 'n/a', mat: 'Factory-built UL 1978, or 16 ga carbon steel welded', cons: 'Two bases allowed in one paragraph (RFI)', ins: 'Per listing', test: 'None specified (RFI)', sec: '23 3113.19', off: 2, para: '2.2.A' },
+  ];
+
+  /* st: listed = named makers only (01 2500 bars equals), sole = one maker, others = furnished by another division */
+  const MFR = [
+    { prod: 'Fire/smoke dampers', bod: 'Ruskin', also: 'Greenheck, Pottorff', st: 'listed', lens: 'sm', sec: '23 3300', off: 4, para: '2.4' },
+    { prod: 'Fire dampers', bod: 'Ruskin', also: 'Greenheck, Pottorff, Nailor', st: 'listed', lens: 'sm', sec: '23 3300', off: 3, para: '2.3' },
+    { prod: 'Manual volume dampers', bod: 'Ruskin', also: 'Greenheck, Nailor, Pottorff', st: 'listed', lens: 'sm', sec: '23 3300', off: 2, para: '2.2' },
+    { prod: 'Remote cable damper regulators', bod: 'Young Regulator', also: '', st: 'sole', lens: 'sm', sec: '23 3300', off: 4, para: '2.5' },
+    { prod: 'Duct access doors (factory double-wall)', bod: 'Ductmate', also: 'Ward Industries, Elgen', st: 'listed', lens: 'sm', sec: '23 3300', off: 9, para: '2.9' },
+    { prod: 'Flexible connectors', bod: 'Ventfabrics', also: 'Duro Dyne, Ductmate', st: 'listed', lens: 'sm', sec: '23 3300', off: 11, para: '2.11' },
+    { prod: 'Duct liner', bod: 'Johns Manville', also: 'Knauf, CertainTeed', st: 'listed', lens: 'sm', sec: '23 3113', off: 4, para: '2.3' },
+    { prod: 'Transverse flange connection system', bod: 'Ductmate', also: 'Ward Industries', st: 'listed', lens: 'sm', sec: '23 3113', off: 7, para: '2.6.D' },
+    { prod: 'Duct sealant (low-VOC)', bod: 'Hardcast', also: 'Ductmate, Design Polymerics', st: 'listed', lens: 'sm', sec: '23 3113', off: 8, para: '2.8' },
+    { prod: 'Hangers and supports', bod: 'Eaton B-Line', also: 'Unistrut, Gripple', st: 'listed', lens: 'sm', sec: '23 3113', off: 9, para: '2.9' },
+    { prod: 'Flexible duct', bod: 'Flexmaster', also: 'Hart & Cooley, Thermaflex', st: 'listed', lens: 'sm', sec: '23 3346', off: 1, para: '2.1' },
+    { prod: 'Diffusers, registers and grilles', bod: 'Price Industries', also: 'Titus, Krueger, Nailor', st: 'listed', lens: 'sm', sec: '23 3713', off: 1, para: '2.1' },
+    { prod: 'Factory-built grease duct', bod: 'Metal-Fab', also: 'Selkirk, DuraVent', st: 'listed', lens: 'sm', sec: '23 3113.19', off: 2, para: '2.2' },
+    { prod: 'Duct insulation (board and blanket)', bod: 'Johns Manville', also: 'Owens Corning, Knauf, CertainTeed', st: 'listed', lens: 'sm', sec: '23 0700', off: 3, para: '2.2' },
+    { prod: 'Metal-clad insulation jacket', bod: 'ITW Insulation Systems', also: 'RPR Products', st: 'listed', lens: 'sm', sec: '23 0700', off: 6, para: '2.6' },
+    { prod: 'Control dampers and airflow stations', bod: 'Ruskin', also: 'Greenheck', st: 'others', who: 'Furnished by Div 25; you install', lens: 'sm', sec: '25 0900', off: 7, para: '1.9.K' },
+    { prod: 'HVAC variable-frequency drives', bod: 'ABB', also: 'Danfoss, Yaskawa', st: 'listed', lens: 'hvac', sec: '23 0513', off: 2, para: '2.3' },
+    { prod: 'Packaged air compressor', bod: 'Atlas Copco', also: 'Kaeser, Ingersoll Rand', st: 'listed', lens: 'plumb', sec: '22 1519', off: 3, para: '2.1' },
+    { prod: 'Plumbing fixtures and flush valves', bod: 'Sloan', also: '', st: 'sole', lens: 'plumb', sec: '22 4000', off: 2, para: '2.1' },
+  ];
+
+  /* src: book = stated in the spec book, cm = not in the book (get it from the CM's bid package), rfi = open question, flow = produced by this tool */
+  const BIDFORM = [
+    { id: 'b01', item: 'Lump sum broken out by building (A, B, C)', src: 'book', note: 'Schedule of values by building and floor. Carry coordination drawings as their own line (01 3100).', sec: '01 2900', off: 0, para: '1.3' },
+    { id: 'b02', item: 'Acknowledge Bulletins 1, 2 and 3 (Issues 04 to 06)', src: 'book', note: 'List all three on the bid form and in the proposal.', sec: '00 0000', off: 1, para: 'Log' },
+    { id: 'b03', item: 'Alternates No. 1 and No. 2', src: 'rfi', note: 'Both read "TBD" in a section never reissued. RFI before bid day.', sec: '01 2300', off: 1, para: '3.1' },
+    { id: 'b04', item: 'Installer qualification statement', src: 'book', note: 'Installers with 5 years on comparable projects; EMR and safety record.', sec: '01 4000', off: 3, para: '1.8' },
+    { id: 'b05', item: 'Insulation sub-subcontractor named', src: 'book', note: 'Must be a firm regularly employed in commercial insulation.', sec: '23 0700', off: 2, para: '1.6' },
+    { id: 'b06', item: 'Delegated-design PE (Texas-licensed) named', src: 'book', note: 'Seismic, hanger and curb designs need a PE letter before review.', sec: '01 3300', off: 6, para: '1.10' },
+    { id: 'b07', item: 'LEED / EPD product commitment', src: 'book', note: 'At least 10 products from 3 manufacturers with EPDs (Issue 05).', sec: '01 8113', off: 6, para: '2.1.B' },
+    { id: 'b08', item: 'Bid bond and performance / payment bonds', src: 'cm', note: 'No bond requirement anywhere in Div 00/01.' },
+    { id: 'b09', item: 'Insurance limits and certificate', src: 'cm', note: 'No insurance amounts in the book.' },
+    { id: 'b10', item: 'Bid validity period', src: 'cm', note: 'Not stated in the book. Match it to the proposal validity.' },
+    { id: 'b11', item: 'Bid due time and delivery method', src: 'cm', note: 'Not in the book.' },
+    { id: 'b12', item: 'Exclusions and clarifications letter', src: 'flow', note: 'Written from your Decide choices in the Proposal step.' },
+  ];
+
+  /* t: Submittal / Test / Closeout */
+  const DELIV = [
+    { d: 'Shop standards booklet', t: 'Submittal', when: 'First; shop drawings rejected until approved', who: 'Architect', lens: 'sm', find: 'H26' },
+    { d: 'Coordination drawings (BIM), signed by all trades', t: 'Submittal', when: 'Before install; gates every progress payment', who: 'CM', lens: 'all', sec: '01 3100', off: 6, para: '1.8' },
+    { d: 'Duct shop drawings with PE-sealed hanger and seismic calcs', t: 'Submittal', when: 'Before fabrication', who: 'Architect + EOR', lens: 'sm', sec: '01 3300', off: 6, para: '1.10' },
+    { d: 'Product data: dampers, access doors, liner, sealant, flex', t: 'Submittal', when: 'Before ordering', who: 'Architect', lens: 'sm', sec: '23 3300', off: 1, para: '1.4' },
+    { d: 'Seismic restraint design (PE)', t: 'Submittal', when: 'Before install', who: 'EOR', lens: 'all', sec: '01 1000', off: 5, para: '1.11.C' },
+    { d: 'RTU curb and screen frame design calcs', t: 'Submittal', when: 'Before fabrication', who: 'EOR', lens: 'hvac', sec: '23 7416', off: 15, para: '2.1.F' },
+    { d: 'LEED product reporting forms and VOC data', t: 'Submittal', when: 'With product data', who: 'LEED consultant', lens: 'all', sec: '01 8113', off: 3, para: '1.6' },
+    { d: 'Duct leakage tests: all med/high, 2 LP sections per system, all shafts', t: 'Test', when: 'Before insulation; sealing reviewed first', who: 'TAB + CxA', lens: 'sm', sec: '23 3113', off: 28, para: '3.16' },
+    { d: 'Smoke-control duct leak and pressure-difference test', t: 'Test', when: 'Before concealment', who: 'Special inspector', lens: 'sm', find: 'F18' },
+    { d: 'Refrigerant pressure test, 650 psig, 24-hour hold', t: 'Test', when: 'Before insulation', who: 'CxA', lens: 'hvac', sec: '23 2300', off: 6, para: '3.1.P' },
+    { d: 'Functional performance testing, 100% sampling', t: 'Test', when: 'Before substantial completion', who: 'CxA', lens: 'all', sec: '01 9114', off: 4, para: '3.2' },
+    { d: 'Owner IAQ air test, repeated until it passes', t: 'Test', when: 'Before occupancy', who: 'Owner', lens: 'all', sec: '01 8113', off: 9, para: '3.4.C' },
+    { d: 'First-summer refrigerant recheck and recharge', t: 'Test', when: 'First cooling season', who: 'Owner', lens: 'hvac', find: 'H23' },
+    { d: 'Second factory start-up on units used temporarily', t: 'Closeout', when: 'Within 1 month of substantial completion', who: 'Manufacturer', lens: 'hvac', find: 'F15' },
+    { d: 'Operation and maintenance manuals (electronic)', t: 'Closeout', when: 'Before substantial completion', who: 'Architect', lens: 'all', sec: '01 7823', off: 1, para: '1.4' },
+    { d: 'Record drawings from the coordination model', t: 'Closeout', when: 'Before final payment', who: 'Architect', lens: 'all', sec: '01 7839', off: 1, para: '1.3' },
+    { d: 'Owner training sessions', t: 'Closeout', when: 'Before substantial completion', who: 'CxA', lens: 'all', sec: '01 7900', off: 2, para: '1.5' },
+    { d: 'Warranties: 1-year workmanship; grease duct 20-year (manufacturer)', t: 'Closeout', when: 'At substantial completion', who: 'Owner', lens: 'sm', sec: '01 7700', off: 3, para: '1.6' },
+    { d: 'Final PE letters on delegated designs', t: 'Closeout', when: 'After installation', who: 'Architect', lens: 'all', sec: '01 3300', off: 7, para: '1.10.D' },
+  ];
+
+  const cites = r => {
+    if (r.find) { const f = F.find(x => x.id === r.find); r.sec = f.sec; r.para = f.para; r.page = f.page; }
+    else if (r.sec) r.page = pg(r.sec, r.off);
+  };
+  DUCT.forEach(r => { r.lens = 'sm'; cites(r); r.text = `${r.sys}: ${r.press}, Seal Class ${r.seal}, ${r.mat}. ${r.cons}. Insulation: ${r.ins}. Leak test: ${r.test}.`; });
+  MFR.forEach(r => { cites(r); r.text = `${r.prod}. Manufacturers: ${r.bod}${r.also ? '; ' + r.also : ''}${r.st === 'sole' ? '. No substitution.' : '.'}`; });
+  BIDFORM.forEach(r => { r.lens = 'all'; cites(r); r.text = r.item + '. ' + r.note; });
+  DELIV.forEach(r => { cites(r); r.text = r.d + '. ' + r.when + '.'; });
+
   window.SPECBOOK = {
     key: 'bluebonnet',
     sample: true,
@@ -539,6 +630,7 @@
     diffs: D,
     matrix: M,
     takeoff: TAKEOFF,
+    inputs: { duct: DUCT, mfr: MFR, bidform: BIDFORM, deliv: DELIV },
     totalPages: p - 1,
   };
 })();
