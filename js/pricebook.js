@@ -45,6 +45,8 @@
     ['CURB-DB', 'Cantilever curb + screen frame, design-build', 'RTU', 5650, 14, 'field'],
     ['CD-INST', 'Install Div 25 control damper / airflow station', 'ea', 22, 1.65, 'field'],
     ['REF-RECHK', 'First-summer refrigerant recheck + recharge', 'system', 45, 2, 'field'],
+    ['ENG-DD', 'Delegated design by our PE: sealed calcs + submittal cycle', 'package', 9500, 0, 'none'],
+    ['ANC-MECH', 'Mechanical anchor in lieu of powder-actuated / adhesive', 'anchor', 3.1, 0.12, 'field'],
   ].map(([code, item, unit, mat, hrs, crew]) => {
     const unitCost = Math.round((mat + hrs * RATES[crew].rate) * 10000) / 10000;
     return { code, item, unit, mat, hrs, crew, unitCost };
@@ -85,8 +87,44 @@
     H23: ['REF-RECHK', 52, 'Refrigerant systems'],
   };
 
+  /* your own book: engine rule -> price book line + what to count. A real spec
+     book carries no quantities, so the estimator enters the count from the
+     takeoff and the amount computes (qty x unit cost). */
+  const RULE_MAP = {
+    deck: ['HNG-SUPP', 'Hanger attachment points in the duct takeoff'],
+    drops: ['HNG-TRAP', 'Drops longer than the limit in the clause'],
+    sealA: ['SEAL-A', 'Low-pressure duct lbs in the takeoff'],
+    wg10: ['DUCT-10WG', 'Duct lbs in the high-pressure class'],
+    leak: ['TST-LEAK', 'Test sections: med/high-pressure runs + shafts'],
+    spin: ['FTG-CONIC', 'Branch takeoffs in the takeoff'],
+    snap: ['SEAM-PGH', 'Rectangular duct lbs in the takeoff'],
+    door: ['AD-FACT', 'Access doors in the takeoff'],
+    flex: ['FLX-HARD', 'Diffusers where the flex limit runs short'],
+    outins: ['INS-OUT', 'Outdoor duct surface area, SF'],
+    castiron: ['PL-CI-CD', 'Condensate drain LF'],
+    legion: ['TST-LEG', 'Fixtures sampled'],
+    thd: ['VFD-HARM', 'Fan drives on the VFD schedules'],
+    pads: ['PAD-EQ', 'Pads on the equipment schedules'],
+    curb: ['CURB-DB', 'Rooftop units on the roof plan'],
+    flame: ['FW-HOT', 'Welding shifts (welded duct LF / ~5 LF per shift)'],
+    pe: f => /seismic|restraint/i.test(f.title + ' ' + f.says) ? ['ENG-SEIS', 'Buildings needing restraint design'] : ['ENG-DD', 'Delegated-design packages'],
+    perdiem: ['CX-RETEST', 'Systems carrying one retest'],
+    temp: ['TMP-OPS', 'Weeks of temporary operation'],
+    startup: ['SU-2ND', 'Units started up twice'],
+    anchors: ['ANC-MECH', 'Anchors at hanger and support points'],
+    leed: ['LEED-DOC', 'Building area in 10,000 SF (1.2M SF = 120)'],
+  };
+  /* the price book line behind a finding: fixed qty on the sample, typed qty on your own book */
+  function lineFor(f) {
+    if (!f) return null;
+    if (f.pb) return BY[f.pb.code] ? { it: BY[f.pb.code], qty: f.pb.qty, hint: f.pb.qtyNote, fixed: true } : null;
+    let m = f.rule && RULE_MAP[f.rule];
+    if (typeof m === 'function') m = m(f);
+    return m && BY[m[0]] ? { it: BY[m[0]], qty: null, hint: m[1], fixed: false } : null;
+  }
+
   const NAME = 'MSM Unit Price Book', EDITION = '2026 Q4 · demo rates';
-  window.PRICEBOOK = { NAME, EDITION, RATES, ITEMS, BY, MAP };
+  window.PRICEBOOK = { NAME, EDITION, RATES, ITEMS, BY, MAP, RULE_MAP, lineFor };
 
   /* price the sample book: amount = qty x unit cost, with the trail kept on the finding */
   const B = window.SPECBOOK;

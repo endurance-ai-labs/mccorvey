@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016e">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016e">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016d">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016f">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016f">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016f">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -105,7 +105,7 @@
   .cite { font-size:10.5px; font-weight:800; color:#14283c; background:#e8edf3; border-radius:5px; padding:3px 8px; white-space:nowrap; font-variant-numeric:tabular-nums; }
   [data-theme="dark"] .cite { color:#cfe0f2; background:#1f3248; }
   .bdg { font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; white-space:nowrap; }
-  .bdg.d01 { background:#14283c; color:#fff; } .bdg.chg { background:var(--color-blue-pale); color:var(--color-blue); border:1px solid var(--color-blue); }
+  .bdg.d01 { background:#14283c; color:#fff; } .bdg.chg { display:inline-block; background:var(--color-blue-pale); color:var(--color-blue); border:1px solid var(--color-blue); }
   .sev { font-size:9px; font-weight:800; letter-spacing:.09em; padding:3px 8px; border-radius:999px; }
   .sev.high { color:#fff; background:#c8102e; } .sev.med { color:var(--color-amber); background:var(--color-amber-bg); border:1px solid var(--color-amber); } .sev.info { color:var(--color-text-muted); background:var(--color-bg-3); border:1px solid var(--color-border); }
   .seg { display:inline-flex; border:1px solid var(--color-border); border-radius:10px; overflow:hidden; }
@@ -238,6 +238,30 @@
   .dv-list button { display:grid; grid-template-columns:70px minmax(0,1fr); gap:10px; width:100%; text-align:left; font:inherit; font-size:12px; padding:8px 10px; margin-bottom:5px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); cursor:pointer; }
   .dv-list button.on { border-color:#14283c; box-shadow:0 0 0 1px #14283c inset; }
   .dv-list button b { font-variant-numeric:tabular-nums; }
+  /* your own book: the real PDF page in the drawer, flagged clauses beside it */
+  .dv-pane.pdf { width:min(1180px, 100vw); }
+  .dv-bar a { font-size:11.5px; font-weight:700; color:#fff; opacity:.85; }
+  .dv-pdfbody { flex:1; min-height:0; display:grid; grid-template-columns:minmax(0,1fr) 300px; background:#d9dee4; }
+  [data-theme="dark"] .dv-pdfbody { background:#0a1420; }
+  .dv-frame { position:relative; min-height:0; overflow:auto; scrollbar-gutter:stable; padding:14px; }
+  .dv-sheet { position:relative; margin:0 auto; background:#fff; box-shadow:0 4px 18px rgba(10,22,38,.18); }
+  .dv-sheet canvas { display:block; }
+  .dv-mark { position:absolute; background:rgba(255,214,0,.38); mix-blend-mode:multiply; border-radius:2px; pointer-events:none; }
+  .dv-mark.on { background:rgba(255,196,0,.55); box-shadow:0 0 0 1px rgba(240,180,41,.9); }
+  .dv-frame .ld { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; padding:20px; text-align:center; font-size:12px; color:#5a6676; }
+  .dv-nofile { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:24px; text-align:center; font-size:13px; line-height:1.6; color:#1b2430; }
+  [data-theme="dark"] .dv-nofile { color:#cfe0f2; }
+  .dv-nofile p { margin:0; max-width:430px; }
+  .dv-side { min-height:0; overflow:auto; padding:14px; background:var(--color-bg); border-left:1px solid var(--color-border); }
+  .dv-side h4 { margin:0 0 8px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .dv-side .dv-list { max-width:none; margin:14px 0 0; }
+  .dv-q { margin:0 0 10px; padding:8px 10px; border-radius:8px; background:var(--color-bg-2); color:var(--color-cloud-whisper); font-family:Georgia, 'Times New Roman', serif; font-size:12.5px; line-height:1.55; }
+  .dv-q.hl { background:#fff3b0; color:#1b2430; box-shadow:0 0 0 2px #f0b429; }
+  .dv-q .lb { display:block; margin-bottom:3px; font-family:Arial, sans-serif; font-size:11.5px; font-weight:700; }
+  @media (max-width: 820px) {
+    .dv-pdfbody { grid-template-columns:minmax(0,1fr); grid-template-rows:62vh auto; overflow:auto; }
+    .dv-side { border-left:0; border-top:1px solid var(--color-border); overflow:visible; }
+  }
   .dv-note { max-width:640px; margin:10px auto 0; font-size:11px; color:#5a6676; text-align:center; }
 
   /* RFIs explainer */
@@ -346,6 +370,11 @@
   .fd-pb .h button { font:inherit; font-size:10px; font-weight:800; color:var(--color-amber); background:none; border:0; cursor:pointer; text-decoration:underline; padding:0; }
   .fd-pb .c { font-size:12.5px; color:var(--color-cloud-whisper); margin:3px 0 2px; font-variant-numeric:tabular-nums; }
   .fd-pb .n { font-size:10.8px; line-height:1.45; }
+  .fd-pb.todo, .fd-pb.opt { border-left-color:var(--color-slate-hint); }
+  .fd-pb .h i { font-style:normal; color:var(--color-amber); }
+  .fd-pb .c input { width:92px; font:inherit; font-size:12.5px; font-weight:800; text-align:right; padding:4px 7px; margin-right:2px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .fd-pb .c input:focus { outline:none; border-color:var(--color-blue); }
+  .fd-pb.todo .c input { border-color:#c8102e; background:rgba(200,16,46,.06); }
   .pb-ban { display:flex; gap:14px; align-items:center; flex-wrap:wrap; padding:13px 16px; margin-bottom:14px; border-radius:12px; border:1px solid #2f9e6e; background:rgba(47,158,110,.07); font-size:12.8px; line-height:1.55; color:var(--color-cloud-whisper); }
   .pb-ban > div:first-child { flex:1; min-width:260px; }
   .pb-ban .b { display:flex; gap:8px; flex-wrap:wrap; }
@@ -372,7 +401,7 @@
     .sb-src, .sb-form, .sb-lens { grid-template-columns:1fr; }
     .sb-f.wide { grid-column:auto; }
     .sb-bar { grid-template-columns:110px 1fr 50px; }
-    .fd { grid-template-columns:1fr; } .fd-side { align-items:flex-start; } .fd-basis { text-align:left; }
+    .fd { grid-template-columns:1fr; } .fd-side { align-items:flex-start; max-width:none; } .fd-basis { text-align:left; }
     .seg { flex-wrap:wrap; }
     .chg { grid-template-columns:1fr; } .chg .was { border-right:0; border-bottom:1px solid var(--color-border); } .chg .imp { text-align:left; border-left:0; }
     .pdoc { padding:24px 18px; } .pdoc .meta { grid-template-columns:80px 1fr; } .pdoc .lh { flex-direction:column; } .pdoc .lh .ad { text-align:left; } .pdoc .sig { grid-template-columns:1fr; }
@@ -398,14 +427,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016e"></script>
-<script src="/mccorvey/js/util.js?v=20261016e"></script>
-<script src="/mccorvey/js/nav.js?v=20261016e"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016e"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016e"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016e"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016e"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016e" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016f"></script>
+<script src="/mccorvey/js/util.js?v=20261016f"></script>
+<script src="/mccorvey/js/nav.js?v=20261016f"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016f"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016f"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016f"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016f"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016f" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -460,7 +489,7 @@ const lensOk = l => E.inLens(l || 'other', META.lens);
 const fLens = f => f.lens || E.lensOf(f.sec);
 const divRank = sec => { const d = sec.slice(0, 2); return d === '00' || d === '01' ? 0 : d === '23' ? 1 : d === '25' ? 2 : d === '22' ? 3 : 4; };
 const FS = () => BOOK.findings.filter(f => lensOk(fLens(f))).sort((a, b) => divRank(a.sec) - divRank(b.sec) || a.page - b.page);
-const dec = f => { const d = DEC[f.id] || {}; const amt = d.amt != null ? +d.amt : (f.amt || 0); return { act: d.act || f.act, amt, ok: !!d.ok, allow: !!d.allow && !(amt > 0) }; };
+const dec = f => { const d = DEC[f.id] || {}; const amt = E.amtOf(f, d); return { act: d.act || f.act, amt, ok: !!d.ok, allow: !!d.allow && !(amt > 0) }; };
 const REQS = {
   must: ['REQUIRED TO BID', 'Spec says "shall". Leave it out and the bid is non-compliant.'],
   call: ['YOUR CALL', 'Commercial or risk term. Carry, qualify or exclude: the bid stays compliant.'],
@@ -501,7 +530,7 @@ const QUAL = {
 const assumeOf = c => (c.q.match(/(Bid (assumes|excludes|includes|is based)[^.]*\.)/) || [])[1] || 'Bid is based on the documents as issued pending response.';
 
 /* ===================== SPEC BOOK VIEWER ===================== */
-let FILE_URL = null, DV = null;
+let FILE_URL = null, FILE = null, VDOC = null, VTOK = 0, DV = null;
 const citeBtn = (sec, para, page, key) => page
   ? `<button class="cite" onclick="openDoc('${sec}',${page},'${key || ''}')" title="Open the spec book at this page">${E.cite(sec, para, page)} ↗</button>`
   : `<span class="cite">${E.cite(sec, para, page)}</span>`;
@@ -510,7 +539,7 @@ function clausesIn(sec) {
   const m = new Map();
   const put = (page, para, text, tag, key, extra) => {
     if (!page) return;
-    const k = page + '|' + para;
+    const k = page + '|' + (para || String(text).slice(0, 60));
     const c = m.get(k) || Object.assign({ page, para, text, tags: [], keys: [] }, extra);
     if (extra && extra.before != null && c.before == null) Object.assign(c, extra, { text });
     c.tags.push(tag); c.keys.push(key); m.set(k, c);
@@ -522,16 +551,14 @@ function clausesIn(sec) {
   return [...m.values()].sort((a, b) => a.page - b.page || String(a.para).localeCompare(String(b.para), undefined, { numeric: true }));
 }
 function openDoc(sec, page, key) {
-  if (BOOK.local) {
-    if (FILE_URL) { window.open(FILE_URL + '#page=' + page, '_blank', 'noopener'); return; }
-    toast('Drop the PDF again to open its pages. The file is kept in this tab\'s memory only.'); return;
-  }
   DV = { sec, page: +page, key }; renderDoc();
   $('#dv').classList.add('show'); document.body.style.overflow = 'hidden';
 }
 function closeDoc() { $('#dv').classList.remove('show'); document.body.style.overflow = ''; DV = null; }
 function docPage(p, key) { DV.page = p; DV.key = key || ''; renderDoc(); }
 function renderDoc() {
+  $('#dv-pane').classList.toggle('pdf', !!BOOK.local);
+  if (BOOK.local) return renderPdf();
   const s = BOOK.sections.find(x => x.id === DV.sec) || { id: DV.sec, title: '', start: DV.page, end: DV.page, pages: 1 };
   const all = clausesIn(DV.sec), pages = [...new Set(all.map(c => c.page))];
   const here = all.filter(c => c.page === DV.page);
@@ -565,6 +592,86 @@ function renderDoc() {
       <div class="dv-note">Sample book is fictional. On your own book this link opens the PDF itself at the cited page.</div>
     </div>`;
   const h = document.getElementById('dv-hl'); if (h) setTimeout(() => h.scrollIntoView({ block: 'center' }), 30);
+}
+/* your own book: the real PDF page, drawn in the drawer with pdf.js (no popup, instant page flips),
+   with the flagged clause marked on it. "New tab" still opens the whole PDF in the browser's viewer. */
+function renderPdf() {
+  const s = BOOK.sections.find(x => x.id === DV.sec) || { id: DV.sec, title: '' };
+  const all = clausesIn(DV.sec), pages = [...new Set(all.map(c => c.page))];
+  const here = all.filter(c => c.page === DV.page);
+  const pi = pages.indexOf(DV.page), prev = pages[pi - 1], next = pages[pi + 1];
+  const pane = $('#dv-pane');
+  if (!document.getElementById('dv-frame') || pane.dataset.u !== (FILE_URL || '')) {
+    pane.dataset.u = FILE_URL || '';
+    pane.innerHTML = `<div class="dv-bar" id="dv-pbar"></div><div class="dv-pdfbody"><div class="dv-frame" id="dv-frame">${FILE
+      ? '<div class="ld" id="dv-ld">Opening the page…</div><div class="dv-sheet" id="dv-sheet"></div>'
+      : `<div class="dv-nofile"><p>This book's PDF was held in the tab's memory and is gone after a reload. Pick the same file to see the page. Nothing is read again and your decisions stay as they are.</p><label class="pa-btn primary">Choose ${esc(BOOK.name)}.pdf<input type="file" accept="application/pdf,.pdf" hidden onchange="reattach(this.files[0]);this.value=''"></label></div>`}</div><aside class="dv-side" id="dv-side"></aside></div>`;
+  }
+  $('#dv-pbar').innerHTML = `<b>${s.id} ${esc(s.title)}</b><span>Book page ${pgs(DV.page)} of ${pgs(BOOK.totalPages)}</span>
+    <span class="sp">${FILE_URL ? `<a href="${FILE_URL}#page=${DV.page}" target="_blank" rel="noopener" title="Whole PDF in the browser's viewer">New tab</a>` : ''}<button ${prev ? '' : 'disabled'} onclick="docPage(${prev || 0})">‹ Prev flagged</button><button ${next ? '' : 'disabled'} onclick="docPage(${next || 0})">Next flagged ›</button><button onclick="closeDoc()" aria-label="Close">Close</button></span>`;
+  const hk = DV.key || (here[0] && here[0].keys[0]);
+  $('#dv-side').innerHTML = `<h4>Flagged on p. ${pgs(DV.page)}</h4>
+    ${here.length ? here.map(c => `<div class="dv-q ${c.keys.includes(hk) ? 'hl' : ''}"><span class="lb">${esc(c.tags[0].label)}</span>“${esc(c.text)}”<span class="dv-tags">${c.tags.map(t => `<span class="${t.c}">${esc(t.t)}</span>`).join('')}</span></div>`).join('') : '<div class="dv-q">Nothing flagged on this page.</div>'}
+    <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>${esc(c.tags[0].label)}</span></button>`).join('')}</div>`;
+  if (FILE) drawPage(here, hk);
+}
+async function drawPage(here, hk) {
+  const tok = ++VTOK, n = DV.page, frame = $('#dv-frame'), ld = $('#dv-ld');
+  ld.textContent = 'Opening page ' + pgs(n) + '…'; ld.style.display = ''; $('#dv-sheet').style.opacity = '.3';
+  try {
+    VDOC = VDOC || E.openPdf(FILE);
+    const doc = await VDOC; if (tok !== VTOK) return;
+    const page = await doc.getPage(n); if (tok !== VTOK) return;
+    const fit = (frame.clientWidth - 28) / page.getViewport({ scale: 1 }).width;
+    const vp = page.getViewport({ scale: Math.max(0.4, Math.min(2.2, fit)) }), dpr = window.devicePixelRatio || 1;
+    const cv = document.createElement('canvas');
+    cv.width = Math.floor(vp.width * dpr); cv.height = Math.floor(vp.height * dpr);
+    cv.style.width = Math.floor(vp.width) + 'px'; cv.style.height = Math.floor(vp.height) + 'px';
+    await page.render({ canvasContext: cv.getContext('2d'), viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null }).promise;
+    const tc = await page.getTextContent();
+    if (tok !== VTOK) return;
+    const sheet = $('#dv-sheet');
+    sheet.style.width = cv.style.width; sheet.innerHTML = ''; sheet.appendChild(cv);
+    here.forEach(c => clauseBoxes(tc, vp, c.text).forEach(r => {
+      const m = document.createElement('div'); m.className = 'dv-mark' + (c.keys.includes(hk) ? ' on' : '');
+      Object.assign(m.style, { left: r.x + 'px', top: r.y + 'px', width: r.w + 'px', height: r.h + 'px' }); sheet.appendChild(m);
+    }));
+    ld.style.display = 'none'; sheet.style.opacity = '';
+    const on = sheet.querySelector('.dv-mark.on') || sheet.querySelector('.dv-mark');
+    frame.scrollTop = on ? Math.max(0, on.offsetTop - frame.clientHeight / 3) : 0;
+    page.cleanup();
+  } catch (e) {
+    if (tok !== VTOK) return;
+    console.error(e); ld.textContent = 'Could not draw this page here. Use "New tab" to open the PDF at page ' + pgs(n) + '.';
+  }
+}
+/* where a quoted clause sits on the page: match on letters and digits only, so spacing artifacts don't matter */
+function clauseBoxes(tc, vp, text) {
+  const q = String(text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  if (q.length < 16) return [];
+  let L = ''; const at = [];
+  tc.items.forEach((it, i) => { for (const ch of it.str.toLowerCase()) if (/[a-z0-9]/.test(ch)) { L += ch; at.push(i); } });
+  let a = L.indexOf(q.slice(0, 40));
+  if (a < 0) { const b = L.indexOf(q.slice(-40)); if (b >= 0) a = Math.max(0, b - q.length + 40); }
+  if (a < 0) return [];
+  const ids = [...new Set(at.slice(a, Math.min(L.length, a + q.length)))];
+  return ids.map(i => {
+    const it = tc.items[i], t = window.pdfjsLib.Util.transform(vp.transform, it.transform), h = Math.hypot(t[2], t[3]);
+    return { x: t[4] - 1, y: t[5] - h * 0.95, w: it.width * vp.scale + 2, h: h * 1.25 };
+  }).filter(r => r.w > 2 && r.h > 2);
+}
+function setFile(file) {
+  if (FILE_URL) URL.revokeObjectURL(FILE_URL);
+  if (VDOC) VDOC.then(d => d.destroy(), () => {});
+  FILE = file; FILE_URL = URL.createObjectURL(file); VDOC = null;
+}
+/* after a reload: pick the same PDF again to see its pages, without re-reading it */
+function reattach(file) {
+  if (!file) return;
+  if (file.name.replace(/\.pdf$/i, '') !== BOOK.name) { toast('That is a different file. Pick ' + BOOK.name + '.pdf, or drop it on the page to read it as a new book.'); return; }
+  setFile(file);
+  if (DV) renderDoc();
+  toast('Pages available again');
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { if (DV) closeDoc(); closeCfm(); } });
 
@@ -896,10 +1003,18 @@ function fdHTML(f) {
   </div>`;
 }
 const PB = window.PRICEBOOK;
-const pbOver = f => f.pb && DEC[f.id] && DEC[f.id].amt != null && Math.round(+DEC[f.id].amt) !== f.amt;
+/* the price book line behind a finding and what it computes to: fixed qty on the sample, typed qty on your own book */
+function pbCalc(f) {
+  const L = PB && PB.lineFor(f); if (!L) return null;
+  const qty = L.fixed ? L.qty : (+(DEC[f.id] || {}).qty || 0);
+  return { L, qty, amt: L.fixed ? f.amt : Math.round(qty * L.it.unitCost) };
+}
+const pbOver = f => { const c = pbCalc(f), a = (DEC[f.id] || {}).amt; return !!c && a != null && c.qty > 0 && Math.round(+a) !== c.amt; };
 const unitFmt = n => !n ? '—' : '$' + (n >= 1000 ? Math.round(n).toLocaleString() : n < 1 ? n.toFixed(4) : n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
 function pbTrail(f, d) {
-  if (!f.pb) return f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : '';
+  const c = pbCalc(f);
+  if (!c) return f.basis ? `<span class="fd-basis">${esc(f.basis)}</span>` : '';
+  if (!c.L.fixed) return pbQtyCard(f, c, d);
   const it = PB.BY[f.pb.code];
   return `<div class="fd-pb ${pbOver(f) ? 'over' : ''}">
     <div class="h"><span>${PB.NAME.toUpperCase()} · ${it.code}</span>${pbOver(f) ? `<button onclick="resetPB('${f.id}')">Reset to ${money(f.amt)}</button>` : '<b>AUTO-PRICED</b>'}</div>
@@ -908,8 +1023,19 @@ function pbTrail(f, d) {
     <div class="n">Qty: ${esc(f.pb.qtyNote)}</div>
   </div>`;
 }
+/* your own book: no quantities in a spec book, so the count is typed and qty x unit cost = the adder */
+function pbQtyCard(f, c, d) {
+  const it = c.L.it, over = pbOver(f), manual = (DEC[f.id] || {}).amt != null && !(c.qty > 0);
+  const state = over ? `<button onclick="resetPB('${f.id}')">Reset to ${money(c.amt)}</button>` : c.qty > 0 ? '<b>PRICED</b>' : manual ? '<i>TYPED $</i>' : d.allow ? '<i>QTY OPTIONAL</i>' : '<i>ENTER QTY</i>';
+  return `<div class="fd-pb ${over || manual ? 'over' : c.qty > 0 ? '' : d.allow ? 'opt' : 'todo'}">
+    <div class="h"><span>${PB.NAME.toUpperCase()} · ${it.code}</span>${state}</div>
+    <div class="c"><input data-qty="${f.id}" value="${c.qty ? c.qty.toLocaleString() : ''}" placeholder="qty" inputmode="decimal" aria-label="Quantity, ${esc(it.unit)}"> ${esc(it.unit)} × ${unitFmt(it.unitCost)} = <b data-qamt="${f.id}">${c.qty > 0 ? money(c.amt) : '—'}</b></div>
+    <div class="n">${esc(it.item)}</div>
+    <div class="n">Count: ${esc(c.L.hint)}</div>
+  </div>`;
+}
 function pbTable() {
-  const used = {}; BOOK.findings.forEach(f => { if (f.pb) (used[f.pb.code] = used[f.pb.code] || []).push(f.id); });
+  const used = {}; BOOK.findings.forEach(f => { const L = PB.lineFor(f); if (L) (used[L.it.code] = used[L.it.code] || []).push(f.id); });
   return `<div class="demo-panel" style="margin-bottom:16px"><div class="demo-panel-head"><h2>${PB.NAME}</h2><span class="k">${PB.EDITION} · unit cost = material + labor hours × crew rate</span></div>
     <div class="pb-rates">${Object.values(PB.RATES).filter(r => r.rate).map(r => `<span>${esc(r.label)} <b>${unitFmt(r.rate)}/hr</b></span>`).join('')}</div>
     <div class="demo-tbl-wrap grid-scroll" style="max-height:420px"><table class="demo-tbl tbl-left"><thead><tr><th>Code</th><th>Item</th><th>Unit</th><th style="text-align:right">Material / sub</th><th style="text-align:right">Labor hrs</th><th style="text-align:right">Unit cost</th><th>Used on</th></tr></thead>
@@ -918,11 +1044,21 @@ function pbTable() {
 }
 function resetPB(id) { if (DEC[id]) delete DEC[id].amt; saveDec(); repaintCard(id); toast('Back to the price book amount'); }
 function pbBanner(F) {
-  if (!PB || !F.some(f => f.pb)) return '';
+  if (!PB) return '';
+  if (!F.some(f => f.pb)) return pbQtyBanner(F);
   const pr = F.filter(f => f.pb && dec(f).act === 'price'), tot = pr.reduce((a, f) => a + dec(f).amt, 0);
   const open = F.filter(f => !dec(f).ok).length, over = F.filter(pbOver).length;
   return `<div class="pb-ban">
     <div><b>Nothing to type.</b> Every finding has a recommended decision, and ${pr.length} priced items are costed from the ${PB.NAME}: <b>${money(tot)}</b>${over ? `, ${over} with a manual override` : ''}. Review the highs, or accept everything as recommended.</div>
+    <div class="b">${open ? `<button class="pa-btn primary" onclick="acceptAll()">Accept all ${open} as recommended</button>` : '<span class="fd-ok">✓ ALL DECIDED</span>'}<button class="pa-btn" onclick="UI.showPB=!UI.showPB;rerender()">${UI.showPB ? 'Hide price book' : 'View price book'}</button></div>
+  </div>${UI.showPB ? pbTable() : ''}`;
+}
+function pbQtyBanner(F) {
+  const M = F.filter(f => dec(f).act === 'price' && pbCalc(f));
+  if (!M.length) return '';
+  const q = M.filter(f => pbCalc(f).qty > 0).length, tot = M.reduce((a, f) => a + dec(f).amt, 0), open = F.filter(f => !dec(f).ok).length;
+  return `<div class="pb-ban">
+    <div><b>Priced from the ${PB.NAME}.</b> ${M.length} priced finding${M.length > 1 ? 's map' : ' maps'} to a price book line. A spec book has no quantities, so enter the count from your takeoff and the amount computes (qty × unit cost). Type a $ to override, or carry it as an allowance. <b>${q} of ${M.length}</b> have a quantity${tot ? `: <b>${money(tot)}</b>` : ''}.</div>
     <div class="b">${open ? `<button class="pa-btn primary" onclick="acceptAll()">Accept all ${open} as recommended</button>` : '<span class="fd-ok">✓ ALL DECIDED</span>'}<button class="pa-btn" onclick="UI.showPB=!UI.showPB;rerender()">${UI.showPB ? 'Hide price book' : 'View price book'}</button></div>
   </div>${UI.showPB ? pbTable() : ''}`;
 }
@@ -1242,14 +1378,24 @@ function setAct(id, act) {
   DEC[id] = Object.assign({}, DEC[id], { act, ok: act !== 'price' || amt > 0 });
   if (act === 'rfi' && f.rfi) DEC[f.rfi] = Object.assign({}, DEC[f.rfi], { act: 'on' });
   saveDec(); repaintCard(id);
-  if (act === 'price' && !(amt > 0)) setTimeout(() => { const i = document.querySelector(`input[data-amt="${id}"]`); if (i) i.focus(); }, 30);
+  if (act === 'price' && !(amt > 0)) setTimeout(() => { const i = amtInput(id); if (i) i.focus(); }, 30);
 }
 function confirmF(id) {
   const f = BOOK.findings.find(x => x.id === id), d = dec(f);
-  if (needsAmt(f)) { toast('Enter the $, or carry it as an allowance'); const i = document.querySelector(`input[data-amt="${id}"]`); if (i) i.focus(); return; }
+  if (needsAmt(f)) { toast(pbCalc(f) ? 'Enter the quantity or a $, or carry it as an allowance' : 'Enter the $, or carry it as an allowance'); const i = amtInput(id); if (i) i.focus(); return; }
   DEC[id] = Object.assign({}, DEC[id], { act: d.act, ok: true }); saveDec(); repaintCard(id);
 }
-function repaintCard(id) { const el = document.getElementById('f-' + id); const f = BOOK.findings.find(x => x.id === id); if (el && f) { el.outerHTML = fdHTML(f); bind(); } refreshChrome(); }
+const amtInput = id => document.querySelector(`input[data-qty="${id}"]`) || document.querySelector(`input[data-amt="${id}"]`);
+/* repaint one card in place, keeping the cursor in whichever box had it */
+function repaintCard(id) {
+  const el = document.getElementById('f-' + id), f = BOOK.findings.find(x => x.id === id);
+  if (el && f) {
+    const a = document.activeElement, k = a && el.contains(a) && a.dataset ? (a.dataset.qty ? 'qty' : a.dataset.amt ? 'amt' : '') : '';
+    el.outerHTML = fdHTML(f); bind();
+    if (k) { const n = document.querySelector(`input[data-${k}="${id}"]`); if (n) n.focus(); }
+  }
+  refreshChrome();
+}
 function acceptList(list) {
   let n = 0, skipped = 0;
   list.forEach(f => { const d = dec(f); if (d.ok) return; if (needsAmt(f)) { skipped++; return; } DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; });
@@ -1339,14 +1485,40 @@ function bind() {
   });
   document.querySelectorAll('input[data-amt]').forEach(inp => {
     inp.oninput = () => {
-      const v = +inp.value.replace(/[^\d.]/g, '') || 0, id = inp.dataset.amt;
-      DEC[id] = Object.assign({}, DEC[id], { act: 'price', amt: v }); saveDec();
-      inp.classList.toggle('miss', !(v > 0)); refreshChrome();
+      const v = +inp.value.replace(/[^\d.]/g, '') || 0, id = inp.dataset.amt, f = BOOK.findings.find(x => x.id === id), c = pbCalc(f);
+      const D = Object.assign({}, DEC[id], { act: 'price', amt: v });
+      if (!v && c && !c.L.fixed && c.qty > 0) delete D.amt;
+      DEC[id] = D; saveDec(); inp.dataset.dirty = 1;
+      inp.classList.toggle('miss', !(dec(f).amt > 0)); refreshChrome();
     };
     inp.onblur = () => {
-      const id = inp.dataset.amt, v = +inp.value.replace(/[^\d.]/g, '') || 0;
-      inp.value = v ? Math.round(v).toLocaleString() : '';
-      if (v > 0 && !(DEC[id] || {}).ok) { DEC[id] = Object.assign({}, DEC[id], { ok: true }); saveDec(); setTimeout(() => repaintCard(id), 0); }
+      const id = inp.dataset.amt, f = BOOK.findings.find(x => x.id === id), a = dec(f).amt;
+      inp.value = a ? Math.round(a).toLocaleString() : '';
+      const was = (DEC[id] || {}).ok;
+      if (a > 0 && !was) { DEC[id] = Object.assign({}, DEC[id], { ok: true }); saveDec(); }
+      if ((a > 0 && !was) || (inp.dataset.dirty && pbCalc(f))) setTimeout(() => repaintCard(id), 0);
+      delete inp.dataset.dirty;
+    };
+    inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
+  });
+  document.querySelectorAll('input[data-qty]').forEach(inp => {
+    inp.oninput = () => {
+      const id = inp.dataset.qty, f = BOOK.findings.find(x => x.id === id), v = +inp.value.replace(/[^\d.]/g, '') || 0;
+      const D = Object.assign({}, DEC[id], { act: 'price' }); delete D.amt;
+      if (v > 0) D.qty = v; else delete D.qty;
+      DEC[id] = D; saveDec(); inp.dataset.dirty = 1;
+      const a = dec(f).amt, o = document.querySelector(`b[data-qamt="${id}"]`), ai = document.querySelector(`input[data-amt="${id}"]`);
+      if (o) o.textContent = v > 0 ? money(a) : '—';
+      if (ai) { ai.value = a ? Math.round(a).toLocaleString() : ''; ai.classList.toggle('miss', !(a > 0) && !dec(f).allow); }
+      refreshChrome();
+    };
+    inp.onblur = () => {
+      const id = inp.dataset.qty, f = BOOK.findings.find(x => x.id === id), q = +(DEC[id] || {}).qty || 0;
+      inp.value = q ? q.toLocaleString() : '';
+      if (!inp.dataset.dirty) return;
+      delete inp.dataset.dirty;
+      if (dec(f).amt > 0 && !(DEC[id] || {}).ok) { DEC[id] = Object.assign({}, DEC[id], { ok: true }); saveDec(); }
+      setTimeout(() => repaintCard(id), 0);
     };
     inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
   });
@@ -1371,8 +1543,7 @@ async function loadBook(file) {
     const t0 = performance.now();
     const r = await E.analyze(file, prog);
     BOOK = r.book; RAW = r.raw; PRIOR = null;
-    if (FILE_URL) URL.revokeObjectURL(FILE_URL);
-    FILE_URL = URL.createObjectURL(file);
+    setFile(file);
     E.store.sset('msm-spec-local', BOOK); E.store.sset('msm-spec-active', 'local');
     step = 'load'; loadState(); ov(false); render();
     toast(`Read ${pgs(BOOK.totalPages)} pages in ${((performance.now() - t0) / 1000).toFixed(0)}s — fill in the bid setup to start`);
@@ -1413,7 +1584,7 @@ function useSample() { E.store.sset('msm-spec-active', 'sample'); BOOK = window.
 $('#pick-cur').onchange = e => { loadBook(e.target.files[0]); e.target.value = ''; };
 $('#pick-prior').onchange = e => { loadPrior(e.target.files[0]); e.target.value = ''; };
 document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => { e.preventDefault(); const f = [...(e.dataTransfer.files || [])].find(x => /pdf$/i.test(x.type) || /\.pdf$/i.test(x.name)); if (f) loadBook(f); });
+document.addEventListener('drop', e => { e.preventDefault(); const f = [...(e.dataTransfer.files || [])].find(x => /pdf$/i.test(x.type) || /\.pdf$/i.test(x.name)); if (!f) return; if (DV && BOOK.local && !FILE && f.name.replace(/\.pdf$/i, '') === BOOK.name) reattach(f); else loadBook(f); });
 
 if (BOOK.local) setTimeout(() => toast('Your book\'s decisions are restored; reload the PDF to compare issues'), 600);
 render();

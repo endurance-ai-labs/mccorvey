@@ -121,6 +121,12 @@
     return pages;
   }
 
+  /* open the book again to draw single pages in the viewer; nothing leaves the browser */
+  async function openPdf(file) {
+    await loadPdfJs();
+    return window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  }
+
   /* ---------------- section map from page headers ---------------- */
   /* "23 3000 - 1 of 30", "23 05   00 - 1 of 31", "23 7   313 - 1 of 16", "40 05 03.21 - 1 of 9" */
   const ID_RX = /((?:\d\s{0,4}){5}\d)(?:\s{0,3}\.\s{0,3}(\d{2}))?\s*[-–]\s*\d+\s*of\s*\d+/;
@@ -209,12 +215,40 @@
     if (/^[a-z,;:)\]]/.test(s)) s = '…' + s.replace(/^[,;:)\]]\s*/, '');      /* clause began on the previous page / mid-sentence */
     return s;
   }
+  /* words the PDF's own letter spacing split apart ("ductw ork", "re qui red"): rejoin a run
+     of 2-5 pieces only when the joined word appears whole elsewhere in the same book and at least
+     one piece is not a word there in its own right. Two real words ("with in") stay apart. */
+  function wordCounts(bodies) {
+    const lex = new Map();
+    bodies.forEach(t => { const m = (t || '').match(/[A-Za-z]+/g); if (m) m.forEach(w => { w = w.toLowerCase(); lex.set(w, (lex.get(w) || 0) + 1); }); });
+    return lex;
+  }
+  function mend(s, lex) {
+    if (!lex || !s) return s;
+    const L = w => lex.get(w.toLowerCase()) || 0;
+    const T = s.split(' '), out = [];
+    let a = 0;
+    while (a < T.length) {
+      let hit = null, k = Math.min(5, T.length - a);
+      for (; k >= 2; k--) {
+        const head = T[a].match(/^([^A-Za-z]*)([A-Za-z]+)$/), tail = T[a + k - 1].match(/^([A-Za-z]+)([^A-Za-z]*)$/), mid = T.slice(a + 1, a + k - 1);
+        if (!head || !tail || !mid.every(t => /^[A-Za-z]+$/.test(t))) continue;
+        const parts = [head[2], ...mid, tail[1]], w = parts.join(''), lw = L(w);
+        if (lw < 3) continue;
+        if (!parts.some(f => L(f) <= 2 || (f.length <= 3 && L(f) * 5 <= lw))) continue;
+        if (parts.every(f => f.length >= 3 && L(f) >= 50)) continue;
+        hit = head[1] + w + tail[2]; break;
+      }
+      if (hit) { out.push(hit); a += k; } else out.push(T[a++]);
+    }
+    return out.join(' ');
+  }
   const goodSnip = s => s.length >= 70 && s.length <= 300 && !/^…/.test(s);
   const scanDiv = d => YOURS.includes(d) || HOOKS.includes(d);
   /* in hook divisions (21/25/26/28/40) a clause only counts if it lands on the mechanical trades */
   const MECH = /Division\s*2[23]|mechanical|HVAC|plumbing|duct|piping|BAS|building automation/i;
 
-  function runRules(bodies, pageSec, secById) {
+  function runRules(bodies, pageSec, secById, lex) {
     const hits = {};
     bodies.forEach((raw, i) => {
       const sec = pageSec[i], s = secById[sec];
@@ -244,6 +278,7 @@
     let n = 0;
     return Object.values(groups).map(h => {
       const sl = lensOf(h.sec), r = h.rule, st = secById[h.sec];
+      h.says = mend(h.says, lex);
       let title = r.title;
       try { title = (r.t && r.t(h.says)) || r.title; } catch (e) {}
       if (r.withSec && st && !/ — /.test(title)) title += ' — ' + st.title;
@@ -301,7 +336,7 @@
   }
 
   /* responsibility statements */
-  function runMatrix(pages, pageSec, secById) {
+  function runMatrix(pages, pageSec, secById, lex) {
     const RX = /[^.]{0,140}\b(furnished|provided|installed|wired|connected|performed|engaged)\s+(and installed\s+)?(by|under)\s+(Division|Section)\s+\d{2}[^.]{0,120}\./gi;
     const rows = [], seen = new Set();
     pages.forEach((raw, i) => {
@@ -314,7 +349,8 @@
         const k = txt.slice(0, 60);
         if (txt.length < 30 || seen.has(k)) continue;
         seen.add(k);
-        rows.push({ item: txt.length > 230 ? txt.slice(0, 227) + '…' : txt, lens: lensOf(sec), src: sec, page: i + 1 });
+        const say = mend(txt, lex);
+        rows.push({ item: say.length > 230 ? say.slice(0, 227) + '…' : say, lens: lensOf(sec), src: sec, page: i + 1 });
       }
     });
     return rows;
@@ -377,10 +413,11 @@
     const { sections, pageSec, bodies } = buildSections(pages);
     const secById = Object.fromEntries(sections.map(s => [s.id, s]));
     onProgress && onProgress('Running spec-trap rules', 0.92);
-    const findings = runRules(bodies, pageSec, secById);
+    const lex = wordCounts(bodies);
+    const findings = runRules(bodies, pageSec, secById, lex);
     onProgress && onProgress('Checking cross-references and template text', 0.96);
     const conflicts = runChecks(pages, pageSec, secById, sections);
-    const matrix = runMatrix(pages, pageSec, secById);
+    const matrix = runMatrix(pages, pageSec, secById, lex);
     const cover = (pages[0] || '').match(/Issue\s*(?:No\.?)?\s*0?(\d+)/i);
     const issues = sections.map(s => s.issue).filter(x => x != null);
     const bookIssue = cover ? +cover[1] : Math.max(0, ...issues);
@@ -427,7 +464,14 @@
   }
   function decisions(book) { return store.get('msm-spec-dec-' + book.key, {}); }
   function saveDecisions(book, d) { store.set('msm-spec-dec-' + book.key, d); }
-  function decOf(book, f, D) { D = D || decisions(book); const d = D[f.id] || {}; return { act: d.act || f.act, amt: d.amt != null ? d.amt : (f.amt || 0) }; }
+  /* typed $ wins; else a typed qty x the price book unit cost (your own book); else the book's own amount */
+  function amtOf(f, d) {
+    d = d || {};
+    if (d.amt != null) return +d.amt || 0;
+    const L = d.qty > 0 && window.PRICEBOOK && window.PRICEBOOK.lineFor(f);
+    return L && !L.fixed ? Math.round(d.qty * L.it.unitCost) : (f.amt || 0);
+  }
+  function decOf(book, f, D) { D = D || decisions(book); const d = D[f.id] || {}; return { act: d.act || f.act, amt: amtOf(f, d) }; }
   function secTitle(book, id) { const s = book.sections.find(x => x.id === id); return s ? s.title : ''; }
   const cite = (sec, para, page) => `${sec}${para ? ' ¶' + para : ''}${page ? ' · p.' + Number(page).toLocaleString() : ''}`;
   function rfiNo(n) { return 'RFI-MSM-' + String(n).padStart(3, '0'); }
@@ -451,6 +495,6 @@
     ].filter(x => x !== '').join('\n');
   }
 
-  window.SpecEngine = { analyze, extract, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
-    store, activeBook, decisions, saveDecisions, decOf, secTitle, cite, rfiNo, rfiText };
+  window.SpecEngine = { analyze, extract, openPdf, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
+    mend, wordCounts, store, activeBook, decisions, saveDecisions, amtOf, decOf, secTitle, cite, rfiNo, rfiText };
 })();
