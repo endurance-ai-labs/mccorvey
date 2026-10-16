@@ -352,6 +352,10 @@
       says: 'Installers regularly employed in commercial/industrial insulation work.', impact: 'Carry the insulation sub-sub explicitly.', act: 'note', lens: 'sm' },
   ];
   F.forEach(f => { f.page = pg(f.sec, f.off); });
+  /* bid requirement: must = required to bid ("shall"), call = your call (commercial/risk),
+     open = needs an RFI answer, not = not required (outside your scope), info = no bid impact */
+  const REQ = { F01: 'must', F02: 'must', F03: 'call', F04: 'must', F05: 'call', F06: 'call', F07: 'must', F08: 'must', F09: 'must', F10: 'must', F11: 'must', F12: 'must', F13: 'call', F14: 'must', F15: 'must', F16: 'must', F17: 'open', F18: 'must', F19: 'must', F20: 'call', F21: 'must', F22: 'must', F23: 'open', F24: 'open', H01: 'must', H02: 'must', H03: 'must', H04: 'must', H05: 'must', H06: 'must', H07: 'must', H08: 'must', H09: 'must', H10: 'must', H11: 'must', H12: 'call', H13: 'open', H14: 'must', H15: 'must', H16: 'must', H17: 'must', H18: 'must', H19: 'must', H20: 'open', H21: 'must', H22: 'must', H23: 'must', H24: 'must', H25: 'call', H26: 'must', H27: 'not', H28: 'must', P01: 'must', P02: 'must', P03: 'must', P04: 'open', P05: 'must', P06: 'must', P07: 'must', P08: 'open', P09: 'must', P10: 'must', P11: 'open', P12: 'must', P13: 'must', P14: 'info' };
+  F.forEach(f => { f.req = REQ[f.id]; });
 
   /* -------------------------------------------------------------------
      CONFLICTS → RFIs (each side cited)

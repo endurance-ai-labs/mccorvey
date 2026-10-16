@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261015b">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261015b">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261015b">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261015c">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261015c">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261015c">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -292,6 +292,17 @@
     .dv-body { padding:10px; } .dv-page { padding:22px 18px; }
   }
 
+  /* bid requirement */
+  .fd-req { display:flex; gap:8px; align-items:baseline; flex-wrap:wrap; margin-top:6px; font-size:11.5px; line-height:1.45; color:var(--color-text-muted); }
+  .fd-req b { flex:none; font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; border:1px solid currentColor; }
+  .fd-req.must b { color:#c8102e; background:rgba(200,16,46,.06); }
+  .fd-req.call b { color:#14283c; background:var(--color-bg-3); }
+  [data-theme="dark"] .fd-req.call b { color:#cfe0f2; }
+  .fd-req.open b { color:var(--color-amber); background:var(--color-amber-bg); }
+  .fd-req.not b, .fd-req.info b { color:#6b7684; background:var(--color-bg-3); }
+  .fd-req span { flex:1; min-width:200px; }
+  .fd-warn { margin-top:6px; font-size:11.5px; font-weight:700; color:#c8102e; padding:6px 9px; border-radius:7px; background:rgba(200,16,46,.07); border:1px solid rgba(200,16,46,.35); }
+
   /* price book */
   .fd-pb { width:300px; max-width:100%; border:1px solid var(--color-border); border-left:3px solid #2f9e6e; border-radius:8px; padding:7px 10px; background:var(--color-bg); font-size:11.5px; color:var(--color-text-muted); text-align:left; }
   .fd-pb.over { border-left-color:var(--color-amber); }
@@ -352,14 +363,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261015b"></script>
-<script src="/mccorvey/js/util.js?v=20261015b"></script>
-<script src="/mccorvey/js/nav.js?v=20261015b"></script>
-<script src="/mccorvey/js/specbook.js?v=20261015b"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261015b"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261015b"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261015b"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261015b" defer></script>
+<script src="/mccorvey/js/data.js?v=20261015c"></script>
+<script src="/mccorvey/js/util.js?v=20261015c"></script>
+<script src="/mccorvey/js/nav.js?v=20261015c"></script>
+<script src="/mccorvey/js/specbook.js?v=20261015c"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261015c"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261015c"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261015c"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261015c" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -415,6 +426,15 @@ const fLens = f => f.lens || E.lensOf(f.sec);
 const divRank = sec => { const d = sec.slice(0, 2); return d === '00' || d === '01' ? 0 : d === '23' ? 1 : d === '25' ? 2 : d === '22' ? 3 : 4; };
 const FS = () => BOOK.findings.filter(f => lensOk(fLens(f))).sort((a, b) => divRank(a.sec) - divRank(b.sec) || a.page - b.page);
 const dec = f => { const d = DEC[f.id] || {}; const amt = d.amt != null ? +d.amt : (f.amt || 0); return { act: d.act || f.act, amt, ok: !!d.ok, allow: !!d.allow && !(amt > 0) }; };
+const REQS = {
+  must: ['REQUIRED TO BID', 'Spec says "shall". Leave it out and the bid is non-compliant.'],
+  call: ['YOUR CALL', 'Commercial or risk term. Carry, qualify or exclude: the bid stays compliant.'],
+  open: ['NEEDS RFI ANSWER', 'Book is unclear or blank. Bid the stated assumption until the CM answers.'],
+  not: ['NOT REQUIRED', 'Not clearly your trade. Exclude unless invited to bid it.'],
+  info: ['INFO ONLY', 'No effect on price or scope.'],
+};
+/* sample findings carry f.req; engine findings fall back on their recommended action */
+const reqOf = f => f.req || (f.act === 'rfi' ? 'open' : f.act === 'exclude' ? 'not' : f.act === 'clarify' ? 'call' : 'must');
 const needsAmt = f => { const d = dec(f); return d.act === 'price' && !(d.amt > 0) && !d.allow; };
 const CONFS = () => BOOK.conflicts.filter(c => lensOk(c.lens));
 const inLog = c => (DEC[c.id] || {}).act !== 'off';
@@ -559,6 +579,8 @@ function checks() {
   if (rest.length) add('warn', 'decide', `${rest.length} medium/info finding${rest.length > 1 ? 's' : ''} will use the recommended decision`, '', 'acceptAll(true)', 'Accept all');
   const zero = F.filter(needsAmt);
   if (zero.length) add('error', 'decide', `${zero.length} priced finding${zero.length > 1 ? 's have' : ' has'} no dollar amount`, 'Enter the $, or carry it as an allowance (listed in the proposal as not included).', "go('decide','noamt')", 'Fix');
+  const rx = F.filter(f => reqOf(f) === 'must' && dec(f).act === 'exclude');
+  if (rx.length) add('warn', 'decide', `${rx.length} required item${rx.length > 1 ? 's are' : ' is'} excluded`, 'The spec says "shall". Excluding it makes the bid non-compliant unless the GC agrees.', "go('decide','req')", 'Review');
   const al = ALLOWS();
   if (al.length) add('warn', 'decide', `${al.length} item${al.length > 1 ? 's' : ''} carried as allowances (TBD)`, 'Listed in the proposal as not included in the base bid, to be priced.', "go('decide','allow')", 'Review');
 
@@ -741,6 +763,7 @@ function fdHTML(f) {
       <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}
         ${d01 ? '<span class="bdg d01">FROM DIV 01</span>' : ''}${f.chg ? `<span class="bdg chg">CHANGED ${iss(f.chg).toUpperCase()}</span>` : ''}</div>
       <div class="fd-imp">${esc(f.impact)}</div>
+      <div class="fd-req ${reqOf(f)}"><b>${REQS[reqOf(f)][0]}</b><span>${REQS[reqOf(f)][1]}</span></div>${reqOf(f) === 'must' && d.act === 'exclude' ? '<div class="fd-warn">Excluding a required item makes the bid non-compliant. Price it, or qualify it with the GC first.</div>' : ''}
       <div class="fd-links">${f.page ? `<button class="fd-open" onclick="openDoc('${f.sec}',${f.page},'f-${f.id}')">Open in spec book, p. ${pgs(f.page)} ↗</button>` : ''}<details><summary>Show the clause</summary><div class="says">“${esc(f.says)}”</div></details></div>
     </div>
     <div class="fd-side">
@@ -783,7 +806,7 @@ function pbBanner(F) {
 }
 function paneDecide() {
   const F = FS(), q = UI.q.toLowerCase();
-  const isK = (k, f) => k === 'needs' ? !dec(f).ok : k === 'high' ? f.sev === 'high' : k === 'price' ? dec(f).act === 'price' : k === 'noamt' ? needsAmt(f) : k === 'allow' ? dec(f).act === 'price' && dec(f).allow : true;
+  const isK = (k, f) => k === 'needs' ? !dec(f).ok : k === 'req' ? reqOf(f) === 'must' : k === 'high' ? f.sev === 'high' : k === 'price' ? dec(f).act === 'price' : k === 'noamt' ? needsAmt(f) : k === 'allow' ? dec(f).act === 'price' && dec(f).allow : true;
   const list = F.filter(f => isK(UI.filter, f) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q)));
   const groups = []; list.forEach(f => { let g = groups.find(x => x.sec === f.sec); if (!g) groups.push(g = { sec: f.sec, items: [] }); g.items.push(f); });
   const cnt = k => F.filter(f => isK(k, f)).length;
@@ -793,13 +816,13 @@ function paneDecide() {
     ${progHTML()}
     ${pbBanner(F)}
     <div class="sb-tools">
-      ${[['needs', 'Needs review'], ['high', 'High'], ['price', 'Priced'], ['noamt', 'Missing $'], ['allow', 'Allowances'], ['all', 'All']].filter(([k]) => !['noamt', 'allow'].includes(k) || cnt(k) || UI.filter === k).map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
+      ${[['needs', 'Needs review'], ['high', 'High'], ['req', 'Required to bid'], ['price', 'Priced'], ['noamt', 'Missing $'], ['allow', 'Allowances'], ['all', 'All']].filter(([k]) => !['noamt', 'allow'].includes(k) || cnt(k) || UI.filter === k).map(([k, l]) => `<button class="sb-chip ${UI.filter === k ? 'on' : ''}" onclick="UI.filter='${k}';rerender()">${l}<b>${cnt(k)}</b></button>`).join('')}
       <input type="search" id="fq" placeholder="Search — hanger, warranty, 23 3113…" value="${esc(UI.q)}">
       <button class="pa-btn" onclick="UI.showMatrix=!UI.showMatrix;rerender()">${UI.showMatrix ? 'Hide who does what' : 'Who does what'}</button>
       ${shownOpen ? `<button class="pa-btn primary" onclick="acceptShown()">Accept recommended (${shownOpen})</button>` : ''}
       ${cnt('noamt') ? `<button class="pa-btn" onclick="allowAll()" title="Priced items with no $ yet: list them in the proposal as not included, to be priced">Carry ${cnt('noamt')} missing $ as allowances</button>` : ''}
     </div>
-    <div class="ynote" style="margin:-2px 0 14px">Every finding comes with a recommended decision (marked REC). Confirm it in one click or pick another. <b>Price it</b> adds a line to the bid, <b>RFI</b> drafts a question to the CM, <b>Qualify</b> and <b>Exclude</b> write the proposal terms.</div>
+    <div class="ynote" style="margin:-2px 0 14px">Every finding comes with a recommended decision (marked REC). Confirm it in one click or pick another. <b>Price it</b> adds a line to the bid, <b>RFI</b> drafts a question to the CM, <b>Qualify</b> and <b>Exclude</b> write the proposal terms. Each card also says whether the item is <b>required to bid</b>, <b>your call</b>, <b>needs an RFI answer</b> or <b>not required</b>.</div>
     ${UI.showMatrix ? matrixHTML(mx) : ''}
     ${groups.length ? groups.map(g => {
       const s = BOOK.sections.find(x => x.id === g.sec) || { title: '', start: '', end: '' };
@@ -1019,7 +1042,7 @@ function proposalHTML(S, T) {
 
 /* ===================== ACTIONS ===================== */
 function go(k, focus) {
-  if (focus === 'needs' || focus === 'noamt') { UI.filter = focus; k = 'decide'; }
+  if (focus === 'needs' || focus === 'noamt' || focus === 'req') { UI.filter = focus; k = 'decide'; }
   step = k; history.replaceState(null, '', '#' + k); render();
   const top = document.getElementById('steps');
   window.scrollTo({ top: Math.max(0, top.getBoundingClientRect().top + window.scrollY - 170), behavior: 'smooth' });
@@ -1064,7 +1087,7 @@ function acceptList(list) {
 function acceptAll(nonHighOnly) { acceptList(FS().filter(f => !nonHighOnly || f.sev !== 'high')); }
 function acceptShown() {
   const q = UI.q.toLowerCase();
-  acceptList(FS().filter(f => (UI.filter === 'all' || (UI.filter === 'needs' && !dec(f).ok) || (UI.filter === 'high' && f.sev === 'high') || (UI.filter === 'price' && dec(f).act === 'price')) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q))));
+  acceptList(FS().filter(f => (UI.filter === 'all' || (UI.filter === 'needs' && !dec(f).ok) || (UI.filter === 'high' && f.sev === 'high') || (UI.filter === 'req' && reqOf(f) === 'must') || (UI.filter === 'price' && dec(f).act === 'price')) && (!q || (f.title + ' ' + f.says + ' ' + f.sec + ' ' + f.cat).toLowerCase().includes(q))));
 }
 function setAllow(id, on) {
   const f = BOOK.findings.find(x => x.id === id);
