@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016l">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016l">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016l">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016p">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016p">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016p">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -358,6 +358,15 @@
   .chg .resp .rn { font-size:11.5px; color:var(--color-text-muted); }
   .chg .resp textarea, .fd-word textarea, .pw-row textarea, .pw-std { flex:1 1 100%; width:100%; box-sizing:border-box; font:inherit; font-size:12.5px; line-height:1.5; padding:8px 10px; border-radius:8px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); resize:vertical; }
   .chg .resp textarea:focus, .fd-word textarea:focus, .pw-row textarea:focus, .pw-std:focus { outline:none; border-color:var(--color-blue); }
+  .chg .imp small.isrc { display:block; font-size:9.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--color-slate-hint); margin-top:2px; }
+  .chg .imp small.isrc.yours { color:#1f5fa8; }
+  .rpill { display:inline-block; margin-left:8px; font-size:9px; font-weight:800; letter-spacing:.07em; padding:2px 7px; border-radius:4px; border:1px solid currentColor; vertical-align:middle; white-space:nowrap; }
+  .rpill.in { color:#2f9e6e; } .rpill.add { color:#1f5fa8; } .rpill.rfi { color:#14283c; } .rpill.qual { color:var(--color-amber); }
+  [data-theme="dark"] .rpill.rfi { color:#cfe0f2; }
+  .chg.r-in { box-shadow:inset 4px 0 0 #2f9e6e; } .chg.r-add { box-shadow:inset 4px 0 0 #1f5fa8; } .chg.r-rfi { box-shadow:inset 4px 0 0 #14283c; } .chg.r-qual { box-shadow:inset 4px 0 0 var(--color-amber); }
+  .resp-sum { display:flex; gap:6px 4px; align-items:center; flex-wrap:wrap; padding:10px 14px; margin-bottom:12px; border:1px solid var(--color-border); border-radius:12px; background:var(--color-bg-2); font-size:12.5px; color:var(--color-cloud-whisper); }
+  .resp-sum b { margin-right:6px; } .resp-sum .rpill { margin-left:4px; font-size:10px; padding:3px 8px; } .resp-sum a { font-size:11.5px; font-weight:700; margin-right:4px; }
+  .resp-why { flex-basis:100%; font-size:11.5px; color:var(--color-text-muted); margin-top:4px; }
   .seg button.in.on { background:#2f9e6e; color:#fff; } .seg button.add.on { background:#1f5fa8; color:#fff; } .seg button.qual.on { background:var(--color-amber); color:#fff; }
   .fd-word { margin-top:6px; } .fd-word summary { font-size:11px; font-weight:700; color:var(--color-blue); cursor:pointer; } .fd-word textarea { margin-top:6px; }
   .pw-k { display:block; font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); margin:14px 0 6px; }
@@ -469,16 +478,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016l"></script>
-<script src="/mccorvey/js/util.js?v=20261016l"></script>
-<script src="/mccorvey/js/nav.js?v=20261016l"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016l"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016l"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016l"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016l"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016l"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016l"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016l" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016p"></script>
+<script src="/mccorvey/js/util.js?v=20261016p"></script>
+<script src="/mccorvey/js/nav.js?v=20261016p"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016p"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016p"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016p"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016p"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016p"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016p"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016p" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -590,11 +599,34 @@ function chgResp(d, i) {
   const def = chgCovered(c) ? 'in' : c.amt ? 'add' : 'in';
   return { resp: st.resp || def, set: !!st.resp, amt: st.amt != null ? +st.amt : (c.amt || 0), text: st.text != null ? st.text : chgQualText(d, c) };
 }
+/* the dollars a change carries now: the finding that prices it (incl. McCorvey's override), McCorvey's own Add $, else the estimate */
+function chgEff(d, i) {
+  const c = d.changes[i], r = chgResp(d, i), cov = chgCovered(c);
+  if (cov && (DEC[cov.id] || {}).amt != null && r.resp === 'add') return { amt: dec(cov).amt, src: 'yours', cov };
+  if (cov) return { amt: c.amt || 0, src: c.amt && Math.round(c.amt) === Math.round(dec(cov).amt) ? 'finding' : c.illustrative ? 'illustrative' : 'estimate', cov };
+  if (r.resp === 'add') return { amt: r.amt, src: (DEC[chgKey(d, i)] || {}).amt != null ? 'yours' : c.illustrative ? 'illustrative' : 'estimate' };
+  return { amt: c.amt || 0, src: c.illustrative ? 'illustrative' : 'estimate' };
+}
+const secEff = d => d.changes.reduce((a, c, i) => a + chgEff(d, i).amt, 0);
+const effId = (d, i) => 'imp-' + chgKey(d, i).replace(/\W/g, '_');
+function impHTML(d, i) {
+  const c = d.changes[i], e = chgEff(d, i);
+  const lab = e.src === 'yours' ? 'your number' : e.src === 'finding' ? 'from its finding' : e.src === 'illustrative' ? 'illustrative' : '';
+  return `${HASAMT() || e.src === 'yours' ? (e.amt ? (e.amt > 0 ? '+' : '') + money(e.amt) : '$0') : '—'}${lab ? `<small class="isrc ${e.src}">${lab}</small>` : ''}${c.find ? `<div style="font-size:10.5px;font-weight:600;margin-top:3px"><a href="javascript:void 0" onclick="jumpFinding('${c.find}')">see finding</a></div>` : ''}`;
+}
+/* while typing, update the amount column and the section total in place (keeps focus) */
+function liveChg(k) {
+  const m = k.match(/^chgc:(.+):(\d+)$/); if (!m) return;
+  const d = BOOK.diffs.find(x => x.sec === m[1]); if (!d) return;
+  const i = +m[2], el = document.getElementById(effId(d, i)), e = chgEff(d, i);
+  if (el) { el.innerHTML = impHTML(d, i); el.className = 'imp ' + (e.amt > 0 ? 'up' : e.amt < 0 ? 'dn' : ''); }
+  const t = document.getElementById('tot-' + d.sec.replace(/\W/g, '')); if (t) { const v = secEff(d); t.textContent = (v > 0 ? '+' : '') + money(v); t.className = 'tot ' + (v > 0 ? 'up' : v < 0 ? 'dn' : ''); }
+}
 /* a section is confirmed when it is ticked, or when every changed sentence in it has a response */
 const acked = d => !!(DEC['chg:' + d.sec] || {}).ack || (d.changes.length > 0 && d.changes.every((c, i) => (DEC[chgKey(d, i)] || {}).resp));
 function chgAdders() {
   const out = [];
-  DIFFS().forEach(d => d.changes.forEach((c, i) => { const r = chgResp(d, i); if (r.resp === 'add' && r.amt) out.push({ id: chgKey(d, i), title: `Change ${d.sec}${c.para ? ' ¶' + c.para : ' #' + (i + 1)} (${iss(d.from)} → ${iss(d.to)})`, amt: r.amt, tag: 'Change · ' + E.cite(d.sec, c.para, c.page) }); }));
+  DIFFS().forEach(d => d.changes.forEach((c, i) => { const r = chgResp(d, i); if (r.resp === 'add' && r.amt && !chgCovered(c) && (r.set || acked(d))) out.push({ id: chgKey(d, i), title: `Change ${d.sec}${c.para ? ' ¶' + c.para : ' #' + (i + 1)} (${iss(d.from)} → ${iss(d.to)})`, amt: r.amt, tag: 'Change · ' + E.cite(d.sec, c.para, c.page) }); }));
   return out;
 }
 /* a change sent to RFI joins the RFI log; it quotes only the current (real) wording */
@@ -887,7 +919,7 @@ function stepState(k, CK) {
 function render() {
   const CK = checks(), errs = CK.filter(c => c.level === 'error').length;
   const F = FS(), rev = F.filter(f => dec(f).ok).length, hi = F.filter(f => f.sev === 'high').length;
-  const D = DIFFS(), net = D.reduce((a, d) => a + d.changes.reduce((b, c) => b + (c.amt || 0), 0), 0);
+  const D = DIFFS(), net = D.reduce((a, d) => a + secEff(d), 0);
   const yoursPages = BOOK.sections.filter(isYours).reduce((a, s) => a + s.pages, 0);
   const nLog = CONFS().filter(inLog).length;
   app.innerHTML = `
@@ -1258,13 +1290,13 @@ function matrixHTML(rows) {
 /* ---------- 3 · confirm changes ---------- */
 function paneChanges() {
   const D = DIFFS();
-  const up = D.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.max(0, c.amt || 0), 0), 0);
-  const dn = D.reduce((a, d) => a + d.changes.reduce((b, c) => b + Math.min(0, c.amt || 0), 0), 0);
-  const secTot = d => d.changes.reduce((a, c) => a + (c.amt || 0), 0);
+  const up = D.reduce((a, d) => a + d.changes.reduce((b, c, i) => b + Math.max(0, chgEff(d, i).amt), 0), 0);
+  const dn = D.reduce((a, d) => a + d.changes.reduce((b, c, i) => b + Math.min(0, chgEff(d, i).amt), 0), 0);
+  const secTot = secEff;
   const nChg = D.reduce((a, d) => a + d.changes.length, 0);
   const issNos = Object.keys(BOOK.issues || {}).map(Number).sort((a, b) => a - b);
   const byIssue = n => D.filter(d => d.to === n).length;
-  let big = null; D.forEach(d => d.changes.forEach(c => { if (!big || (c.amt || 0) > (big.c.amt || 0)) big = { d, c }; }));
+  let big = null; D.forEach(d => d.changes.forEach((c, i) => { const a = chgEff(d, i).amt; if (!big || a > big.a) big = { d, c, a }; }));
   const maxAbs = Math.max(1, ...D.map(d => Math.abs(secTot(d))));
   const bars = D.slice().sort((a, b) => Math.abs(secTot(b)) - Math.abs(secTot(a)));
   const CXF = [['all', 'All', () => true], ['cost', 'Adds cost', d => secTot(d) > 0], ['credit', 'Credits', d => secTot(d) < 0], ['out', 'Outside your division', d => d.crossDiv || /^0[01]/.test(d.sec)], ['open', 'Not confirmed', d => !acked(d)]];
@@ -1277,7 +1309,7 @@ function paneChanges() {
       <h3>The book changed ${issNos.filter(n => n > BOOK.pricedIssue).length} times after you priced it. Nothing in it says what moved.</h3>
       <p>${D.length} sections were reissued with a new header date only: no clouds, no deltas, no narrative.${illus ? ' Shown here with simulated earlier wording.' : ''} The engine compares every sentence against the issue you priced and puts a dollar figure on each change, so the estimator confirms ${nChg} specific edits instead of rereading ${pgs(D.reduce((a, d) => a + ((BOOK.sections.find(s => s.id === d.sec) || {}).pages || 0), 0))} pages.</p>
       <div class="cx-tl">${issNos.map(n => `<div class="cx-ti ${n === BOOK.pricedIssue ? 'priced' : ''} ${n === BOOK.bookIssue ? 'cur' : ''} ${n > BOOK.pricedIssue && n !== BOOK.bookIssue ? 'after' : ''}"><i></i><b>${iss(n)}</b>${fmtDate(BOOK.issues[n].date)}<br>${esc(BOOK.issues[n].label.split('— ')[1] || '')}${n === BOOK.pricedIssue ? '<br><span class="c">YOU PRICED</span>' : byIssue(n) ? `<br><span class="c">${byIssue(n)} changed</span>` : ''}</div>`).join('')}</div>
-      ${big && big.c.amt > 0 ? `<div class="cx-big"><span class="v">+${money(big.c.amt)}</span><span>from one sentence in ${big.d.sec}${big.c.para ? ' ¶' + esc(big.c.para) : ''}: ${esc(big.c.after)}</span><a href="javascript:void 0" onclick="openDoc('${big.d.sec}',${big.c.page},'d-${big.d.sec}-${big.d.changes.indexOf(big.c)}')">Open the page ↗</a></div>` : ''}
+      ${big && big.a > 0 ? `<div class="cx-big"><span class="v">+${money(big.a)}</span><span>from one sentence in ${big.d.sec}${big.c.para ? ' ¶' + esc(big.c.para) : ''}: ${esc(big.c.after)}</span><a href="javascript:void 0" onclick="openDoc('${big.d.sec}',${big.c.page},'d-${big.d.sec}-${big.d.changes.indexOf(big.c)}')">Open the page ↗</a></div>` : ''}
     </div>
     <div class="demo-panel" style="margin-bottom:14px">
       <div class="demo-panel-head"><h2>Where the money moved</h2><span class="k">net ${(up + dn) >= 0 ? '+' : ''}${money(up + dn)} · click a row to jump to it</span></div>
@@ -1290,23 +1322,24 @@ function paneChanges() {
       <div class="sb-kpi amber"><div class="l">Added cost</div><div class="v">${HASAMT() ? '+' + moneyK(up) : '—'}</div><div class="s">${illus ? 'illustrative' : BOOK.sample ? 'already in your adders' : 'price it through findings'}</div></div>
       <div class="sb-kpi"><div class="l">Credits</div><div class="v">${HASAMT() ? moneyK(dn) : '—'}</div><div class="s">${BOOK.sample ? 'incl. one in Div 07' : illus ? 'illustrative' : ''}</div></div>
     </div>
+    ${respSummary(D)}
     <div class="sb-tools">
       ${D.some(d => !acked(d)) ? `<button class="pa-btn primary" onclick="ackAll()">Confirm all ${D.filter(d => !acked(d)).length} remaining</button>` : (D.length ? '<span class="fd-ok">✓ ALL CHANGES CONFIRMED</span>' : '')}
       ${BOOK.local ? `<button class="pa-btn" onclick="$('#pick-prior').click()">${PRIOR ? 'Compare a different prior issue' : 'Load prior issue to see each sentence'}</button>` : ''}
       <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${CXF.filter(x => x[0] === 'all' || D.some(x[2]) || UI.cx === x[0]).map(([k, l, f]) => `<button class="sb-chip ${UI.cx === k ? 'on' : ''}" onclick="UI.cx='${k}';rerender()">${l}<b>${D.filter(f).length}</b></button>`).join('')}</span>
     </div>
     ${DS.length ? DS.map(d => {
-      const tot = d.changes.reduce((a, c) => a + (c.amt || 0), 0), ok = acked(d);
+      const tot = secEff(d), ok = acked(d);
       return `<div class="dsec ${ok ? 'ok' : ''}" id="x-${d.sec.replace(/\W/g, '')}">
         <div class="hd"><span class="bdg chg">${d.isNew ? 'NEW SECTION' : iss(d.from) + ' → ' + iss(d.to)}</span><b>${d.sec} — ${esc(E.secTitle(BOOK, d.sec))}</b>${d.crossDiv ? '<span class="bdg d01">OUTSIDE YOUR DIVISION</span>' : ''}
-          <span class="tot ${tot > 0 ? 'up' : tot < 0 ? 'dn' : ''}">${HASAMT() ? (tot > 0 ? '+' : '') + money(tot) : ''}</span>${d.illustrative ? '<span class="bdg ill">ILLUSTRATIVE</span>' : ''}
+          <span class="tot ${tot > 0 ? 'up' : tot < 0 ? 'dn' : ''}" id="tot-${d.sec.replace(/\W/g, '')}">${HASAMT() ? (tot > 0 ? '+' : '') + money(tot) : ''}</span>${d.illustrative ? '<span class="bdg ill">ILLUSTRATIVE</span>' : ''}
           <label class="ack"><input type="checkbox" ${ok ? 'checked' : ''} onchange="ack('${d.sec}',this.checked)">${ok ? 'Confirmed in price' : 'Confirm in price'}</label></div>
         ${d.stampOnly && !d.changes.length ? `<div style="padding:11px 15px;font-size:12.2px;color:var(--color-text-muted)">Header stamp moved from ${iss(d.from)} to ${iss(d.to)}. ${PRIOR ? 'No sentence-level differences found against the prior issue.' : 'Load the prior issue to see exactly what changed, or read the section before confirming.'}</div>` : ''}
-        ${d.changes.map((c, ci) => { const w = c.before && c.after ? wdiff(c.before, c.after) : null; return `<div class="chg">
+        ${d.changes.map((c, ci) => { const w = c.before && c.after ? wdiff(c.before, c.after) : null; return `<div class="chg ${(DEC[chgKey(d, ci)] || {}).resp ? 'r-' + chgResp(d, ci).resp : ''}">
           <div class="was ${w ? 'word' : ''}"><span class="lab">Was · ${iss(d.from)}${c.para ? ' · ¶' + c.para : ''}${c.illustrative ? ' · simulated' : ''}</span>${w ? w[0] : c.before ? `<del>${esc(c.before)}</del>` : '<i>Not in prior issue</i>'}</div>
-          <div class="now"><span class="lab">Now · ${iss(d.to)}${c.page ? ` · <a href="javascript:void 0" onclick="openDoc('${d.sec}',${c.page},'d-${d.sec}-${ci}')">p. ${pgs(c.page)} ↗</a>` : ''}</span>${w ? w[1] : c.after ? `<ins>${esc(c.after)}</ins>` : '<i>Deleted</i>'}${c.note ? `<div class="ynote" style="margin-top:5px">${esc(c.note)}</div>` : ''}</div>
+          <div class="now"><span class="lab">Now · ${iss(d.to)}${c.page ? ` · <a href="javascript:void 0" onclick="openDoc('${d.sec}',${c.page},'d-${d.sec}-${ci}')">p. ${pgs(c.page)} ↗</a>` : ''}${chgPill(d, ci)}</span>${w ? w[1] : c.after ? `<ins>${esc(c.after)}</ins>` : '<i>Deleted</i>'}${c.note ? `<div class="ynote" style="margin-top:5px">${esc(c.note)}</div>` : ''}</div>
           ${chgRespHTML(d, ci)}
-          <div class="imp ${c.amt > 0 ? 'up' : c.amt < 0 ? 'dn' : ''}">${HASAMT() ? (c.amt ? (c.amt > 0 ? '+' : '') + money(c.amt) : '$0') : '—'}${c.find ? `<div style="font-size:10.5px;font-weight:600;margin-top:3px"><a href="javascript:void 0" onclick="jumpFinding('${c.find}')">see finding</a></div>` : ''}</div>
+          <div class="imp ${chgEff(d, ci).amt > 0 ? 'up' : chgEff(d, ci).amt < 0 ? 'dn' : ''}" id="${effId(d, ci)}">${impHTML(d, ci)}</div>
         </div>`; }).join('')}
       </div>`;
     }).join('') : `<div class="sb-empty">${D.length ? 'No changes match this filter.' : 'Nothing in this trade changed after the issue you priced.'}</div>`}`;
@@ -1318,12 +1351,33 @@ function chgRespHTML(d, i) {
   return `<div class="resp">
     <span class="rl">Your response${r.set ? '' : ' · suggested'}</span>
     <span class="seg">${opts.map(([v, l]) => `<button class="${v} ${r.resp === v ? 'on' : ''}" onclick="setChg('${d.sec}',${i},'${v}')">${l}</button>`).join('')}</span>
-    ${r.resp === 'in' ? `<span class="rn">${cov ? `Priced through <a href="javascript:void 0" onclick="jumpFinding('${cov.id}')">${esc(cov.title)}</a> (${money(dec(cov).amt)}).` : 'No change to the number.'}</span>` : ''}
-    ${r.resp === 'add' ? `<label class="amt">${neg ? 'Deduct' : 'Add'} $<input data-chgamt="${k}" data-neg="${neg ? 1 : 0}" value="${r.amt ? Math.round(Math.abs(r.amt)).toLocaleString() : ''}" placeholder="amount" inputmode="decimal"></label><span class="rn">${cov ? 'Careful: this is also priced through its finding. ' : ''}Goes to the bid sheet as a change ${neg ? 'credit' : 'adder'}.${c.illustrative && r.amt === c.amt ? ' Illustrative amount.' : ''}</span>` : ''}
-    ${r.resp === 'rfi' ? `<span class="rn">In the RFI log (step 4), citing p. ${pgs(c.page || 0)}.</span>` : ''}
-    ${r.resp === 'qual' ? `<textarea data-chgtext="${k}" rows="2" aria-label="Qualification wording">${esc(r.text)}</textarea>` : ''}
+    ${r.resp === 'in' ? `<span class="rn">${cov ? `→ Already priced through <a href="javascript:void 0" onclick="jumpFinding('${cov.id}')">${esc(cov.title)}</a> (${money(dec(cov).amt)}). Nothing else changes.` : '→ Confirmed: the change is already in your number. Nothing else changes.'}</span>` : ''}
+    ${r.resp === 'add' ? (cov
+      ? `<label class="amt">Price $<input data-chgamt="${k}" data-cov="${cov.id}" value="${Math.round(dec(cov).amt).toLocaleString()}" placeholder="amount" inputmode="decimal"></label><span class="rn">Sets the price of its finding, <a href="javascript:void 0" onclick="jumpFinding('${cov.id}')">${esc(cov.title)}</a>, so it is counted once${(DEC[cov.id] || {}).amt != null && window.BuildUps && BuildUps.has(cov) ? ` (build-up was ${money(BuildUps.recommend(cov))})` : ''}.</span>`
+      : `<label class="amt">${neg ? 'Deduct' : 'Add'} $<input data-chgamt="${k}" data-neg="${neg ? 1 : 0}" value="${r.amt ? Math.round(Math.abs(r.amt)).toLocaleString() : ''}" placeholder="amount" inputmode="decimal"></label><span class="rn">Goes to the bid sheet as a change ${neg ? 'credit' : 'adder'}.${c.illustrative && r.amt === c.amt ? ' Illustrative amount.' : ''}</span>`) : ''}
+    ${r.resp === 'rfi' ? `<span class="rn">→ <b>${E.rfiNo(rfiNums()['CH-' + d.sec.replace(/\W/g, '') + '-' + i] || 0)}</b> drafted for the CM, citing p. ${pgs(c.page || 0)}. Until answered it prints in the proposal as a bid assumption. <a href="javascript:void 0" onclick="openRfi('CH-${d.sec.replace(/\W/g, '')}-${i}')">Open the RFI ↗</a></span>` : ''}
+    ${r.resp === 'qual' ? `<textarea data-chgtext="${k}" rows="2" aria-label="Qualification wording">${esc(r.text)}</textarea><span class="rn">→ Prints in the proposal under Clarifications, in these words. <a href="javascript:void 0" onclick="viewProposalLine()">See it in the proposal ↗</a></span>` : ''}
   </div>`;
 }
+function respSummary(D) {
+  const n = { in: 0, add: 0, rfi: 0, qual: 0 }; let addAmt = 0, set = 0;
+  D.forEach(d => d.changes.forEach((c, i) => { if (!(DEC[chgKey(d, i)] || {}).resp) return; set++; const r = chgResp(d, i); n[r.resp]++; if (r.resp === 'add') addAmt += chgEff(d, i).amt; }));
+  const total = D.reduce((a, d) => a + d.changes.length, 0);
+  return `<div class="resp-sum"><b>Your responses: ${set} of ${total} changes</b>
+    <span class="rpill in">${n.in} in your price</span>
+    <span class="rpill add">${n.add} priced${addAmt ? ' · ' + (addAmt > 0 ? '+' : '−') + money(Math.abs(addAmt)).replace('−', '') : ''}</span>
+    <span class="rpill rfi">${n.rfi} RFI${n.rfi === 1 ? '' : 's'}</span>${n.rfi ? ` <a href="javascript:void 0" onclick="go('rfis')">RFI log ↗</a>` : ''}
+    <span class="rpill qual">${n.qual} qualified</span>${n.qual ? ` <a href="javascript:void 0" onclick="viewProposalLine()">proposal ↗</a>` : ''}
+    <span class="resp-why">The spec wording is the design team's and never changes here. Your response decides what it does to the bid: nothing, a price, a question to the CM, or a line in the proposal.</span></div>`;
+}
+function chgPill(d, i) {
+  if (!(DEC[chgKey(d, i)] || {}).resp) return '';
+  const r = chgResp(d, i), e = chgEff(d, i);
+  const t = r.resp === 'rfi' ? E.rfiNo(rfiNums()['CH-' + d.sec.replace(/\W/g, '') + '-' + i] || 0) : r.resp === 'qual' ? 'QUALIFIED IN PROPOSAL' : r.resp === 'add' ? (e.amt ? (e.amt > 0 ? '+' : '−') + money(Math.abs(e.amt)).replace('−', '') + ' IN THE BID' : 'ADD $ · NO AMOUNT') : 'IN YOUR PRICE';
+  return `<span class="rpill ${r.resp}">${t}</span>`;
+}
+function openRfi(id) { UI.openRfi = id; UI.rtype = null; go('rfis'); setTimeout(() => { const el = document.getElementById('c-' + id); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800); } }, 350); }
+function viewProposalLine() { go('proposal'); setTimeout(() => { const h = [...document.querySelectorAll('#pdoc h3')].find(x => /Clarifications/.test(x.textContent)); if (h) h.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 350); }
 function setChg(sec, i, resp) {
   const d = BOOK.diffs.find(x => x.sec === sec); if (!d) return;
   const k = chgKey(d, i); DEC[k] = Object.assign({}, DEC[k], { resp }); saveDec(); rerender();
@@ -1679,7 +1733,13 @@ function fb(txt, cb) { const ta = document.createElement('textarea'); ta.value =
 
 function bind() {
   document.querySelectorAll('input[data-chgamt]').forEach(inp => {
-    inp.oninput = () => { const k = inp.dataset.chgamt, v = +inp.value.replace(/[^\d.]/g, '') || 0; DEC[k] = Object.assign({}, DEC[k], { resp: 'add', amt: inp.dataset.neg === '1' ? -v : v }); saveDec(); refreshChrome(); };
+    inp.oninput = () => {
+      const k = inp.dataset.chgamt, v = +inp.value.replace(/[^\d.]/g, '') || 0, cov = inp.dataset.cov;
+      if (cov) { DEC[cov] = Object.assign({}, DEC[cov], { act: 'price', amt: v, ok: true }); DEC[k] = Object.assign({}, DEC[k], { resp: 'add' }); }
+      else DEC[k] = Object.assign({}, DEC[k], { resp: 'add', amt: inp.dataset.neg === '1' ? -v : v });
+      saveDec(); liveChg(k); refreshChrome();
+    };
+    inp.onchange = () => { const v = +inp.value.replace(/[^\d.]/g, '') || 0; inp.value = v ? Math.round(v).toLocaleString() : ''; rerender(); toast(inp.dataset.cov ? `Finding priced at ${money(v)}` : `Change ${inp.dataset.neg === '1' ? 'credit' : 'adder'} of ${money(v)} on the bid sheet`); };
     inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
   });
   document.querySelectorAll('textarea[data-chgtext]').forEach(t => { t.oninput = () => { const k = t.dataset.chgtext; DEC[k] = Object.assign({}, DEC[k], { resp: 'qual', text: t.value }); saveDec(); refreshPdoc(); }; });
