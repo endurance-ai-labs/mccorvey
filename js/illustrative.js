@@ -57,7 +57,7 @@
     if (!raw || !raw.bodies) return book;
     if (!book.issues || !Object.keys(book.issues).length) book.issues = issues(book);
     const yours = s => /^(00|01|2[1-8]|40)/.test(s.id) && s.id !== '00 0000';
-    const illus = {};
+    const illus = {}, used = new Set();   /* a finding's dollars land on one change only */
     book.sections.filter(s => yours(s) && s.issue != null && s.issue > 1).forEach(s => {
       const fPages = new Set(book.findings.filter(f => f.sec === s.id).map(f => f.page));
       const cands = [];
@@ -76,7 +76,8 @@
       for (const c of cands) { const k = c.snt.slice(0, 40); if (seen.has(k)) continue; seen.add(k); pick.push(c); if (pick.length >= 3) break; }
       illus[s.id] = pick.map(c => {
         const f = book.findings.find(x => x.sec === s.id && Math.abs(x.page - c.p) <= 1);
-        const rec = f && buildups && buildups.has(f) ? buildups.recommend(f) : 0;
+        const rec = f && !used.has(f.id) && buildups && buildups.has(f) ? buildups.recommend(f) : 0;
+        if (rec) used.add(f.id);
         let before = '', why = 'requirement added in this issue';
         if (c.r) { const m = c.snt.match(c.r.re), rep = m && c.r.f(m, c.snt); if (rep) { before = c.snt.replace(m[0], rep); why = c.r.why; } }
         const kind = before ? 'mod' : 'add';
