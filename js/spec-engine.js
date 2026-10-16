@@ -469,7 +469,8 @@
     d = d || {};
     if (d.amt != null) return +d.amt || 0;
     const L = d.qty > 0 && window.PRICEBOOK && window.PRICEBOOK.lineFor(f);
-    return L && !L.fixed ? Math.round(d.qty * L.it.unitCost) : (f.amt || 0);
+    if (L && !L.fixed) return Math.round(d.qty * L.it.unitCost);
+    return f.amt || (window.BuildUps && window.BuildUps.has(f) ? window.BuildUps.recommend(f) : 0);
   }
   function decOf(book, f, D) { D = D || decisions(book); const d = D[f.id] || {}; return { act: d.act || f.act, amt: amtOf(f, d) }; }
   function secTitle(book, id) { const s = book.sections.find(x => x.id === id); return s ? s.title : ''; }
