@@ -21,6 +21,10 @@
       pads: Math.max(2, Math.round(sf / 36900)), condLF: Math.round(sf / 415), fixtures: Math.round(sf / 1280),
       outSF: Math.round(sf * 0.0295), weldLF: Math.round(sf * 0.00109), braze: Math.round(sf / 496),
       weeks: 62, tempWeeks: 16, products: 60, contract: sf * 19.5,
+      /* plumbing (illustrative ratios per SF of building) */
+      dwLF: Math.round(sf * 0.055), dwvLF: Math.round(sf * 0.045), stormLF: Math.round(sf * 0.012), buriedLF: Math.round(sf * 0.009),
+      zones: Math.max(4, Math.round(sf / 60000)), risers: Math.max(2, Math.round(sf / 80000)), backflows: Math.max(2, Math.round(sf / 150000) + 2),
+      floorDrains: Math.round(sf / 2500), emerg: Math.max(2, Math.round(sf / 30000)),
     };
   };
 
@@ -361,6 +365,157 @@
       ],
       cont: 10, contWhy: '“Until it passes” is open-ended.', changes: ['IAQ test protocol', 'Number of products in scope'],
     }),
+    /* ---- plumbing ---- */
+    pltest: q => ({
+      scope: 'Domestic water piping is pressure-tested and held before insulation and concealment, with an inspector witnessing.',
+      method: 'Split the domestic water piping into test zones, price a 2-person test crew per zone, gauge and pump rental, witness scheduling, and retests on zones that drop.',
+      drivers: [['Domestic water piping', fmt(q.dwLF) + ' LF', '0.055 LF per SF'], ['Test zones', fmt(q.zones), '1 per ~60,000 SF (floor / area)'], ['Retest share', '15%', '']],
+      lines: [
+        L('Labor', 'Test crew: 2 plumbers × 6 hr per zone (fill, pressurize, 2 hr hold, record)', q.zones * 12, 'hr', R.plumber, `${q.zones} zones × 12 hr`),
+        L('Labor', 'Retest zones that drop (15% × 8 hr)', Math.ceil(q.zones * 0.15) * 8, 'hr', R.plumber, ''),
+        L('Equipment', 'Test pump and gauges', Math.ceil(q.zones / 3), 'wk', 350, `${q.zones} zones ÷ 3 per week`),
+        labor('Witness scheduling with the inspector and CM', q.zones * 1, R.pm, ''),
+      ],
+      cont: 8, contWhy: 'Zone count follows the phasing plan.', changes: ['Phasing and floor-by-floor turnover', 'Test pressure and hold time in the clause'],
+    }),
+    dwvtest: q => {
+      const n = Math.round((q.dwvLF + q.stormLF) / 300);
+      return {
+        scope: 'Drainage and vent piping is tested (water head, air or smoke) before it is covered.',
+        method: 'Split drainage and storm piping into ~300 ft test sections, price a 2-person crew, plugs and water per section, and retests.',
+        drivers: [['Drainage + storm piping', fmt(q.dwvLF + q.stormLF) + ' LF', '0.057 LF per SF'], ['Test sections', fmt(n), '≈300 LF each']],
+        lines: [
+          L('Labor', 'Test crew: 2 plumbers × 3 hr per section', n * 6, 'hr', R.plumber, `${fmt(n)} sections × 6 hr`),
+          L('Material', 'Test plugs, balls and fittings (wear)', n, 'section', 85, ''),
+          L('Labor', 'Retest failed sections (10% × 6 hr)', Math.ceil(n * 0.1) * 6, 'hr', R.plumber, ''),
+        ],
+        cont: 8, contWhy: 'Sequence depends on the GC’s backfill and cover schedule.', changes: ['Underground vs above-ground share', 'Inspector availability'],
+      };
+    },
+    backflow: q => ({
+      scope: 'Backflow protection by reduced-pressure (or double-check) assemblies, field-tested by a certified tester.',
+      method: 'Count assemblies, price the assembly over a basic check, install labor, drain and air gap at each, and the certified initial test.',
+      drivers: [['Assemblies', fmt(q.backflows), 'service entries + equipment make-up']],
+      lines: [
+        L('Material', 'Reduced-pressure assembly over a basic check (difference, 2–4 in.)', q.backflows, 'ea', 1450, ''),
+        L('Labor', 'Install assembly with unions, valves and supports', q.backflows * 6, 'hr', R.plumber, ''),
+        L('Material', 'Air-gap fitting and drain at each assembly', q.backflows, 'ea', 320, ''),
+        L('Subcontract', 'Certified tester: initial test and tag', q.backflows, 'test', 185, ''),
+      ],
+      cont: 6, contWhy: 'Assembly sizes from the plumbing drawings.', changes: ['Assembly sizes and count', 'Local water utility requirements'],
+    }),
+    disinfect: q => ({
+      scope: 'Domestic water piping is disinfected, flushed and lab-sampled before use, with resampling on failure.',
+      method: 'Price a chlorination crew per riser zone, chemicals and neutralization, two lab samples per zone, a flush-and-resample allowance and discharge handling.',
+      drivers: [['Riser zones', fmt(q.risers), '1 per ~80,000 SF'], ['Lab samples', fmt(q.risers * 2), '2 per zone'], ['Resample share', '20%', '']],
+      lines: [
+        L('Labor', 'Chlorinate, hold and flush per zone (6 hr)', q.risers * 6, 'hr', R.plumber, ''),
+        L('Material', 'Chlorine and neutralizing chemicals', q.risers, 'zone', 140, ''),
+        L('Subcontract', 'Bacteriological lab samples', q.risers * 2, 'sample', 95, ''),
+        L('Labor', 'Flush and resample failed zones (20% × 5 hr)', Math.ceil(q.risers * 0.2) * 5, 'hr', R.plumber, ''),
+        L('Subcontract', 'Dechlorinated discharge handling', 1, 'lot', 1200, ''),
+      ],
+      cont: 10, contWhy: 'Lab results are outside McCorvey’s control.', changes: ['Number of riser zones', 'Health department sampling rules'],
+    }),
+    plins: q => {
+      const lf = Math.round(q.stormLF * 0.6 + q.condLF);
+      return {
+        scope: 'Storm, condensate and some waste piping is insulated, usually horizontal runs above ceilings.',
+        method: 'Take horizontal storm piping above ceilings and condensate drains, price the insulation sub per LF, and add McCorvey coordination.',
+        drivers: [['Insulated drainage', fmt(lf) + ' LF', '60% of storm + all condensate'], ['Sub price', '$11.50/LF', '1 in. fiberglass with jacket, demo']],
+        lines: [
+          L('Subcontract', 'Insulation sub: drainage piping with jacket', lf, 'LF', 11.5, ''),
+          L('Subcontract', 'Fittings and roof-drain bodies (≈ 1 per 12 ft)', Math.round(lf / 12), 'ea', 14, ''),
+          labor('Coordination and access for the insulator', 24, R.plumber, ''),
+        ],
+        cont: 8, contWhy: 'Extent depends on ceiling spaces and condensation risk.', changes: ['Which drainage services are insulated', 'Exposed vs concealed runs'],
+      };
+    },
+    tepid: q => {
+      const st = Math.ceil(q.emerg / 2);
+      return {
+        scope: 'Emergency eyewashes and showers get tepid water: tempering valve stations, extra piping and flow testing.',
+        method: 'Count emergency fixtures, price a thermostatic mixing station per pair, extra hot and cold piping per fixture, recirculation per building and a flow test at each fixture.',
+        drivers: [['Emergency fixtures', fmt(q.emerg), '1 per ~30,000 SF'], ['Tempering stations', fmt(st), '1 per 2 fixtures'], ['Extra piping', '60 LF per fixture', '']],
+        lines: [
+          L('Material', 'Thermostatic mixing valve station', st, 'ea', 2850, ''),
+          L('Material', 'Extra hot / cold piping, installed', q.emerg * 60, 'LF', 28, `${q.emerg} × 60 LF`),
+          L('Labor', 'Set and pipe tempering stations', st * 10, 'hr', R.plumber, ''),
+          L('Material', 'Recirculation pump and balancing valves, per building', 3, 'bldg', 4500, ''),
+          L('Labor', 'Flow and temperature test at each fixture', q.emerg * 1.5, 'hr', R.plumber, ''),
+        ],
+        cont: 10, contWhy: 'Hot water source and recirculation design still to confirm.', changes: ['Fixture count by area', 'Whether a dedicated heater is required'],
+      };
+    },
+    trapprim: q => {
+      const n = Math.round(q.floorDrains * 0.6);
+      return {
+        scope: 'Floor drains get trap primers or trap seal devices, with supply piping where primed.',
+        method: 'Take floor drains that need priming, price the primer or seal device, supply piping and labor at each.',
+        drivers: [['Floor drains', fmt(q.floorDrains), '1 per ~2,500 SF'], ['Needing a primer', '60%', fmt(n)]],
+        lines: [
+          L('Material', 'Trap primer / seal device', n, 'ea', 185, ''),
+          L('Material', 'Primer supply piping, 15 ft each', n * 15, 'LF', 14, ''),
+          L('Labor', 'Install primer and piping', n * 1.75, 'hr', R.plumber, ''),
+        ],
+        cont: 7, contWhy: 'Device type (electronic manifold vs mechanical) not chosen.', changes: ['Floor drain count', 'Electronic vs mechanical primers'],
+      };
+    },
+    video: q => ({
+      scope: 'Buried drainage piping is video-inspected before backfill or turnover, with re-inspection after repairs.',
+      method: 'Take buried drainage length, price a camera crew per LF and mobilizations, a re-inspection allowance and the report.',
+      drivers: [['Buried drainage', fmt(q.buriedLF) + ' LF', '0.009 LF per SF']],
+      lines: [
+        L('Subcontract', 'Camera crew, per LF', q.buriedLF, 'LF', 2.40, ''),
+        L('Subcontract', 'Mobilizations', 3, 'ea', 950, ''),
+        L('Subcontract', 'Re-inspection after repairs (10%)', Math.round(q.buriedLF * 0.1), 'LF', 2.40, ''),
+        labor('Clean-out access and coordination', 30, R.plumber, ''),
+      ],
+      cont: 10, contWhy: 'Repairs found on camera are not in the base.', changes: ['Buried drainage length', 'Inspection timing (pre-backfill vs turnover)'],
+    }),
+    plseis: q => {
+      const n = Math.round((q.dwLF + q.dwvLF) / 40 * 0.35);
+      return {
+        scope: 'Plumbing piping is seismically braced, with engineered braces on mains and risers.',
+        method: 'Estimate brace points on mains and risers, price engineered brace kits and install labor, plus PE calcs for the piping packages.',
+        drivers: [['Mains and risers', fmt((q.dwLF + q.dwvLF) * 0.35) + ' LF', '35% of plumbing piping'], ['Brace points', fmt(n), '1 per 40 ft']],
+        lines: [
+          L('Material', 'Engineered seismic brace kit', n, 'ea', 58, ''),
+          L('Labor', 'Install brace (0.9 hr)', n * 0.9, 'hr', R.plumber, ''),
+          L('Engineering', 'PE seismic calcs, 2 piping packages', 60, 'hr', R.pe, '2 × 30 hr'),
+        ],
+        cont: 10, contWhy: 'Seismic design category and exemptions by pipe size not yet confirmed.', changes: ['Seismic design category', 'Size-based exemptions the PE allows'],
+      };
+    },
+    sleeves: q => {
+      const n = Math.round((q.dwLF + q.dwvLF) / 45);
+      return {
+        scope: 'A sleeve is set and sealed at every pipe penetration through walls and floors.',
+        method: 'Estimate penetrations from piping length, price the sleeve, setting and coordination, and link seals where wet or exterior.',
+        drivers: [['Penetrations', fmt(n), '1 per ~45 LF of piping'], ['Sealed (wet / exterior)', '15%', '']],
+        lines: [
+          L('Material', 'Schedule 40 steel sleeve, average size', n, 'ea', 16, ''),
+          L('Labor', 'Set and coordinate sleeve (0.3 hr)', n * 0.3, 'hr', R.plumber, ''),
+          L('Material', 'Link seal at wet / exterior penetrations', Math.round(n * 0.15), 'ea', 95, ''),
+        ],
+        cont: 6, contWhy: 'Penetration count firms up with coordination.', changes: ['Wall and slab types', 'Firestopping responsibility'],
+      };
+    },
+    plabel: q => {
+      const n = Math.round((q.dwLF + q.dwvLF + q.stormLF) / 20), v = Math.round(q.dwLF / 60);
+      return {
+        scope: 'All plumbing piping is labeled with service and flow arrows at set intervals; valves are tagged and charted.',
+        method: 'Divide piping length by the label interval, price labels and install time, valve tags and the valve chart.',
+        drivers: [['Labels', fmt(n), 'piping LF ÷ 20 ft'], ['Valve tags', fmt(v), '1 per ~60 LF of domestic water']],
+        lines: [
+          L('Material', 'Pipe labels with flow arrows', n, 'ea', 3.20, ''),
+          L('Labor', 'Apply labels (0.08 hr)', n * 0.08, 'hr', R.plumber, ''),
+          L('Material', 'Valve tags', v, 'ea', 4, ''),
+          labor('Valve chart and schedule', 16, R.det, ''),
+        ],
+        cont: 5, contWhy: '', changes: ['Label interval in the clause', 'Valve count'],
+      };
+    },
     /* rules that normally carry a clarification, priced as allowances when the estimator picks Price it */
     vfd: q => ({ scope: 'VFDs specified in Division 26 are furnished by the mechanical trade.', method: 'Price furnished drives by count at an average size, spare parts and start-up coordination.', drivers: [['Drives', fmt(q.vfds), '']], lines: [L('Material', 'VFDs furnished, 10–30 hp average', q.vfds, 'ea', 3250, ''), L('Material', 'Spare fuses and filters', q.vfds, 'ea', 140, ''), labor('Start-up coordination', q.vfds * 2, R.tech, '')], cont: 6, contWhy: 'Sizes per the drive schedule.', changes: ['Drive schedule horsepower'] }),
     grease: q => ({ scope: 'Grease duct construction and testing per the listed system.', method: 'Price factory-built listed grease duct over welded steel, plus a light/leakage test.', drivers: [['Grease duct', fmt(q.weldLF * 0.6) + ' LF', '']], lines: [L('Material', 'Factory-built listed grease duct (difference)', q.weldLF * 0.6, 'LF', 118, ''), L('Subcontract', 'Light and leakage test', 4, 'test', 950, '')], cont: 10, contWhy: 'Construction type is unresolved.', changes: ['RFI answer on construction type'] }),

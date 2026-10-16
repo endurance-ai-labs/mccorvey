@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016i">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016i">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016i">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016j">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016j">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016j">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -457,16 +457,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016i"></script>
-<script src="/mccorvey/js/util.js?v=20261016h"></script>
-<script src="/mccorvey/js/nav.js?v=20261016h"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016i"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016i"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016i"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016i"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016i"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016i"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016i" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016j"></script>
+<script src="/mccorvey/js/util.js?v=20261016j"></script>
+<script src="/mccorvey/js/nav.js?v=20261016j"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016j"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016j"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016j"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016j"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016j"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016j"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016j" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -476,6 +476,21 @@ const E = window.SpecEngine, BC = window.BidCalc;
 /* ===================== STATE ===================== */
 let BOOK = E.activeBook();
 /* illustrative build-ups scale to the project's size: read from the book's Summary when it states one */
+/* a build-up prices a project-wide scope: price it once per rule, under its main section, and
+   recommend the repeats as Noted with a pointer, so the same scope is never counted twice */
+function leadPerRule(book) {
+  if (!window.BuildUps) return;
+  const home = r => { const L = (E.RULES.find(x => x.id === r) || {}).lens; return L === 'plumb' ? '22' : L === 'sm' || L === 'hvac' ? '23' : '01'; };
+  const sevN = { high: 0, med: 1, info: 2 };
+  const by = {};
+  book.findings.filter(f => f.act === 'price' && BuildUps.has(f)).forEach(f => (by[f.rule] = by[f.rule] || []).push(f));
+  Object.entries(by).forEach(([r, L]) => {
+    if (L.length < 2) return;
+    L.sort((a, b) => (a.sec.slice(0, 2) === home(r) ? 0 : 1) - (b.sec.slice(0, 2) === home(r) ? 0 : 1) || sevN[a.sev] - sevN[b.sev] || a.page - b.page);
+    const lead = L[0];
+    L.slice(1).forEach(f => { f.act = 'note'; f.dupOf = lead.id; f.impact = `${f.impact} Priced once for the project, under ${E.cite(lead.sec, lead.para, lead.page)}.`; });
+  });
+}
 function applyProfile() { if (!window.BuildUps) return; BuildUps.profile.sf = BOOK.projSF || 1290000; BuildUps.profile.src = BOOK.projSF ? 'book' : 'assumed'; }
 applyProfile();
 let RAW = null, PRIOR = null;           /* extracted text: memory only */
@@ -1444,10 +1459,11 @@ function gcPicker() {
   const note = (L.find(x => x.n === META.gc) || {}).note;
   return `<select id="m-gc" class="${META.gc ? '' : 'miss'}" onchange="pickGC(this.value)">
       <option value="" ${!META.gc && !other ? 'selected' : ''}>Choose the GC or CM…</option>
-      ${L.map(x => `<option value="${esc(x.n)}" ${META.gc === x.n ? 'selected' : ''}>${esc(x.n)}${x.note ? ' (' + x.note + ')' : ''}</option>`).join('')}
-      <option value="__other" ${other ? 'selected' : ''}>Other: type a name</option></select>
+      ${L.filter(x => x.note).map(x => `<option value="${esc(x.n)}" ${META.gc === x.n ? 'selected' : ''}>${esc(x.n)} (${x.note})</option>`).join('')}
+      <optgroup label="Demo GCs from this portal (fictional)">${L.filter(x => !x.note).map(x => `<option value="${esc(x.n)}" ${META.gc === x.n ? 'selected' : ''}>${esc(x.n)}</option>`).join('')}</optgroup>
+      <option value="__other" ${other ? 'selected' : ''}>Other: type the real GC or CM</option></select>
     ${other ? `<input data-meta="gc" class="${META.gc ? '' : 'miss'}" value="${esc(META.gc)}" placeholder="GC or CM name">` : ''}
-    <small class="sb-hint">${META.gc ? (note ? `The construction manager named in the sample spec book (fictional). ` : '') + gcHistory(META.gc) : 'Who the proposal and every RFI go to.'}</small>`;
+    <small class="sb-hint">${META.gc ? (note ? `The construction manager named in the sample spec book (fictional). ` : known ? 'A fictional demo GC from this portal. ' : '') + (known ? gcHistory(META.gc) : '') : 'Who the proposal and every RFI go to. The listed GCs are fictional demo names; pick Other to type the real one.'}</small>`;
 }
 function pickGC(v) {
   if (v === '__other') { UI.gcOther = true; META.gc = ''; }
@@ -1638,6 +1654,7 @@ async function loadBook(file) {
     setFile(file);
     if (window.Illustrative) {
       BOOK.projSF = Illustrative.projectSF(BOOK, RAW) || 0; applyProfile();
+      leadPerRule(BOOK);
       Illustrative.prepare(BOOK, RAW, window.BuildUps);
       if (!BOOK.takeoff && window.SPECBOOK && window.SPECBOOK.takeoff) { const k = (BOOK.projSF || 1290000) / 1290000; BOOK.takeoff = window.SPECBOOK.takeoff.map(l => Object.assign({}, l, { qty: l.unit === 'LS' ? Math.round(l.mat * k / 1000) * 1000 / l.mat : Math.round(l.qty * k / 10) * 10 })); BOOK.takeoffIllustrative = true; }
       BOOK.diffs = Illustrative.diffs(BOOK, E.lensOf, E.YOURS);
