@@ -370,6 +370,7 @@
   .fd-pb .h button { font:inherit; font-size:10px; font-weight:800; color:var(--color-amber); background:none; border:0; cursor:pointer; text-decoration:underline; padding:0; }
   .fd-pb .c { font-size:12.5px; color:var(--color-cloud-whisper); margin:3px 0 2px; font-variant-numeric:tabular-nums; }
   .fd-pb .n { font-size:10.8px; line-height:1.45; }
+  .fd-pb .dr { font-size:9.5px; font-weight:800; letter-spacing:.05em; color:var(--color-amber); margin-top:3px; }
   .fd-pb.todo, .fd-pb.opt { border-left-color:var(--color-slate-hint); }
   .fd-pb .h i { font-style:normal; color:var(--color-amber); }
   .fd-pb .c input { width:92px; font:inherit; font-size:12.5px; font-weight:800; text-align:right; padding:4px 7px; margin-right:2px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
@@ -1037,6 +1038,7 @@ function pbTrail(f, d) {
     <div class="c">${Number(f.pb.qty).toLocaleString()} ${esc(it.unit)} × ${unitFmt(it.unitCost)} = <b>${money(f.amt)}</b></div>
     <div class="n">${esc(it.item)}</div>
     <div class="n">Qty: ${esc(f.pb.qtyNote)}</div>
+    <div class="dr">${esc(PB.DEMO).toUpperCase()}</div>
   </div>`;
 }
 /* your own book: no quantities in a spec book, so the count is typed and qty x unit cost = the adder */
@@ -1050,6 +1052,7 @@ function pbQtyCard(f, c, d) {
     <div class="c"><input data-qty="${f.id}" value="${c.qty ? c.qty.toLocaleString() : ''}" placeholder="${bu ? 'your qty' : 'qty'}" inputmode="decimal" aria-label="Quantity, ${esc(it.unit)}"> ${esc(it.unit)} × ${unitFmt(it.unitCost)} = <b data-qamt="${f.id}">${c.qty > 0 ? money(c.amt) : '—'}</b></div>
     <div class="n">${bu ? 'Or price from your own count: ' : ''}${esc(it.item)}</div>
     <div class="n">Count: ${esc(c.L.hint)}</div>
+    <div class="dr">${esc(PB.DEMO).toUpperCase()}</div>
   </div>`;
 }
 /* a priced finding with a build-up but no price-book line (e.g. a clarification priced anyway) */
@@ -1064,11 +1067,11 @@ function toggleBU(id) { UI.bu = UI.bu === id ? null : id; const prev = document.
 function copyBU(id) { const f = BOOK.findings.find(x => x.id === id); if (f && window.BuildUps) cp(BuildUps.text(f), 'Build-up copied: paste into Excel or email'); }
 function pbTable() {
   const used = {}; BOOK.findings.forEach(f => { const L = PB.lineFor(f); if (L) (used[L.it.code] = used[L.it.code] || []).push(f.id); });
-  return `<div class="demo-panel" style="margin-bottom:16px"><div class="demo-panel-head"><h2>${PB.NAME}</h2><span class="k">${PB.EDITION} · unit cost = material + labor hours × crew rate</span></div>
+  return `<div class="demo-panel" style="margin-bottom:16px"><div class="demo-panel-head"><h2>${PB.NAME}</h2><span class="k">${esc(PB.EDITION)} · unit cost = material + labor hours × crew rate</span></div>
     <div class="pb-rates">${Object.values(PB.RATES).filter(r => r.rate).map(r => `<span>${esc(r.label)} <b>${unitFmt(r.rate)}/hr</b></span>`).join('')}</div>
     <div class="demo-tbl-wrap grid-scroll" style="max-height:420px"><table class="demo-tbl tbl-left"><thead><tr><th>Code</th><th>Item</th><th>Unit</th><th style="text-align:right">Material / sub</th><th style="text-align:right">Labor hrs</th><th style="text-align:right">Unit cost</th><th>Used on</th></tr></thead>
     <tbody>${PB.ITEMS.map(i => `<tr><td><b>${i.code}</b></td><td style="font-size:12px">${esc(i.item)}</td><td>${esc(i.unit)}</td><td style="text-align:right">${unitFmt(i.mat)}</td><td style="text-align:right">${i.hrs ? i.hrs + ' ' + i.crew : '—'}</td><td style="text-align:right;font-weight:800">${unitFmt(i.unitCost)}</td><td style="font-size:11.5px">${(used[i.code] || []).map(id => `<a href="javascript:void 0" onclick="jumpFinding('${id}')">${id}</a>`).join(' ')}</td></tr>`).join('')}</tbody></table></div>
-    <div class="ynote" style="margin-top:8px">Demo rates for the walkthrough. Swap in McCorvey's own price book and every spec adder, the bid sheet and the proposal reprice automatically.</div></div>`;
+    <div class="ynote" style="margin-top:8px"><b>Illustrative demo rates, not McCorvey's actual rates.</b> Swap in McCorvey's own price book and every spec adder, the bid sheet and the proposal reprice automatically.</div></div>`;
 }
 function resetPB(id) { if (DEC[id]) delete DEC[id].amt; saveDec(); repaintCard(id); toast('Back to the price book amount'); }
 function pbBanner(F) {
@@ -1077,7 +1080,7 @@ function pbBanner(F) {
   const pr = F.filter(f => f.pb && dec(f).act === 'price'), tot = pr.reduce((a, f) => a + dec(f).amt, 0);
   const open = F.filter(f => !dec(f).ok).length, over = F.filter(pbOver).length;
   return `<div class="pb-ban">
-    <div><b>Nothing to type.</b> Every finding has a recommended decision, and ${pr.length} priced items are costed from the ${PB.NAME}: <b>${money(tot)}</b>${over ? `, ${over} with a manual override` : ''}. Review the highs, or accept everything as recommended.</div>
+    <div><b>Nothing to type.</b> Every finding has a recommended decision, and ${pr.length} priced items are costed from the ${PB.NAME}: <b>${money(tot)}</b> at illustrative demo rates, not McCorvey's actual rates${over ? `; ${over} with a manual override` : ''}. Review the highs, or accept everything as recommended.</div>
     <div class="b">${open ? `<button class="pa-btn primary" onclick="acceptAll()">Accept all ${open} as recommended</button>` : '<span class="fd-ok">✓ ALL DECIDED</span>'}<button class="pa-btn" onclick="UI.showPB=!UI.showPB;rerender()">${UI.showPB ? 'Hide price book' : 'View price book'}</button></div>
   </div>${UI.showPB ? pbTable() : ''}`;
 }

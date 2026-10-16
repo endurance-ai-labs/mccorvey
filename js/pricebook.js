@@ -123,8 +123,9 @@
     return m && BY[m[0]] ? { it: BY[m[0]], qty: null, hint: m[1], fixed: false } : null;
   }
 
-  const NAME = 'MSM Unit Price Book', EDITION = '2026 Q4 · demo rates';
-  window.PRICEBOOK = { NAME, EDITION, RATES, ITEMS, BY, MAP, RULE_MAP, lineFor };
+  const NAME = 'MSM Unit Price Book', EDITION = 'Illustrative demo rates, not McCorvey\'s actual rates';
+  const DEMO = 'Illustrative demo rate, not McCorvey\'s actual rate';
+  window.PRICEBOOK = { NAME, EDITION, DEMO, RATES, ITEMS, BY, MAP, RULE_MAP, lineFor };
 
   /* price the sample book: amount = qty x unit cost, with the trail kept on the finding */
   const B = window.SPECBOOK;
