@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016b">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016b">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016b">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -55,6 +55,16 @@
   .sb-lens button:hover:not(.on) { border-color:var(--color-blue); color:var(--color-blue); }
 
   .sb-bars { display:flex; flex-direction:column; gap:9px; }
+  .sb-bar.off { opacity:.38; }
+  .sb-scope { margin-top:10px; border:1px solid var(--color-border); border-radius:12px; padding:10px 12px; background:var(--color-bg); }
+  .sb-scope .h { display:block; font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); margin-bottom:8px; }
+  .sb-scope > div { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; }
+  .sb-scope button { font:inherit; text-align:left; border:1px solid var(--color-border); border-radius:9px; padding:8px 10px; background:var(--color-bg-2); cursor:pointer; min-width:0; }
+  .sb-scope button:hover { border-color:var(--color-blue); }
+  .sb-scope b { display:block; font-size:17px; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .sb-scope span { display:block; font-size:11px; color:var(--color-text-muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sb-hint { font-size:11px; color:var(--color-text-muted); line-height:1.45; }
+  @media (max-width:700px) { .sb-scope > div { grid-template-columns:1fr 1fr; } }
   .sb-bar { display:grid; grid-template-columns:210px 1fr 64px; gap:12px; align-items:center; font-size:12px; }
   .sb-bar .nm { color:var(--color-cloud-whisper); font-weight:700; }
   .sb-bar .nm span { display:block; font-size:10.5px; font-weight:600; color:var(--color-text-muted); }
@@ -386,14 +396,14 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016a"></script>
-<script src="/mccorvey/js/util.js?v=20261016a"></script>
-<script src="/mccorvey/js/nav.js?v=20261016a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016a"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016a"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016b"></script>
+<script src="/mccorvey/js/util.js?v=20261016b"></script>
+<script src="/mccorvey/js/nav.js?v=20261016b"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016b"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016b"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016b"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016b"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016b" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -724,11 +734,12 @@ function paneLoad() {
   const secs = BOOK.sections;
   const groups = [
     ['Div 00/01 — Project requirements', ['00', '01'], '#c8102e', 'the rules everyone follows'],
-    ['Div 23 — HVAC', ['23'], '#c8102e', 'yours'],
-    ['Div 22 — Plumbing', ['22'], '#c8102e', 'yours'],
+    ['Div 23 — HVAC', ['23'], '#c8102e', 'sheet metal + HVAC'],
+    ['Div 22 — Plumbing', ['22'], '#c8102e', 'plumbing'],
     ['Div 21/25/26/28/40 — Hooks', E.HOOKS, '#14283c', 'scanned for scope that lands on you'],
     ['Everything else', null, '#9aa6b2', 'indexed, not read'],
-  ].map(([k, d, c, n]) => { const ss = secs.filter(s => d ? d.includes(s.div) : !(E.YOURS.includes(s.div) || E.HOOKS.includes(s.div))); return { k, c, n, cnt: ss.length, pages: ss.reduce((a, s) => a + s.pages, 0) }; });
+  ].map(([k, d, c, n]) => { const ss = secs.filter(s => d ? d.includes(s.div) : !(E.YOURS.includes(s.div) || E.HOOKS.includes(s.div))); return { k, c, n, d, cnt: ss.length, pages: ss.reduce((a, s) => a + s.pages, 0) }; });
+  const inTrade = g => !g.d ? false : META.lens === 'all' || !g.d.some(x => (META.lens === 'plumb' ? ['23'] : ['22']).includes(x));
   const max = Math.max(...groups.map(g => g.pages));
   const issues = [...new Set(secs.map(s => s.issue).filter(x => x != null))].sort((a, b) => a - b);
   if (!issues.includes(BOOK.pricedIssue)) issues.push(BOOK.pricedIssue);
@@ -752,9 +763,10 @@ function paneLoad() {
       <div class="demo-panel-head"><h2>Bid setup</h2><span class="k">used on the proposal and every RFI</span></div>
       <div class="sb-f full" style="margin-bottom:14px"><span>Trade you are bidding</span>
         <div class="sb-lens">${Object.entries(E.LENSES).map(([k, v]) => `<button class="${META.lens === k ? 'on' : ''}" onclick="setLens('${k}')">${v.label}</button>`).join('')}</div>
+        ${lensSummary()}
       </div>
       <div class="sb-form">
-        <label class="sb-f wide"><span>General contractor / CM</span><input id="m-gc" data-meta="gc" class="${miss('gc')}" value="${esc(META.gc)}" placeholder="Who the proposal goes to"></label>
+        <div class="sb-f wide"><span>General contractor / CM</span>${gcPicker()}</div>
         <label class="sb-f"><span>Bid number</span><input id="m-bidNo" data-meta="bidNo" class="${miss('bidNo')}" value="${esc(META.bidNo)}" placeholder="MSM-2026-…"></label>
         <label class="sb-f"><span>Bid due</span><input id="m-due" type="date" data-meta="due" class="${miss('due')}" value="${esc(META.due)}"></label>
         <label class="sb-f"><span>Priced at</span><select onchange="setPriced(this.value)">${issues.map(n => `<option value="${n}" ${n === BOOK.pricedIssue ? 'selected' : ''}>${iss(n)}${BOOK.issues && BOOK.issues[n] ? ' — ' + BOOK.issues[n].label.split('— ')[1] : ''}</option>`).join('')}</select></label>
@@ -763,7 +775,7 @@ function paneLoad() {
     </div>
     <div class="demo-panel" style="margin-bottom:6px">
       <div class="demo-panel-head"><h2>What's in this book</h2><span style="display:flex;gap:8px;align-items:center"><span class="k">${pgs(BOOK.totalPages)} pages · ${secs.length} sections</span><button class="pa-btn" onclick="UI.showSecs=!UI.showSecs;rerender()">${UI.showSecs ? 'Hide sections' : 'Browse sections'}</button></span></div>
-      <div class="sb-bars">${groups.map(g => `<div class="sb-bar"><div class="nm">${g.k}<span>${g.cnt} sections · ${g.n}</span></div><div class="tr"><i style="width:${Math.max(2, g.pages / max * 100)}%;background:${g.c}"></i></div><div class="v">${pgs(g.pages)}</div></div>`).join('')}</div>
+      <div class="sb-bars">${groups.map(g => `<div class="sb-bar ${inTrade(g) ? '' : 'off'}"><div class="nm">${g.k}<span>${g.cnt} sections · ${inTrade(g) || !g.d ? g.n : 'not in this trade'}</span></div><div class="tr"><i style="width:${Math.max(2, g.pages / max * 100)}%;background:${g.c}"></i></div><div class="v">${pgs(g.pages)}</div></div>`).join('')}</div>
       ${UI.showSecs ? secTable() : ''}
     </div>`;
 }
@@ -1163,7 +1175,53 @@ function startReview() {
   if (miss.length) { toast('Fill in the bid setup first'); const el = document.getElementById('m-' + miss[0]); if (el) { el.focus(); el.classList.add('miss'); } return; }
   META.started = true; saveMeta(); go('inputs');
 }
-function setLens(k) { META.lens = k; saveMeta(); render(); }
+function setLens(k) {
+  META.lens = k; saveMeta(); render();
+  toast(`${E.LENSES[k].label}: ${FS().length} findings, ${DIFFS().length} changed sections and ${CONFS().filter(inLog).length} RFIs in scope`);
+}
+/* what the chosen trade puts in front of you, so the click shows its effect here */
+function lensSummary() {
+  const F = FS(), req = F.filter(f => reqOf(f) === 'must').length, pr = F.filter(f => dec(f).act === 'price' && dec(f).amt > 0);
+  const pages = BOOK.sections.filter(s => isYours(s) && lensOk(E.lensOf(s.id))).reduce((a, s) => a + s.pages, 0);
+  const cell = (v, l, k) => `<button onclick="go('${k}')"><b>${v}</b><span>${l}</span></button>`;
+  return `<div class="sb-scope"><span class="h">In scope for ${esc(E.LENSES[META.lens].label)}</span><div>
+    ${cell(pgs(pages), 'pages to read', 'inputs')}${cell(F.length, 'findings · ' + req + ' required', 'decide')}${cell(moneyK(pr.reduce((a, f) => a + dec(f).amt, 0)), 'priced spec adders', 'decide')}${cell(DIFFS().length, 'changed sections', 'changes')}${cell(CONFS().filter(inLog).length, 'RFIs', 'rfis')}
+  </div></div>`;
+}
+/* GC / CM list: the CM named in the book, then GCs McCorvey already works with in this portal */
+function gcList() {
+  const L = [];
+  const add = (n, note) => { n = (n || '').trim(); const same = (x, y) => x === y || (x.startsWith(y + ' ') && !/ JV$/.test(x)) || (y.startsWith(x + ' ') && !/ JV$/.test(y)); if (n && !L.some(x => same(x.n, n))) L.push({ n, note }); };
+  if (BOOK.cm) add(BOOK.cm, 'named in the spec book');
+  const seen = {};
+  (window.JOBS || []).concat(window.BID_PIPELINE || []).forEach(j => { const m = String(j.owner || '').match(/(?:GC|CM): ([^)]+)/); if (m) seen[m[1].trim()] = 1; });
+  Object.keys(seen).sort((a, b) => b.length - a.length).forEach(n => add(n, ''));
+  return L.sort((a, b) => (b.note ? 1 : 0) - (a.note ? 1 : 0) || a.n.localeCompare(b.n));
+}
+function gcHistory(n) {
+  if (!n) return '';
+  const is = o => { const m = String(o || '').match(/(?:GC|CM): ([^)]+)/); return !!m && (m[1].trim() === n || (n.startsWith(m[1].trim() + ' ') && !/ JV$/.test(n))); };
+  const jobs = (window.JOBS || []).filter(j => is(j.owner)).length;
+  const bids = (window.BID_PIPELINE || []).filter(b => is(b.owner));
+  const won = bids.filter(b => /won|award/i.test(b.status || '')).length;
+  return jobs || bids.length ? `${jobs} job${jobs === 1 ? '' : 's'} and ${bids.length} bid${bids.length === 1 ? '' : 's'} with McCorvey in this portal${won ? ', ' + won + ' won' : ''}.` : 'No jobs or bids with McCorvey in this portal yet.';
+}
+function gcPicker() {
+  const L = gcList(), known = L.some(x => x.n === META.gc), other = (!!META.gc && !known) || !!UI.gcOther;
+  const note = (L.find(x => x.n === META.gc) || {}).note;
+  return `<select id="m-gc" class="${META.gc ? '' : 'miss'}" onchange="pickGC(this.value)">
+      <option value="" ${!META.gc && !other ? 'selected' : ''}>Choose the GC or CM…</option>
+      ${L.map(x => `<option value="${esc(x.n)}" ${META.gc === x.n ? 'selected' : ''}>${esc(x.n)}${x.note ? ' (' + x.note + ')' : ''}</option>`).join('')}
+      <option value="__other" ${other ? 'selected' : ''}>Other: type a name</option></select>
+    ${other ? `<input data-meta="gc" class="${META.gc ? '' : 'miss'}" value="${esc(META.gc)}" placeholder="GC or CM name">` : ''}
+    <small class="sb-hint">${META.gc ? (note ? `The construction manager named in the sample spec book (fictional). ` : '') + gcHistory(META.gc) : 'Who the proposal and every RFI go to.'}</small>`;
+}
+function pickGC(v) {
+  if (v === '__other') { UI.gcOther = true; META.gc = ''; }
+  else { UI.gcOther = false; META.gc = v; }
+  saveMeta(); render();
+  if (v === '__other') setTimeout(() => { const i = document.querySelector('input[data-meta="gc"]'); if (i) i.focus(); }, 30);
+}
 function setPriced(v) {
   BOOK.pricedIssue = +v;
   if (BOOK.local) {
