@@ -412,13 +412,13 @@ tr.avb-drv td {
 .cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 @media (max-width: 1240px) { .cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (max-width: 640px) { .cmd-tiles:has(> .cmd-tile:nth-child(6):last-child) { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.cmd-tile { background: #fff; border-radius: 13px; padding: 13px 15px 11px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); min-width: 0; }
+.cmd-tile { background: #fff; border-radius: 13px; padding: 13px 15px 11px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
 .cmd-tile .l { font-size: 9px; font-weight: 800; letter-spacing: .12em; color: #8a93a1; margin-bottom: 6px; text-transform: uppercase; }
 .cmd-tile .v { font-size: clamp(19px, 2vw, 24px); font-weight: 800; letter-spacing: -.02em; color: #1b2230; line-height: 1; margin-bottom: 6px; font-variant-numeric: tabular-nums; }
 .cmd-tile .d { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 800; margin-bottom: 2px; }
 .cmd-tile .d.up { color: #2f9e6e; } .cmd-tile .d.down { color: #c8102e; }
 .cmd-tile .s { font-size: 10px; color: #97a0ad; line-height: 1.4; }
-.cmd-tile .spark { display: block; margin-top: 7px; width: 100%; height: 26px; }
+.cmd-tile .spark { display: block; margin-top: auto; padding-top: 8px; width: 100%; height: 34px; box-sizing: content-box; }
 .cmd-tile.hot { box-shadow: 0 6px 18px rgba(8,18,32,.28), inset 0 3px 0 #c8102e; }
 [data-theme="dark"] .cmd-tile { background: #f7f8fa; }
 .scope-bar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 0 0 18px; }
@@ -454,11 +454,19 @@ tr.avb-drv td {
 
 /* ---- Command center: featured chart card + tiles layout ---- */
 .cmd-body { display: grid; grid-template-columns: minmax(300px, 460px) 1fr; gap: 12px; position: relative; align-items: stretch; }
-.cmd-feature { background: #fff; border-radius: 13px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); padding: 4px; display: flex; align-items: center; min-width: 0; }
+.cmd-feature { background: #fff; border-radius: 13px; box-shadow: 0 6px 18px rgba(8, 18, 32, .28); padding: 4px; display: flex; flex-direction: column; justify-content: center; min-width: 0; position: relative; text-decoration: none; transition: box-shadow .15s; }
+a.cmd-feature:hover { box-shadow: 0 6px 18px rgba(8, 18, 32, .28), 0 0 0 2px #c8102e; }
+.cmd-feature-cta { display: block; text-align: right; padding: 7px 12px 5px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #c8102e; }
 .cmd-feature svg { width: 100%; height: auto; display: block; border-radius: 10px; }
-.cmd-body .cmd-tiles { grid-template-columns: repeat(3, minmax(150px, 1fr)); align-content: stretch; }
-@media (max-width: 1360px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(2, minmax(150px, 1fr)); } }
-@media (max-width: 1020px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); } }
+/* four tiles: 2x2 beside the chart, one row of four under it, 2x2 on phones */
+.cmd-body .cmd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: 1fr; }
+.cmd-body .cmd-tile { padding: 16px 18px 13px; }
+.cmd-body .cmd-tile .l, .cmd-body .cmd-tile .d, .cmd-body .cmd-tile .s { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.cmd-body .cmd-tile .l { font-size: 9.5px; }
+.cmd-body .cmd-tile .v { font-size: clamp(22px, 2.2vw, 28px); }
+@media (max-width: 1020px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-rows: auto; } }
+@media (max-width: 900px) { .cmd-body .cmd-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) { .cmd-body .cmd-tile { padding: 13px 13px 11px; } .cmd-body .cmd-tile .l, .cmd-body .cmd-tile .d, .cmd-body .cmd-tile .s { white-space: normal; } }
 @media (max-width: 1020px) { .cmd-body { grid-template-columns: 1fr; } }
 
 /* ---- People chips: message any employee via Slack / Teams ---- */

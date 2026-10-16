@@ -17,7 +17,7 @@
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
 <link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013k">
 <link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013k">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261013k">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016d">
 </head>
 <body>
 <div id="topbar"></div>
@@ -86,7 +86,7 @@ if (internal) {
         </div>
       </div>
       <div class="cmd-body">
-        <div class="cmd-feature">
+        <a class="cmd-feature" href="/mccorvey/specreview/" title="Open Spec Book to Proposal">
           <svg viewBox="0 0 560 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AI review performance: estimator hours per set falling, sets reviewed per month and cumulative savings rising">
       <defs>
         <linearGradient id="eccCurve" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#e05a6e"/><stop offset="1" stop-color="#c8102e"/></linearGradient>
@@ -127,14 +127,13 @@ if (internal) {
         <text x="26" y="382">620 ITB SETS / YR</text><text x="150" y="382">~1,420 PAGES / SET</text><text x="300" y="382">VIEWPOINT VISTA · GTP STRATUS</text><text x="534" y="382" text-anchor="end">LIVE</text>
       </g>
     </svg>
-        </div>
+          <span class="cmd-feature-cta">Spec Book to Proposal →</span>
+        </a>
       <div class="cmd-tiles">
-        <div class="cmd-tile"><div class="l">Contract Backlog</div><div class="v">${fmtK(backlog)}</div><span class="d up">▲ +2.4% vs P7</span><div class="s">${JOBS.length} active jobs</div>${sparkSVG('backlog', { up: true, color: '#14283c' })}</div>
-        <div class="cmd-tile"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><span class="d up">▲ ${fmtPct(earned / backlog * 100)} of backlog</span><div class="s">earned-value across the book</div>${sparkSVG('earned', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Backlog</div><div class="v">${fmtK(backlog)}</div><span class="d up">▲ +2.4% vs P7</span><div class="s">${JOBS.length} active jobs</div>${sparkSVG('backlog', { up: true, color: '#14283c' })}</div>
+        <div class="cmd-tile"><div class="l">Earned to Date</div><div class="v">${fmtK(earned)}</div><span class="d up">▲ ${fmtPct(earned / backlog * 100)} of backlog</span><div class="s">earned value, all jobs</div>${sparkSVG('earned', { up: true })}</div>
         <div class="cmd-tile ${overUnder >= 0 ? '' : 'hot'}"><div class="l">Billed to Date</div><div class="v">${fmtK(billed)}</div><span class="d ${overUnder >= 0 ? 'up' : 'down'}">${overUnder >= 0 ? '▲ over' : '▼ under'}-billed ${fmtK(Math.abs(overUnder))}</span><div class="s">certified AIA billings</div>${sparkSVG('billed', { up: overUnder >= 0, color: overUnder >= 0 ? '#2f9e6e' : '#c8102e' })}</div>
-        <div class="cmd-tile"><div class="l">Margin to Date</div><div class="v">${fmtK(earned - costTD)}</div><span class="d up">▲ ${fmtPct((earned - costTD) / Math.max(1, earned) * 100)} of earned</span><div class="s">cost to date ${fmtK(costTD)}</div>${sparkSVG('margintd', { up: true })}</div>
-        <div class="cmd-tile"><div class="l">Projected Gross Margin</div><div class="v">${fmtK(projMargin)}</div><span class="d up">▲ ${fmtPct(projMargin / backlog * 100)} blended</span><div class="s">at completion, current EACs</div>${sparkSVG('projgm', { up: true, color: '#14283c' })}</div>
-        <div class="cmd-tile"><div class="l">Doc Review Savings</div><div class="v">${fmtK(drSave)}</div><span class="d up">▲ run-rate vs $3M spend</span><div class="s"><a href="/mccorvey/specreview/" style="color:#c8102e;font-weight:800;text-decoration:none">SPEC BOOK REVIEW →</a></div>${sparkSVG('drsave', { up: true })}</div>
+        <div class="cmd-tile"><div class="l">Projected Margin</div><div class="v">${fmtK(projMargin)}</div><span class="d up">▲ ${fmtPct(projMargin / backlog * 100)} blended</span><div class="s">at completion, current EAC</div>${sparkSVG('projgm', { up: true, color: '#14283c' })}</div>
       </div>
       </div>
     </div>
