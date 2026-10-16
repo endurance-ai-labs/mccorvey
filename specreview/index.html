@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016p">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016p">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016p">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016q">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016q">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016q">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -458,11 +458,22 @@
     .pdoc { padding:24px 18px; } .pdoc .meta { grid-template-columns:80px 1fr; } .pdoc .lh { flex-direction:column; } .pdoc .lh .ad { text-align:left; } .pdoc .sig { grid-template-columns:1fr; }
     .pdoc table { font-size:11px; }
   }
+  /* printing the proposal: only the proposal, from the top of page 1. The page margins come from a repeating
+     table header/footer so every page gets them, and @page margin 0 leaves no room for the browser's date/URL lines. */
+  #print-root { display:none; }
+  @page proposal { size:letter; margin:0; }
   @media print {
-    body * { visibility:hidden !important; }
-    #pdoc, #pdoc * { visibility:visible !important; }
-    #pdoc { position:absolute; left:0; top:0; width:100%; max-width:none; border:0; box-shadow:none; padding:0 6px; }
-    #pdoc.draft::before { display:none; }
+    body.printing-proposal > *:not(#print-root) { display:none !important; }
+    body.printing-proposal { background:#fff !important; margin:0 !important; padding:0 !important; }
+    #print-root { display:block; page:proposal; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .pr-t { width:100%; border-collapse:collapse; }
+    .pr-t > thead td, .pr-t > tfoot td { height:0.55in; padding:0; }
+    .pr-t > tbody > tr > td { padding:0 0.7in; }
+    #print-root .pdoc { border:0; border-radius:0; box-shadow:none; padding:0; margin:0; max-width:none; font-size:10.5pt; }
+    #print-root .pdoc.draft::before { position:static; display:block; width:max-content; margin:0 0 10px auto; }
+    #print-root .pdoc h3 { break-after:avoid; page-break-after:avoid; }
+    #print-root .pdoc tr, #print-root .pdoc li, #print-root .pdoc .sig, #print-root .pdoc .meta { break-inside:avoid; page-break-inside:avoid; }
+    #print-root .pdoc .sig { margin-top:28px; }
   }
 </style>
 </head>
@@ -478,16 +489,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016p"></script>
-<script src="/mccorvey/js/util.js?v=20261016p"></script>
-<script src="/mccorvey/js/nav.js?v=20261016p"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016p"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016p"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016p"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016p"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016p"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016p"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016p" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016q"></script>
+<script src="/mccorvey/js/util.js?v=20261016q"></script>
+<script src="/mccorvey/js/nav.js?v=20261016q"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016q"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016q"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016q"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016q"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016q"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016q"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016q" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -1727,6 +1738,26 @@ function syncSheet() {
   rerender(); toast(`Synced · ${r.added} added, ${r.updated} updated, ${r.removed} removed`);
 }
 function issueProposal() { if (checks().some(c => c.level === 'error')) { toast('Fix the preflight issues first'); return; } window.print(); }
+/* the proposal prints on its own: a copy goes into #print-root for the print, then comes out again.
+   The document title becomes the saved PDF's file name. Works for the button and for Ctrl+P on this step. */
+function buildPrintRoot() {
+  const doc = document.getElementById('pdoc'); if (!doc) return false;
+  clearPrintRoot();
+  const draft = checks().some(c => c.level === 'error');
+  const root = document.createElement('div'); root.id = 'print-root';
+  root.innerHTML = `<table class="pr-t"><thead><tr><td></td></tr></thead><tbody><tr><td><div class="pdoc ${draft ? 'draft' : ''}">${doc.innerHTML}</div></td></tr></tbody><tfoot><tr><td></td></tr></tfoot></table>`;
+  document.body.appendChild(root); document.body.classList.add('printing-proposal');
+  window.__ptitle = document.title;
+  document.title = ['McCorvey Proposal', BOOK.name, META.bidNo].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return true;
+}
+function clearPrintRoot() {
+  const r = document.getElementById('print-root'); if (r) r.remove();
+  document.body.classList.remove('printing-proposal');
+  if (window.__ptitle) { document.title = window.__ptitle; window.__ptitle = null; }
+}
+window.addEventListener('beforeprint', () => { if (step === 'proposal') buildPrintRoot(); });
+window.addEventListener('afterprint', clearPrintRoot);
 function copyProposal() { cp($('#pdoc').innerText, 'Proposal text copied'); }
 function cp(txt, msg) { const done = () => toast(msg); if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(txt).then(done, () => fb(txt, done)); else fb(txt, done); }
 function fb(txt, cb) { const ta = document.createElement('textarea'); ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch (e) {} ta.remove(); cb(); }
