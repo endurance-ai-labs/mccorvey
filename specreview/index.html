@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016r">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016r">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016r">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016s">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016s">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016s">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -194,6 +194,11 @@
   .pdoc ul { margin:0; padding-left:20px; } .pdoc ul li { margin:0 0 4px; }
   .pdoc ol { margin:0; padding-left:20px; } .pdoc li { margin:0 0 6px; }
   .pdoc .ref { color:#5a6676; font-size:11px; white-space:nowrap; }
+  .pdoc .words { margin:8px 0 0; font-size:12px; color:#14283c; }
+  .pdoc p.secs { margin:0 0 6px; font-size:11.8px; line-height:1.55; }
+  .pdoc table.mx td { padding:4px 6px; font-size:11.5px; }
+  .pdoc tr.mx-g td { background:#f3f5f8; font-weight:800; font-size:9.8px; letter-spacing:.08em; text-transform:uppercase; color:#14283c; padding:6px; }
+  .pdoc .mx-v { font-weight:700; color:#14283c; } .pdoc .mx-v.install, .pdoc .mx-v.furnish { color:#1f5fa8; } .pdoc .mx-v.others { color:#5a6676; font-weight:600; } .pdoc .mx-v.excl { color:#c8102e; }
   .pdoc .sig { display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-top:38px; font-size:11.2px; color:#5a6676; }
   .pdoc .sig div { border-top:1px solid #9aa6b2; padding-top:6px; }
   .pdoc .sig .sig-on { border-top-color:#14283c; }
@@ -378,6 +383,9 @@
   .fd-word { margin-top:6px; } .fd-word summary { font-size:11px; font-weight:700; color:var(--color-blue); cursor:pointer; } .fd-word textarea { margin-top:6px; }
   .pw-k { display:block; font-size:9.5px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); margin:14px 0 6px; }
   .pw-row { margin-bottom:10px; }
+  .mx-ed { display:grid; grid-template-columns:repeat(auto-fill, minmax(min(330px, 100%), 1fr)); gap:0 18px; }
+  .mx-r { display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:12.5px; padding:5px 0; border-bottom:1px solid var(--color-border); color:var(--color-cloud-whisper); }
+  .mx-r select { flex:0 0 auto; height:30px; font:inherit; font-size:12px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); padding:0 6px; }
   .pw-h { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:4px; font-size:12.5px; color:var(--color-cloud-whisper); }
 
   /* CSI Parts */
@@ -478,7 +486,7 @@
     .pr-t > tbody > tr > td { padding:0 0.7in; }
     #print-root .pdoc { border:0; border-radius:0; box-shadow:none; padding:0; margin:0; max-width:none; font-size:10.5pt; }
     #print-root .pdoc.draft::before { position:static; display:block; width:max-content; margin:0 0 10px auto; }
-    #print-root .pdoc h3, #print-root .pdoc p.sys { break-after:avoid; page-break-after:avoid; }
+    #print-root .pdoc h3, #print-root .pdoc p.sys, #print-root .pdoc tr.mx-g { break-after:avoid; page-break-after:avoid; }
     #print-root .pdoc tr, #print-root .pdoc li, #print-root .pdoc .sig, #print-root .pdoc .meta { break-inside:avoid; page-break-inside:avoid; }
     #print-root .pdoc .sig { margin-top:28px; }
   }
@@ -496,16 +504,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016r"></script>
-<script src="/mccorvey/js/util.js?v=20261016r"></script>
-<script src="/mccorvey/js/nav.js?v=20261016r"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016r"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016r"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016r"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016r"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016r"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016r"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016r" defer></script>
+<script src="/mccorvey/js/data.js?v=20261016s"></script>
+<script src="/mccorvey/js/util.js?v=20261016s"></script>
+<script src="/mccorvey/js/nav.js?v=20261016s"></script>
+<script src="/mccorvey/js/specbook.js?v=20261016s"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261016s"></script>
+<script src="/mccorvey/js/buildups.js?v=20261016s"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261016s"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261016s"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261016s"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261016s" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -865,6 +873,15 @@ const wordOf = f => (DEC[f.id] || {}).text != null ? DEC[f.id].text : qualText(f
 const STD = {
   incl: ['Detailing, LOD 400 coordination drawings and submittals.', 'Fabrication at McCorvey plants, delivery and installation.', 'Hangers, supports and supplemental steel at attachments as specified.', 'Duct leakage testing and test reports per the specifications.'],
   qual: ['Testing, adjusting and balancing by others. McCorvey provides access, duct leakage testing and one set of drives as furnished.'],
+  terms: ['Progress billing monthly on AIA G702/G703, payment due within 30 days of an approved application. Retainage and liquidated damages per mutually agreeable subcontract terms.',
+    'Billing includes materials fabricated and stored at McCorvey’s plants or delivered to the site, with title and insurance documentation.',
+    'Material escalation: sheet metal and steel are priced at mill and supplier pricing in effect on the bid date. Documented increases or surcharges after the validity period, or at shipment, are added at cost.',
+    'Changes: no extra work or deviation from the bid documents without a written change order or written directive. Changes are priced at the unit prices above where they apply.',
+    'Delays: McCorvey is entitled to an extension of time for delays beyond its control, including material supply disruption, labor shortages, severe weather, and owner or contractor directives, and to an equitable adjustment for added cost from delays, suspensions, acceleration or resequencing it did not cause.',
+    'Warranty: one year from substantial completion on McCorvey’s workmanship, or longer where the specifications require. Manufacturer warranties are passed through.',
+    'Sales and use tax on materials included.',
+    'This proposal, including its clarifications and exclusions, is to be made part of any subcontract or purchase order for this work.',
+    'This proposal and its pricing are confidential, for the addressee’s use in evaluating this bid.'],
   excl: ['HVAC equipment, controls and control wiring, electrical power wiring, and painting of exposed ductwork unless listed above.', 'Firestopping of penetrations (single-source firestop contractor).', 'Work required by specification sections referenced but not issued with the bid documents.'],
 };
 const stdText = k => META.std && META.std[k] != null ? META.std[k] : STD[k].join('\n');
@@ -1405,6 +1422,7 @@ function setChg(sec, i, resp) {
 function refreshPdoc() { const el = document.getElementById('pdoc'); if (el) { const S = sheet(); el.innerHTML = proposalHTML(S, S ? BC.totals(S) : null); } }
 function resetWord(id) { if (DEC[id]) delete DEC[id].text; saveDec(); rerender(); toast('Back to the suggested wording'); }
 function resetStd(k) { if (META.std) delete META.std[k]; saveMeta(); rerender(); }
+function resetMx() { delete META.mx; saveMeta(); rerender(); }
 
 /* ---------- 4 · RFIs ---------- */
 function paneRfis() {
@@ -1504,7 +1522,7 @@ const chgQuals = () => { const out = []; DIFFS().filter(acked).forEach(d => d.ch
 function wordingPanel() {
   const F = FS(), Q = F.filter(f => dec(f).act === 'clarify'), X = F.filter(f => dec(f).act === 'exclude'), CQ = [];
   DIFFS().forEach(d => d.changes.forEach((c, i) => { if (chgResp(d, i).resp === 'qual') CQ.push({ d, c, i }); }));
-  const n = Q.length + X.length + CQ.length + 2;
+  const n = Q.length + X.length + CQ.length + 5;
   const row = (f) => `<div class="pw-row"><div class="pw-h"><b>${esc(f.title)}</b><span class="cite">${E.cite(f.sec, f.para, f.page)}</span>${(DEC[f.id] || {}).text != null ? `<button class="fd-open" onclick="resetWord('${f.id}')">Reset</button>` : '<span class="ynote">suggested</span>'}</div><textarea data-ftext="${f.id}" rows="2">${esc(wordOf(f))}</textarea></div>`;
   return `<div class="demo-panel" style="margin-bottom:18px">
     <div class="demo-panel-head"><h2>Proposal wording</h2><span style="display:flex;gap:8px;align-items:center"><span class="k">McCorvey's own qualifications and exclusions · ${n} groups</span><button class="pa-btn" onclick="UI.words=!UI.words;rerender()">${UI.words ? 'Done editing' : 'Edit wording'}</button></span></div>
@@ -1515,8 +1533,11 @@ function wordingPanel() {
       <span class="pw-k">Standard inclusions · one per line${META.std && META.std.incl != null ? ` · <a href="javascript:void 0" onclick="resetStd('incl')">reset</a>` : ''}</span><textarea class="pw-std" data-std="incl" rows="4">${esc(stdText('incl'))}</textarea>
       <span class="pw-k">Standard clarifications · one per line${META.std && META.std.qual != null ? ` · <a href="javascript:void 0" onclick="resetStd('qual')">reset</a>` : ''}</span><textarea class="pw-std" data-std="qual" rows="3">${esc(stdText('qual'))}</textarea>
       <span class="pw-k">Standard exclusions · one per line${META.std && META.std.excl != null ? ` · <a href="javascript:void 0" onclick="resetStd('excl')">reset</a>` : ''}</span><textarea class="pw-std" data-std="excl" rows="4">${esc(stdText('excl'))}</textarea>
+      <span class="pw-k">Scope responsibility matrix · who does each item${META.mx && Object.keys(META.mx).length ? ` · <a href="javascript:void 0" onclick="resetMx()">reset</a>` : ''}</span>
+      <div class="mx-ed">${mxRows().map(r => `<label class="mx-r"><span>${esc(r.t)}</span><select data-mx="${r.k}">${Object.entries(MXV).map(([v, l]) => `<option value="${v}" ${mxOf(r) === v ? 'selected' : ''}>${l}</option>`).join('')}</select></label>`).join('')}</div>
+      <span class="pw-k">Standard commercial terms · one per line${META.std && META.std.terms != null ? ` · <a href="javascript:void 0" onclick="resetStd('terms')">reset</a>` : ''}</span><textarea class="pw-std" data-std="terms" rows="8">${esc(stdText('terms'))}</textarea>
       <div class="ynote" style="margin-top:8px">Edits save as you type and show in the proposal below. Suggested wording comes from the decision on each finding or change.</div>`
-    : `<div class="ynote">Every qualification and exclusion in the proposal is editable: the ones written from your decisions and McCorvey's standard lines. Open to change the wording.</div>`}
+    : `<div class="ynote">Every qualification, exclusion and commercial term in the proposal is editable, and so is the scope responsibility matrix (who does each trade-boundary item). Open to change the wording.</div>`}
   </div>`;
 }
 /* proposal number and revision */
@@ -1537,7 +1558,80 @@ function ductStandard() {
   const pc = [...new Set(D.map(r => r.press).filter(x => /wg/.test(x)))].join(', '), seal = [...new Set(D.map(r => r.seal).filter(x => /^[ABC]$/.test(x)))];
   return `Constructed to the duct construction schedule in the specifications: pressure classes ${pc}${seal.length ? `; Seal Class ${seal.join(' / ')}` : ''}.`;
 }
-function sumHrs(S, T, k) { return T.L.reduce((a, x, i) => a + (BC.inc(S.lines[i]) ? x[k] : 0), 0); }
+/* scope responsibility matrix: who does each trade-boundary item. This is the page a CM levels sub bids against;
+   anything not listed, or marked by others, is excluded. Defaults follow the bid sheet and the standard exclusions. */
+const MXV = { mc: 'McCorvey', install: 'Install only', furnish: 'Furnish only', others: 'By others', excl: 'Not included' };
+const MXL = { mc: 'McCorvey', install: 'McCorvey installs', furnish: 'McCorvey furnishes', others: 'By others', excl: 'Not included' };
+function mxRows() {
+  const S = sheet(), L = S ? S.lines.filter(l => BC.inc(l) && !l.scope.startsWith(BC.ADDER)).map(l => l.scope).join(' | ') : '';
+  /* with a bid sheet, its lines decide; before one exists, the spec sections in scope do */
+  const has = (re, secRe) => S ? re.test(L) : scopeSecs().some(x => (secRe || re).test(x.id + ' ' + E.secTitle(BOOK, x.id))), air = META.lens !== 'plumb', pl = ['plumb', 'mech', 'all'].includes(META.lens), hv = ['hvac', 'mech', 'all'].includes(META.lens);
+  const R = [], g = (grp, rows) => rows.filter(Boolean).forEach(r => R.push({ grp, k: r[0], t: r[1], d: r[2], note: r[3] || '' }));
+  if (air) g('Ductwork and air distribution', [
+    ['duct', 'Sheet metal ductwork, fittings, casings and plenums', 'mc'],
+    ['acc', 'Volume dampers, duct access doors and flexible connections', 'mc'],
+    ['fsd', 'Fire, smoke and combination fire/smoke dampers', 'mc', 'wiring by Div 26 / 28'],
+    ['grd', 'Grilles, registers and diffusers', has(/air device|GRD|diffuser|grille|register/i) ? 'mc' : 'others'],
+    ['ins', 'Duct insulation and acoustic liner', has(/liner|insulation|wrap/i) ? 'mc' : 'others', S && /insulation sub/i.test(L) ? 'through McCorvey’s insulation subcontractor' : ''],
+    ['dsd', 'Duct smoke detectors', 'install', 'furnished and wired by Div 28'],
+    ['louv', 'Architectural louvers', has(/louver/i, /^23 3720|louver/i) ? 'mc' : 'others', 'Div 08 9000'],
+    ['eqc', 'Duct connections to HVAC equipment', 'mc']]);
+  if (hv) g('HVAC piping', [['hpipe', 'Hydronic, refrigerant and condensate piping', 'mc']]);
+  if (pl) g('Plumbing', [
+    ['ppipe', 'Domestic water, sanitary, vent and storm piping', 'mc'],
+    ['pfix', 'Plumbing fixtures, trim and specialties', 'mc'],
+    ['ptest', 'Piping tests, flushing and disinfection', 'mc'],
+    ['psite', 'Site utilities beyond 5 feet of the building', 'others']]);
+  g('Equipment, controls and power', [
+    ['eq', 'HVAC equipment: furnish and set', 'others'],
+    ['ctrl', 'Controls, control wiring and power wiring', 'others', 'Div 23 0900 / 25 / 26']]);
+  g('Coordination, testing and closeout', [
+    ['bim', 'Coordination drawings and submittals for this scope', 'mc'],
+    air && ['leak', 'Duct leakage testing and reports', 'mc'],
+    ['tab', 'Testing, adjusting and balancing', 'others', 'McCorvey provides access and support'],
+    ['cx', 'Commissioning participation for this scope', 'mc'],
+    air && ['dclean', 'Post-construction duct cleaning', 'others'],
+    ['om', 'O&M manuals, record drawings and warranty for this scope', 'mc']]);
+  g('Site and general conditions', [
+    ['hoist', 'Hoisting, lifts and rigging for McCorvey material', 'mc'],
+    ['steel', 'Structural steel, roof dunnage and equipment supports', 'others'],
+    ['curb', 'Roof curbs, roof openings and flashing', 'others'],
+    ['cut', 'Cutting, coring and patching', 'others'],
+    ['fstop', 'Firestopping at penetrations', 'others'],
+    ['accp', 'Access panels in hard ceilings and walls', 'others', 'Div 08 3100'],
+    air && ['paint', 'Painting of exposed ductwork', 'others'],
+    ['temp', 'Temporary power, water, heat, lighting and sanitation', 'others'],
+    ['clean', 'Daily cleanup of McCorvey debris to on-site dumpsters', 'mc'],
+    ['dump', 'Dumpsters and final cleaning', 'others'],
+    ['permit', 'Trade permit and inspections for this scope', 'mc'],
+    ['bpermit', 'Building permit and impact fees', 'others'],
+    ['freight', 'Freight and delivery to the site', 'mc'],
+    ['safety', 'Site-specific safety plan and the CM safety program', 'mc'],
+    ['prem', 'Premium time, shift work and acceleration', S && S.g.otPct > 0 ? 'mc' : 'excl']]);
+  return R;
+}
+const mxOf = r => (META.mx && META.mx[r.k] && MXV[META.mx[r.k]]) ? META.mx[r.k] : r.d;
+function mxHTML() {
+  let grp = '';
+  return `<table class="mx"><thead><tr><th class="l">Item</th><th class="l" style="width:34%">Responsibility</th></tr></thead><tbody>${mxRows().map(r => {
+    const v = mxOf(r), head = r.grp !== grp ? `<tr class="mx-g"><td class="l" colspan="2">${esc(r.grp)}</td></tr>` : '';
+    grp = r.grp;
+    return head + `<tr><td class="l">${esc(r.t)}${r.note && v === r.d ? ` <span class="ref">(${esc(r.note)})</span>` : ''}</td><td class="l"><span class="mx-v ${v}">${MXL[v]}</span></td></tr>`;
+  }).join('')}</tbody></table><p class="ref" style="margin:6px 0 0;white-space:normal">Items not listed, or marked by others or not included, are excluded from this proposal.</p>`;
+}
+/* the base bid written out, as bid forms ask: words and figures */
+function numWords(n) {
+  const a = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+  const t = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+  const h = x => [x >= 100 ? a[Math.floor(x / 100)] + ' hundred' : '', x % 100 < 20 ? a[x % 100] : t[Math.floor(x % 100 / 10)] + (x % 10 ? '-' + a[x % 10] : '')].filter(Boolean).join(' ');
+  if (!n) return 'zero';
+  const sc = ['', ' thousand', ' million', ' billion'], out = []; let i = 0;
+  while (n > 0) { const c = n % 1000; if (c) out.unshift(h(c) + sc[i]); n = Math.floor(n / 1000); i++; }
+  return out.join(' ');
+}
+const dollarsWords = v => numWords(Math.round(Math.abs(v))).replace(/\b[a-z]/g, c => c.toUpperCase()) + ' and 00/100 Dollars';
+/* the specification sections this price covers, by number (as trade bid forms list them) */
+const scopeSecs = () => BOOK.sections.filter(s => isYours(s) && !['00', '01'].includes(s.div) && lensOk(E.lensOf(s.id)));
 function proposalHTML(S, T) {
   const F = FS(), N = rfiNums();
   const priced = F.filter(f => dec(f).act === 'price' && !dec(f).allow);
@@ -1556,12 +1650,15 @@ function proposalHTML(S, T) {
     const rows = S.lines.map((l, i) => ({ l, c: T.L[i] }));
     const base = rows.filter(x => BC.inc(x.l) && !x.l.scope.startsWith(BC.ADDER)), adds = rows.filter(x => BC.inc(x.l) && x.l.scope.startsWith(BC.ADDER));
     const alts = rows.filter(x => !BC.inc(x.l));
+    /* line prices include overhead, profit, bond and insurance, as subs present them; the last line absorbs rounding */
+    const k = 1 + T.a, items = base.map(x => ({ d: esc(x.l.scope), q: Math.round(x.l.qty).toLocaleString(), u: esc(x.l.unit), up: moneyU(x.c.unitSell * k), v: Math.round(x.c.sell * k) }));
+    if (adds.length) items.push({ d: 'Project specification requirements (itemized under Specification requirements included)', q: '1', u: 'LS', up: '', v: Math.round(adds.reduce((a, x) => a + x.c.sell, 0) * k) });
+    if (items.length) items[items.length - 1].v += Math.round(T.client) - items.reduce((a, x) => a + x.v, 0);
     schedule = `<table><thead><tr><th class="l" style="width:30px">Item</th><th class="l">Description</th><th>Qty</th><th class="l">Unit</th><th>Unit price</th><th>Amount</th></tr></thead><tbody>
-      ${base.map((x, i) => `<tr><td class="l">${i + 1}</td><td class="l">${esc(x.l.scope)}</td><td>${Math.round(x.l.qty).toLocaleString()}</td><td class="l">${esc(x.l.unit)}</td><td>${moneyU(x.c.unitSell)}</td><td>${money(x.c.sell)}</td></tr>`).join('')}
-      ${adds.length ? `<tr><td class="l">${base.length + 1}</td><td class="l">Project specification requirements (itemized in section ${hasAlts ? 3 : 2})</td><td>1</td><td class="l">LS</td><td></td><td>${money(adds.reduce((a, x) => a + x.c.sell, 0))}</td></tr>` : ''}
-      <tr class="sub"><td></td><td class="l">Subtotal</td><td colspan="3"></td><td>${money(T.sell)}</td></tr>
-      <tr><td></td><td class="l">Bond, general liability insurance &amp; contingency</td><td colspan="3"></td><td>${money(T.addons)}</td></tr>
+      ${items.map((x, i) => `<tr><td class="l">${i + 1}</td><td class="l">${x.d}</td><td>${x.q}</td><td class="l">${x.u}</td><td>${x.up}</td><td>${money(x.v)}</td></tr>`).join('')}
       <tr class="grand"><td></td><td class="l">BASE BID</td><td colspan="3"></td><td>${money(T.client)}</td></tr></tbody></table>
+      <p class="words">Base bid: <b>${dollarsWords(T.client)}</b> (${money(T.client)})</p>
+      <p class="ref" style="margin:4px 0 0;white-space:normal">Prices include overhead, profit, bond and insurance. Stated in words and figures; if they differ, the words govern.</p>
       ${alts.length ? `<h3>2. Alternates — not included in base bid</h3><table><thead><tr><th class="l" style="width:30px">Alt</th><th class="l">Description</th><th>Add to base bid</th></tr></thead><tbody>${alts.map((x, i) => `<tr><td class="l">A${i + 1}</td><td class="l">${esc(x.l.scope.replace(BC.ADDER, ''))}</td><td>+ ${money(x.c.sell * (1 + T.a))}</td></tr>`).join('')}</tbody></table>` : ''}`;
   }
   let n = hasAlts ? 2 : 1;
@@ -1587,6 +1684,7 @@ function proposalHTML(S, T) {
     })() : ''}
     ${h('Scope of work included')}
     <p style="margin:0 0 6px">McCorvey furnishes, fabricates, delivers and installs the following, per the bid documents and the bulletins listed above:</p>
+    ${scopeSecs().length ? `<p class="secs"><b>Specification sections, as they apply to the scope above:</b> ${scopeSecs().map(x => `<span class="ref" style="color:inherit;font-size:inherit">${x.id.replace(/ /g, '&nbsp;')}</span> ${esc(E.secTitle(BOOK, x.id))}`).join('; ')}; and Divisions 00 and 01 as they apply to this scope.</p>` : ''}
     ${S ? scopeBySystem(S).map(g => `<p class="sys">${g.sys}</p><ul>${g.lines.map(l => `<li>${esc(l.scope)}${l.unit !== 'LS' ? ` <span class="ref">(${Math.round(l.qty).toLocaleString()} ${esc(l.unit)})</span>` : ''}</li>`).join('')}${g.sys === 'Ductwork' && ductStandard() ? `<li>${esc(ductStandard())}</li>` : ''}</ul>`).join('') : ''}
     <p class="sys">Also included</p><ul>${stdLines('incl').map(t => `<li>${esc(t)}</li>`).join('')}</ul>
     ${h('Specification requirements included')}
@@ -1601,30 +1699,36 @@ function proposalHTML(S, T) {
     ${pending.length ? `${h('Assumptions pending RFI responses')}<ol>${pending.map(c => `<li>${esc(assume(c))} <span class="ref">(${E.rfiNo(N[c.id])})</span></li>`).join('')}</ol>` : ''}
     ${answered.length ? `${h('RFI responses incorporated')}<ol>${answered.map(c => `<li>${esc(rs(c.id).answer)} <span class="ref">(${E.rfiNo(N[c.id])})</span></li>`).join('')}</ol>` : ''}
     ${S && T ? (() => {
-      const fh = sumHrs(S, T, 'fieldH'), sh = sumHrs(S, T, 'shopH'), G = S.g, mob = BOOK.buildings && BOOK.buildings.length ? BOOK.buildings.length : 1;
+      const G = S.g, mob = BOOK.buildings && BOOK.buildings.length ? BOOK.buildings.length : 1;
       return `${h('Schedule and manpower basis')}<ol>
         <li>Priced on a ${T.weeks}-week duration for this scope, sequenced to the construction manager's schedule (Section 01 3200).</li>
-        <li>${Math.round(fh).toLocaleString()} field hours and ${Math.round(sh).toLocaleString()} shop hours, an average crew of ${Math.ceil(T.fieldNeed)} field and ${Math.ceil(T.shopNeed)} shop workers.</li>
+        <li>Manpower basis: an average crew of ${Math.ceil(T.fieldNeed)} field and ${Math.ceil(T.shopNeed)} shop workers, working continuously in areas released in sequence.</li>
         <li>${G.otPct ? `Includes ${G.otPct}% overtime.` : 'Straight time, 40-hour weeks. Overtime, shift work and acceleration are not included.'}</li>
         <li>${mob} mobilization${mob > 1 ? 's' : ''} (${mob > 1 ? 'one per building' : 'one'}). Additional mobilizations or out-of-sequence work are a change.</li>
-        <li>Fabrication released on approved coordination drawings; shop lead time of approximately 4 weeks from release.</li></ol>`;
+        <li>Fabrication released on approved coordination drawings; shop lead time of approximately 4 weeks from release.</li>
+        <li>Laydown and staging space near the work, and shared use of the site hoist or elevator, provided by the construction manager.</li></ol>`;
     })() : ''}
     ${h('Clarifications')}
     <ol>${quals.map(f => `<li>${esc(wordOf(f))} ${cite(f)}</li>`).join('')}${chgQuals().map(x => `<li>${esc(x.text)} <span class="ref">(${E.cite(x.d.sec, x.c.para, x.c.page)})</span></li>`).join('')}${notes.map(t => `<li>${esc(t)}</li>`).join('')}
       ${stdLines('qual').map(t => `<li>${esc(t)}</li>`).join('')}</ol>
     ${h('Exclusions')}
     <ol>${excl.map(f => `<li>${esc(wordOf(f))} ${cite(f)}</li>`).join('')}
-      ${stdLines('excl').map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+      ${stdLines('excl').map(t => `<li>${esc(t)}</li>`).join('')}
+      <li>Work not listed as included in this proposal, or shown as by others or not included in the scope responsibility matrix.</li></ol>
+    ${h('Scope responsibility matrix')}
+    ${mxHTML()}
     ${S && T ? (() => {
-      const G = S.g, bond = T.sell * G.bondPct / 100, gl = T.sell * G.glPct / 100;
+      const G = S.g, bond = T.sell * G.bondPct / 100;
       return `${h('Bond and insurance')}<ol>
         <li>Payment and performance bond included at ${G.bondPct}% (${money(bond)}). If no bond is required, deduct ${money(bond)}.</li>
-        <li>General liability insurance at McCorvey's standard limits included (${money(gl)}). If the project carries an owner- or contractor-controlled insurance program (OCIP / CCIP), McCorvey's insurance cost is credited at enrollment.</li>
+        <li>Bid bond furnished if the bid documents require one.</li>
+        <li>General liability, automobile, umbrella and workers' compensation insurance at McCorvey's standard limits included. Additional insured, primary and non-contributory, and waiver of subrogation endorsements furnished as the subcontract requires.</li>
+        <li>If the project carries an owner- or contractor-controlled insurance program (OCIP / CCIP), McCorvey's insurance cost is credited at enrollment.</li>
         <li>Builder's risk insurance by others. Certificates of insurance furnished at award.</li></ol>`;
     })() : ''}
     ${h('Commercial terms')}
-    <ol><li>Proposal valid ${esc(META.valid)} days from the date above. Steel pricing subject to mill surcharge adjustment after validity.</li>
-      <li>Progress billing monthly on AIA G702/G703. Retainage, liquidated damages, bonds, insurance and warranty terms subject to mutually agreeable subcontract terms.</li>
+    <ol><li>Proposal valid ${esc(META.valid)} days from the date above.</li>
+      ${stdLines('terms').map(t => `<li>${esc(t)}</li>`).join('')}
       ${BOOK.inputs ? '<li>Schedule of values broken out by building and floor per Section 01 2900, with coordination drawings as a separate line.</li>' : ''}</ol>
     ${BOOK.inputs && META.attachOk ? `<p style="margin:12px 0 0"><b>Enclosures:</b> ${ATTACH().map(r => esc(r.item.replace(/ named$/, ''))).join('; ')}.</p>` : ''}
 `;
@@ -1883,6 +1987,7 @@ function bind() {
   document.querySelectorAll('textarea[data-chgtext]').forEach(t => { t.oninput = () => { const k = t.dataset.chgtext; DEC[k] = Object.assign({}, DEC[k], { resp: 'qual', text: t.value }); saveDec(); refreshPdoc(); }; });
   document.querySelectorAll('textarea[data-ftext]').forEach(t => { t.oninput = () => { const id = t.dataset.ftext; DEC[id] = Object.assign({}, DEC[id], { text: t.value }); saveDec(); refreshPdoc(); }; });
   document.querySelectorAll('textarea[data-std]').forEach(t => { t.oninput = () => { META.std = Object.assign({}, META.std, { [t.dataset.std]: t.value }); saveMeta(); refreshPdoc(); }; });
+  document.querySelectorAll('select[data-mx]').forEach(t => { t.onchange = () => { META.mx = Object.assign({}, META.mx, { [t.dataset.mx]: t.value }); saveMeta(); refreshPdoc(); }; });
   document.querySelectorAll('[data-meta]').forEach(inp => {
     inp.oninput = () => {
       const k = inp.dataset.meta; META[k] = inp.type === 'number' ? (+inp.value || '') : inp.value; saveMeta();
