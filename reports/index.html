@@ -18,10 +18,53 @@
 <link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261013k">
 <link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261013k">
 <link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016d">
+<style>
+  /* ---- monthly report builder (rb-) ---- */
+  .rb-head { display:flex; justify-content:space-between; align-items:flex-end; gap:16px; flex-wrap:wrap; margin:4px 0 16px; }
+  .rb-eyebrow { font-size:10px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#c8102e; }
+  .rb-head h2 { margin:4px 0 3px; font-size:22px; color:var(--color-cloud-whisper); }
+  .rb-sub { font-size:12.5px; color:var(--color-text-muted); }
+  .rb-flow { display:flex; gap:6px; flex-wrap:wrap; }
+  .rb-flow a { display:inline-flex; align-items:center; gap:7px; font-size:12px; font-weight:700; padding:7px 13px 7px 8px; border-radius:99px; border:1px solid var(--color-border); color:var(--color-cloud-whisper); text-decoration:none; background:var(--color-bg-2); }
+  .rb-flow a i { font-style:normal; width:20px; height:20px; border-radius:50%; display:inline-grid; place-items:center; font-size:10.5px; background:var(--color-bg-3); }
+  .rb-flow a.done i { background:#2f9e6e; color:#fff; }
+  .rb-kpis .ykpi .ybar { margin:7px 0 2px; height:6px; }
+  .rb-tip { font-size:12px; color:var(--color-text-muted); margin:-2px 0 12px; line-height:1.5; }
+  .rb-scroll { overflow-x:auto; border:1px solid var(--color-border); border-radius:4px; }
+  table.rb-sov { min-width:1080px; }
+  table.rb-sov thead th { position:static; }
+  table.rb-sov td { vertical-align:middle; }
+  table.rb-sov td.rb-desc { text-align:left; white-space:normal; min-width:230px; font-family:var(--font-sans); font-size:12px; }
+  table.rb-sov td small { display:block; font-size:10px; color:var(--color-text-muted); margin-top:1px; }
+  .rb-pct { display:flex; align-items:center; gap:4px; justify-content:flex-end; }
+  .rb-pct input { width:68px; }
+  .rb-pct span { font-size:11px; color:var(--color-text-muted); }
+  table.rb-sov .ybar { margin-top:5px; min-width:0; height:5px; }
+  table.rb-sov input.rb-st { width:100px; margin-left:auto; }
+  table.rb-sov input.edited { border-color:#1f5fa8; background:rgba(31,95,168,.07); }
+  td.rb-up { color:var(--color-green) !important; font-weight:700; }
+  tr.rb-co td { background:rgba(185,138,54,.07); }
+  table.rb-sov tfoot td { text-align:right; }
+  table.rb-sov tfoot td:first-child { text-align:left; }
+  .rb-notes { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+  .rb-notes label.yfld textarea { min-height:150px; resize:vertical; line-height:1.55; text-transform:none; letter-spacing:0; font-weight:400; font-size:12.5px; }
+  label.yfld > .rb-auto { display:inline; width:auto; margin:0 0 0 4px; font-weight:600; text-transform:none; letter-spacing:0; color:var(--color-slate-hint, #8a94a3); }
+  .rb-issue { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .rb-toast { position:fixed; left:50%; bottom:28px; transform:translateX(-50%); background:#14283c; color:#fff; font-size:13px; font-weight:600; padding:11px 18px; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.25); z-index:9999; opacity:0; transition:opacity .2s; pointer-events:none; max-width:min(560px, calc(100vw - 32px)); }
+  .rb-toast.on { opacity:1; }
+  .ydoc table.g703 { font-size:10.5px; }
+  .ydoc table.g703 th { font-size:8.3px; letter-spacing:.4px; padding:6px 5px; vertical-align:bottom; }
+  .ydoc table.g703 td { padding:6px 5px; }
+  .ydoc table.g703 td.d { white-space:normal; }
+  .ydoc .rb-hl { font-weight:700; color:#062c55; }
+  @media (max-width: 900px) { .rb-notes { grid-template-columns:1fr; } }
+  @media (max-width: 640px) { .rb-head h2 { font-size:19px; } .ytoolrow label.yfld { min-width:0 !important; flex:1 1 100% !important; } }
+</style>
 </head>
 <body>
 <div id="topbar"></div>
 <main class="page"><div class="demo-wrap" id="app"></div></main>
+<div class="rb-toast" id="rb-toast"></div>
 
 <script src="/mccorvey/js/data.js?v=20261013k"></script>
 <script src="/mccorvey/js/util.js?v=20261016h"></script>
@@ -29,8 +72,12 @@
 <script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
 <script>
 McCorveyNav.renderTopbar({ subtitle: 'Progress Reports' });
-let jobId = qs('id') || 'GCM-2410';
-
+/* default to a job in progress, so the demo opens on real month-over-month movement */
+let jobId = qs('id') || (JOBS.some(x => x.id === 'SJC-2502') ? 'SJC-2502' : JOBS[0].id);
+/* the user's own calendar date (todayISO is UTC, which runs a day ahead on US evenings) */
+const localISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const CUR_MONTH = localISO().slice(0, 7);
+let month = qs('m') || CUR_MONTH;
 
 /* ---------- e-signature engine (localStorage, role-matched) ---------- */
 function sigState(key) { try { return JSON.parse(localStorage.getItem('msm-sign:' + key) || 'null'); } catch (e) { return null; } }
@@ -62,70 +109,147 @@ function sigBlock(key, cap, roles) {
   return `<div class="sig"><button class="sig-btn" onclick="signDoc('${key}','${roles}')">Sign electronically</button><div class="sig-cap">${cap}</div></div>`;
 }
 
-function render() {
-  const j = JOBS.find(x => x.id === jobId) || JOBS[0];
-  const m = jobMetrics(j);
-  const jobOpts = JOBS.map(x => `<option value="${x.id}" ${x.id === j.id ? 'selected' : ''}>${x.id} — ${esc(x.name)}</option>`).join('');
-  const donePhases = j.phases.filter(p => p.pct >= 100);
-  const activePhases = j.phases.filter(p => p.pct > 0 && p.pct < 100);
-  const nextPhases = j.phases.filter(p => p.pct === 0);
+/* =====================================================================
+   MONTHLY PROGRESS REPORT BUILDER
+   Schedule of values (AIA G703) → percent complete → the report the client receives.
+   Previous work comes from the pay applications already issued; the PM types each line's
+   percent complete to date, and this period, retainage and the payment due follow.
+   ===================================================================== */
+const monthLabel = mo => new Date(mo + '-15T12:00:00').toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+const monthEnd = mo => { const d = new Date(mo + '-01T12:00:00'); d.setMonth(d.getMonth() + 1); d.setDate(0); return d.toISOString().slice(0, 10); };
+const pct1 = n => (Math.round(n * 10) / 10).toFixed(1) + '%';
+const cents = n => Math.round(n * 100) / 100;
+const lineId = item => 'L' + String(item).replace(/\W/g, '_');
+function monthsFor(j) {
+  const out = [], d = new Date(CUR_MONTH + '-15T12:00:00'), first = (j.start || '').slice(0, 7);
+  for (let i = 0; i < 12; i++) { const m = d.toISOString().slice(0, 7); if (first && m < first) break; out.push(m); d.setMonth(d.getMonth() - 1); }
+  return out.length ? out : [CUR_MONTH];
+}
+const RK = j => 'msm-rep:' + j.id + ':' + month;
+const getS = j => { try { return JSON.parse(localStorage.getItem(RK(j)) || '{}') || {}; } catch (e) { return {}; } };
+const putS = (j, s) => { try { localStorage.setItem(RK(j), JSON.stringify(s)); } catch (e) {} };
+const IK = j => 'msm-rep-issued:' + j.id;
+const issuedOf = j => { try { return JSON.parse(localStorage.getItem(IK(j)) || '[]') || []; } catch (e) { return []; } };
+function toast(msg) { const t = $('#rb-toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2600); }
 
-  /* ---- payment ledger (G702-style application summary) ---- */
-  const coApproved = (j.changeOrders || []).filter(c => c.status === 'Approved').reduce((s, c) => s + (c.amount || 0), 0);
-  const contractToDate = j.contract + coApproved;
-  const retReleased = j.payApps.some(p => p.num.includes('RET'));
-  const retHeld = retReleased ? 0 : m.earned * j.retainagePct / 100;
-  const earnedLessRet = m.earned - retHeld;
+function model(j) {
+  const S = getS(j), r = j.retainagePct / 100, done = /Complete|Closeout/.test(j.status);
+  const retReleased = j.payApps.some(p => /RET/.test(p.num));
+  const lines = j.sov.map(x => ({ item: x.item, desc: x.desc, sched: x.scheduled, field: x.pct }))
+    .concat((j.changeOrders || []).filter(c => c.status === 'Approved').map(c => ({ item: c.num, desc: 'Change order — ' + c.desc, sched: c.amount, field: done ? 100 : 0, co: true })));
+  /* previous applications cover this share of the field-reported work, spread across the base lines */
+  const fieldBase = lines.filter(x => !x.co).reduce((a, x) => a + x.sched * x.field / 100, 0);
+  const billedGross = j.payApps.filter(p => !/RET/.test(p.num)).reduce((a, p) => a + p.certified, 0) / (1 - r);
+  const k = fieldBase ? Math.min(1, billedGross / fieldBase) : 0;
+  lines.forEach(x => {
+    x.prev = x.co ? (done ? x.sched : 0) : x.sched * x.field / 100 * k;
+    x.prevPct = x.sched ? x.prev / x.sched * 100 : 0;
+    const typed = S.pct && S.pct[x.item] != null && S.pct[x.item] !== '' ? +S.pct[x.item] : null;
+    x.edited = typed != null;
+    x.pct = Math.min(100, Math.max(x.prevPct, typed != null && isFinite(typed) ? typed : x.field));
+    x.toDate = x.sched * x.pct / 100;
+    x.cur = x.toDate - x.prev;
+    x.stored = Math.max(0, +((S.stored || {})[x.item]) || 0);
+    x.total = x.toDate + x.stored;
+    x.totPct = x.sched ? x.total / x.sched * 100 : 0;
+    x.bal = x.sched - x.total;
+    x.ret = retReleased ? 0 : x.total * r;
+  });
+  const sum = key => lines.reduce((a, x) => a + x[key], 0);
+  const T = { sched: sum('sched'), prev: sum('prev'), cur: sum('cur'), stored: sum('stored'), total: sum('total'), bal: sum('bal'), ret: sum('ret') };
+  T.co = lines.filter(x => x.co).reduce((a, x) => a + x.sched, 0);
+  T.pct = T.sched ? T.total / T.sched * 100 : 0;
+  T.prevPct = T.sched ? T.prev / T.sched * 100 : 0;
+  T.lessRet = T.total - T.ret;
+  const certAll = j.payApps.reduce((a, p) => a + p.certified, 0);
+  T.prevCert = done ? Math.max(certAll, T.lessRet) : certAll;
+  T.due = cents(T.lessRet - T.prevCert); if (Math.abs(T.due) < 0.5) T.due = 0;
+  T.balRet = T.sched - T.lessRet;
+  const iss = issuedOf(j), mine = iss.find(x => x.month === month);
+  /* numbered in month order; a number already used by another issued month is never reused */
+  const taken = new Set(iss.map(x => x.n));
+  let n = mine ? mine.n : (j.reports || []).length + iss.filter(x => x.month < month).length + 1;
+  if (!mine && taken.has(n)) { n = (j.reports || []).length + iss.length + 1; while (taken.has(n)) n++; }
+  const lastApp = j.payApps.filter(p => !/RET/.test(p.num)).slice(-1)[0] || null;
+  return { j, S, lines, T, r, done, retReleased, lastApp, n, mine };
+}
+
+/* ---- narrative, drafted from this month's movement; McCorvey's edits win ---- */
+function autoNotes(M) {
+  const { j, lines } = M, end = monthEnd(month), ahead30 = addDays(end, 30);
+  const moved = lines.filter(x => x.cur > 0.5).sort((a, b) => b.cur - a.cur);
+  const hi = moved.slice(0, 5).map(x => `${x.desc}: ${pct1(x.prevPct)} → ${pct1(x.pct)} complete (${fmt$(x.cur)} this period).`);
+  lines.filter(x => x.stored > 0).forEach(x => hi.push(`${x.desc}: ${fmt$(x.stored)} of materials stored.`));
+  const act = j.phases.filter(p => p.pct > 0 && p.pct < 100).slice(0, 3).map(p => `${p.name}: ${p.pct}% complete, tracking to ${fmtDate(p.finish)}.`);
+  const ahead = j.phases.filter(p => p.pct < 100 && p.start <= ahead30 && p.finish > end).map(p =>
+    p.start > end ? `${p.name} starts ${fmtDate(p.start)}.` : p.finish <= ahead30 ? `${p.name} targeted to finish ${fmtDate(p.finish)}.` : `${p.name} continues (${p.pct}% complete).`);
+  const owner = (j.changeOrders || []).filter(c => c.status !== 'Approved').map(c => `${c.num} ${c.desc}: ${fmt$(c.amount)} ${c.status.toLowerCase()}, approval needed.`)
+    .concat(j.payApps.filter(p => p.status !== 'Paid').map(p => `${p.num} ${p.label}: ${fmt$2(p.certified)} ${p.status.toLowerCase()}.`));
+  if (M.T.due > 0) owner.push(`Certify this application: ${fmt$2(M.T.due)} due for work through ${fmtDate(end)}.`);
+  return {
+    hi: (hi.length ? hi : ['No change in percent complete this period.']).concat(act).join('\n'),
+    ahead: (ahead.length ? ahead : [M.done ? 'Closeout documentation and final punch list.' : 'Continue work per the current schedule.']).join('\n'),
+    owner: (owner.length ? owner : ['None this period.']).join('\n'),
+  };
+}
+const notesOf = M => { const A = autoNotes(M), N = (M.S.notes || {}); return { hi: N.hi != null ? N.hi : A.hi, ahead: N.ahead != null ? N.ahead : A.ahead, owner: N.owner != null ? N.owner : A.owner, A }; };
+const noteLines = t => String(t || '').split('\n').map(s => s.trim()).filter(Boolean);
+
+/* ---- builder pieces ---- */
+function kpisHTML(M) {
+  const T = M.T, j = M.j, up = T.pct - T.prevPct;
+  return `
+    <div class="ykpi green"><div class="l">Complete to date</div><div class="v">${pct1(T.pct)}</div><div class="ybar g"><i style="width:${Math.min(100, T.pct)}%"></i></div><div class="s">${up > 0.05 ? '▲ ' + up.toFixed(1) + ' pts this period' : 'no change this period'}</div></div>
+    <div class="ykpi"><div class="l">Work this period</div><div class="v">${fmtK(T.cur + T.stored)}</div><div class="s">${T.stored ? fmt$(T.cur) + ' work + ' + fmt$(T.stored) + ' stored' : 'completed since ' + (M.lastApp ? 'Pay App ' + esc(M.lastApp.num) : 'start')}</div></div>
+    <div class="ykpi ${T.due > 0 ? 'red' : ''}"><div class="l">Payment due this application</div><div class="v">${fmtK(T.due)}</div><div class="s">${M.retReleased ? 'retainage released' : 'after ' + j.retainagePct + '% retainage'}</div></div>
+    <div class="ykpi amber"><div class="l">Retainage held</div><div class="v">${fmtK(T.ret)}</div><div class="s">${M.retReleased ? 'released at completion' : j.retainagePct + '% of completed and stored'}</div></div>
+    <div class="ykpi"><div class="l">Balance to finish</div><div class="v">${fmtK(T.balRet)}</div><div class="s">of ${fmtK(T.sched)} contract to date, incl. retainage</div></div>`;
+}
+function rowHTML(x) {
+  const id = lineId(x.item);
+  return `<tr class="${x.co ? 'rb-co' : ''}">
+    <td>${esc(x.item)}</td><td class="rb-desc">${esc(x.desc)}</td>
+    <td>${fmt$2(x.sched)}</td>
+    <td>${fmt$2(x.prev)}<small>${pct1(x.prevPct)}</small></td>
+    <td><div class="rb-pct"><input class="yin num ${x.edited ? 'edited' : ''}" data-pct="${esc(x.item)}" value="${+x.pct.toFixed(1)}" inputmode="decimal" aria-label="Percent complete to date, ${esc(x.desc)}"><span>%</span></div><div class="ybar ${x.pct >= 100 ? 'g' : ''}"><i id="b-${id}" style="width:${x.pct}%"></i></div></td>
+    <td id="c-${id}" class="${x.cur > 0.5 ? 'rb-up' : ''}">${x.cur > 0.5 ? '+' + fmt$2(x.cur) : '—'}</td>
+    <td><input class="yin num rb-st" data-stored="${esc(x.item)}" value="${x.stored ? Math.round(x.stored).toLocaleString() : ''}" placeholder="0" inputmode="decimal" aria-label="Materials stored, ${esc(x.desc)}"></td>
+    <td id="t-${id}">${fmt$2(x.total)}</td><td id="q-${id}">${pct1(x.totPct)}</td><td id="r-${id}">${fmt$2(x.bal)}</td><td id="h-${id}">${fmt$2(x.ret)}</td>
+  </tr>`;
+}
+function footHTML(M) {
+  const T = M.T;
+  return `<tr><td colspan="2">Totals</td><td>${fmt$2(T.sched)}</td><td>${fmt$2(T.prev)}</td><td>${pct1(T.pct)}</td><td>${T.cur > 0.5 ? '+' + fmt$2(T.cur) : '—'}</td><td>${fmt$2(T.stored)}</td><td>${fmt$2(T.total)}</td><td>${pct1(T.pct)}</td><td>${fmt$2(T.bal)}</td><td>${fmt$2(T.ret)}</td></tr>`;
+}
+
+/* ---------- the document the client receives ---------- */
+function docHTML(M) {
+  const { j, T, lines } = M, NT = notesOf(M);
+  const coApproved = T.co;
+  const retReleased = M.retReleased;
   const paidApps = j.payApps.filter(p => p.status === 'Paid');
   const paidToDate = paidApps.reduce((s, p) => s + p.certified, 0);
   const pendingApps = j.payApps.filter(p => p.status !== 'Paid');
-  const currentDue = pendingApps.reduce((s, p) => s + p.certified, 0);
-  const balanceToFinish = Math.max(0, contractToDate - earnedLessRet);
+  const pendingDue = pendingApps.reduce((s, p) => s + p.certified, 0);
+  const billedAll = j.payApps.reduce((s, p) => s + p.certified, 0);
+  const donePhases = j.phases.filter(p => p.pct >= 100), activePhases = j.phases.filter(p => p.pct > 0 && p.pct < 100), nextPhases = j.phases.filter(p => p.pct === 0);
   const payRef = (p, i) => p.status === 'Paid' ? 'ACH ••' + String(4200 + ((p.num.charCodeAt(0) * 7 + i * 13) % 780)).padStart(4, '0') : '—';
   let runPaid = 0;
   const payRows = j.payApps.map((p, i) => {
     if (p.status === 'Paid') runPaid += p.certified;
-    return `<tr>
-      <td><b>${esc(p.num)}</b></td><td>${esc(p.label)}</td><td>${fmtDate(p.period)}</td>
-      <td class="num">${fmt$2(p.certified)}</td>
-      <td>${p.status === 'Paid' ? 'Paid · ' + payRef(p, i) : esc(p.status)}</td>
-      <td class="num">${fmt$2(runPaid)}</td>
-      <td class="num">${fmt$2(Math.max(0, contractToDate - runPaid - (p.status === 'Paid' ? 0 : 0)))}</td>
-    </tr>`;
+    return `<tr><td><b>${esc(p.num)}</b></td><td>${esc(p.label)}</td><td>${fmtDate(p.period)}</td><td class="num">${fmt$2(p.certified)}</td>
+      <td>${p.status === 'Paid' ? 'Paid · ' + payRef(p, i) : esc(p.status)}</td><td class="num">${fmt$2(runPaid)}</td><td class="num">${fmt$2(Math.max(0, T.sched - runPaid))}</td></tr>`;
   }).join('');
-  const waiverFinal = retReleased && m.pct >= 100;
-  const waiverAmount = currentDue > 0 ? currentDue : (j.payApps.length ? j.payApps[j.payApps.length - 1].certified : 0);
-
-  $('#app').innerHTML = `
-    <div class="ytoolrow" style="margin-top:24px">
-      <label class="yfld" style="min-width:420px">Job
-        <select class="yin" id="rep-job">${jobOpts}</select>
-      </label>
-      <div class="spacer"></div>
-      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">Print / Save as PDF</button>
-    </div>
-
-    <div class="demo-panel no-print" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Issue Control — ${j.id}</h2><span class="k">owner-facing documents require sign-off before issue</span></div>
-      ${approvalChain('rep-' + j.id + '-2026-07', [
-        { role: 'conmgr', label: 'PM — Report Prepared',                 doneLabel: 'PM Prepared' },
-        { role: 'owner',  label: 'Owner — Approve for Issue',            doneLabel: 'Approved for Issue' },
-      ])}
-    </div>
-
-    <div class="demo-panel no-print" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from STRATUS</span></span></div>
-      <table class="demo-tbl tbl-left">
-        <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
-        <tbody>${j.reports.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
-      </table>
-    </div>
-
-    <!-- ============ owner progress report document ============ -->
+  const waiverFinal = retReleased && T.pct >= 100;
+  const waiverAmount = T.due > 0 ? T.due : (j.payApps.length ? j.payApps[j.payApps.length - 1].certified : 0);
+  const up = T.pct - T.prevPct;
+  const list = t => `<ul>${noteLines(t).map(s => `<li>${esc(s)}</li>`).join('')}</ul>`;
+  const ownerItems = noteLines(NT.owner).filter(s => !/^none this period\.?$/i.test(s));
+  return `
     <div class="ydoc">
       <div class="ydoc-head">
         <div><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo"><div class="sub" style="margin-top:8px">McCorvey Sheet Metal Works, L.P. · HVAC Sheet Metal — BIM Detailing, Fabrication &amp; Installation</div></div>
-        <div class="right"><b>Owner Progress Report</b><br>Report date: ${fmtDate(todayISO())}<br>Job #: ${j.id}<br>Prepared by: ${esc(j.pm)}, Project Manager</div>
+        <div class="right"><b>Monthly Progress Report No. ${M.n}</b><br>Period: ${monthLabel(month)}<br>${fmtDate(month + '-01')} – ${fmtDate(monthEnd(month))}<br>Report date: ${fmtDate(M.mine ? M.mine.date : localISO())}<br>Job #: ${j.id}<br>Prepared by: ${esc(j.pm)}, Project Manager</div>
       </div>
 
       <div class="big-title">${esc(j.name)}</div>
@@ -133,53 +257,54 @@ function render() {
 
       <h3 class="sect">Executive Summary</h3>
       <p>
-        Work is <b>${fmtPct(m.pct, 1)} complete</b> against a contract value of <b>${fmt$2(j.contract)}</b>.
-        Earned value to date is <b>${fmt$2(m.earned)}</b>, with <b>${fmt$2(m.billedAll)}</b> certified across
-        ${j.payApps.length} payment application(s). The project ${m.pct >= 100 ? 'is complete and in closeout' : 'remains on schedule'}
-        with a contract completion date of <b>${fmtDate(j.finish)}</b>.
+        Work is <b>${pct1(T.pct)} complete</b>${up > 0.05 ? `, up <b>${up.toFixed(1)} points</b> this period,` : ''} against a contract sum to date of <b>${fmt$2(T.sched)}</b>${coApproved ? ` (including ${fmt$2(coApproved)} in approved change orders)` : ''}.
+        Work completed and stored this period totals <b>${fmt$2(T.cur + T.stored)}</b>, and the payment due on this application is <b>${fmt$2(T.due)}</b>${retReleased ? '' : ` after ${j.retainagePct}% retainage`}.
+        The project ${M.done ? 'is complete and in closeout' : 'remains on schedule'} with a contract completion date of <b>${fmtDate(j.finish)}</b>.
         ${j.insurance ? `This is an insurance restoration project (${esc(j.insurance.carrier)} — ${esc(j.insurance.approval)}).` : ''}
       </p>
 
-      <h3 class="sect">Contract &amp; Payment Status</h3>
+      <h3 class="sect">This Period</h3>
+      ${list(NT.hi)}
+      <h3 class="sect">Next 30 Days</h3>
+      ${list(NT.ahead)}
+      ${ownerItems.length ? `<h3 class="sect">Items Requiring Owner Action</h3><ul>${ownerItems.map(s => `<li>${esc(s)}</li>`).join('')}</ul>` : ''}
+
+      <h3 class="sect">Application Summary (AIA G702)</h3>
       <table>
         <tbody>
           <tr><td>1. Original contract sum</td><td class="num">${fmt$2(j.contract)}</td></tr>
-          <tr><td>2. Net change by approved change orders</td><td class="num">${fmt$2(coApproved)}</td></tr>
-          <tr><td>3. Contract sum to date</td><td class="num">${fmt$2(contractToDate)}</td></tr>
-          <tr><td>4. Total completed &amp; stored to date</td><td class="num">${fmt$2(m.earned)}</td></tr>
-          <tr><td>5. Retainage (${j.retainagePct}% of completed work)${retReleased ? ' — <b>released at final completion</b>' : ' — held'}</td><td class="num">${fmt$2(retHeld)}</td></tr>
-          <tr><td>6. Total earned less retainage</td><td class="num">${fmt$2(earnedLessRet)}</td></tr>
-          <tr><td>7. Payments received to date</td><td class="num">${fmt$2(paidToDate)}</td></tr>
-          <tr style="font-weight:800"><td>8. CURRENT AMOUNT DUE (applications in process)</td><td class="num">${fmt$2(currentDue)}</td></tr>
-          <tr><td>9. Balance to finish, including retainage</td><td class="num">${fmt$2(balanceToFinish)}</td></tr>
+          <tr><td>2. Net change by change orders</td><td class="num">${fmt$2(coApproved)}</td></tr>
+          <tr><td>3. Contract sum to date (line 1 ± 2)</td><td class="num">${fmt$2(T.sched)}</td></tr>
+          <tr><td>4. Total completed &amp; stored to date (G703 column G)</td><td class="num">${fmt$2(T.total)}</td></tr>
+          <tr><td>5. Retainage (${j.retainagePct}% of completed work and stored material)${retReleased ? ' — <b>released at final completion</b>' : ''}</td><td class="num">${fmt$2(T.ret)}</td></tr>
+          <tr><td>6. Total earned less retainage (line 4 − 5)</td><td class="num">${fmt$2(T.lessRet)}</td></tr>
+          <tr><td>7. Less previous certificates for payment</td><td class="num">${fmt$2(T.prevCert)}</td></tr>
+          <tr style="font-weight:800"><td>8. CURRENT PAYMENT DUE (line 6 − 7)</td><td class="num">${fmt$2(T.due)}</td></tr>
+          <tr><td>9. Balance to finish, including retainage (line 3 − 6)</td><td class="num">${fmt$2(T.balRet)}</td></tr>
         </tbody>
+      </table>
+
+      <h3 class="sect">Schedule of Values — Continuation Sheet (AIA G703)</h3>
+      <table class="g703">
+        <thead><tr><th>A<br>Item</th><th>B<br>Description of work</th><th class="num">C<br>Scheduled value</th><th class="num">D<br>From previous application</th><th class="num">E<br>This period</th><th class="num">F<br>Materials stored</th><th class="num">G<br>Completed &amp; stored</th><th class="num">%<br>(G ÷ C)</th><th class="num">H<br>Balance to finish</th><th class="num">I<br>Retainage</th></tr></thead>
+        <tbody>${lines.map(x => `<tr><td>${esc(x.item)}</td><td class="d">${esc(x.desc)}</td><td class="num">${fmt$2(x.sched)}</td><td class="num">${fmt$2(x.prev)}</td><td class="num ${x.cur > 0.5 ? 'rb-hl' : ''}">${fmt$2(x.cur)}</td><td class="num">${fmt$2(x.stored)}</td><td class="num">${fmt$2(x.total)}</td><td class="num">${pct1(x.totPct)}</td><td class="num">${fmt$2(x.bal)}</td><td class="num">${fmt$2(x.ret)}</td></tr>`).join('')}</tbody>
+        <tfoot><tr><td colspan="2">Grand total</td><td class="num">${fmt$2(T.sched)}</td><td class="num">${fmt$2(T.prev)}</td><td class="num">${fmt$2(T.cur)}</td><td class="num">${fmt$2(T.stored)}</td><td class="num">${fmt$2(T.total)}</td><td class="num">${pct1(T.pct)}</td><td class="num">${fmt$2(T.bal)}</td><td class="num">${fmt$2(T.ret)}</td></tr></tfoot>
       </table>
 
       <h3 class="sect">Payment History &amp; Balances</h3>
       <table>
         <thead><tr><th>App #</th><th>Description</th><th>Period To</th><th class="num">Amount Certified</th><th>Status / Ref</th><th class="num">Paid to Date</th><th class="num">Balance to Finish</th></tr></thead>
         <tbody>${payRows || '<tr><td colspan="7">No payment applications issued yet — first application follows mobilization.</td></tr>'}</tbody>
-        <tfoot><tr><td colspan="3">Totals</td><td class="num">${fmt$2(m.billedAll)}</td><td></td><td class="num">${fmt$2(paidToDate)}</td><td class="num">${fmt$2(Math.max(0, contractToDate - m.billedAll))}</td></tr></tfoot>
+        <tfoot><tr><td colspan="3">Totals</td><td class="num">${fmt$2(billedAll)}</td><td></td><td class="num">${fmt$2(paidToDate)}</td><td class="num">${fmt$2(Math.max(0, T.sched - billedAll))}</td></tr></tfoot>
       </table>
       <p style="font-size:11px;color:#5b6472">All amounts reconcile to the AIA G702/G703 applications on file. Retainage ${retReleased ? 'has been released with final completion.' : 'is held at ' + j.retainagePct + '% until final completion, lien waivers and closeout documentation.'}</p>
 
       <h3 class="sect">Work Completed</h3>
       <ul>${donePhases.map(p => `<li><b>${esc(p.name)}</b> — complete (${fmtDate(p.start)} – ${fmtDate(p.finish)})</li>`).join('') || '<li>Mobilization underway.</li>'}</ul>
-
       ${activePhases.length ? `<h3 class="sect">Work In Progress</h3>
       <ul>${activePhases.map(p => `<li><b>${esc(p.name)}</b> — ${p.pct}% complete, tracking to ${fmtDate(p.finish)}</li>`).join('')}</ul>` : ''}
-
       ${nextPhases.length ? `<h3 class="sect">Upcoming Work</h3>
       <ul>${nextPhases.map(p => `<li><b>${esc(p.name)}</b> — scheduled ${fmtDate(p.start)} – ${fmtDate(p.finish)}</li>`).join('')}</ul>` : ''}
-
-      <h3 class="sect">Progress by Schedule of Values</h3>
-      <table>
-        <thead><tr><th>Item</th><th>Description</th><th class="num">Scheduled Value</th><th style="width:140px">Progress</th><th class="num">%</th></tr></thead>
-        <tbody>${j.sov.map(r => `
-          <tr><td>${r.item}</td><td>${esc(r.desc)}</td><td class="num">${fmt$2(r.scheduled)}</td>
-          <td><div class="ybar ${r.pct >= 100 ? 'g' : ''}"><i style="width:${r.pct}%"></i></div></td><td class="num">${r.pct}%</td></tr>`).join('')}</tbody>
-        <tfoot><tr><td colspan="2">Total</td><td class="num">${fmt$2(j.contract)}</td><td></td><td class="num">${fmtPct(m.pct, 1)}</td></tr></tfoot>
-      </table>
 
       ${j.photos.length ? `
       <h3 class="sect page-break">Photo Documentation (${j.photos.length})</h3>
@@ -193,7 +318,7 @@ function render() {
         <tbody>${paidApps.map((p, i) => `<tr><td><b>${esc(p.num)}</b></td><td>${payRef(p, i)}</td><td>${fmtDate(p.period)}</td><td class="num">${fmt$2(p.certified)}</td></tr>`).join('') || '<tr><td colspan="4">No payments received to date.</td></tr>'}</tbody>
         <tfoot><tr><td colspan="3">Total payments received to date</td><td class="num">${fmt$2(paidToDate)}</td></tr></tfoot>
       </table>
-      ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(currentDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
+      ${pendingApps.length ? `<p><b>Open items:</b> ${pendingApps.map(p => esc(p.num) + ' (' + esc(p.status) + ', ' + fmt$2(p.certified) + ')').join(' · ')} — total <b>${fmt$2(pendingDue)}</b> pending owner certification and payment.</p>` : `<p>There are no open payment applications on this project${retReleased ? '; retainage has been released and the account is paid in full' : ''}.</p>`}
       <div class="sig-row">
         ${sigBlock(j.id + ':conf:office', 'Gloria Simmons — Office Manager, Billing &amp; Payroll, ' + MCCORVEY.company, 'office')}
         ${sigBlock(j.id + ':conf:cfo', 'Kristal McCorvey Crites — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
@@ -202,7 +327,7 @@ function render() {
 <!-- ============ page: conditional waiver & release ============ -->
       <h3 class="sect page-break">Conditional Waiver and Release on ${waiverFinal ? 'Final' : 'Progress'} Payment</h3>
       <p>On receipt by the signer of this document of a check from <b>${esc(j.owner)}</b> (maker of check) in the sum of <b>${fmt$2(waiverAmount)}</b> payable to <b>${MCCORVEY.company}</b> (payee), and when the check has been properly endorsed and has been paid by the bank on which it is drawn, this document becomes effective to release any mechanic's lien right, any right arising from a payment bond that complies with a state or federal statute, any common-law payment bond right, any claim for payment, and any rights under any similar ordinance, rule, or statute related to claim or payment rights for persons in the signer's position, that the signer has on the property of <b>${esc(j.owner)}</b> located at <b>${esc(j.address)}</b>, to the following extent: <b>HVAC sheet metal and ductwork per the contract dated ${fmtDate(j.contractDate)}</b>.</p>
-      <p>This release covers a ${waiverFinal ? 'final' : 'progress'} payment for all labor, services, equipment, or materials furnished to the property${waiverFinal ? '' : ', except for unpaid retention, pending modifications and changes, or other items furnished'}. Before any recipient of this document relies on it, the recipient should verify evidence of payment to the signer.</p>
+      <p>This release covers a ${waiverFinal ? 'final' : 'progress'} payment for all labor, services, equipment, or materials furnished to the property${waiverFinal ? '' : ' through ' + fmtDate(monthEnd(month)) + ', except for unpaid retention, pending modifications and changes, or other items furnished after that date'}. Before any recipient of this document relies on it, the recipient should verify evidence of payment to the signer.</p>
       <p>The signer warrants that the signer has already paid, or will use the funds received from this payment to promptly pay in full, all of the signer's laborers, subcontractors, materialmen and suppliers for all work, materials, equipment, or services provided for or to the above-referenced project.</p>
       <div class="sig-row">
         <div class="sig">${MCCORVEY.company} ( Company Name )</div>
@@ -220,17 +345,149 @@ function render() {
         ${sigBlock(j.id + ':cert:pm', esc(j.pm) + ' — Project Manager, ' + MCCORVEY.company, 'conmgr|eng|svcmgr')}
         ${sigBlock(j.id + ':cert:cfo', 'Kristal McCorvey Crites — Chief Financial Officer, ' + MCCORVEY.company, 'cfo')}
       </div>
-      <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the contract and payment status above, and the payment history presented, and approves the current amount due of <b>${fmt$2(currentDue)}</b> for payment${currentDue ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${MCCORVEY.email}</b>.</p>
+      <p style="margin-top:30px"><b>Owner acknowledgment &amp; acceptance.</b> The Owner acknowledges review of this progress report, the application summary and the payment history presented, and approves the current payment due of <b>${fmt$2(T.due)}</b> for payment${T.due ? '' : ' (no amounts currently due)'}. Please execute below and return one copy to <b>${MCCORVEY.email}</b>.</p>
       <div class="sig-row">
         ${sigBlock(j.id + ':accept:owner', esc(j.owner) + ' — Owner / Authorized Agent', 'ownerext')}
         <div class="sig">${(sigState(j.id + ':accept:owner') || {}).at || 'Date'}</div>
       </div>
       <p class="ynote no-print" style="margin-top:14px">Electronic signatures are recorded with name, title and timestamp (demo: stored locally). The printed package preserves executed signatures; unsigned lines print blank for wet-ink execution.</p>
       <p style="margin-top:26px;font-size:10.5px;color:#97a0ad">${MCCORVEY.company} · ${MCCORVEY.hq} · ${MCCORVEY.phone} · ${MCCORVEY.email} · ${MCCORVEY.license}</p>
+    </div>`;
+}
+
+/* ---------- page ---------- */
+const curJob = () => JOBS.find(x => x.id === jobId) || JOBS[0];
+function render() {
+  const j = curJob();
+  const months = monthsFor(j);
+  if (!months.includes(month)) month = months[0];
+  const M = model(j), NT = notesOf(M);
+  const jobOpts = JOBS.map(x => `<option value="${x.id}" ${x.id === j.id ? 'selected' : ''}>${x.id} — ${esc(x.name)}</option>`).join('');
+  const apprKey = 'rep-' + j.id + '-' + month;
+  const apprSteps = [
+    { role: 'conmgr', label: 'PM — Report Prepared', doneLabel: 'PM Prepared' },
+    { role: 'owner', label: 'Owner — Approve for Issue', doneLabel: 'Approved for Issue' },
+  ];
+  const approved = apprComplete(apprKey, apprSteps.length);
+  const anyEdited = M.lines.some(x => x.edited) || Object.keys(M.S.stored || {}).some(k => +M.S.stored[k] > 0);
+  const notesEdited = M.S.notes && Object.keys(M.S.notes).length;
+  const history = (j.reports || []).map(r => Object.assign({ src: 'stratus' }, r)).concat(issuedOf(j).map(r => Object.assign({ src: 'portal' }, r))).sort((a, b) => a.date < b.date ? 1 : -1);
+
+  $('#app').innerHTML = `
+    <div class="ytoolrow" style="margin-top:24px">
+      <label class="yfld" style="min-width:380px;flex:1 1 380px">Job
+        <select class="yin" id="rep-job">${jobOpts}</select>
+      </label>
+      <label class="yfld" style="min-width:190px">Report month
+        <select class="yin" id="rep-mo">${months.map(m => `<option value="${m}" ${m === month ? 'selected' : ''}>${monthLabel(m)}</option>`).join('')}</select>
+      </label>
+      <div class="spacer"></div>
+      <button class="pa-btn" style="cursor:pointer" onclick="document.getElementById('rep-doc').scrollIntoView({ behavior: 'smooth' })">Preview report ↓</button>
+      <button class="pa-btn primary" style="cursor:pointer" onclick="window.print()">Print / Save as PDF</button>
+    </div>
+
+    <div class="rb-head no-print">
+      <div><div class="rb-eyebrow">Monthly progress report</div><h2>Report No. ${M.n} · ${monthLabel(month)}</h2>
+        <div class="rb-sub">${esc(j.name)} · ${esc(j.owner)} · prepared by ${esc(j.pm)}</div></div>
+      <div class="rb-flow">
+        <a href="#rb-sov" class="${anyEdited ? 'done' : ''}"><i>${anyEdited ? '✓' : '1'}</i>Update % complete</a>
+        <a href="#rb-notes"><i>2</i>Review narrative</a>
+        <a href="#rb-issue" class="${M.mine ? 'done' : ''}"><i>${M.mine ? '✓' : '3'}</i>Approve and issue</a>
+      </div>
+    </div>
+
+    <div class="ykpi-row rb-kpis no-print" id="rb-kpis">${kpisHTML(M)}</div>
+
+    <div class="demo-panel no-print" id="rb-sov" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>1 · Schedule of values — update % complete</h2>
+        <span class="k">previous = ${M.lastApp ? 'through Pay App ' + esc(M.lastApp.num) + ' (' + fmtDate(M.lastApp.period) + ')' : 'no prior application'}${anyEdited ? ` · <a href="javascript:void 0" onclick="resetPct()">reset to field progress</a>` : ''}</span></div>
+      <div class="rb-tip">Each line starts at the field-reported percent complete. Type the percent complete to date, and add any materials stored. This period, retainage, the payment due and the report below update as you type. A line can't drop below what earlier applications already billed.</div>
+      <div class="rb-scroll"><table class="demo-tbl rb-sov">
+        <thead><tr><th>Item</th><th style="text-align:left">Description</th><th>Scheduled value</th><th>Previous</th><th>% complete to date</th><th>This period</th><th>Stored materials</th><th>Completed &amp; stored</th><th>%</th><th>Balance to finish</th><th>Retainage</th></tr></thead>
+        <tbody>${M.lines.map(rowHTML).join('')}</tbody>
+        <tfoot id="rb-foot">${footHTML(M)}</tfoot>
+      </table></div>
+    </div>
+
+    <div class="demo-panel no-print" id="rb-notes" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>2 · Narrative — drafted from this month's progress</h2>
+        <span class="k">edit any line${notesEdited ? ` · <a href="javascript:void 0" onclick="resetNotes()">reset to draft</a>` : ''}</span></div>
+      <div class="rb-notes">
+        <label class="yfld">This period${M.S.notes && M.S.notes.hi != null ? '' : '<span class="rb-auto">· drafted</span>'}<textarea class="yin" data-note="hi" rows="7">${esc(NT.hi)}</textarea></label>
+        <label class="yfld">Next 30 days${M.S.notes && M.S.notes.ahead != null ? '' : '<span class="rb-auto">· drafted</span>'}<textarea class="yin" data-note="ahead" rows="7">${esc(NT.ahead)}</textarea></label>
+        <label class="yfld">Owner action items${M.S.notes && M.S.notes.owner != null ? '' : '<span class="rb-auto">· drafted</span>'}<textarea class="yin" data-note="owner" rows="7">${esc(NT.owner)}</textarea></label>
+      </div>
+    </div>
+
+    <div class="demo-panel no-print" id="rb-issue" style="margin-bottom:22px">
+      <div class="demo-panel-head"><h2>3 · Approve and issue — ${j.id}</h2>
+        <span class="rb-issue">${M.mine ? `<span class="demo-chip ok">Issued ${fmtDate(M.mine.date)}</span>` : approved ? '<span class="demo-chip ok">Approved for issue</span>' : '<span class="k">owner-facing documents require sign-off before issue</span>'}
+          <button class="pa-btn ${M.mine ? '' : 'primary'}" style="cursor:pointer" onclick="issueReport()">${M.mine ? 'Reissue' : 'Mark issued to client'}</button></span></div>
+      ${approvalChain(apprKey, apprSteps)}
+    </div>
+
+    <div id="rep-doc">${docHTML(M)}</div>
+
+    <div class="demo-panel no-print" style="margin:22px 0">
+      <div class="demo-panel-head"><h2>Report History — ${j.id}</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('st')}<span class="k">photo reports synced from STRATUS · monthly reports issued here</span></span></div>
+      <table class="demo-tbl tbl-left">
+        <thead><tr><th>Date</th><th>Report</th><th>Author</th><th style="text-align:right">Photos</th><th>Status</th></tr></thead>
+        <tbody>${history.map(r => `<tr><td>${fmtDate(r.date)}</td><td>${esc(r.title)}${r.src === 'portal' && r.due != null ? ` <span class="ynote">· ${pct1(r.pct)} complete · ${fmt$2(r.due)} due</span>` : ''}</td><td>${esc(r.author)}</td><td style="text-align:right">${r.photos}</td><td><span class="demo-chip ok">Issued</span></td></tr>`).join('') || '<tr><td colspan="5" class="ynote">No reports issued yet for this job.</td></tr>'}</tbody>
+      </table>
     </div>
     <div class="demo-note">Demo environment · fictional data</div>`;
 
-  $('#rep-job').addEventListener('change', e => { jobId = e.target.value; render(); });
+  $('#rep-job').addEventListener('change', e => { jobId = e.target.value; month = CUR_MONTH; render(); });
+  $('#rep-mo').addEventListener('change', e => { month = e.target.value; render(); });
+  bindBuilder();
+}
+
+/* ---------- typing updates the numbers, the narrative draft and the document in place ---------- */
+function paint() {
+  const M = model(curJob());
+  M.lines.forEach(x => {
+    const id = lineId(x.item), set = (p, v) => { const el = document.getElementById(p + id); if (el) el.textContent = v; };
+    const c = document.getElementById('c-' + id); if (c) { c.textContent = x.cur > 0.5 ? '+' + fmt$2(x.cur) : '—'; c.className = x.cur > 0.5 ? 'rb-up' : ''; }
+    const b = document.getElementById('b-' + id); if (b) { b.style.width = x.pct + '%'; b.parentNode.className = 'ybar' + (x.pct >= 100 ? ' g' : ''); }
+    set('t-', fmt$2(x.total)); set('q-', pct1(x.totPct)); set('r-', fmt$2(x.bal)); set('h-', fmt$2(x.ret));
+  });
+  $('#rb-foot').innerHTML = footHTML(M);
+  $('#rb-kpis').innerHTML = kpisHTML(M);
+  const NT = notesOf(M);
+  $$('textarea[data-note]').forEach(t => { const k = t.dataset.note; if (!(M.S.notes && M.S.notes[k] != null) && document.activeElement !== t) t.value = NT[k]; });
+  $('#rep-doc').innerHTML = docHTML(M);
+}
+function bindBuilder() {
+  const j = curJob();
+  $$('input[data-pct]').forEach(inp => {
+    inp.oninput = () => { const S = getS(j); S.pct = Object.assign({}, S.pct, { [inp.dataset.pct]: inp.value.replace(/[^\d.]/g, '') }); putS(j, S); inp.classList.add('edited'); paint(); };
+    inp.onchange = () => {
+      const x = model(j).lines.find(l => l.item === inp.dataset.pct), typed = +inp.value.replace(/[^\d.]/g, '');
+      inp.value = +x.pct.toFixed(1);
+      if (Math.abs(typed - x.pct) > 0.05) { const S = getS(j); S.pct = Object.assign({}, S.pct, { [x.item]: String(+x.pct.toFixed(1)) }); putS(j, S); paint(); }
+      if (typed < x.prevPct - 0.05) toast(`${x.item}: can't go below the ${pct1(x.prevPct)} already billed`);
+      else if (typed > 100) toast(`${x.item}: capped at 100%`);
+    };
+    inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
+  });
+  $$('input[data-stored]').forEach(inp => {
+    inp.oninput = () => { const S = getS(j); S.stored = Object.assign({}, S.stored, { [inp.dataset.stored]: inp.value.replace(/[^\d.]/g, '') }); putS(j, S); paint(); };
+    inp.onchange = () => { const v = +inp.value.replace(/[^\d.]/g, '') || 0; inp.value = v ? Math.round(v).toLocaleString() : ''; };
+    inp.onkeydown = e => { if (e.key === 'Enter') inp.blur(); };
+  });
+  $$('textarea[data-note]').forEach(t => {
+    t.oninput = () => { const S = getS(j); S.notes = Object.assign({}, S.notes, { [t.dataset.note]: t.value }); putS(j, S); $('#rep-doc').innerHTML = docHTML(model(j)); };
+  });
+}
+function resetPct() { const j = curJob(), S = getS(j); delete S.pct; delete S.stored; putS(j, S); render(); toast('Back to field-reported progress'); }
+function resetNotes() { const j = curJob(), S = getS(j); delete S.notes; putS(j, S); render(); toast('Narrative redrafted from this month’s progress'); }
+function issueReport() {
+  const j = curJob(), M = model(j), list = issuedOf(j).filter(x => x.month !== month);
+  const was = M.mine;
+  list.push({ month, n: M.n, date: localISO(), title: `Monthly Progress Report ${M.n} — ${monthLabel(month)}`, photos: j.photos.length, author: j.pm, due: M.T.due, pct: M.T.pct });
+  try { localStorage.setItem(IK(j), JSON.stringify(list)); } catch (e) {}
+  render();
+  toast(`${was ? 'Reissued' : 'Issued'} Report No. ${M.n} for ${monthLabel(month)} · ${fmt$2(M.T.due)} due`);
 }
 render();
 </script>
