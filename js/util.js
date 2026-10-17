@@ -209,6 +209,7 @@ function renderSignIn() {
 function srcChip(kind) {
   const map = {
     qb:   ['VIEWPOINT VISTA', '#0e7a4f', 'Financial actuals synced from Viewpoint Vista via API'],
+    ss:   ['SMARTSHEET', '#1f5fa8', 'PM financials synced from Smartsheet; invoice status writes back to the sheet'],
     st:   ['GTP STRATUS', '#f04e23', 'Fabrication, spooling & field production synced from STRATUS via API'],
     prop: ['MSM PROPRIETARY', '#c8102e', 'Proprietary McCorvey modeling engine — internal only'],
     brain: ['MSM BRAIN — AI DOC REVIEW', '#c8102e', 'Machine-read specs, drawings & addenda — AI extraction with estimator sign-off'],

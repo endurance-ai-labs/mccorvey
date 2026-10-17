@@ -34,6 +34,18 @@
   .dr-step span { font-size:11px; color:var(--color-text-muted); line-height:1.45; display:block; }
   .dr-conf { font-size:10px; color:var(--color-green); font-weight:700; }
   tr.dr-sel td { background: var(--color-blue-pale) !important; }
+  .wl-head { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin-bottom:14px; }
+  .wl-head > div { border:1px solid var(--color-border); border-left:3px solid #c8102e; border-radius:10px; padding:10px 14px; background:var(--color-bg-2); }
+  .wl-head b { display:block; font-size:19px; font-weight:800; color:var(--color-cloud-whisper); } .wl-head span { font-size:11.5px; color:var(--color-text-muted); }
+  .wl { display:flex; flex-direction:column; gap:12px; }
+  .wl-row { display:grid; grid-template-columns:180px minmax(0,1fr) minmax(0,1.2fr); gap:14px; align-items:center; padding-bottom:12px; border-bottom:1px solid var(--color-border); }
+  .wl-row .nm b { display:block; font-size:13px; color:var(--color-cloud-whisper); } .wl-row .nm span { font-size:11px; color:var(--color-text-muted); }
+  .wl-row .bar { position:relative; height:20px; background:var(--color-bg-3); border-radius:6px; margin:3px 0; overflow:hidden; }
+  .wl-row .bar i { position:absolute; inset:0 auto 0 0; background:#c8102e; opacity:.85; border-radius:6px; } .wl-row .bar i.over { background:#8f0b21; } .wl-row .bar i.ai { background:#2f9e6e; }
+  .wl-row .bar .cap { position:absolute; top:0; bottom:0; width:2px; background:var(--color-cloud-whisper); opacity:.55; }
+  .wl-row .bar em { position:relative; font-style:normal; font-size:10.5px; font-weight:700; color:var(--color-cloud-whisper); padding-left:8px; line-height:20px; }
+  .wl-row .bids { display:flex; flex-direction:column; gap:3px; font-size:11.8px; color:var(--color-cloud-whisper); } .wl-row .bids i { font-style:normal; color:var(--color-text-muted); margin-left:6px; font-size:10.8px; }
+  @media (max-width: 900px) { .wl-head { grid-template-columns:1fr 1fr; } .wl-row { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -43,7 +55,7 @@
 </main>
 
 <script src="/mccorvey/js/data.js?v=20261013k"></script>
-<script src="/mccorvey/js/util.js?v=20261016h"></script>
+<script src="/mccorvey/js/util.js?v=20261017a"></script>
 <script src="/mccorvey/js/nav.js?v=20261016h"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
 <script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
@@ -66,6 +78,31 @@ const pagesOf = q => q.docs.reduce((s, d) => s + d.pages, 0);
 let selected = DR.queue.findIndex(q => q.status === 'Review Complete');
 if (selected < 0) selected = 0;
 
+/* estimator load: bids due in the next 14 days, reading by hand vs Spec Review (demo bids, dated from today) */
+const DUE14 = [
+  { est: 'Rick Alvarez', proj: 'Concord Biologics Fill-Finish — Mechanical', d: 2, pages: 940 },
+  { est: 'Rick Alvarez', proj: 'Ballantyne Medical Office — HVAC', d: 6, pages: 610 },
+  { est: 'Rick Alvarez', proj: 'Gastonia Water Admin Building — Plumbing (public)', d: 11, pages: 520 },
+  { est: 'Dana Kowalski', proj: 'Fort Worth Cold Storage — Sheet Metal', d: 4, pages: 780 },
+  { est: 'Dana Kowalski', proj: 'Round Rock Data Hall 3 — Ductwork', d: 9, pages: 1150 },
+  { est: 'Priya Shah', proj: 'Durham Research Lab Renovation — Mechanical', d: 3, pages: 1320 },
+  { est: 'Priya Shah', proj: 'Charleston Logistics Center — HVAC', d: 13, pages: 560 },
+  { est: 'Joe Herrera', proj: 'Pasadena ISD Natatorium — Plumbing + HVAC (public)', d: 8, pages: 870 },
+];
+function workloadHTML() {
+  const MPP = 3, CAP = 80, VERIFY = 2;                      /* minutes a page that matters, hours in two weeks, hours to verify a reviewed book */
+  const by = {}; DUE14.forEach(b => (by[b.est] = by[b.est] || []).push(b));
+  const rows = Object.entries(by).map(([est, L]) => ({ est, L, hand: L.reduce((a, b) => a + b.pages * MPP / 60, 0), ai: L.length * VERIFY }));
+  const hand = rows.reduce((a, r) => a + r.hand, 0), ai = rows.reduce((a, r) => a + r.ai, 0), max = Math.max(CAP, ...rows.map(r => r.hand));
+  return `<div class="demo-panel" style="margin-bottom:22px">
+    <div class="demo-panel-head"><h2>Estimator Load · Bids Due in the Next 14 Days</h2><span class="k">${DUE14.length} bids · reading time only, before takeoff</span></div>
+    <div class="wl-head"><div><b>${Math.round(hand)} hrs</b><span>reading spec books by hand</span></div><div><b>${ai} hrs</b><span>verifying with Spec Review</span></div><div><b>${Math.round(hand / (rows.length * CAP) * 100)}%</b><span>of the team's two weeks, by hand</span></div><div><b>${Math.round(hand - ai)} hrs</b><span>back for takeoff, pricing and GCs</span></div></div>
+    <div class="wl">${rows.map(r => `<div class="wl-row"><div class="nm"><b>${esc(r.est)}</b><span>${r.L.length} bid${r.L.length > 1 ? 's' : ''} · next due ${fmtDate(addDays(todayISO(), Math.min(...r.L.map(b => b.d))))}</span></div>
+      <div class="bars"><div class="bar"><i class="${r.hand > CAP ? 'over' : ''}" style="width:${Math.min(100, r.hand / max * 100)}%"></i><b class="cap" style="left:${CAP / max * 100}%" title="Two weeks of nothing but reading (${CAP} h)"></b><em>${Math.round(r.hand)} h by hand${r.hand > CAP ? ' · over capacity' : ''}</em></div><div class="bar"><i class="ai" style="width:${Math.max(1.5, r.ai / max * 100)}%"></i><em>${r.ai} h with Spec Review</em></div></div>
+      <div class="bids">${r.L.slice().sort((a, b) => a.d - b.d).map(b => `<span>${esc(b.proj)}<i>due ${fmtDateShort(addDays(todayISO(), b.d))} · ${b.pages.toLocaleString()} pages that matter</i></span>`).join('')}</div></div>`).join('')}</div>
+    <div class="ynote" style="margin-top:10px">Demo bids. Reading at ${MPP} minutes a page that matters against ${CAP} hours in two weeks; ${VERIFY} hours to verify a book Spec Review has read. The line marks a full two weeks of nothing but reading.</div>
+  </div>`;
+}
 function render() {
   const manualCost = B.itbPerYear * B.avgHoursManual * B.loadedRate;
   const aiCost = B.itbPerYear * B.avgHoursAI * B.loadedRate;
@@ -140,6 +177,7 @@ function render() {
       <span style="flex:1;min-width:220px"><b style="display:block;font-size:13.5px;color:var(--color-cloud-whisper)">Open a set in Spec Book Review</b><span style="font-size:12px;color:var(--color-text-muted)">Div 00/01 + 22 + 23 triage, cited findings, what changed since you priced, RFIs and spec adders straight into the bid sheet.</span></span>
       <span class="pa-btn primary" style="pointer-events:none">Spec Book Review →</span>
     </a>
+    ${workloadHTML()}
 
     <div class="scope-bar">
       <span class="scope-chip">Period: <b>FY2026 P8</b></span>

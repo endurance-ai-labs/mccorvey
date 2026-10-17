@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261016u">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261016u">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261016u">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261017b">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261017b">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261017b">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -50,6 +50,40 @@
   .sb-f input.miss { border-color:#c8102e; background:rgba(200,16,46,.05); }
   .sb-f.wide { grid-column:span 2; } .sb-f.full { grid-column:1 / -1; }
   .sb-lens { display:grid; grid-template-columns:repeat(5, minmax(0,1fr)); gap:8px; }
+  .ent-row { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+  .ent-row button { font:inherit; text-align:left; padding:12px 14px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg); color:var(--color-cloud-whisper); cursor:pointer; }
+  .ent-row button b { display:block; font-size:13.5px; } .ent-row button span { display:block; font-size:11px; color:var(--color-text-muted); margin-top:2px; }
+  .ent-row button.on { background:#14283c; border-color:#14283c; color:#fff; } .ent-row button.on span { color:rgba(255,255,255,.75); }
+  .ent-row button:hover:not(.on) { border-color:var(--color-blue); }
+  .ent-fam { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:baseline; margin-top:8px; font-size:11.8px; color:var(--color-text-muted); }
+  .ent-fam b { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); } .ent-fam em { font-style:normal; font-weight:700; color:var(--color-cloud-whisper); }
+  .jp-rows { display:flex; flex-direction:column; gap:8px; }
+  .jp-row { display:grid; grid-template-columns:90px auto 1fr; gap:12px; align-items:center; padding:8px 0; border-bottom:1px solid var(--color-border-soft, var(--color-border)); }
+  .jp-row > b { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .jp-seg button { white-space:nowrap; }
+  .jp-seg button.on { background:#14283c !important; color:#fff !important; border-color:#14283c !important; }
+  .jp-why { font-size:12px; color:var(--color-text-muted); line-height:1.45; } .jp-why .cite { margin-left:6px; }
+  .jp-ovr { display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:2px 7px; border-radius:4px; color:var(--color-amber); border:1px solid currentColor; }
+  .jp-rules { margin-top:14px; border:1px solid var(--color-border); border-radius:12px; padding:12px 14px; background:var(--color-bg); display:flex; flex-direction:column; gap:6px; font-size:12.5px; line-height:1.5; color:var(--color-cloud-whisper); }
+  .jp-rules .h { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); }
+  .jp-rules i { font-style:normal; display:inline-flex; width:18px; height:18px; border-radius:50%; background:#14283c; color:#fff; font-size:10px; font-weight:800; align-items:center; justify-content:center; margin-right:8px; vertical-align:1px; }
+  .jp-rates { display:flex; flex-wrap:wrap; gap:8px 18px; align-items:center; margin-top:6px; padding-top:8px; border-top:1px solid var(--color-border); font-size:12px; color:var(--color-text-muted); }
+  .jp-rates input { width:58px; font:inherit; font-size:12.5px; font-weight:700; padding:4px 6px; margin:0 4px; border-radius:6px; border:1px solid var(--color-border); background:var(--color-bg-2); color:var(--color-cloud-whisper); text-align:right; }
+  .pr-aff { display:flex; flex-direction:column; gap:4px; margin:10px 0 4px; padding:10px 12px; border:1px solid var(--color-border); border-radius:10px; background:var(--color-bg); font-size:12.3px; color:var(--color-text-muted); }
+  .pr-aff b { font-size:10px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--color-slate-hint); } .pr-aff span { display:flex; justify-content:space-between; gap:10px; } .pr-aff em { font-style:normal; font-weight:800; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; }
+  .pdoc .lh-co b { display:block; font-size:22px; font-weight:800; color:#14283c; letter-spacing:.01em; } .pdoc .lh-co span { display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#5a6676; margin-top:4px; } .pdoc .lh-co img { height:16px; }
+  .vs { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin:14px 0 4px; }
+  .vs > div { border:1px solid var(--color-border); border-left:3px solid #c8102e; border-radius:10px; padding:10px 14px; background:var(--color-bg-2); }
+  .vs b { display:block; font-size:19px; font-weight:800; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; } .vs span { display:block; font-size:11.5px; color:var(--color-text-muted); margin-top:2px; }
+  .vs > i { grid-column:1 / -1; font-style:normal; font-size:10.5px; color:var(--color-slate-hint); }
+  .bdg.hr { color:#b98a36; border:1px solid #b98a36; background:rgba(185,138,54,.08); }
+  .fd-house { margin-top:6px; font-size:11.8px; color:var(--color-text-muted); } .fd-house b { font-size:9.5px; font-weight:800; letter-spacing:.07em; color:#b98a36; margin-right:8px; text-transform:uppercase; }
+  .fd-sub { margin-top:6px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; font-size:11.8px; color:var(--color-text-muted); }
+  .fd-learn { font-size:10.5px; color:var(--color-slate-hint); text-align:right; max-width:300px; }
+  .se-flag { display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:2px 7px; border-radius:4px; color:#c8102e; border:1px solid #c8102e; vertical-align:2px; }
+  tr.in-hot td { background:rgba(200,16,46,.04); }
+  @media (max-width: 900px) { .ent-row, .vs { grid-template-columns:1fr 1fr; } .jp-row { grid-template-columns:1fr; gap:6px; } }
+  @media (max-width: 560px) { .ent-row, .vs { grid-template-columns:1fr; } }
   .sb-lens button { font:inherit; font-size:12.5px; font-weight:700; padding:11px 10px; border-radius:10px; border:1px solid var(--color-border); background:var(--color-bg); color:var(--color-text-muted); cursor:pointer; }
   .sb-lens button.on { background:#14283c; color:#fff; border-color:#14283c; }
   .sb-lens button { padding:10px 8px; }
@@ -105,7 +139,8 @@
   .cite { font-size:10.5px; font-weight:800; color:#14283c; background:#e8edf3; border-radius:5px; padding:3px 8px; white-space:nowrap; font-variant-numeric:tabular-nums; }
   [data-theme="dark"] .cite { color:#cfe0f2; background:#1f3248; }
   .bdg { font-size:9.5px; font-weight:800; letter-spacing:.07em; padding:3px 8px; border-radius:5px; white-space:nowrap; }
-  .bdg.d01 { background:#14283c; color:#fff; } .bdg.chg { display:inline-block; background:var(--color-blue-pale); color:var(--color-blue); border:1px solid var(--color-blue); }
+  .bdg.d01 { background:#14283c; color:#fff; } .bdg.tg { color:#b98a36; border:1px solid #b98a36; background:transparent; }
+  .rtype.pub { color:#c8102e; border-color:#c8102e; } .bdg.chg { display:inline-block; background:var(--color-blue-pale); color:var(--color-blue); border:1px solid var(--color-blue); }
   .sev { font-size:9px; font-weight:800; letter-spacing:.09em; padding:3px 8px; border-radius:999px; }
   .sev.high { color:#fff; background:#c8102e; } .sev.med { color:var(--color-amber); background:var(--color-amber-bg); border:1px solid var(--color-amber); } .sev.info { color:var(--color-text-muted); background:var(--color-bg-3); border:1px solid var(--color-border); }
   .seg { display:inline-flex; border:1px solid var(--color-border); border-radius:10px; overflow:hidden; }
@@ -506,16 +541,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261016u"></script>
-<script src="/mccorvey/js/util.js?v=20261016u"></script>
-<script src="/mccorvey/js/nav.js?v=20261016u"></script>
-<script src="/mccorvey/js/specbook.js?v=20261016u"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261016u"></script>
-<script src="/mccorvey/js/buildups.js?v=20261016u"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261016u"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261016u"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261016u"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261016u" defer></script>
+<script src="/mccorvey/js/data.js?v=20261017b"></script>
+<script src="/mccorvey/js/util.js?v=20261017b"></script>
+<script src="/mccorvey/js/nav.js?v=20261017b"></script>
+<script src="/mccorvey/js/specbook.js?v=20261017b"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261017b"></script>
+<script src="/mccorvey/js/buildups.js?v=20261017b"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261017b"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261017b"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261017b"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261017b" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -586,9 +621,107 @@ const daysTo = d => Math.round((new Date(d + 'T12:00:00') - new Date(today() + '
 function toast(m) { const t = $('#toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2800); }
 
 const lensOk = l => E.inLens(l || 'other', META.lens);
+
+/* ===================== HOUSE RULES =====================
+   How the estimating team reads a book (walkthrough with the team): Part 3 Execution governs Part 2 Products
+   and Part 1 General; the spec book governs drawing notes; public work is "rip and read" and must name three
+   makers; catch the system where the cheapest listed material is not allowed; warranty is one year from
+   Substantial Completion unless written longer; painting hides in Division 09; coordination rides in the
+   BIM package; on a renovation, check the structure carries the new equipment. Rates are demo values. */
+const ENT = {
+  msm: { name: 'McCorvey Sheet Metal Works, L.P.', short: 'McCorvey', lens: 'sm', role: 'Ductwork: fabricate and install', line: ['8610 Wallisville Road, Houston, TX 77029', '(713) 672-7545'] },
+  kw: { name: 'Kirlin-Way Mechanical', short: 'Kirlin-Way', lens: 'mech', role: 'Mechanical: Carolinas and East Coast', line: ['Charlotte, North Carolina'] },
+  wm: { name: 'Way Mechanical', short: 'Way Mechanical', lens: 'mech', role: 'Mechanical: Texas, Oklahoma, Tennessee', line: ['Texas · Oklahoma · Tennessee'] },
+};
+const ENTK = () => ENT[META.entity] ? META.entity : 'msm';
+const CO = () => ENT[ENTK()].short;
+const CONAME = () => ENT[ENTK()].name;
+const AFF = () => ENTK() !== 'msm';                 /* a mechanical company buys its ductwork from McCorvey Sheet Metal */
+const HOUSE_DEF = { bim: 10, bond: 5, sep: 500000, warr: 1, refrig: 5, mpp: 3 };
+const HSE = () => Object.assign({}, HOUSE_DEF, META.house || {});
+/* the job profile the book states, with the estimator's override on top */
+const PROFV = k => { const o = (META.prof || {})[k]; if (o != null) return o; const b = (BOOK.profile || {})[k]; return b ? b.v : (k === 'controls' ? 'carried' : false); };
+const profOk = x => !x.onlyIf || !!PROFV(x.onlyIf);
+/* the project's name, not the PDF's file name */
+const projName = () => !BOOK.local ? BOOK.name : (BOOK.name.replace(/^\d{4}[-.]\d{2}[-.]\d{2}\s*/, '').replace(/\(\d+\)\s*$/, '').replace(/\s*[-–]?\s*(Campus\s+)?Specifications?\b.*$/i, m => /campus/i.test(m) ? ' - Campus' : '').replace(/\s*[-–]?\s*Issue\s*\d+.*$/i, '').replace(/\s*COMBINED\s*$/i, '').replace(/[\s-]+$/, '').trim() || BOOK.name);
+/* house-rule findings are added by the engine to a book it reads; the sample gets them here */
+function ensureHouse() {
+  if (BOOK._house) return;
+  if (BOOK.sample && BOOK.inputs) { const hf = E.houseFindings(BOOK); BOOK.findings = BOOK.findings.concat(hf.findings); BOOK.conflicts = BOOK.conflicts.concat(hf.conflicts); }
+  BOOK._house = true;
+}
+/* recommendations that depend on the job: a public job needs three makers (RFI), a private one does not */
+function applyHouse() {
+  const pub = !!PROFV('public');
+  BOOK.findings.forEach(f => {
+    if (f.rule !== 'mfrlimit') return;
+    f.act = pub ? 'rfi' : 'note'; f.rfi = pub ? 'MK-' + f.id : undefined;
+    f.req = pub ? 'open' : 'info';
+  });
+}
+const HOUSE = {
+  mfrlimit: 'Equipment makers drive the price. Public work must name at least three.',
+  mfrexec: 'Part 3 Execution overrides Part 2 Products: price the maker Part 3 names.',
+  matcatch: 'Catch the system where the cheapest listed material is not allowed.',
+  castiron: 'Catch the system where the cheapest listed material is not allowed.',
+  renosupport: 'On a renovation, check the existing structure carries the new equipment.',
+  pads: 'Equipment pads: who pours them, and on a renovation whether the floor takes them.',
+  paint9: 'Painting hides in Division 09: keep it with the painter, or price it.',
+  paintmech: 'Painting in the mechanical scope: a painter is cheaper than color-coded insulation.',
+  ductclean: 'Duct cleaning is a standard clarification unless the spec requires it.',
+  ctrlsplit: 'Controls bought direct by the owner are not carried.',
+  bimcoord: 'Coordination requirements ride in the BIM package.',
+  warr: 'Warranty is one year from Substantial Completion; longer is a vendor adder.',
+  subs: 'A cheaper maker that is not named needs a substitution request.',
+};
+const SAMPLE_RULE = { H12: 'warr', P09: 'warr', H25: 'ductclean', H19: 'pads', P01: 'castiron', P13: 'mfrlimit', F09: 'subs' };
+const ruleOf = f => f.rule || SAMPLE_RULE[f.id] || '';
+const isHouse = f => !!HOUSE[ruleOf(f)];
+/* "once it learns": how the team decided the same rule on past bids (demo precedents) */
+const LEARN = { warr: 'priced as a vendor adder on 4 of 5 past bids', paint9: 'clarified on 6 of 6 past bids', paintmech: 'priced on 3 of 4 past bids', ductclean: 'clarified on 5 of 7 past bids',
+  bimcoord: 'carried inside the BIM package on every past bid', matcatch: 'clarified on 3 of 3 past bids', castiron: 'priced on 2 of 2 past bids', mfrexec: 'noted on 4 of 4 past bids',
+  renosupport: 'sent as an RFI on 3 of 3 renovations', pads: 'priced on 5 of 6 past bids', mfrlimit: 'noted on private jobs, RFI on public ones' };
+/* makers to ask for when only one or two are named */
+const POOL = [[/VRF|split|heat pump system/i, ['Mitsubishi', 'Daikin', 'LG', 'Samsung']], [/chiller/i, ['Carrier', 'Daikin', 'JCI / York', 'Trane']], [/boiler/i, ['Lochinvar', 'AERCO', 'Fulton', 'Viessmann']],
+  [/rooftop|RTU|air[- ]handl|outdoor[- ]air|DOAS|energy recovery|unit\b/i, ['Carrier', 'JCI / York', 'AAON', 'Trane', 'Daikin']], [/pump/i, ['Bell & Gossett', 'Armstrong', 'Taco', 'Grundfos']], [/fan|ventilator/i, ['Greenheck', 'Loren Cook', 'Twin City Fan', 'Penn']],
+  [/valve/i, ['Nibco', 'Apollo', 'Milwaukee', 'Hammond']], [/water heater/i, ['A. O. Smith', 'Lochinvar', 'PVI', 'Bradford White']]];
+function suggestMaker(r) {
+  const pool = (POOL.find(([re]) => re.test(r.prod)) || [null, ['Carrier', 'Trane', 'Daikin']])[1];
+  const used = (r.makers || []).map(m => m.toLowerCase());
+  return pool.find(m => !used.some(u => u.includes(m.toLowerCase().split(/[ /]/)[0]))) || pool[0];
+}
+function askSub(fid) {
+  const f = BOOK.findings.find(x => x.id === fid); if (!f || !f.mfr) return;
+  const m = (META.subs || {})[fid] || suggestMaker(f.mfr);
+  META.subs = Object.assign({}, META.subs, { [fid]: m }); saveMeta();
+  DEC['SB-' + fid] = Object.assign({}, DEC['SB-' + fid], { act: 'on' }); saveDec(); rerender();
+  toast(`Substitution request drafted: ${m} for ${f.mfr.prod}. It is in the RFI log`);
+}
+function dropSub(fid) { const o = Object.assign({}, META.subs); delete o[fid]; META.subs = o; saveMeta(); rerender(); toast('Substitution request removed'); }
+/* RFIs the house rules write: public work needs three makers; substitution requests the estimator asked for */
+function houseRfis() {
+  const out = [];
+  if (PROFV('public')) BOOK.findings.filter(f => f.rule === 'mfrlimit' && f.mfr).forEach(f => {
+    const r = f.mfr;
+    out.push({ id: 'MK-' + f.id, type: 'makers', kind: 'makers', lens: f.lens, sev: 'high', title: `${r.prod}: public bidding needs three makers`,
+      a: { sec: f.sec, page: f.page, para: f.para, says: f.says }, b: { sec: '—', page: null, para: '', says: 'Public work must name at least three acceptable manufacturers.' },
+      q: `Section ${f.sec}${f.para ? ' para ' + f.para : ''} names only ${r.makers.join(' and ')} for ${r.prod}. Public bidding requires at least three acceptable manufacturers. Confirm additional acceptable manufacturers, or that equals will be accepted. Bid is based on the named manufacturers.`,
+      cost: 'No price competition on the equipment.' });
+  });
+  Object.entries(META.subs || {}).forEach(([fid, maker]) => {
+    const f = BOOK.findings.find(x => x.id === fid); if (!f || !f.mfr) return;
+    const r = f.mfr, named = f.rule === 'mfrexec' && r.exec ? r.exec.maker : r.makers.join(', ');
+    out.push({ id: 'SB-' + fid, type: 'subst', kind: 'subst', lens: f.lens, sev: 'med', title: `Substitution request: ${maker} for ${r.prod}`,
+      a: { sec: f.sec, page: f.page, para: f.para, says: f.says }, b: { sec: '—', page: null, para: '', says: `${maker} is not named. A cheaper maker needs the engineer's approval before it can be priced.` },
+      q: `Request approval of ${maker} as an equal to ${named} for ${r.prod} (Section ${f.sec}${f.para ? ' para ' + f.para : ''}). ${maker} equipment will meet the scheduled capacities, efficiencies, weights and dimensions; full submittal data follows approval. Bid is based on the named manufacturers; ${maker} is offered as a voluntary alternate pending approval.`,
+      cost: 'Potential savings on the equipment price.' });
+  });
+  return out;
+}
+ensureHouse(); applyHouse();
 const fLens = f => f.lens || E.lensOf(f.sec);
 const divRank = sec => { const d = sec.slice(0, 2); return d === '00' || d === '01' ? 0 : d === '23' ? 1 : d === '25' ? 2 : d === '22' ? 3 : 4; };
-const FS = () => BOOK.findings.filter(f => lensOk(fLens(f))).sort((a, b) => divRank(a.sec) - divRank(b.sec) || a.page - b.page);
+const FS = () => BOOK.findings.filter(f => lensOk(fLens(f)) && profOk(f)).sort((a, b) => divRank(a.sec) - divRank(b.sec) || a.page - b.page);
 const dec = f => { const d = DEC[f.id] || {}; const amt = E.amtOf(f, d); return { act: d.act || f.act, amt, ok: !!d.ok, allow: !!d.allow && !(amt > 0) }; };
 const REQS = {
   must: ['REQUIRED TO BID', 'Spec says "shall". Leave it out and the bid is non-compliant.'],
@@ -600,8 +733,8 @@ const REQS = {
 /* sample findings carry f.req; engine findings fall back on their recommended action */
 const reqOf = f => f.req || (f.act === 'rfi' ? 'open' : f.act === 'exclude' ? 'not' : f.act === 'clarify' ? 'call' : 'must');
 const needsAmt = f => { const d = dec(f); return d.act === 'price' && !(d.amt > 0) && !d.allow; };
-const ALLCONFS = () => BOOK.conflicts.concat(BOOK.diffs ? changeRfis() : []);
-const CONFS = () => ALLCONFS().filter(c => lensOk(c.lens));
+const ALLCONFS = () => BOOK.conflicts.concat(BOOK.diffs ? changeRfis() : [], houseRfis());
+const CONFS = () => ALLCONFS().filter(c => lensOk(c.lens) && profOk(c));
 const inLog = c => (DEC[c.id] || {}).act !== 'off';
 const rs = id => Object.assign({ status: 'draft', sent: '', answer: '' }, RS[id]);
 /* CSI Parts: what each one drives in the estimate */
@@ -698,7 +831,14 @@ const QUAL = {
    sent (a sent RFI is a record; set it back to Draft to revise and it goes out as Rev 1). The assumption is McCorvey's
    proposal wording, editable any time. */
 const ARE = /(Bid (assumes|excludes|includes|is based)[^.]*\.)/;
-const sugAssume = c => (c.q.match(ARE) || [])[1] || 'Bid is based on the documents as issued pending response.';
+const sugAssume = c => {
+  if (PROFV('public') && rtype(c) === 'conflict') return 'Bid follows the more stringent requirement: on public work the specifications govern.';
+  const k = c.kind || '';
+  if (k === 'missing') { const m = (c.title || '').match(/^(.*?) is referenced/); return `${m ? m[1] : 'The referenced section'} is referenced but not issued: its requirements are not included.`; }
+  if (k === 'template') return `${c.a && c.a.sec ? 'Section ' + c.a.sec : 'The section'} has unresolved template text: bid is based on the least-cost reasonable interpretation.`;
+  if (k === 'stale') return `Section ${(c.title || '').replace(/ is still at /, ' is priced as issued at ')}; any revised section is a change.`;
+  return (c.q.match(ARE) || [])[1] || 'Bid is based on the documents as issued pending response.';
+};
 const sugQ = c => { const a = (c.q.match(ARE) || [])[1] || ''; return a ? c.q.replace(a, '').trim() : c.q; };
 const assumeOf = c => { const v = (RS[c.id] || {}).assume; return v != null && v.trim() ? v.trim() : sugAssume(c); };
 const qOf = c => { const v = (RS[c.id] || {}).q; return v != null ? v : sugQ(c); };
@@ -883,28 +1023,40 @@ const RTYPES = {
   undefined: ['Undefined', 'A requirement referenced but never defined'],
   stale: ['Out-of-date section', 'Still stamped an older issue than the rest of the set'],
   changed: ['Changed in a reissue', 'Wording reissued after you priced; confirm intent and scope with the CM'],
+  makers: ['Needs three makers', 'Public work must name at least three acceptable manufacturers'],
+  subst: ['Substitution request', 'Ask the engineer to accept a cheaper maker that is not named'],
+  existing: ['Existing conditions', 'Renovation: confirm the existing structure carries the new work'],
 };
 const rtype = c => c.type || (c.kind === 'stale' ? 'stale' : c.kind === 'missing' ? 'missing' : c.kind === 'template' ? 'blank' : 'conflict');
 const rtLabel = c => RTYPES[rtype(c)][0].toUpperCase();
 /* McCorvey's own proposal wording: suggested text until they edit it */
 const wordOf = f => (DEC[f.id] || {}).text != null ? DEC[f.id].text : qualText(f);
-const STD = {
+/* standard lines, editable on the Proposal step. {co} is the bidding company. Ductwork for McCorvey Sheet Metal;
+   a mechanical company (plumbing + HVAC) carries controls and equipment and buys its ductwork from the affiliate. */
+const STD_SM = {
   incl: ['Detailing, LOD 400 coordination drawings and submittals.', 'Fabrication at McCorvey plants, delivery and installation.', 'Hangers, supports and supplemental steel at attachments as specified.', 'Duct leakage testing and test reports per the specifications.'],
-  qual: ['Testing, adjusting and balancing by others. McCorvey provides access, duct leakage testing and one set of drives as furnished.'],
+  qual: ['Testing, adjusting and balancing by others. {co} provides access, duct leakage testing and one set of drives as furnished.', 'Painting of exposed ductwork is excluded unless listed above; Division 09 paints exposed mechanical work in finished areas.', 'Duct cleaning (NADCA) is excluded unless listed above; ductwork is delivered and installed clean and capped.'],
   terms: ['Progress billing monthly on AIA G702/G703, payment due within 30 days of an approved application. Retainage and liquidated damages per mutually agreeable subcontract terms.',
-    'Billing includes materials fabricated and stored at McCorvey’s plants or delivered to the site, with title and insurance documentation.',
+    'Billing includes materials fabricated and stored at {co}’s plants or delivered to the site, with title and insurance documentation.',
     'Material escalation: sheet metal and steel are priced at mill and supplier pricing in effect on the bid date. Documented increases or surcharges after the validity period, or at shipment, are added at cost.',
     'Changes: no extra work or deviation from the bid documents without a written change order or written directive. Changes are priced at the unit prices above where they apply.',
-    'Delays: McCorvey is entitled to an extension of time for delays beyond its control, including material supply disruption, labor shortages, severe weather, and owner or contractor directives, and to an equitable adjustment for added cost from delays, suspensions, acceleration or resequencing it did not cause.',
-    'Warranty: one year from substantial completion on McCorvey’s workmanship, or longer where the specifications require. Manufacturer warranties are passed through.',
+    'Delays: {co} is entitled to an extension of time for delays beyond its control, including material supply disruption, labor shortages, severe weather, and owner or contractor directives, and to an equitable adjustment for added cost from delays, suspensions, acceleration or resequencing it did not cause.',
+    'Warranty: one year from substantial completion on {co}’s workmanship, or longer where the specifications require. Manufacturer warranties are passed through.',
     'Sales and use tax on materials included.',
     'This proposal, including its clarifications and exclusions, is to be made part of any subcontract or purchase order for this work.',
     'This proposal and its pricing are confidential, for the addressee’s use in evaluating this bid.'],
   excl: ['HVAC equipment, controls and control wiring, electrical power wiring, and painting of exposed ductwork unless listed above.', 'Firestopping of penetrations (single-source firestop contractor).', 'Work required by specification sections referenced but not issued with the bid documents.'],
 };
-const stdText = k => META.std && META.std[k] != null ? META.std[k] : STD[k].join('\n');
+const STD_MECH = {
+  incl: ['Coordination drawings, spool drawings and submittals through the BIM coordination package.', 'Pipe prefabrication at the McCorvey Companies fab shops, delivery and installation.', 'Ductwork and accessories fabricated and installed by our affiliate, McCorvey Sheet Metal Works.', 'Hangers, supports and supplemental steel at attachments as specified.', 'Piping pressure tests, flushing and disinfection, and duct leakage tests per the specifications.'],
+  qual: ['Testing, adjusting and balancing by others. {co} provides access and support.', 'Painting of piping, ductwork and equipment is excluded unless listed above; Division 09 paints exposed mechanical work in finished areas.', 'Duct cleaning (NADCA) is excluded unless listed above; ductwork is delivered and installed clean and capped.'],
+  terms: STD_SM.terms,
+  excl: ['Electrical power wiring, starters and disconnects unless furnished with the equipment.', 'Firestopping of penetrations (single-source firestop contractor).', 'Work required by specification sections referenced but not issued with the bid documents.', 'Site utilities beyond 5 feet of the building.'],
+};
+const STDF = () => AFF() ? STD_MECH : STD_SM;
+const stdText = k => (META.std && META.std[k] != null ? META.std[k] : STDF()[k].join('\n')).replace(/\{co\}/g, CO());
 const stdLines = k => stdText(k).split('\n').map(x => x.trim()).filter(Boolean);
-const qualText = f =>QUAL[f.id] || `${f.title}: pricing is limited to the requirement as written in Section ${f.sec}; costs beyond it are excluded until confirmed at award.`;
+const qualText = f => (f.qual || (QUAL[f.id] || '').replace(/\bMcCorvey\b(?! Sheet Metal)/g, CO()) || `${f.title}: pricing is limited to the requirement as written in Section ${f.sec}; costs beyond it are excluded until confirmed at award.`).replace(/\{co\}/g, CO());
 
 /* ===================== PREFLIGHT ===================== */
 function checks() {
@@ -981,7 +1133,7 @@ function render() {
       <div class="cmd-head">
         <div>
           <div class="cmd-eyebrow">MSM BRAIN — SPEC BOOK TO PROPOSAL · PRECONSTRUCTION</div>
-          <h1 class="cmd-title">${esc(BOOK.name)}</h1>
+          <h1 class="cmd-title">${esc(projName())}</h1>
           <div class="cmd-sub">${esc(BOOK.sub)}. Five steps from spec book to an issued proposal: every finding decided, every change confirmed, every open question an RFI, and a preflight check that will not let a proposal go out with a gap.</div>
         </div>
         <div class="cmd-side">
@@ -999,11 +1151,24 @@ function render() {
         <div class="cmd-tile ${errs ? 'hot' : ''}"><div class="l">Proposal</div><div class="v" style="${errs ? '' : 'color:#2f9e6e'}">${errs ? errs + ' to fix' : 'Ready'}</div><span class="d ${errs ? 'down' : 'up'}">${errs ? '▼ preflight' : '▲ preflight passed'}</span><div class="s">${moneyK(ADDERS().reduce((a, x) => a + x.amt, 0))} spec adders</div>${sparkSVG('sb-x', { up: !errs })}</div>
       </div>
     </div>
+    ${valueStrip()}
     <div class="sb-steps" id="steps">${stepsHTML(CK)}</div>
     <div id="pane">${pane(CK)}</div>
     <div id="sbnav">${navHTML()}</div>
     <div class="demo-note">${BOOK.local ? 'Your book was read in this browser tab; the PDF and its text never left this machine. Findings are rule-based first-pass flags, each cited to its page for estimator sign-off.' : 'Sample spec book is fictional — Project Bluebonnet, its owner, CM, design team and clause wording are illustrative. Load your own PDF to run the same flow on a real book.'} · concept build by Endurance AI Labs</div>`;
   bind(); dock();
+}
+/* what the book cost to read by hand vs here (demo assumption: 3 minutes a page that matters) */
+function valueStrip() {
+  const yours = BOOK.sections.filter(isYours).reduce((a, s) => a + s.pages, 0), hrs = Math.round(yours * HSE().mpp / 60);
+  const H = FS().filter(isHouse).length;
+  return `<div class="vs">
+    <div><b>${BOOK.local && BOOK.readSec ? BOOK.readSec + ' s' : '15 s'}</b><span>to read ${pgs(BOOK.totalPages)} pages${BOOK.local ? '' : ' (a book this size)'}</span></div>
+    <div><b>≈ ${hrs} hrs</b><span>of estimator reading by hand at ${HSE().mpp} min a page that matters</span></div>
+    <div><b>${H}</b><span>house-rule catches in this trade</span></div>
+    <div><b>${esc(CO())}</b><span>${esc(ENT[ENTK()].role)}</span></div>
+    <i>Demo assumption for reading time. Set your own rate in Set up.</i>
+  </div>`;
 }
 function stepsHTML(CK) {
   const F = FS(), rev = F.filter(f => dec(f).ok).length, D = DIFFS();
@@ -1077,6 +1242,10 @@ function paneLoad() {
     </div>
     <div class="demo-panel" style="margin-bottom:18px">
       <div class="demo-panel-head"><h2>Bid setup</h2><span class="k">used on the proposal and every RFI</span></div>
+      <div class="sb-f full" style="margin-bottom:14px"><span>Bidding as</span>
+        <div class="ent-row">${Object.entries(ENT).map(([k, v]) => `<button class="${ENTK() === k ? 'on' : ''}" onclick="setEntity('${k}')"><b>${esc(v.name)}</b><span>${esc(v.role)}</span></button>`).join('')}</div>
+        <div class="ent-fam"><b>McCorvey Companies on this bid</b>${AFF() ? `<span>Ductwork: <em>McCorvey Sheet Metal</em> (affiliate subcontract)</span>` : `<span>Fabrication: <em>McCorvey plants</em>, crews 24/7</span>`}<span>BIM coordination: <em>Way Engineering</em> (${HSE().bim}% package)</span><span>Pipe prefabrication: <em>group pipe fab shops</em></span></div>
+      </div>
       <div class="sb-f full" style="margin-bottom:14px"><span>Trade you are bidding</span>
         <div class="sb-lens">${Object.entries(E.LENSES).map(([k, v]) => `<button class="${META.lens === k ? 'on' : ''}" onclick="setLens('${k}')"><b>${(v.btn || [v.label])[0]}</b>${v.btn ? `<span>${v.btn[1]}</span>` : ''}</button>`).join('')}</div>
         ${lensSummary()}
@@ -1089,6 +1258,7 @@ function paneLoad() {
         <label class="sb-f"><span>Proposal valid (days)</span><input type="number" min="1" data-meta="valid" value="${esc(META.valid)}"></label>
       </div>
     </div>
+    ${profileHTML()}
     ${startEstimate()}
     <div class="demo-panel" style="margin-bottom:6px">
       <div class="demo-panel-head"><h2>What's in this book</h2><span style="display:flex;gap:8px;align-items:center"><span class="k">${pgs(BOOK.totalPages)} pages · ${secs.length} sections</span><button class="pa-btn" onclick="UI.showSecs=!UI.showSecs;rerender()">${UI.showSecs ? 'Hide sections' : 'Browse sections'}</button></span></div>
@@ -1096,6 +1266,44 @@ function paneLoad() {
       ${UI.showSecs ? secTable() : ''}
     </div>
     ${partsPanel()}`;
+}
+function setEntity(k) {
+  META.entity = k; META.lens = ENT[k].lens; saveMeta(); if (sheet() && BOOK.takeoff) doBuildSheet(true); render();
+  toast(`Bidding as ${ENT[k].name}: ${E.LENSES[META.lens].label}${k !== 'msm' ? ', ductwork from McCorvey Sheet Metal' : ''}`);
+}
+function setProf(k, v) {
+  const b = (BOOK.profile || {})[k];
+  META.prof = Object.assign({}, META.prof, { [k]: v });
+  if (b && b.v === v) delete META.prof[k];
+  saveMeta(); applyHouse(); render();
+  toast(k === 'public' ? (v ? 'Public job: the spec is law, three makers per product, plumbing and mechanical bid separately over ' + moneyK(HSE().sep) : 'Private job: conflicts and substitutions go to RFI')
+    : k === 'reno' ? (v ? 'Renovation: the existing-structure check is on' : 'New construction') : (v === 'owner' ? 'Controls by the owner: not carried' : 'Controls carried with HVAC'));
+}
+function setHouse(k, v) { META.house = Object.assign({}, META.house, { [k]: +v }); saveMeta(); const S = sheet(); if (S && k === 'bim') { recomputeBim(S); BC.save(S); } refreshPdoc(); refreshChrome(); if (k === 'bim') toast(`BIM coordination package at ${+v}%${S ? ': bid sheet updated' : ''}`); }
+/* the job, read from Divisions 00/01, and the rules it switches on */
+function profileHTML() {
+  const P = BOOK.profile || {}, pub = !!PROFV('public'), reno = !!PROFV('reno'), ctl = PROFV('controls');
+  const why = k => { const b = P[k]; const o = META.prof && META.prof[k] != null; return `${b ? `<span class="jp-why">${esc(b.why)}${b.sec && b.page ? ' ' + citeBtn(b.sec, '', b.page, 'jp-' + k) : ''}</span>` : `<span class="jp-why">${BOOK.local ? 'Reload the PDF to read this from the book.' : ''}</span>`}${o ? '<span class="jp-ovr">changed from the book</span>' : ''}`; };
+  const seg = (k, opts, cur) => `<span class="seg jp-seg">${opts.map(([v, l]) => `<button class="${cur === v ? 'on' : ''}" onclick="setProf('${k}',${typeof v === 'string' ? `'${v}'` : v})">${l}</button>`).join('')}</span>`;
+  const H = HSE();
+  return `<div class="demo-panel jp" style="margin-bottom:18px">
+    <div class="demo-panel-head"><h2>Job profile</h2><span class="k">read from Divisions 00/01 · flip any of them and the rules follow</span></div>
+    <div class="jp-rows">
+      <div class="jp-row"><b>Owner</b>${seg('public', [[false, 'Private'], [true, 'Public']], pub)}${why('public')}</div>
+      <div class="jp-row"><b>Work</b>${seg('reno', [[false, 'New construction'], [true, 'Renovation']], reno)}${why('reno')}</div>
+      <div class="jp-row"><b>Controls</b>${seg('controls', [['carried', 'Carried with HVAC'], ['owner', 'Bought by the owner']], ctl)}${why('controls')}</div>
+    </div>
+    <div class="jp-rules">
+      <span class="h">How this book is read</span>
+      <div><i>1</i>Part 3 Execution governs Part 2 Products and Part 1 General: makers and materials included.</div>
+      <div><i>2</i>The spec book governs conflicting notes on the drawings.</div>
+      ${pub ? `<div><i>3</i>Public job, "rip and read": if it is written or drawn, you own it. Every product needs three makers; plumbing and mechanical are bid separately over ${moneyK(H.sep)}; bid bond ${H.bond}%.</div>`
+        : `<div><i>3</i>Private job: conflicts go to the engineer as RFIs with a suggested answer, and a cheaper maker can be offered by substitution request.</div>`}
+      <div><i>4</i>Warranty is ${H.warr} year from Substantial Completion (refrigeration piping ${H.refrig}); anything longer is a vendor adder.</div>
+      <div><i>5</i>Painting in Division 09 and duct cleaning are clarifications unless the spec puts them on you${reno ? '; on this renovation, the existing structure must carry the new equipment' : ''}.</div>
+      <div class="jp-rates"><label>BIM coordination package <input type="number" min="0" max="30" step="0.5" value="${H.bim}" onchange="setHouse('bim',this.value)">% of equipment, material and labor</label><label>Reading rate <input type="number" min="1" max="10" step="0.5" value="${H.mpp}" onchange="setHouse('mpp',this.value);render()"> min a page</label><span class="ynote">House rates shown are demo values: set your own.</span></div>
+    </div>
+  </div>`;
 }
 function partsPanel() {
   const F = FS(); if (!F.some(partOf)) return '';
@@ -1135,25 +1343,50 @@ function vendorMap() {
   return V;
 }
 function startEstimate() {
-  if (!BOOK.inputs) return `<div class="ynote" style="margin:0 0 18px">On your own book, the duct construction schedule and the vendor list are not extracted yet. Findings, changes and RFIs are.</div>`;
-  const D = inRows('duct'), M = inRows('mfr').filter(r => r.st !== 'others'), V = Object.keys(vendorMap()).length, sole = M.filter(r => r.st === 'sole').length;
-  if (!D.length && !M.length) return '';
-  const card = (k, title, txt, primary, pLbl, vLbl) => `<div class="se-card ${UI.se === k ? 'on' : ''}"><b>${title}</b><p>${txt}</p><div class="row"><button class="pa-btn primary" onclick="${primary}">${pLbl}</button><button class="pa-btn" onclick="UI.se=UI.se==='${k}'?null:'${k}';rerender()">${UI.se === k ? 'Hide' : vLbl}</button></div></div>`;
+  if (!BOOK.inputs) return `<div class="ynote" style="margin:0 0 18px">Reload your spec book PDF to build the manufacturer, material and warranty schedules.</div>`;
+  const D = inRows('duct'), M = inRows('mfr').filter(r => r.st !== 'others'), T = inRows('mat'), W = inRows('warr'), V = Object.keys(vendorMap()).length;
+  if (!D.length && !M.length && !T.length && !W.length) return '';
+  const eq = M.filter(r => r.equip), few = eq.filter(r => r.n < 3).length, ex = M.filter(r => r.exec).length, cat = T.filter(r => r.catch).length, longW = W.filter(r => r.years > stdOf(r)).length;
+  const card = (k, title, txt, primary, pLbl, vLbl, flag) => `<div class="se-card ${UI.se === k ? 'on' : ''}"><b>${title}${flag ? `<span class="se-flag">${flag}</span>` : ''}</b><p>${txt}</p><div class="row">${primary ? `<button class="pa-btn primary" onclick="${primary}">${pLbl}</button>` : ''}<button class="pa-btn" onclick="UI.se=UI.se==='${k}'?null:'${k}';rerender()">${UI.se === k ? 'Hide' : vLbl}</button></div></div>`;
   return `<div class="demo-panel" style="margin-bottom:18px">
-    <div class="demo-panel-head"><h2>Start the estimate</h2><span class="k">do these first: vendor quotes take days to come back</span></div>
+    <div class="demo-panel-head"><h2>Start the estimate</h2><span class="k">the schedules an estimator builds before pricing · vendor quotes take days</span></div>
     <div class="se-cards">
-      ${D.length ? card('duct', 'Duct construction schedule', `${D.length} systems: pressure class, seal class, material, construction, insulation and leak test for each. Set up the takeoff from this.`, "copyInputs('duct')", 'Copy for takeoff (Excel)', 'View schedule') : ''}
-      ${M.length ? card('mfr', 'Vendor quote requests', `${M.length} products, grouped into quote requests for the ${V} makers the book names${sole ? ` (${sole} sole source)` : ''}. Only named makers can be priced.`, 'copyQuotes()', 'Copy quote requests by vendor', 'View manufacturers') : ''}
+      ${M.length ? card('mfr', 'Manufacturers', `${M.length} products, ${eq.length} of them equipment. ${ex ? ex + ' where Part 3 names one maker. ' : ''}${few ? few + ' equipment items name fewer than three makers. ' : ''}Grouped into quote requests for ${V} vendors.`, 'copyQuotes()', 'Copy quote requests', 'View makers', ex + few ? (ex + few) + ' to check' : '') : ''}
+      ${T.length ? card('mat', 'Materials by system', `${T.length} piping systems: what each must be made of, from the piping schedule and Part 3. ${cat ? cat + ' where the cheapest listed material is not allowed.' : 'The cheapest allowed material is marked.'}`, "copyInputs('mat')", 'Copy for the bid sheet', 'View materials', cat ? cat + ' catch' + (cat > 1 ? 'es' : '') : '') : ''}
+      ${W.length ? card('warr', 'Warranties', `${W.length} warranty terms against the ${HSE().warr}-year standard${longW ? `: ${longW} run longer and need a vendor adder` : ''}.`, "copyInputs('warr')", 'Copy for vendor quotes', 'View warranties', longW ? longW + ' adder' + (longW > 1 ? 's' : '') : '') : ''}
+      ${D.length ? card('duct', 'Duct construction schedule', `${D.length} systems: pressure class, seal class, material, construction, insulation and leak test for each. Set up the takeoff from this.`, "copyInputs('duct')", 'Copy for takeoff', 'View schedule') : ''}
     </div>
-    ${UI.se === 'duct' && D.length ? `<div class="se-detail">${inDuct()}</div>` : UI.se === 'mfr' && M.length ? `<div class="se-detail">${inMfr()}</div>` : ''}
+    ${UI.se === 'duct' && D.length ? `<div class="se-detail">${inDuct()}</div>` : UI.se === 'mfr' && M.length ? `<div class="se-detail">${inMfr()}</div>` : UI.se === 'mat' && T.length ? `<div class="se-detail">${inMat()}</div>` : UI.se === 'warr' && W.length ? `<div class="se-detail">${inWarr()}</div>` : ''}
   </div>`;
 }
+const stdOf = r => /refrigera\w*[^.]{0,30}(pip|line)/i.test(r.item) && !/compressor/i.test(r.item) ? HSE().refrig : HSE().warr;
+const findFor = (rule, r) => BOOK.findings.find(f => f.rule === rule && (f.mfr === r || f.mat === r || (f.mfr && r.prod && f.mfr.prod === r.prod && f.sec === r.sec)));
+function inMat() {
+  const R = inRows('mat');
+  return `<div class="demo-panel" style="margin-bottom:6px">
+    <div class="demo-panel-head"><h2>Materials by system</h2><span class="k">Part 3 Execution governs Part 2 · the cheapest allowed material is bold</span></div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left in-tbl"><thead><tr><th>System</th><th>Allowed</th><th>Price it in</th><th>Rule</th><th>Source</th><th>Cite</th></tr></thead>
+    <tbody>${R.map((r, i) => { const f = findFor('matcatch', r) || (r.find && BOOK.findings.find(x => x.id === r.find)); return `<tr class="${r.catch ? 'in-hot' : ''}"><td><b>${esc(r.sys)}</b></td><td>${r.allowed.map(x => x === r.cheapest ? `<b>${esc(x)}</b>` : esc(x)).join(', ')}${r.condNote ? `<div class="ynote">${esc(r.condNote)}</div>` : ''}${r.listed ? `<div class="ynote">Part 2 lists: ${esc(r.listed)}</div>` : ''}</td><td><b>${esc(r.cheapest)}</b></td>
+      <td>${r.catch ? `<span class="in-b sole">CATCH · NO ${esc(String(r.missing).toUpperCase())}</span>` : '<span class="in-b">OK</span>'}${r.part === 3 ? '<div class="ynote">Part 3 governs</div>' : ''}${f ? `<div><a href="javascript:void 0" onclick="jumpFinding('${f.id}')">finding</a></div>` : ''}</td><td>${esc(r.src || '')}</td><td>${inCite(r, 'i-mat' + i)}</td></tr>`; }).join('')}</tbody></table></div>
+  </div>`;
+}
+function inWarr() {
+  const R = inRows('warr');
+  return `<div class="demo-panel" style="margin-bottom:6px">
+    <div class="demo-panel-head"><h2>Warranties</h2><span class="k">standard: ${HSE().warr} year from Substantial Completion · refrigeration piping ${HSE().refrig} · longer is a vendor adder</span></div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left in-tbl"><thead><tr><th>Item</th><th>Section</th><th>Term</th><th>Standard</th><th>Carry it as</th><th>Cite</th></tr></thead>
+    <tbody>${R.map((r, i) => { const ext = r.years > stdOf(r); return `<tr class="${ext ? 'in-hot' : ''}"><td><b>${esc(r.item)}</b></td><td>${r.sec} ${esc(E.secTitle(BOOK, r.sec))}</td><td><b>${r.years} year${r.years > 1 ? 's' : ''}</b></td><td>${stdOf(r)} year${stdOf(r) > 1 ? 's' : ''}</td><td>${ext ? '<span class="in-b sole">VENDOR ADDER</span>' : '<span class="in-b">STANDARD</span>'}</td><td>${inCite(r, 'i-warr' + i)}</td></tr>`; }).join('')}</tbody></table></div>
+  </div>`;
+}
+/* the BIM team closes the job: field redlines become the as-built model turned over to the Owner */
+const BIM_ASBUILT = () => ({ t: 'Closeout', d: 'As-built record drawings: field redlines folded back into the BIM model', when: 'At closeout, before Substantial Completion', who: 'Owner, through the CM', lens: 'all', sec: '01 7839', bim: true });
+function sendHandoff() { META.handoff = { at: new Date().toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }), n: inRows('deliv').length + 1 }; saveMeta(); rerender(); toast(`Handoff sent to the project team: ${META.handoff.n} submittals, tests and closeout items`); }
 function handoffHTML() {
   const R = inRows('deliv');
   if (!R.length) return '';
   return `<div class="demo-panel" style="margin:16px 0 6px">
-    <div class="demo-panel-head"><h2>After award: handoff to the PM</h2><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="pa-btn" onclick="UI.handoff=!UI.handoff;rerender()">${UI.handoff ? 'Hide' : 'Show'} ${R.length} items</button><button class="pa-btn" onclick="copyInputs('deliv')">Copy for Excel</button></span></div>
-    <div class="ynote">Every submittal, test and closeout item the book requires, with when it is due and who reviews or witnesses it. Not needed to bid; ready for the PM the day the job is won.</div>
+    <div class="demo-panel-head"><h2>After award: handoff to the PM</h2><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="pa-btn" onclick="UI.handoff=!UI.handoff;rerender()">${UI.handoff ? 'Hide' : 'Show'} ${R.length + 1} items</button><button class="pa-btn" onclick="copyInputs('deliv')">Copy for Excel</button>${META.handoff ? `<span class="fd-ok" style="align-self:center">✓ SENT ${esc(META.handoff.at).toUpperCase()}</span>` : '<button class="pa-btn primary" onclick="sendHandoff()">Send to the project team</button>'}</span></div>
+    <div class="ynote">Every submittal, test and closeout item the book requires (${R.filter(r => r.t === 'Submittal').length} submittals, ${R.filter(r => r.t === 'Test').length} tests, ${R.filter(r => r.t === 'Closeout').length + 1} closeout items), with when it is due and who reviews it. Not needed to bid; the PM's register the day the job is won, ending with the BIM as-built set.</div>
     ${UI.handoff ? `<div class="se-detail">${inDeliv()}</div>` : ''}
   </div>`;
 }
@@ -1174,16 +1407,19 @@ function inDuct() {
     </div>` : ''}`;
 }
 function inMfr() {
-  const R = inRows('mfr');
+  const R = inRows('mfr').slice().sort((x, y) => (y.equip ? 1 : 0) - (x.equip ? 1 : 0) || (y.exec ? 1 : 0) - (x.exec ? 1 : 0) || (x.n || 9) - (y.n || 9));
+  const pub = !!PROFV('public');
+  const rule = r => r.st === 'others' ? `<span class="in-b">${MST.others[0]}</span>${r.who ? `<div class="ynote">${esc(r.who)}</div>` : ''}`
+    : r.exec ? `<span class="in-b sole">PART 3: ${esc(r.exec.maker.toUpperCase())} ONLY</span>` : r.n === 1 ? `<span class="in-b sole">SOLE SOURCE</span>` : pub && r.n < 3 ? `<span class="in-b sole">PUBLIC: NEEDS 3</span>` : r.n < 3 ? `<span class="in-b">${r.n} NAMED</span>` : `<span class="in-b">LISTED</span>`;
   return `<div class="demo-panel" style="margin-bottom:6px">
-    <div class="demo-panel-head"><h2>Approved manufacturers</h2><span class="k">price only these makers · ${R.filter(r => r.st === 'sole').length} sole source</span></div>
-    <div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left in-tbl"><thead><tr><th>Product</th><th>Basis of design</th><th>Also named</th><th>Rule</th><th>Cite</th></tr></thead>
-    <tbody>${R.map(r => `<tr><td><b>${esc(r.prod)}</b></td><td>${esc(r.bod)}</td><td>${esc(r.also || '—')}</td><td><span class="in-b ${r.st}">${MST[r.st][0]}</span>${r.who ? `<div class="ynote">${esc(r.who)}</div>` : ''}</td><td>${inCite(r, 'i-mfr' + BOOK.inputs.mfr.indexOf(r))}</td></tr>`).join('')}</tbody></table></div>
-    <div class="ynote" style="margin-top:8px">${esc(MST.listed[1])} An unnamed maker on a basis-of-design spec is treated as a substitution (01 6000), so check every vendor you plan to use is on this list.</div>
+    <div class="demo-panel-head"><h2>Manufacturers</h2><span class="k">equipment first · price only named makers · Part 3 overrides Part 2</span></div>
+    <div class="demo-tbl-wrap grid-scroll" style="max-height:520px"><table class="demo-tbl tbl-left in-tbl"><thead><tr><th>Product</th><th>Makers named</th><th>Count</th><th>Rule</th><th>Cite</th></tr></thead>
+    <tbody>${R.map(r => { const f = findFor('mfrexec', r) || findFor('mfrlimit', r); return `<tr class="${r.exec || (r.equip && r.n < 3) ? 'in-hot' : ''}"><td><b>${esc(r.prod)}</b>${r.equip ? '<span class="in-b">EQUIPMENT</span>' : ''}</td><td>${esc((r.makers || [r.bod].concat(r.also ? r.also.split(', ') : [])).join(', '))}</td><td style="text-align:right">${r.n || (1 + (r.also ? r.also.split(', ').length : 0))}</td><td>${rule(r)}${f ? `<div><a href="javascript:void 0" onclick="jumpFinding('${f.id}')">finding</a></div>` : ''}</td><td>${inCite(r, 'i-mfr' + BOOK.inputs.mfr.indexOf(r))}</td></tr>`; }).join('')}</tbody></table></div>
+    <div class="ynote" style="margin-top:8px">${pub ? 'Public job: every product needs at least three makers, or an RFI asks the engineer to name more.' : 'Private job: a cheaper maker that is not named can be offered by substitution request (from its finding in Decide).'} An unnamed maker on a basis-of-design spec is a substitution (01 6000).</div>
   </div>`;
 }
 function inDeliv() {
-  const R = inRows('deliv');
+  const R = inRows('deliv').concat([BIM_ASBUILT()]);
   return ['Submittal', 'Test', 'Closeout'].map(t => { const G = R.filter(r => r.t === t); return G.length ? `<div class="demo-panel" style="margin-bottom:12px">
       <div class="demo-panel-head"><h2>${t === 'Test' ? 'Tests and inspections' : t === 'Closeout' ? 'Closeout' : 'Submittals'}</h2><span class="k">${G.length} item${G.length > 1 ? 's' : ''}</span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none"><table class="demo-tbl tbl-left in-tbl"><thead><tr><th>Deliverable</th><th>When</th><th>Reviewed / witnessed by</th><th>Cite</th></tr></thead>
@@ -1194,8 +1430,10 @@ function copyInputs(t) {
   const cit = r => r.sec ? E.cite(r.sec, r.para, r.page) : 'Not in book';
   const C = {
     duct: [['System', 'Pressure class', 'Seal', 'Leakage class', 'Material', 'Construction', 'Insulation', 'Leak test', 'Cite'], r => [r.sys, r.press, r.seal, r.leak, r.mat, r.cons, r.ins, r.test, cit(r)]],
-    mfr: [['Product', 'Basis of design', 'Also named', 'Rule', 'Cite'], r => [r.prod, r.bod, r.also, MST[r.st][0] + (r.who ? ' (' + r.who + ')' : ''), cit(r)]],
+    mfr: [['Product', 'Basis of design', 'Also named', 'Rule', 'Cite'], r => [r.prod, r.bod, r.also, r.exec ? 'Part 3: ' + r.exec.maker + ' only' : MST[r.st][0] + (r.who ? ' (' + r.who + ')' : ''), cit(r)]],
     deliv: [['Type', 'Deliverable', 'When', 'Reviewed / witnessed by', 'Cite'], r => [r.t, r.d, r.when, r.who, cit(r)]],
+    mat: [['System', 'Allowed', 'Price it in', 'Catch', 'Source', 'Cite'], r => [r.sys, r.allowed.join(', ') + (r.condNote ? ' (' + r.condNote + ')' : ''), r.cheapest, r.catch ? 'No ' + r.missing : '', r.src || '', cit(r)]],
+    warr: [['Item', 'Section', 'Term (years)', 'Standard (years)', 'Carry as', 'Cite'], r => [r.item, r.sec, r.years, stdOf(r), r.years > stdOf(r) ? 'Vendor adder' : 'Standard', cit(r)]],
   }[t];
   cp([C[0]].concat(inRows(t).map(C[1])).map(a => a.map(x => String(x || '').replace(/\t|\n/g, ' ')).join('\t')).join('\n'), 'Table copied: paste into Excel');
 }
@@ -1213,15 +1451,15 @@ function fdHTML(f) {
   const d = dec(f), d01 = /^0[01]/.test(f.sec);
   return `<div class="fd ${f.sev} ${d.ok ? 'ok' : ''}" id="f-${f.id}">
     <div>
-      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}${partOf(f) ? `<span class="bdg pt p${partOf(f)}" title="${PART_DRIVES[partOf(f)]}">PART ${partOf(f)} · ${PARTN[partOf(f)].toUpperCase()}</span>` : ''}
+      <div class="fd-top"><span class="sev ${f.sev}">${sevL[f.sev]}</span><b>${esc(f.title)}</b>${citeBtn(f.sec, f.para, f.page, 'f-' + f.id)}${partOf(f) ? `<span class="bdg pt p${partOf(f)}" title="${partOf(f) === 3 ? 'Part 3 Execution governs Part 2 Products and Part 1 General. ' : ''}${PART_DRIVES[partOf(f)]}">PART ${partOf(f)} · ${PARTN[partOf(f)].toUpperCase()}${partOf(f) === 3 ? ' · GOVERNS' : ''}</span>` : ''}${isHouse(f) ? `<span class="bdg hr" title="${esc(HOUSE[ruleOf(f)])}">HOUSE RULE</span>` : ''}
         ${d01 ? '<span class="bdg d01">FROM DIV 01</span>' : ''}${f.chg ? `<span class="bdg chg">CHANGED ${iss(f.chg).toUpperCase()}</span>` : ''}</div>
-      <div class="fd-imp">${esc(f.impact)}</div>
+      <div class="fd-imp">${esc(f.impact)}</div>${isHouse(f) ? `<div class="fd-house"><b>House rule</b>${esc(HOUSE[ruleOf(f)])}</div>` : ''}${f.mfr && !PROFV('public') && ['mfrlimit', 'mfrexec'].includes(f.rule) ? ((META.subs || {})[f.id] ? `<div class="fd-sub">Substitution request drafted: <b>${esc(META.subs[f.id])}</b> as an equal. <a href="javascript:void 0" onclick="openRfi('SB-${f.id}')">Open the RFI ↗</a> · <a href="javascript:void 0" onclick="dropSub('${f.id}')">remove</a></div>` : `<div class="fd-sub"><button class="fd-open" onclick="askSub('${f.id}')">Ask the engineer to approve ${esc(suggestMaker(f.mfr))} ↗</button><span>a cheaper maker needs a substitution request</span></div>`) : ''}
       <div class="fd-req ${reqOf(f)}"><b>${REQS[reqOf(f)][0]}</b><span>${REQS[reqOf(f)][1]}</span></div>${reqOf(f) === 'must' && d.act === 'exclude' ? '<div class="fd-warn">Excluding a required item makes the bid non-compliant. Price it, or qualify it with the GC first.</div>' : ''}
       <div class="fd-links">${f.page ? `<button class="fd-open" onclick="openDoc('${f.sec}',${f.page},'f-${f.id}')">Open in spec book, p. ${pgs(f.page)} ↗</button>` : ''}<details><summary>Show the clause</summary><div class="says">“${esc(f.says)}”</div></details></div>
       ${['clarify', 'exclude'].includes(d.act) ? `<details class="fd-word"><summary>${d.act === 'exclude' ? 'Exclusion' : 'Qualification'} wording in the proposal${(DEC[f.id] || {}).text != null ? ' · edited' : ''}</summary><textarea data-ftext="${f.id}" rows="3">${esc(wordOf(f))}</textarea>${(DEC[f.id] || {}).text != null ? `<button class="fd-open" onclick="resetWord('${f.id}')">Reset to suggested wording</button>` : ''}</details>` : ''}
     </div>
     <div class="fd-side">
-      <span class="seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''} ${f.act === k ? 'rec' : ''}" title="${f.act === k ? 'Recommended' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>
+      <span class="seg">${ACTS.map(([k, l]) => `<button class="${k} ${d.act === k ? 'on' : ''} ${f.act === k ? 'rec' : ''}" title="${f.act === k ? 'Recommended' : ''}" onclick="setAct('${f.id}','${k}')">${l}</button>`).join('')}</span>${LEARN[ruleOf(f)] ? `<span class="fd-learn" title="Demo precedents: the brain learns from your past bids">Learned: ${esc(LEARN[ruleOf(f)])}</span>` : ''}
       ${d.act === 'price' ? `<span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">${d.allow ? '<span class="bdg chg">ALLOWANCE · TBD</span>' : ''}<label class="amt">Adder $<input data-amt="${f.id}" class="${d.amt > 0 || d.allow ? '' : 'miss'}" value="${d.amt ? Math.round(d.amt).toLocaleString() : ''}" placeholder="${d.allow ? 'optional' : 'required'}" inputmode="decimal"></label>${d.amt > 0 ? '' : `<button class="pa-btn" style="height:30px;font-size:11px" onclick="setAllow('${f.id}',${!d.allow})">${d.allow ? 'Undo allowance' : 'Carry as allowance'}</button>`}</span>${pbTrail(f, d)}` : ''}
       ${d.ok ? `<span class="fd-ok">✓ REVIEWED${d.allow ? ' · ALLOWANCE' : ''}</span>` : `<button class="pa-btn primary" style="height:30px;font-size:11.5px" onclick="confirmF('${f.id}')">Confirm: ${ACTS.find(a => a[0] === d.act)[1]}</button>`}
     </div>
@@ -1344,6 +1582,19 @@ function matrixHTML(rows) {
 }
 
 /* ---------- 3 · confirm changes ---------- */
+/* what a reissue touched that moves the price: Part 3, makers, materials, warranty, alternates */
+const MAT_RX = /\b(PVC|CPVC|PEX|cast[- ]iron|ductile|copper|steel pipe|galvanized|stainless|no[- ]hub|hub[- ]and[- ]spigot)\b/i;
+let MAKERS_RX = null, MAKERS_K = '';
+function chgTags(d) {
+  if (MAKERS_K !== BOOK.key) { MAKERS_K = BOOK.key; const M = [...new Set(((BOOK.inputs && BOOK.inputs.mfr) || []).flatMap(r => r.makers || [r.bod]).map(m => String(m).split(/[\s,\/]/)[0]).filter(m => m && m.length > 3))]; MAKERS_RX = M.length ? new RegExp(`\\b(${M.map(m => m.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`) : null; }
+  const T = [], txt = d.changes.map(c => (c.before || '') + ' ' + (c.after || '')).join(' ');
+  if (d.sec === '01 2300') T.push('ALTERNATES');
+  if (d.changes.some(c => /^3\./.test(c.para || ''))) T.push('PART 3');
+  if (/(manufacturer|basis[- ]of[- ]design|acceptable products|or equal)/i.test(txt) || (MAKERS_RX && MAKERS_RX.test(txt))) T.push('MAKERS');
+  if (MAT_RX.test(txt)) T.push('MATERIAL');
+  if (/warrant/i.test(txt)) T.push('WARRANTY');
+  return T;
+}
 function paneChanges() {
   const D = DIFFS();
   const up = D.reduce((a, d) => a + d.changes.reduce((b, c, i) => b + Math.max(0, chgEff(d, i).amt), 0), 0);
@@ -1355,9 +1606,9 @@ function paneChanges() {
   let big = null; D.forEach(d => d.changes.forEach((c, i) => { const a = chgEff(d, i).amt; if (!big || a > big.a) big = { d, c, a }; }));
   const maxAbs = Math.max(1, ...D.map(d => Math.abs(secTot(d))));
   const bars = D.slice().sort((a, b) => Math.abs(secTot(b)) - Math.abs(secTot(a)));
-  const CXF = [['all', 'All', () => true], ['cost', 'Adds cost', d => secTot(d) > 0], ['credit', 'Credits', d => secTot(d) < 0], ['out', 'Outside your division', d => d.crossDiv || /^0[01]/.test(d.sec)], ['open', 'Not confirmed', d => !acked(d)]];
+  const CXF = [['all', 'All', () => true], ['moves', 'Makers, materials, Part 3', d => chgTags(d).some(t => t !== 'WARRANTY')], ['cost', 'Adds cost', d => secTot(d) > 0], ['credit', 'Credits', d => secTot(d) < 0], ['out', 'Outside your division', d => d.crossDiv || /^0[01]/.test(d.sec)], ['open', 'Not confirmed', d => !acked(d)]];
   const fx = (CXF.find(x => x[0] === UI.cx) || CXF[0])[2];
-  const DS = D.filter(fx);
+  const DS = D.filter(fx).sort((a, b) => UI.cxSort ? Math.abs(secTot(b)) - Math.abs(secTot(a)) : 0);
   const illus = ILLUS();
   const hero = HASAMT() && D.length ? `
     ${illus ? `<div class="cx-illus"><b>Illustrative redlines, for illustration only.</b> The prior issue PDF is not loaded, so the earlier wording, the issue labels and dates for Issues 01–${pad2(BOOK.bookIssue - 1)} and the dollar figures are simulated. Which sections were reissued and their current wording are real, from this book. Load the prior issue to replace them with the real comparison.</div>` : ''}
@@ -1382,12 +1633,13 @@ function paneChanges() {
     <div class="sb-tools">
       ${D.some(d => !acked(d)) ? `<button class="pa-btn primary" onclick="ackAll()">Confirm all ${D.filter(d => !acked(d)).length} remaining</button>` : (D.length ? '<span class="fd-ok">✓ ALL CHANGES CONFIRMED</span>' : '')}
       ${BOOK.local ? `<button class="pa-btn" onclick="$('#pick-prior').click()">${PRIOR ? 'Compare a different prior issue' : 'Load prior issue to see each sentence'}</button>` : ''}
+      ${HASAMT() && D.length > 1 ? `<button class="pa-btn" onclick="UI.cxSort=!UI.cxSort;rerender()">${UI.cxSort ? 'Book order' : 'Biggest $ first'}</button>` : ''}
       <span style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">${CXF.filter(x => x[0] === 'all' || D.some(x[2]) || UI.cx === x[0]).map(([k, l, f]) => `<button class="sb-chip ${UI.cx === k ? 'on' : ''}" onclick="UI.cx='${k}';rerender()">${l}<b>${D.filter(f).length}</b></button>`).join('')}</span>
     </div>
     ${DS.length ? DS.map(d => {
       const tot = secEff(d), ok = acked(d);
       return `<div class="dsec ${ok ? 'ok' : ''}" id="x-${d.sec.replace(/\W/g, '')}">
-        <div class="hd"><span class="bdg chg">${d.isNew ? 'NEW SECTION' : iss(d.from) + ' → ' + iss(d.to)}</span><b>${d.sec} — ${esc(E.secTitle(BOOK, d.sec))}</b>${d.crossDiv ? '<span class="bdg d01">OUTSIDE YOUR DIVISION</span>' : ''}
+        <div class="hd"><span class="bdg chg">${d.isNew ? 'NEW SECTION' : iss(d.from) + ' → ' + iss(d.to)}</span><b>${d.sec} — ${esc(E.secTitle(BOOK, d.sec))}</b>${chgTags(d).map(t => `<span class="bdg tg" title="${t === 'PART 3' ? 'Part 3 Execution governs Part 2 and Part 1' : 'This reissue touches ' + t.toLowerCase()}">${t}</span>`).join('')}${d.crossDiv ? '<span class="bdg d01">OUTSIDE YOUR DIVISION</span>' : ''}
           <span class="tot ${tot > 0 ? 'up' : tot < 0 ? 'dn' : ''}" id="tot-${d.sec.replace(/\W/g, '')}">${HASAMT() ? (tot > 0 ? '+' : '') + money(tot) : ''}</span>${d.illustrative ? '<span class="bdg ill">ILLUSTRATIVE</span>' : ''}
           <label class="ack"><input type="checkbox" ${ok ? 'checked' : ''} onchange="ack('${d.sec}',this.checked)">${ok ? 'Confirmed in price' : 'Confirm in price'}</label></div>
         ${d.stampOnly && !d.changes.length ? `<div style="padding:11px 15px;font-size:12.2px;color:var(--color-text-muted)">Header stamp moved from ${iss(d.from)} to ${iss(d.to)}. ${PRIOR ? 'No sentence-level differences found against the prior issue.' : 'Load the prior issue to see exactly what changed, or read the section before confirming.'}</div>` : ''}
@@ -1478,7 +1730,7 @@ function paneRfis() {
       return `<div class="rfi ${on ? '' : 'off'}" id="c-${c.id}">
         <div class="rfi-h">
           <label class="tgl" title="${on ? 'In the RFI log — uncheck to drop' : 'Add to the RFI log'}"><input type="checkbox" ${on ? 'checked' : ''} onchange="toggleRfi('${c.id}',this.checked)"></label>
-          ${on ? `<span class="no">${E.rfiNo(N[c.id])}${r.rev ? ' · Rev ' + r.rev : ''}</span>` : ''}<span class="sev ${c.sev}">${sevL[c.sev]}</span><span class="rtype" title="${esc(RTYPES[t][1])}">${RTYPES[t][0]}</span><b>${esc(c.title)}</b>
+          ${on ? `<span class="no">${E.rfiNo(N[c.id])}${r.rev ? ' · Rev ' + r.rev : ''}</span>` : ''}<span class="sev ${c.sev}">${sevL[c.sev]}</span><span class="rtype" title="${esc(RTYPES[t][1])}">${RTYPES[t][0]}</span>${PROFV('public') && t === 'conflict' ? '<span class="rtype pub" title="Public work: the specification governs; the RFI is optional">PUBLIC: SPEC GOVERNS</span>' : ''}<b>${esc(c.title)}</b>
           <span class="sp">${on && r.status !== 'draft' && age != null ? `<span class="rfi-age">sent ${fmtDate(r.sent)} · ${age} day${age === 1 ? '' : 's'}</span>` : ''}${on ? `<select onchange="setStatus('${c.id}',this.value)">${ST.map(([k, l]) => `<option value="${k}" ${r.status === k ? 'selected' : ''}>${l}</option>`).join('')}</select>` : '<span class="ynote">not in log</span>'}
             <button class="pa-btn" style="height:30px;font-size:11.5px" onclick="UI.openRfi=UI.openRfi==='${c.id}'?null:'${c.id}';rerender()">${open ? 'Hide RFI text' : 'RFI text + answer'}</button></span>
         </div>
@@ -1515,6 +1767,7 @@ function paneProposal(CK) {
             <div class="sb-kpi ${T.mp === 'ok' ? 'green' : T.mp === 'tight' ? 'amber' : 'red'}"><div class="l">Crew</div><div class="v">${T.mp === 'ok' ? 'Staffable' : T.mp === 'tight' ? 'Tight' : 'Over'}</div><div class="s">${T.fieldNeed.toFixed(0)} field · ${T.shopNeed.toFixed(0)} shop</div></div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">${BC.adderDiff(S, ADDERS()).length ? '<button class="pa-btn primary" onclick="syncSheet()">Sync spec adders to bid sheet</button>' : '<span class="fd-ok" style="align-self:center">✓ SPEC ADDERS IN SYNC</span>'}<a class="pa-btn" href="/mccorvey/bidmodel/">Adjust pricing in Bid Modeler →</a></div>
+          ${(() => { const k = 1 + T.a, aff = S.lines.map((l, i) => ({ l, v: T.L[i].sell * k })).filter(x => BC.inc(x.l) && (x.l.aff || isBim(x.l))); return aff.length ? `<div class="pr-aff"><b>McCorvey Companies inside this bid</b>${aff.map(x => `<span>${x.l.aff ? 'McCorvey Sheet Metal, ductwork (affiliate)' : `Way Engineering, BIM package (${HSE().bim}%)`}<em>${money(x.v)}</em></span>`).join('')}</div>` : ''; })()}
           <div class="ynote" style="margin-top:10px">Spec adder amounts are set in step 2 and the bid sheet follows them. Rates, markups and base quantities are set in the Bid Modeler.</div>`
         : `<div class="ynote" style="margin-bottom:12px">${BOOK.takeoff ? 'Build a bid sheet from this book: the base takeoff plus every priced spec adder, each tagged with its spec cite.' : 'Add every priced spec adder to your current bid sheet and link it to this book.'} Your current sheet is kept as a backup.</div>
           <button class="pa-btn primary" style="height:42px" onclick="buildSheet()">${BOOK.takeoff ? 'Build bid sheet from this book' : 'Link current bid sheet + add adders'}</button>`}
@@ -1569,11 +1822,11 @@ const propNo = () => (META.bidNo || 'MSM') + '-P';
 const revOf = () => META.rev || 'A';
 function newRevision() { const r = revOf(); META.revs = (META.revs || []).concat([{ rev: r, date: today() }]); META.rev = String.fromCharCode(r.charCodeAt(0) + 1); META.sig = {}; saveMeta(); rerender(); toast(`Revision ${META.rev} started; Rev ${r} is kept in the history`); }
 /* scope of work by system, from the bid sheet's base lines */
-const SYS = [['Insulation and liner', /liner|insulation|wrap/i], ['Duct accessories', /damper|access door|flex/i], ['Air distribution devices', /air device|GRD|diffuser|grille|register/i], ['Coordination, rigging and field support', /BIM|shop drawing|coordination|rigging|lift/i], ['Ductwork', /duct|spiral|stainless|exhaust/i]];
+const SYS = [['Affiliate subcontract', /affiliate/i], ['HVAC equipment and controls', /HVAC equipment|temperature controls/i], ['HVAC piping', /hydronic|refrigerant|water treatment/i], ['Plumbing', /sanitary|domestic water|storm|natural gas|fixture|water heater|plumbing/i], ['Insulation and liner', /liner|insulation|wrap/i], ['Duct accessories', /damper|access door|flex/i], ['Air distribution devices', /air device|GRD|diffuser|grille|register/i], ['Coordination, rigging and field support', /BIM|shop drawing|coordination|rigging|lift/i], ['Ductwork', /duct|spiral|stainless|exhaust/i]];
 function scopeBySystem(S) {
   const G = {};
   S.lines.filter(l => BC.inc(l) && !l.scope.startsWith(BC.ADDER)).forEach(l => { const sys = (SYS.find(([, re]) => re.test(l.scope)) || ['Other scope'])[0]; (G[sys] = G[sys] || []).push(l); });
-  const order = ['Ductwork', 'Duct accessories', 'Air distribution devices', 'Insulation and liner', 'Coordination, rigging and field support', 'Other scope'];
+  const order = ['Affiliate subcontract', 'Ductwork', 'Duct accessories', 'Air distribution devices', 'HVAC equipment and controls', 'HVAC piping', 'Plumbing', 'Insulation and liner', 'Coordination, rigging and field support', 'Other scope'];
   return order.filter(k => G[k]).map(k => ({ sys: k, lines: G[k] }));
 }
 function ductStandard() {
@@ -1584,22 +1837,24 @@ function ductStandard() {
 }
 /* scope responsibility matrix: who does each trade-boundary item. This is the page a CM levels sub bids against;
    anything not listed, or marked by others, is excluded. Defaults follow the bid sheet and the standard exclusions. */
-const MXV = { mc: 'McCorvey', install: 'Install only', furnish: 'Furnish only', others: 'By others', excl: 'Not included' };
-const MXL = { mc: 'McCorvey', install: 'McCorvey installs', furnish: 'McCorvey furnishes', others: 'By others', excl: 'Not included' };
+const MXV = { mc: 'Us', aff: 'Affiliate', install: 'Install only', furnish: 'Furnish only', others: 'By others', excl: 'Not included' };
+const MXL = { mc: 'McCorvey', aff: 'McCorvey Sheet Metal (affiliate)', install: 'McCorvey installs', furnish: 'McCorvey furnishes', others: 'By others', excl: 'Not included' };
+const mxLab = v => v === 'mc' ? CO() : v === 'install' ? CO() + ' installs' : v === 'furnish' ? CO() + ' furnishes' : MXL[v];
 function mxRows() {
   const S = sheet(), L = S ? S.lines.filter(l => BC.inc(l) && !l.scope.startsWith(BC.ADDER)).map(l => l.scope).join(' | ') : '';
   /* with a bid sheet, its lines decide; before one exists, the spec sections in scope do */
   const has = (re, secRe) => S ? re.test(L) : scopeSecs().some(x => (secRe || re).test(x.id + ' ' + E.secTitle(BOOK, x.id))), air = META.lens !== 'plumb', pl = ['plumb', 'mech', 'all'].includes(META.lens), hv = ['hvac', 'mech', 'all'].includes(META.lens);
   const R = [], g = (grp, rows) => rows.filter(Boolean).forEach(r => R.push({ grp, k: r[0], t: r[1], d: r[2], note: r[3] || '' }));
+  const dm = AFF() ? 'aff' : 'mc';
   if (air) g('Ductwork and air distribution', [
-    ['duct', 'Sheet metal ductwork, fittings, casings and plenums', 'mc'],
-    ['acc', 'Volume dampers, duct access doors and flexible connections', 'mc'],
-    ['fsd', 'Fire, smoke and combination fire/smoke dampers', 'mc', 'wiring by Div 26 / 28'],
-    ['grd', 'Grilles, registers and diffusers', has(/air device|GRD|diffuser|grille|register/i) ? 'mc' : 'others'],
-    ['ins', 'Duct insulation and acoustic liner', has(/liner|insulation|wrap/i) ? 'mc' : 'others', S && /insulation sub/i.test(L) ? 'through McCorvey’s insulation subcontractor' : ''],
-    ['dsd', 'Duct smoke detectors', 'install', 'furnished and wired by Div 28'],
-    ['louv', 'Architectural louvers', has(/louver/i, /^23 3720|louver/i) ? 'mc' : 'others', 'Div 08 9000'],
-    ['eqc', 'Duct connections to HVAC equipment', 'mc']]);
+    ['duct', 'Sheet metal ductwork, fittings, casings and plenums', dm],
+    ['acc', 'Volume dampers, duct access doors and flexible connections', dm],
+    ['fsd', 'Fire, smoke and combination fire/smoke dampers', dm, 'wiring by Div 26 / 28'],
+    ['grd', 'Grilles, registers and diffusers', AFF() || has(/air device|GRD|diffuser|grille|register/i) ? dm : 'others'],
+    ['ins', 'Duct insulation and acoustic liner', AFF() || has(/liner|insulation|wrap/i) ? dm : 'others', S && /insulation sub/i.test(L) && !AFF() ? `through ${CO()}’s insulation subcontractor` : ''],
+    ['dsd', 'Duct smoke detectors', AFF() ? 'aff' : 'install', 'furnished and wired by Div 28'],
+    ['louv', 'Architectural louvers', has(/louver/i, /^23 3720|louver/i) ? dm : 'others', 'Div 08 9000'],
+    ['eqc', 'Duct connections to HVAC equipment', dm]]);
   if (hv) g('HVAC piping', [['hpipe', 'Hydronic, refrigerant and condensate piping', 'mc']]);
   if (pl) g('Plumbing', [
     ['ppipe', 'Domestic water, sanitary, vent and storm piping', 'mc'],
@@ -1607,17 +1862,18 @@ function mxRows() {
     ['ptest', 'Piping tests, flushing and disinfection', 'mc'],
     ['psite', 'Site utilities beyond 5 feet of the building', 'others']]);
   g('Equipment, controls and power', [
-    ['eq', 'HVAC equipment: furnish and set', 'others'],
-    ['ctrl', 'Controls, control wiring and power wiring', 'others', 'Div 23 0900 / 25 / 26']]);
+    ['eq', 'HVAC equipment: furnish and set', AFF() ? 'mc' : 'others'],
+    ['ctrl', 'Temperature controls and control wiring', AFF() && PROFV('controls') !== 'owner' ? 'mc' : 'others', PROFV('controls') === 'owner' ? 'bought by the Owner' : AFF() ? 'Division 25, controls subcontractor' : 'Div 25'],
+    ['pwr', 'Power wiring, starters and disconnects', 'others', 'Div 26']]);
   g('Coordination, testing and closeout', [
     ['bim', 'Coordination drawings and submittals for this scope', 'mc'],
     air && ['leak', 'Duct leakage testing and reports', 'mc'],
-    ['tab', 'Testing, adjusting and balancing', 'others', 'McCorvey provides access and support'],
+    ['tab', 'Testing, adjusting and balancing', 'others', `${CO()} provides access and support`],
     ['cx', 'Commissioning participation for this scope', 'mc'],
     air && ['dclean', 'Post-construction duct cleaning', 'others'],
     ['om', 'O&M manuals, record drawings and warranty for this scope', 'mc']]);
   g('Site and general conditions', [
-    ['hoist', 'Hoisting, lifts and rigging for McCorvey material', 'mc'],
+    ['hoist', `Hoisting, lifts and rigging for ${CO()} material`, 'mc'],
     ['steel', 'Structural steel, roof dunnage and equipment supports', 'others'],
     ['curb', 'Roof curbs, roof openings and flashing', 'others'],
     ['cut', 'Cutting, coring and patching', 'others'],
@@ -1625,7 +1881,7 @@ function mxRows() {
     ['accp', 'Access panels in hard ceilings and walls', 'others', 'Div 08 3100'],
     air && ['paint', 'Painting of exposed ductwork', 'others'],
     ['temp', 'Temporary power, water, heat, lighting and sanitation', 'others'],
-    ['clean', 'Daily cleanup of McCorvey debris to on-site dumpsters', 'mc'],
+    ['clean', `Daily cleanup of ${CO()} debris to on-site dumpsters`, 'mc'],
     ['dump', 'Dumpsters and final cleaning', 'others'],
     ['permit', 'Trade permit and inspections for this scope', 'mc'],
     ['bpermit', 'Building permit and impact fees', 'others'],
@@ -1640,7 +1896,7 @@ function mxHTML() {
   return `<table class="mx"><thead><tr><th class="l">Item</th><th class="l" style="width:34%">Responsibility</th></tr></thead><tbody>${mxRows().map(r => {
     const v = mxOf(r), head = r.grp !== grp ? `<tr class="mx-g"><td class="l" colspan="2">${esc(r.grp)}</td></tr>` : '';
     grp = r.grp;
-    return head + `<tr><td class="l">${esc(r.t)}${r.note && v === r.d ? ` <span class="ref">(${esc(r.note)})</span>` : ''}</td><td class="l"><span class="mx-v ${v}">${MXL[v]}</span></td></tr>`;
+    return head + `<tr><td class="l">${esc(r.t)}${r.note && v === r.d ? ` <span class="ref">(${esc(r.note)})</span>` : ''}</td><td class="l"><span class="mx-v ${v}">${esc(mxLab(v))}</span></td></tr>`;
   }).join('')}</tbody></table><p class="ref" style="margin:6px 0 0;white-space:normal">Items not listed, or marked by others or not included, are excluded from this proposal.</p>`;
 }
 /* the base bid written out, as bid forms ask: words and figures */
@@ -1656,6 +1912,54 @@ function numWords(n) {
 const dollarsWords = v => numWords(Math.round(Math.abs(v))).replace(/\b[a-z]/g, c => c.toUpperCase()) + ' and 00/100 Dollars';
 /* the specification sections this price covers, by number (as trade bid forms list them) */
 const scopeSecs = () => BOOK.sections.filter(s => isYours(s) && !['00', '01'].includes(s.div) && lensOk(E.lensOf(s.id)));
+/* J's spec content in the proposal: what each system is priced in, which equipment maker, and the warranty */
+function houseSections(h) {
+  const out = [];
+  const M = inRows('mat');
+  if (M.length) out.push(`${h('Material basis')}<p style="margin:0 0 6px">Each system is priced in the least costly material the specifications allow for it. Where Part 3 Execution restricts the material, Part 3 governs.</p><table><thead><tr><th class="l">System</th><th class="l">Priced in</th><th class="l">Basis</th></tr></thead><tbody>${M.map(r => `<tr><td class="l">${esc(r.sys)}</td><td class="l">${esc(r.cheapest)}${r.condNote ? `<div class="ref" style="white-space:normal">${esc(r.condNote)}</div>` : ''}</td><td class="l"><span class="ref">${E.cite(r.sec, r.para, r.page)}${r.part === 3 ? ' · Part 3' : ''}</span></td></tr>`).join('')}</tbody></table>`);
+  const MAJOR = /rooftop|chiller|boiler|air[- ]handl|outdoor[- ]air|outside air|DOAS|VRF|fan[- ]coil|condensing|water heater|energy recovery|air rotation|pump/i;
+  const Q = inRows('mfr').filter(r => r.equip && r.st !== 'others' && (r.exec || r.n < 3 || MAJOR.test(r.prod))).sort((x, y) => (y.exec ? 1 : 0) - (x.exec ? 1 : 0) || x.n - y.n).slice(0, 12);
+  if (Q.length) out.push(`${h('Equipment basis')}<table><thead><tr><th class="l">Equipment</th><th class="l">Priced as</th><th class="l">Basis</th></tr></thead><tbody>${Q.map(r => {
+    const f = BOOK.findings.find(x => x.mfr && x.mfr.prod === r.prod && x.sec === r.sec), sub = f && (META.subs || {})[f.id];
+    const ors = a => a.length > 2 ? a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1] : a.join(' or ');
+    return `<tr><td class="l">${esc(r.prod)}</td><td class="l">${esc(r.exec ? r.exec.maker : ors(r.makers || [r.bod]))}${sub ? `<div class="ref" style="white-space:normal">Voluntary alternate: ${esc(sub)}, pending the engineer's approval</div>` : ''}</td><td class="l"><span class="ref">${E.cite(r.sec, r.para, r.page)}${r.exec ? ' · Part 3 names ' + esc(r.exec.maker) : r.n === 1 ? ' · sole source' : ''}</span></td></tr>`;
+  }).join('')}</tbody></table>`);
+  const W = inRows('warr').filter(r => r.years > stdOf(r));
+  out.push(`${h('Warranty')}<ol><li>Unless specified below, warranty is ${HSE().warr} year from Substantial Completion${AFF() ? `; refrigeration piping ${HSE().refrig} years; compressors ${HSE().warr} year` : ''}. Substantial Completion is when the work is turned over to the Owner complete. Manufacturer warranties are passed through.</li>${(() => {
+    if (!W.length) return '';
+    const G = Object.values(W.reduce((g, r) => { const k = r.item.toLowerCase() + '|' + r.years; (g[k] = g[k] || { item: r.item, years: r.years, secs: [] }).secs.push(r.sec); return g; }, {}));
+    const wf = sec => BOOK.findings.find(f => ruleOf(f) === 'warr' && f.sec === sec && lensOk(fLens(f)));
+    const inc = G.filter(x => x.secs.some(sec => { const f = wf(sec); return !f || dec(f).act === 'price' || (dec(f).act === 'note' && f.dupOf); })), q = G.filter(x => !inc.includes(x));
+    const low = t => t.split(' ').map(w => /^[A-Z][a-z]/.test(w) ? w.toLowerCase() : w).join(' ');
+    const txt = L => L.map(x => `${esc(low(x.item))}, ${x.years} years (${x.secs.join(', ')})`).join('; ');
+    return `${inc.length ? `<li>Extended warranties the specifications require, included as vendor adders: ${txt(inc)}.</li>` : ''}${q.length ? `<li>Extended warranties qualified (manufacturer's warranty passed through, see Clarifications): ${txt(q)}.</li>` : ''}`;
+  })()}</ol>`);
+  return out.join('');
+}
+/* clarifications the job profile writes */
+function houseQuals() {
+  const q = [], hv = ['hvac', 'mech', 'all'].includes(META.lens);
+  if (hv) q.push(PROFV('controls') === 'owner' ? `Temperature controls are by the Owner under a separate contract; ${CO()} installs only the control devices furnished to it and coordinates with the controls contractor.` : `Temperature controls (Division 25) are included${AFF() ? ' through our controls subcontractor' : ''}.`);
+  if (PROFV('reno')) q.push('Equipment supports assume the existing structure carries the new equipment on standard concrete pads. Vibration-isolation pads or structural reinforcement not shown on the drawings are excluded.');
+  if (PROFV('public')) q.push('This bid follows the specifications as written: on this public work, where the drawings and specifications conflict, the specifications govern.');
+  return q;
+}
+/* public work: plumbing and mechanical are separate bids over the threshold */
+function tradeSplit(S, T, h) {
+  if (!PROFV('public') || !S || !T || !['mech', 'all'].includes(META.lens)) return '';
+  const k = 1 + T.a; let pl = 0, mc = 0, sh = 0;
+  S.lines.forEach((l, i) => {
+    if (!BC.inc(l)) return; const v = T.L[i].sell * k;
+    const ad = l.scope.startsWith(BC.ADDER), sec = ad ? ((l.tag || '').match(/\b(2[0-9]) \d{4}/) || [])[1] : null;
+    if (ad) { if (sec === '22') pl += v; else if (sec === '23' || sec === '25') mc += v; else sh += v; }
+    else if (l.lens === 'plumb') pl += v; else if (l.lens === 'all') sh += v; else mc += v;
+  });
+  const tot = pl + mc || 1, P = Math.round(pl + sh * pl / tot), Mv = Math.round(T.client) - P, both = P > HSE().sep && Mv > HSE().sep;
+  return `${h('Base bid by trade')}<table><thead><tr><th class="l">Bid</th><th class="l">Scope</th><th>Amount</th></tr></thead><tbody>
+    <tr><td class="l">Plumbing</td><td class="l">Division 22</td><td>${money(P)}</td></tr><tr><td class="l">Mechanical</td><td class="l">Division 23 HVAC and Division 25 controls</td><td>${money(Mv)}</td></tr>
+    <tr class="grand"><td class="l" colspan="2">TOTAL</td><td>${money(T.client)}</td></tr></tbody></table>
+    <p class="ref" style="margin:6px 0 0;white-space:normal">${both ? `Public work: plumbing and mechanical each exceed ${moneyK(HSE().sep)} and are submitted as separate bids on the bid form.` : 'Shown by trade for the public bid form.'} Shared items are allocated by share.</p>`;
+}
 function proposalHTML(S, T) {
   const F = FS(), N = rfiNums();
   const priced = F.filter(f => dec(f).act === 'price' && !dec(f).allow);
@@ -1690,30 +1994,33 @@ function proposalHTML(S, T) {
   const notes = (META.notes || '').split('\n').map(s => s.trim()).filter(Boolean);
   const scope = SCOPE[META.lens];
   const body = `
-    <div class="lh"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works"><div class="ad">McCorvey Sheet Metal Works, L.P.<br>8610 Wallisville Road, Houston, TX 77029<br>(713) 672-7545</div></div>
-    <h2>Proposal — ${esc(BOOK.name)}</h2>
+    ${AFF() ? `<div class="lh"><div class="lh-co"><b>${esc(CONAME())}</b><span><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey"> A McCorvey Company</span></div><div class="ad">${ENT[ENTK()].line.map(esc).join('<br>')}</div></div>`
+      : `<div class="lh"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works"><div class="ad">McCorvey Sheet Metal Works, L.P.<br>8610 Wallisville Road, Houston, TX 77029<br>(713) 672-7545</div></div>`}
+    <h2>Proposal — ${esc(projName())}</h2>
     <div class="meta">
       <b>To</b><span>${esc(META.gc || '—')}</span><b>Bid No.</b><span>${esc(META.bidNo || '—')}</span>
       <b>Scope</b><span>${scope}</span><b>Date</b><span>${new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
       <b>Documents</b><span>Specifications ${iss(BOOK.bookIssue)}${BOOK.bookDate ? ', ' + fmtDate(BOOK.bookDate) : ''}${bulletins()}</span><b>Bid due</b><span>${due} · valid ${esc(META.valid)} days</span>
       <b>Proposal</b><span>${esc(propNo())} · Rev ${esc(revOf())}${(META.revs || []).length ? ` <span class="ref">(supersedes Rev ${esc(META.revs[META.revs.length - 1].rev)})</span>` : ''}</span><b>Valid until</b><span>${new Date(Date.now() + (+META.valid || 30) * 864e5).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
     </div>
-    <p style="margin:12px 0 0">McCorvey Sheet Metal Works is pleased to submit this proposal to furnish, fabricate, deliver and install the ${scope} scope for ${esc(BOOK.name)}, in accordance with the specifications listed above and the qualifications below.</p>
+    <p style="margin:12px 0 0">${esc(CONAME().replace(/, L\.P\.$/, ''))} is pleased to submit this proposal to furnish, fabricate, deliver and install the ${scope} scope for ${esc(projName())}, in accordance with the specifications listed above and the qualifications below.</p>
     <h3>1. Base bid</h3><p class="pd-ill">Illustrative pricing for this demo: ${BOOK.takeoffIllustrative ? 'base quantities scaled from the project size, not a McCorvey takeoff; ' : ''}unit prices and spec requirement amounts at demo rates${BOOK.local ? ' and from illustrative cost build-ups' : ''}, not McCorvey's actual rates.</p>
     ${schedule}
+    ${tradeSplit(S, T, h)}
     ${S && T && BOOK.buildings && BOOK.buildings.length > 1 ? (() => {
       const tot = BOOK.buildings.reduce((a, b) => a + b.sf, 0); let run = 0;
       const rows = BOOK.buildings.map((b, i) => { const amt = i === BOOK.buildings.length - 1 ? T.client - run : Math.round(T.client * b.sf / tot); run += amt; return `<tr><td class="l">${esc(b.n)}</td><td class="l">${esc(b.use)}</td><td>${b.sf.toLocaleString()}</td><td>${(b.sf / tot * 100).toFixed(1)}%</td><td>${money(amt)}</td></tr>`; }).join('');
       return `${h('Base bid by building')}<table><thead><tr><th class="l">Building</th><th class="l">Use</th><th>Gross SF</th><th>Share</th><th>Amount</th></tr></thead><tbody>${rows}<tr class="grand"><td class="l" colspan="4">BASE BID</td><td>${money(T.client)}</td></tr></tbody></table><p class="ref" style="margin:6px 0 0;white-space:normal">Allocated by gross floor area for comparison. The schedule of values by building and floor follows at award per Section 01 2900.</p>`;
     })() : ''}
     ${h('Scope of work included')}
-    <p style="margin:0 0 6px">McCorvey furnishes, fabricates, delivers and installs the following, per the bid documents and the bulletins listed above:</p>
+    <p style="margin:0 0 6px">${esc(CO())} furnishes, fabricates, delivers and installs the following, per the bid documents and the bulletins listed above:</p>
     ${scopeSecs().length ? `<p class="secs"><b>Specification sections, as they apply to the scope above:</b> ${scopeSecs().map(x => `<span class="ref" style="color:inherit;font-size:inherit">${x.id.replace(/ /g, '&nbsp;')}</span> ${esc(E.secTitle(BOOK, x.id))}`).join('; ')}; and Divisions 00 and 01 as they apply to this scope.</p>` : ''}
     ${S ? scopeBySystem(S).map(g => `<p class="sys">${g.sys}</p><ul>${g.lines.map(l => `<li>${esc(l.scope)}${l.unit !== 'LS' ? ` <span class="ref">(${Math.round(l.qty).toLocaleString()} ${esc(l.unit)})</span>` : ''}</li>`).join('')}${g.sys === 'Ductwork' && ductStandard() ? `<li>${esc(ductStandard())}</li>` : ''}</ul>`).join('') : ''}
     <p class="sys">Also included</p><ul>${stdLines('incl').map(t => `<li>${esc(t)}</li>`).join('')}</ul>
     ${h('Specification requirements included')}
     <p style="margin:0 0 6px">The base bid includes the following requirements, called out because they go beyond typical practice:</p>
     <ol>${priced.map(f => `<li>${esc(f.title)} ${cite(f)}</li>`).join('') || '<li>Per plans and specifications.</li>'}</ol>
+    ${houseSections(h)}
     ${S && T ? (() => {
       const U = S.lines.map((l, i) => ({ l, c: T.L[i] })).filter(x => BC.inc(x.l) && !x.l.scope.startsWith(BC.ADDER) && x.l.unit !== 'LS' && x.l.qty > 0);
       return U.length ? `${h('Unit prices')}<table><thead><tr><th class="l">Item</th><th class="l">Unit</th><th>Add</th><th>Deduct</th></tr></thead><tbody>${U.map(x => { const add = x.c.unitSell * (1 + T.a); return `<tr><td class="l">${esc(x.l.scope)}</td><td class="l">${esc(x.l.unit)}</td><td>${moneyU(add)}</td><td>${moneyU(add * 0.85)}</td></tr>`; }).join('')}</tbody></table><p class="ref" style="margin:6px 0 0;white-space:normal">Unit prices include overhead, profit, bond and insurance, apply to quantity changes released before fabrication, and deduct at 85% of the add price.</p>` : '';
@@ -1734,7 +2041,7 @@ function proposalHTML(S, T) {
     })() : ''}
     ${h('Clarifications')}
     <ol>${quals.map(f => `<li>${esc(wordOf(f))} ${cite(f)}</li>`).join('')}${chgQuals().map(x => `<li>${esc(x.text)} <span class="ref">(${E.cite(x.d.sec, x.c.para, x.c.page)})</span></li>`).join('')}${notes.map(t => `<li>${esc(t)}</li>`).join('')}
-      ${stdLines('qual').map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+      ${houseQuals().map(t => `<li>${esc(t)}</li>`).join('')}${stdLines('qual').filter(t => !(/^Painting/i.test(t) && F.some(f => ['paint9', 'paintmech'].includes(ruleOf(f)) && dec(f).act !== 'note')) && !(/^Duct cleaning/i.test(t) && F.some(f => ruleOf(f) === 'ductclean' && dec(f).act !== 'note'))).map(t => `<li>${esc(t)}</li>`).join('')}</ol>
     ${h('Exclusions')}
     <ol>${excl.map(f => `<li>${esc(wordOf(f))} ${cite(f)}</li>`).join('')}
       ${stdLines('excl').map(t => `<li>${esc(t)}</li>`).join('')}
@@ -1745,9 +2052,9 @@ function proposalHTML(S, T) {
       const G = S.g, bond = T.sell * G.bondPct / 100;
       return `${h('Bond and insurance')}<ol>
         <li>Payment and performance bond included at ${G.bondPct}% (${money(bond)}). If no bond is required, deduct ${money(bond)}.</li>
-        <li>Bid bond furnished if the bid documents require one.</li>
-        <li>General liability, automobile, umbrella and workers' compensation insurance at McCorvey's standard limits included. Additional insured, primary and non-contributory, and waiver of subrogation endorsements furnished as the subcontract requires.</li>
-        <li>If the project carries an owner- or contractor-controlled insurance program (OCIP / CCIP), McCorvey's insurance cost is credited at enrollment.</li>
+        <li>${PROFV('public') ? `Bid bond for ${HSE().bond}% of the bid amount furnished with this bid. A bidder may withdraw a bid with a material error by forfeiting the bid bond, per the public bidding rules.` : 'Bid bond furnished if the bid documents require one.'}</li>
+        <li>General liability, automobile, umbrella and workers' compensation insurance at ${esc(CO())}'s standard limits included. Additional insured, primary and non-contributory, and waiver of subrogation endorsements furnished as the subcontract requires.</li>
+        <li>If the project carries an owner- or contractor-controlled insurance program (OCIP / CCIP), ${esc(CO())}'s insurance cost is credited at enrollment.</li>
         <li>Builder's risk insurance by others. Certificates of insurance furnished at award.</li></ol>`;
     })() : ''}
     ${h('Commercial terms')}
@@ -1780,7 +2087,7 @@ function sigHTML(p, fp) {
   SIG_FP = fp;
   SIG_BLOCK = checks().some(c => c.level === 'error') ? 'Fix the preflight issues before signing' : '';
   const mc = sigOk('mc'), gc = sigOk('gc');
-  return `<div class="sig">${sigLine('mc', `${esc(mc ? mc.name : p.name)}${(mc ? mc.title : p.title) ? ', ' + esc(mc ? mc.title : p.title) : ''}<br>McCorvey Sheet Metal Works, L.P.`)}${sigLine('gc', `Accepted — ${esc(META.gc || 'Contractor')}<br>${gc ? esc(gc.name) + ', ' + esc(gc.title) : 'Name, title &amp; date'}`)}</div>`;
+  return `<div class="sig">${sigLine('mc', `${esc(mc ? mc.name : p.name)}${(mc ? mc.title : p.title) ? ', ' + esc(mc ? mc.title : p.title) : ''}<br>${esc(CONAME())}`)}${sigLine('gc', `Accepted — ${esc(META.gc || 'Contractor')}<br>${gc ? esc(gc.name) + ', ' + esc(gc.title) : 'Name, title &amp; date'}`)}</div>`;
 }
 function eSign(slot, quiet) {
   if (checks().some(c => c.level === 'error')) { toast('Fix the preflight issues before signing'); return false; }
@@ -1994,7 +2301,7 @@ function setAnswer(id, v) {
   if (v && o.status === 'draft') { const c = ALLCONFS().find(x => x.id === id); if (c) o.sentText = E.rfiText(rfiBook(), rfiC(c), rfiNums()[id] || 0); o.sent = o.sent || today(); }
   RS[id] = Object.assign(o, { answer: v, status: v && o.status !== 'closed' ? 'answered' : o.status }); saveRS();
 }
-function rfiBook() { return Object.assign({}, BOOK, { cm: META.gc || BOOK.cm, bid: { bidNo: META.bidNo } }); }
+function rfiBook() { return Object.assign({}, BOOK, { cm: META.gc || BOOK.cm, bid: { bidNo: META.bidNo }, name: projName(), from: CONAME().replace(/, L\.P\.$/, ''), short: CO() }); }
 function copyDrafts() { const N = rfiNums(); cp(CONFS().filter(c => inLog(c) && rs(c.id).status === 'draft').map(c => E.rfiText(rfiBook(), rfiC(c), N[c.id])).join('\n\n' + '-'.repeat(60) + '\n\n'), 'Draft RFIs copied — paste into the CM\'s RFI log or email'); }
 function markSent() { CONFS().filter(c => inLog(c) && rs(c.id).status === 'draft').forEach(sendRfi); saveRS(); rerender(); toast('Marked as sent today'); }
 /* Build asks first: it replaces the working bid sheet, so show exactly what will happen */
@@ -2016,12 +2323,32 @@ function buildSheet() {
   setTimeout(() => { const b = document.getElementById('cfm-go'); if (b) b.focus(); }, 30);
 }
 function closeCfm() { const c = document.getElementById('cfm'); if (c) c.classList.remove('show'); }
+/* the takeoff for the trade and company bidding: ductwork lines become one affiliate subcontract when a mechanical
+   company bids (it buys its ductwork from McCorvey Sheet Metal), controls drop out when the owner buys them, and the
+   BIM coordination package is a share of equipment, material and labor (excluding lifts and the affiliate's own scope) */
+const BIM_LBL = () => `BIM coordination package — Way Engineering (${HSE().bim}% of equipment, material and labor)`;
+const isBim = l => l.bim || /^BIM coordination package/.test(l.scope || '');
+function bimBase(lines, g) { const S0 = { g: g || Object.assign({}, BC.DEFAULT_G), lines: [] }; return lines.filter(l => BC.inc(l) && !l.aff && !isBim(l) && !/rigging|lifts?\b/i.test(l.scope) && !(l.scope || '').startsWith(BC.ADDER)).reduce((a, l) => a + BC.lineCalc(S0, l).cost, 0); }
+function takeoffFor() {
+  let L = (BOOK.takeoff || []).filter(l => lensOk(l.lens || 'all') && !(l.ctl && PROFV('controls') === 'owner') && !isBim(l) && !/LOD 400/.test(l.scope)).map(l => Object.assign({}, l));
+  if (AFF()) {
+    const sm = L.filter(l => l.lens === 'sm');
+    if (sm.length) {
+      const S0 = { g: Object.assign({}, BC.DEFAULT_G), lines: [] };
+      L = L.filter(l => l.lens !== 'sm');
+      L.unshift({ scope: 'Ductwork and accessories — McCorvey Sheet Metal (affiliate subcontract)', unit: 'LS', qty: 1, mat: Math.round(sm.reduce((a, l) => a + BC.lineCalc(S0, l).sell, 0)), shopUPH: 0, fieldUPH: 0, mkup: 12, lens: 'sm', aff: true });
+    }
+  }
+  L.push({ scope: BIM_LBL(), unit: 'LS', qty: 1, mat: Math.round(bimBase(L) * HSE().bim / 100), shopUPH: 0, fieldUPH: 0, lens: 'all', bim: true });
+  return L;
+}
+function recomputeBim(S) { const b = S.lines.find(isBim); if (!b) return; b.scope = BIM_LBL(); b.mat = Math.round(bimBase(S.lines, S.g) * HSE().bim / 100); }
 function doBuildSheet(quiet) {
   let S;
-  const meta = { project: BOOK.name + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : META.lens === 'mech' ? 'Plumbing + HVAC' : META.lens === 'all' ? 'Mechanical' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
-  if (BOOK.takeoff) S = BC.startSheet(meta, BOOK.takeoff);
+  const meta = { project: projName() + ' — ' + CO() + ' — ' + (META.lens === 'plumb' ? 'Plumbing' : META.lens === 'mech' ? 'Plumbing + HVAC' : META.lens === 'all' ? 'Mechanical' : 'HVAC Ductwork'), gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30, specKey: BOOK.key };
+  if (BOOK.takeoff) { const src = takeoffFor(); S = BC.startSheet(meta, src); S.lines.forEach((l, i) => { const x = src[i] || {}; if (x.lens) l.lens = x.lens; if (x.aff) l.aff = true; if (x.bim) l.bim = true; }); }
   else { S = BC.load() || BC.startSheet(meta, []); Object.assign(S.meta, meta); }
-  const r = BC.syncAdders(S, ADDERS()); BC.save(S);
+  const r = BC.syncAdders(S, ADDERS()); recomputeBim(S); BC.save(S);
   if (quiet) return;
   rerender(); toast(`Bid sheet ${BOOK.takeoff ? 'built from the takeoff' : 'linked'} · ${r.added} spec adders added`);
 }
@@ -2029,7 +2356,7 @@ function syncSheet() {
   const S = sheet(); if (!S) return buildSheet();
   Object.assign(S.meta, { gc: META.gc, bidNo: META.bidNo, due: META.due, valid: +META.valid || 30 });
   if (S.status === 'confirmed') S.status = 'draft';
-  const r = BC.syncAdders(S, ADDERS()); BC.save(S);
+  const r = BC.syncAdders(S, ADDERS()); recomputeBim(S); BC.save(S);
   rerender(); toast(`Synced · ${r.added} added, ${r.updated} updated, ${r.removed} removed`);
 }
 function issueProposal() { if (checks().some(c => c.level === 'error')) { toast('Fix the preflight issues first'); return; } window.print(); }
@@ -2043,7 +2370,7 @@ function buildPrintRoot() {
   root.innerHTML = `<table class="pr-t"><thead><tr><td></td></tr></thead><tbody><tr><td><div class="pdoc ${draft ? 'draft' : ''}">${doc.innerHTML}</div></td></tr></tbody><tfoot><tr><td></td></tr></tfoot></table>`;
   document.body.appendChild(root); document.body.classList.add('printing-proposal');
   const pc = document.createElement('style'); pc.id = 'print-page-css';
-  const tag = `${propNo()} · Rev ${revOf()} · McCorvey Sheet Metal Works, L.P.`.replace(/["\\]/g, '');
+  const tag = `${propNo()} · Rev ${revOf()} · ${CONAME()}`.replace(/["\\]/g, '');
   pc.textContent = `@page proposal { size: letter; margin: 0 0 0.45in 0; @bottom-left { content: "${tag}"; font: 8pt Arial, sans-serif; color: #5a6676; margin-left: 0.7in; vertical-align: top; } @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Arial, sans-serif; color: #5a6676; margin-right: 0.7in; vertical-align: top; } }`;
   document.head.appendChild(pc);
   window.__ptitle = document.title;
@@ -2154,11 +2481,12 @@ async function loadBook(file) {
       BOOK.projSF = Illustrative.projectSF(BOOK, RAW) || 0; applyProfile();
       leadPerRule(BOOK);
       Illustrative.prepare(BOOK, RAW, window.BuildUps);
-      if (!BOOK.takeoff && window.SPECBOOK && window.SPECBOOK.takeoff) { const k = (BOOK.projSF || 1290000) / 1290000; BOOK.takeoff = window.SPECBOOK.takeoff.map(l => Object.assign({}, l, { qty: l.unit === 'LS' ? Math.round(l.mat * k / 1000) * 1000 / l.mat : Math.round(l.qty * k / 10) * 10 })); BOOK.takeoffIllustrative = true; }
+      if (!BOOK.takeoff && window.SPECBOOK && window.SPECBOOK.takeoff) { const k = (BOOK.projSF || 1290000) / 1290000; BOOK.takeoff = window.SPECBOOK.takeoff.map(l => Object.assign({}, l, l.unit === 'LS' ? { qty: 1, mat: Math.round(l.mat * k / 1000) * 1000 } : { qty: Math.round(l.qty * k / 10) * 10 })); BOOK.takeoffIllustrative = true; }
       BOOK.diffs = Illustrative.diffs(BOOK, E.lensOf, E.YOURS);
     }
+    BOOK.readSec = Math.max(1, Math.round((performance.now() - t0) / 1000)); BOOK._house = true;
     E.store.sset('msm-spec-local', BOOK); E.store.sset('msm-spec-active', 'local');
-    step = 'load'; loadState(); ov(false); render();
+    step = 'load'; loadState(); applyHouse(); ov(false); render();
     toast(`Read ${pgs(BOOK.totalPages)} pages in ${((performance.now() - t0) / 1000).toFixed(0)}s — fill in the bid setup to start`);
   } catch (e) { ov(false); toast('Could not read that PDF: ' + e.message); console.error(e); }
 }
@@ -2193,7 +2521,7 @@ function resetDemo() {
   loadState(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
   toast('Demo reset — back to step 1');
 }
-function useSample() { E.store.sset('msm-spec-active', 'sample'); BOOK = window.SPECBOOK; RAW = PRIOR = null; step = null; applyProfile(); loadState(); render(); toast('Sample book loaded'); }
+function useSample() { E.store.sset('msm-spec-active', 'sample'); BOOK = window.SPECBOOK; RAW = PRIOR = null; step = null; applyProfile(); loadState(); ensureHouse(); applyHouse(); render(); toast('Sample book loaded'); }
 $('#pick-cur').onchange = e => { loadBook(e.target.files[0]); e.target.value = ''; };
 $('#pick-prior').onchange = e => { loadPrior(e.target.files[0]); e.target.value = ''; };
 document.addEventListener('dragover', e => e.preventDefault());

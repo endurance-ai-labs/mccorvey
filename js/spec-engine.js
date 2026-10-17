@@ -17,8 +17,9 @@
     '23': 'HVAC', '25': 'Integrated Automation', '26': 'Electrical', '27': 'Communications', '28': 'Electronic Safety & Security',
     '31': 'Earthwork', '32': 'Exterior Improvements', '33': 'Utilities', '40': 'Process Interconnections',
   };
-  const YOURS = ['00', '01', '22', '23'];             /* Jerry's read: project requirements + 22 + 23 */
+  const YOURS = ['00', '01', '22', '23'];             /* the estimator's read: project requirements + 22 + 23 */
   const HOOKS = ['21', '25', '26', '28', '40'];        /* scanned for cross-division hooks */
+  const ONLY = ['09'];                                  /* read only by rules that name the division (painting) */
 
   /* ---------------- lenses ---------------- */
   function lensOf(secId) {
@@ -90,10 +91,15 @@
     { id: 'startup', lens: 'all', sev: 'med', cat: 'Cost shift', title: 'Second factory start-up before Substantial Completion', rx: /start[- ]?up[^.]{0,140}(prior to|before|one month)[^.]{0,30}substantial completion/i, impact: 'Equipment used temporarily gets started up twice.', act: 'price', basis: 'Unit count × second factory start-up' },
     { id: 'sampling', lens: 'all', sev: 'med', cat: 'Testing', title: '100% functional-test sampling', rx: /100\s*(%|percent)\s*(sampling|of (the )?(systems|equipment|devices|items)[^.]{0,60}(functional|performance) test)/i, impact: 'End-of-job staffing; failures can redo whole reports.', act: 'note', basis: '' },
     { id: 'clock', lens: 'all', sev: 'med', cat: 'Cx clock', title: 'Deficiency turnaround clock', t: s => { const m = s.match(/within (one|two|three|five|\d+)\s*(\(\d+\)\s*)?(work(ing)?\s*)?days?/i); return m ? `Deficiencies acknowledged within ${numOf(m[1])} work day${numOf(m[1]) > 1 ? 's' : ''}` : null; }, rx: /within (one|two|three|five|\d+|\(\d+\))\s*(\(\d+\)\s*)?(work(ing)?\s*)?days?[^.]{0,100}(deficienc|correct|resolv|acknowledg)/i, impact: 'Closeout crew must be available on short notice.', act: 'note', basis: '' },
-    { id: 'warr', withSec: true, lens: 'all', sev: 'med', cat: 'Warranty', title: 'Extended warranty term', t: s => { const m = s.match(/\b(two|three|five|ten|fifteen|twenty|\d{1,2})\s*(\(\d+\)\s*)?[- ]?years?/i); return m ? `${numOf(m[1])}-year warranty${(s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i) || [])[2] ? ' — ' + s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i)[2].trim() : ''}` : null; }, rx: /warrant\w*[^.]{0,80}\b(two|three|five|ten|fifteen|twenty|[2-9]|1\d|20)\s*(\(\d+\)\s*)?[- ]?years?\b/i, impact: 'Longer than the standard one year — confirm the manufacturer passes it through or qualify it.', act: 'clarify', basis: '' },
+    { id: 'warr', withSec: true, lens: 'all', sev: 'med', cat: 'Warranty', title: 'Extended warranty term', t: s => { const m = s.match(/\b(two|three|five|ten|fifteen|twenty|\d{1,2})\s*(\(\d+\)\s*)?[- ]?years?/i); return m ? `${numOf(m[1])}-year warranty${(s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i) || [])[2] ? ' — ' + s.match(/warranty (period )?for ([a-z ]{3,30}?)[:.,]/i)[2].trim() : ''}` : null; }, rx: /warrant\w*[^.]{0,80}\b(two|three|five|ten|fifteen|twenty|[2-9]|1\d|20)\s*(\(\d+\)\s*)?[- ]?years?\b/i, impact: 'Longer than the one-year standard from Substantial Completion: carry the extra years as a vendor adder.', act: 'price', basis: 'Vendor quote for the extra years', qual: '{title}: the manufacturer\'s extended warranty is passed through; {co}\'s workmanship warranty is one year from Substantial Completion.' },
     { id: 'anchors', lens: 'all', sev: 'med', cat: 'Means & methods', title: 'Powder-actuated / adhesive anchors prohibited', rx: /(powder[- ]actuated|adhesive anchors?)[^.]{0,60}(not|prohibit)/i, impact: 'Mechanical anchors only — more hanger labor.', act: 'price', basis: 'Anchor count × mechanical anchor labor delta' },
     { id: 'lds', lens: 'all', sev: 'high', cat: 'Commercial', title: 'Liquidated damages', rx: /liquidated damages/i, impact: 'Schedule exposure — confirm the amount and whether it flows down.', act: 'clarify', basis: '' },
     { id: 'retain', lens: 'all', sev: 'med', cat: 'Commercial', title: 'Retainage terms', rx: /retainage/i, impact: 'Cash-flow terms for the subcontract.', act: 'note', basis: '' },
+    { id: 'paint9', div: ['09'], lens: 'all', sev: 'med', cat: 'Painting', title: 'Division 09 paints exposed piping, ductwork and equipment', rx: /paint[^.]{0,160}\b(pipes?|piping|ducts?|ductwork|mechanical equipment|hangers)\b/i, impact: 'Painting of exposed mechanical work sits with the painter in Division 09. Confirm Divisions 22/23 do not also assign it to you, and carry it as a clarification.', act: 'clarify', basis: '', qual: 'Painting of exposed piping, ductwork, hangers and equipment is by Division 09 (Section {sec}); not included.' },
+    { id: 'paintmech', lens: 'all', sev: 'med', cat: 'Painting', title: 'Painting written into the mechanical scope', rx: /((field[- ])?(prime and )?paint(ed|ing)? (all )?(exposed |insulated )?(piping|pipe|ductwork|ducts|hangers|supports)\b[^.]{0,80}(by|under|shall)|(piping|pipe|ductwork|ducts|hangers|supports)[^.]{0,60}shall be (field[- ])?painted|color[- ]coded (insulation|jackets?) (on|for) (piping|pipe)|(piping|pipe)[^.]{0,40}painted (red|green|blue|yellow|orange|safety))/i, skip: /(do not paint|factory[- ](painted|finished)|to match|cabinet|conductor|wiring|touch[- ]up|finish coat by|division 09|section 09)/i, impact: 'Paint labor or a painting sub inside your number. Paying a painter is usually cheaper than color-coded insulation.', act: 'price', basis: 'Paint LF of exposed piping × painter rate, or a painting sub quote' },
+    { id: 'ductclean', lens: 'sm', sev: 'med', cat: 'Duct cleaning', title: 'Duct cleaning required', rx: /(\bduct (system )?cleaning\b|\bNADCA\b|\bclean(ing)? (of )?(the )?(existing )?(ductwork|duct systems|air[- ]distribution systems)\b[^.]{0,80}(NADCA|certif|vacuum|brush|cleaning contractor|ACR))/i, skip: /(protect|cover|seal open ends|keep clean|cap open|dirt|debris|plaster|scale|waste[- ]removal)/i, impact: 'A cleaning contractor and a NADCA report, or a clarification that duct cleaning is excluded.', act: 'price', basis: 'NADCA cleaning sub quote by system or LF', qual: 'Duct cleaning (NADCA) is not included; ductwork is delivered and installed clean and capped (Section {sec}).' },
+    { id: 'ctrlsplit', lens: 'hvac', sev: 'high', cat: 'Controls', title: 'Controls bought outside your contract', rx: /(temperature controls?|building automation|\bBAS\b|controls? (system|contractor|work))[^.]{0,100}(by (the )?owner|owner[- ](furnished|procured|direct)|under (a )?separate (prime )?contract|separate contract with the owner)/i, impact: 'When the owner buys controls direct, carry only the coordination and the devices the controls contractor hands you to install.', act: 'clarify', basis: '', qual: 'Temperature controls are by the Owner under a separate contract (Section {sec}); {co} installs only the control devices furnished to it.' },
+    { id: 'bimcoord', sec01: /^01 31/, lens: 'all', sev: 'info', cat: 'Coordination', title: 'Coordination and BIM requirements', rx: /(coordination drawings?|building information model|\bBIM\b|clash detection|\bLOD\s*\d{3})/i, impact: 'Covered by the BIM coordination package (a percentage of equipment, material and labor). Check nothing here goes beyond it.', act: 'note', basis: 'Inside the BIM package' },
     { id: 'leed', lens: 'all', sev: 'med', cat: 'LEED', title: 'LEED documentation and indoor-air-quality testing', rx: /(product data reporting form|IAQ (air )?test|indoor air quality[^.]{0,60}(test|photo)|report from testing and inspecting agency indicating results of IAQ)/i, impact: 'Admin hours plus corrective action if the air test fails.', act: 'price', basis: 'Admin hours + IAQ protection materials' },
   ];
 
@@ -256,9 +262,9 @@
     return out.join(' ');
   }
   const goodSnip = s => s.length >= 70 && s.length <= 300 && !/^…/.test(s);
-  const scanDiv = d => YOURS.includes(d) || HOOKS.includes(d);
+  const scanDiv = d => YOURS.includes(d) || HOOKS.includes(d) || ONLY.includes(d);
   /* in hook divisions (21/25/26/28/40) a clause only counts if it lands on the mechanical trades */
-  const MECH = /Division\s*2[23]|mechanical|HVAC|plumbing|duct|piping|BAS|building automation/i;
+  const MECH = /Division\s*2[23]|mechanical|HVAC|plumbing|\bduct|piping|BAS|building automation/i;
 
   function runRules(bodies, pageSec, secById, lex) {
     const hits = {};
@@ -268,13 +274,15 @@
       const t = norm(raw || '');
       const hook = HOOKS.includes(s.div);
       RULES.forEach(r => {
+        if (ONLY.includes(s.div) ? !(r.div && r.div.includes(s.div)) : (r.div && !r.div.includes(s.div))) return;
+        if (r.sec01 && !r.sec01.test(sec)) return;
         const ok = r.lens === 'all' || s.div === '01' ||
           ((r.lens === 'sm' || r.lens === 'hvac') && ['23', '25', '26'].includes(s.div)) ||
           (r.lens === 'plumb' && ['22', '21', '40'].includes(s.div));
         if (!ok) return;
         const m = t.match(r.rx); if (!m) return;
         const says = sentenceAt(t, m.index);
-        if (hook && !MECH.test(says)) return;
+        if ((hook || ONLY.includes(s.div)) && !MECH.test(says)) return;
         if (r.skip && r.skip.test(says)) return;
         const k = r.id + '|' + sec;
         if (hits[k]) { hits[k].count++; if (!goodSnip(hits[k].says) && goodSnip(says)) { hits[k].says = says; hits[k].page = i + 1; } return; }
@@ -297,7 +305,7 @@
       const extra = (h.count > 1 ? ` Appears on ${h.count} pages of this section.` : '') + (h.also.length ? ` Same requirement repeated in ${h.also.join(', ')}.` : '');
       return { id: 'R' + String(++n).padStart(3, '0'), rule: r.id, sec: h.sec, page: h.page, para: '', sev: r.sev, cat: r.cat,
         title, says: h.says, impact: r.impact + extra, also: h.also,
-        act: r.act, amt: 0, basis: r.basis || '', lens: sl === 'all' ? 'all' : (sl === 'other' ? r.lens : sl) };
+        act: r.act, amt: 0, basis: r.basis || '', lens: sl === 'all' ? 'all' : (sl === 'other' ? r.lens : sl), qual: r.qual ? r.qual.replace(/\{sec\}/g, h.sec).replace(/\{title\}/g, title) : undefined };
     }).sort((a, b) => a.page - b.page);
   }
 
@@ -455,6 +463,9 @@
   }
   async function analyze(file, onProgress) {
     const pages = await extract(file, (d, n) => onProgress && onProgress('Reading page ' + d.toLocaleString() + ' of ' + n.toLocaleString(), d / n * 0.85));
+    return analyzePages(pages, file.name, onProgress);
+  }
+  function analyzePages(pages, fileName, onProgress) {
     onProgress && onProgress('Mapping sections and issue stamps', 0.88);
     const { sections, pageSec, bodies } = buildSections(pages);
     const secById = Object.fromEntries(sections.map(s => [s.id, s]));
@@ -470,14 +481,19 @@
     const bookIssue = cover ? +cover[1] : Math.max(0, ...issues);
     const core = sections.filter(s => ['01', '22', '23'].includes(s.div) && s.issue != null).map(s => s.issue);
     const mode = core.length ? +Object.entries(core.reduce((a, x) => (a[x] = (a[x] || 0) + 1, a), {})).sort((a, b) => b[1] - a[1])[0][0] : bookIssue;
-    const hash = (file.name + pages.length).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36);
+    const hash = (fileName + pages.length).split('').reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7).toString(36);
     const book = {
       key: 'local-' + hash, sample: false, local: true,
-      name: file.name.replace(/\.pdf$/i, ''), sub: 'Your spec book · read in this browser · nothing uploaded',
+      name: fileName.replace(/\.pdf$/i, ''), sub: 'Your spec book · read in this browser · nothing uploaded',
       cm: 'Construction Manager', bookIssue, bookDate: '', pricedIssue: mode, pricedDate: '',
       bid: { gc: '', bidNo: '', due: '' }, issues: {},
       sections, findings, conflicts, diffs: [], matrix, matrixMode: 'extracted', takeoff: null, totalPages: pages.length,
     };
+    onProgress && onProgress('Building the manufacturer, material and warranty schedules', 0.98);
+    book.profile = readProfile(sections, bodies);
+    book.inputs = { duct: [], bidform: [], deliv: readDeliv(sections, bodies, lex), mfr: readMfrs(sections, bodies, lex), mat: readMaterials(sections, bodies), warr: readWarranties(sections, bodies), extracted: true };
+    const hf = houseFindings(book);
+    book.findings = book.findings.concat(hf.findings); book.conflicts = book.conflicts.concat(hf.conflicts);
     book.diffs = stampDiffs(book);
     book.conflicts = staleRfis(book).concat(book.conflicts);
     onProgress && onProgress('Done', 1);
@@ -496,6 +512,294 @@
   function stampDiffs(book) {
     return book.sections.filter(s => s.id !== '00 0000' && s.issue != null && s.issue > book.pricedIssue && (YOURS.includes(s.div) || HOOKS.includes(s.div)))
       .map(s => ({ sec: s.id, from: book.pricedIssue, to: s.issue, lens: lensOf(s.id), stampOnly: true, changes: [] }));
+  }
+
+  /* ---------------- house rules: the schedules an estimator builds before pricing ----------------
+     From the estimating team's walkthrough: within a section, Part 3 Execution governs Part 2 Products
+     and Part 1 General; the manufacturer on equipment is where price swings; catch the system where
+     the cheapest listed material is not allowed; warranty is one year from Substantial Completion unless
+     written longer; know whether the job is public, a renovation, and who carries controls.            */
+  const flatS = t => String(t || '').replace(/­/g, '').replace(/\s+/g, ' ');
+  /* a section's text as one string, with a page lookup by character offset */
+  function secText(s, bodies, fix) {
+    let t = '', marks = [];
+    for (let p = s.start; p <= s.end; p++) { marks.push([t.length, p]); const x = flatS(bodies[p - 1]); t += (fix ? fix(x) : x) + ' '; }
+    const pageAt = i => { let pg = s.start; for (const [o, p] of marks) { if (o > i) break; pg = p; } return pg; };
+    return { t, pageAt };
+  }
+  /* the Part an offset sits in, from the section's PART headings */
+  function partAt(t, i) { let part = null, m; const re = /PART\s*([123])\s*[-–—:.]*\s*(GENERAL|PRODUCTS|EXECUTION)/gi; while ((m = re.exec(t)) && m.index <= i) part = +m[1]; return part; }
+  function paraAt(t, i) { const nums = t.slice(Math.max(0, i - 400), i).match(/\b[123]\.\d{1,2}(?=\s+[A-Z])/g); return nums ? nums[nums.length - 1] : ''; }
+
+  /* job profile: public or private, new or renovation, who carries controls, bid bond */
+  function readProfile(sections, bodies) {
+    const by = id => sections.find(s => s.id === id);
+    const front = sections.filter(s => ['00', '01'].includes(s.div));
+    const P = { public: { v: false, why: 'No public-bid language found in Divisions 00/01.' }, reno: { v: false, why: 'No alteration or existing-building procedures found.' }, controls: { v: 'carried', why: 'No separate controls contract found: controls are carried with HVAC.' }, bond: { v: false, pct: 5, why: '' }, owner: '' };
+    let pubHits = [];
+    front.forEach(s => {
+      const { t, pageAt } = secText(s, bodies);
+      const om = t.match(/\bOwner\s*:\s*([A-Z][A-Za-z0-9&.,' -]{2,70}?)(?=\s+\d\.\s|\s+[A-Z]\.\s|\s{2,}|\s+Owner['’]s\b)/);
+      if (om && !P.owner) { P.owner = om[1].replace(/[\s,.]+$/, ''); P.ownerAt = { sec: s.id, page: pageAt(om.index) }; }
+      const re = /(public (bid|opening|works|entity|agency|owner)|prevailing wage|Davis[- ]Bacon|bid (bond|security)|lowest responsible bidder|historically underutilized|\bHUB\b participation|\bM\/?WBE\b|sealed bids? will be (received|opened)|read aloud)/gi;
+      let m; while ((m = re.exec(t)) && pubHits.length < 8) pubHits.push({ sec: s.id, page: pageAt(m.index), txt: m[0] });
+      const bm = t.match(/bid (bond|security)[^.]{0,120}?(\d{1,2})\s*(%|percent)/i);
+      if (bm) P.bond = { v: true, pct: +bm[2], sec: s.id, page: pageAt(bm.index), why: `Bid security of ${bm[2]}% required (${s.id}).` };
+    });
+    const pubOwner = P.owner && /\b(County|City of|Town of|State of|University|College|School|Board|Authority|Department|District|Commission|Government|Federal|Municipal|Public)\b/i.test(P.owner);
+    if (pubOwner || pubHits.length >= 2) {
+      const h = pubHits[0] || P.ownerAt || {};
+      P.public = { v: true, sec: h.sec, page: h.page, why: pubOwner ? `Owner is a public entity: ${P.owner}.` : `Public-bid language: "${pubHits.slice(0, 2).map(x => x.txt).join('", "')}" (${h.sec}).` };
+    } else if (P.owner) P.public = { v: false, sec: P.ownerAt.sec, page: P.ownerAt.page, why: `Owner is private: ${P.owner}.` };
+    const alt = sections.find(s => /^01 35/.test(s.id) && /alteration|renovation/i.test(s.title)) || sections.find(s => /^02 41/.test(s.id));
+    let exist = 0, ex = null;
+    front.forEach(s => { const { t, pageAt } = secText(s, bodies); const re = /(existing building|work (performed )?inside the existing|alteration work|renovation (work|area))/gi; let m; while ((m = re.exec(t))) { exist++; if (!ex) ex = { sec: s.id, page: pageAt(m.index) }; } });
+    if (alt || exist >= 3) P.reno = { v: true, sec: (ex || alt).sec || alt.id, page: (ex && ex.page) || (alt && alt.start), why: `${exist ? `Work in an existing building (${exist} mentions in Division 01)` : 'Alteration procedures'}${alt ? `; ${alt.id} ${alt.title} is in the book` : ''}.` };
+    const d25 = sections.filter(s => s.div === '25');
+    for (const s of sections.filter(s => ['01', '23', '25'].includes(s.div))) {
+      const { t, pageAt } = secText(s, bodies);
+      const m = t.match(/(temperature controls?|building automation|\bBAS\b|controls? (system|contractor|work))[^.]{0,100}(by (the )?owner|owner[- ](furnished|procured|direct)|under (a )?separate (prime )?contract|separate contract with the owner)/i);
+      if (m) { P.controls = { v: 'owner', sec: s.id, page: pageAt(m.index), why: `Controls are bought outside this contract (${s.id}).` }; break; }
+    }
+    if (P.controls.v === 'carried' && d25.length) P.controls = { v: 'carried', sec: d25[0].id, page: d25[0].start, why: `Division 25 controls are in the book (${d25.map(s => s.id).join(', ')}) and carried with HVAC.` };
+    return P;
+  }
+
+  /* approved manufacturers by product, from Part 2 lists ("Acceptable Manufacturers: 1. … 2. …") */
+  const MFR_HEAD = /(Acceptable Manufacturers|Approved Manufacturers|Manufacturers|provide (?:products |equipment )?(?:of|by) (?:one of )?the following(?: manufacturers?| manufacture)?|Basis[- ]of[- ]Design Product)\s*:/gi;
+  const EQUIP = /(unit|chiller|boiler|pump|fan|rooftop|air[- ]?handl|heater|compressor|humidif|VRF|split[- ]system|DOAS|energy recovery|cooling tower|terminal|VAV|exchanger|fixture|water heater|condens|furnace|ventilator|dehumidif|curtain|air rotation)/i;
+  /* company names split by the PDF's letter spacing: "L ochinvar", "C ap tive Aire", "R ezno r" */
+  const fixName = s => s.replace(/\b([A-Z]) (?=[a-z]{2,})/g, '$1')
+    .replace(/\b([A-Z][a-z]{1,3}) (?!(?:of|and|the|for|div|co)\b)([a-z]{2,5})\b/g, '$1$2')
+    .replace(/\b([A-Z][a-z]{2,}) ([a-z])\b/g, '$1$2');
+  function cleanMaker(x, lex) {
+    let s = fixName(mend(x.split(/\s;\s|;\s/)[0], lex)).replace(/[“”"]/g, '').replace(/\s+-\s+/g, '-').replace(/\s{2,}/g, ' ').trim().replace(/[.;,:]+$/, '');
+    s = s.replace(/\s*\(?\s*or (approved )?equal\)?$/i, '').trim();
+    if (!s || s.length > 48 || /\b(shall|subject|comply|provide|requirements|indicated|following|whose|any manufacturer|refer to|section|schedules?|drawings)\b/i.test(s) || /^(div\.|division of|a division)/i.test(s)) return null;
+    if (!/[A-Z]/.test(s[0])) return null;
+    return s;
+  }
+  function splitList(seg) {
+    /* "1. A 2. B" or "a. A b. B"; returns [{mark, text}] */
+    const re = /(?:^|\s)((?:\d{1,2})|[a-h])[.)]\s+/g, out = []; let m, last = null;
+    while ((m = re.exec(seg))) { if (last) last.text = seg.slice(last.end, m.index).trim(); last = { mark: m[1], end: re.lastIndex }; out.push(last); }
+    if (last) last.text = seg.slice(last.end).trim();
+    return out;
+  }
+  function readMfrs(sections, bodies, lex) {
+    const rows = [], seen = new Set();
+    sections.filter(s => ['22', '23', '25'].includes(s.div)).forEach(s => {
+      const { t, pageAt } = secText(s, bodies);
+      MFR_HEAD.lastIndex = 0; let m;
+      while ((m = MFR_HEAD.exec(t))) {
+        const at = m.index, part = partAt(t, at);
+        if (part && part !== 2) continue;
+        let seg = t.slice(MFR_HEAD.lastIndex, MFR_HEAD.lastIndex + 1100);
+        const cur = t.slice(Math.max(0, at - 90), at + 1).match(/(?:^|\s)([A-Y])\.\s+[A-Z][^.]{0,80}$/);
+        const nextL = cur ? String.fromCharCode(cur[1].charCodeAt(0) + 1) : '[B-Z]';
+        const stop = seg.search(new RegExp(`\\s(?:${nextL}\\.\\s+[A-Z][a-z]|[1-3]\\.\\d{1,2}\\s+[A-Z]{3}|PART\\s+[23])`));
+        if (stop > 0) seg = seg.slice(0, stop);
+        const items = splitList(' ' + seg);
+        if (!items.length) continue;
+        /* nested: "1. Product a. Maker b. Maker 2. Product a. …" */
+        const groups = [];
+        if (/^\d/.test(items[0].mark) && items.some(x => /^[a-h]$/.test(x.mark))) {
+          let g = null;
+          items.forEach(x => { if (/^\d/.test(x.mark)) { g = { prod: x.text, makers: [] }; groups.push(g); } else if (g) g.makers.push(x.text); });
+        } else {
+          const back = t.slice(Math.max(0, at - 260), at);
+          const art = back.match(/[1-3]\.\d{1,2}\s+([A-Z][A-Z0-9 ,\/&()'’-]{3,70}?)\s+(?:[A-Z]\.\s|$)/g);
+          let prod = art ? art[art.length - 1].replace(/^[1-3]\.\d{1,2}\s+/, '').replace(/\s+[A-Z]\.\s*$/, '') : '';
+          const lead = back.match(/(?:^|\s)[A-Z0-9]\.\s+([A-Z][^.:]{3,60}?)(?::|\.)\s*(?:\d\.\s*)?$/);
+          if (lead && (!prod || back.lastIndexOf(lead[1]) > back.lastIndexOf(prod))) prod = lead[1];
+          groups.push({ prod: prod || s.title, makers: items.map(x => x.text) });
+        }
+        groups.forEach(g => {
+          const makers = [...new Set(g.makers.map(x => cleanMaker(x, lex)).filter(Boolean))];
+          const prod = fixName(mend((g.prod || '').replace(/\s+/g, ' '), lex)).replace(/\s+-\s+/g, '-').replace(/[.:]+$/, '').trim();
+          if (!makers.length || !prod || prod.length > 80) return;
+          const name = /^[A-Z0-9 ,\/&()'’-]+$/.test(prod) ? prod.toLowerCase().replace(/\b(hvac|vav|vrf|doas|bas|ul|nfpa)\b/g, w => w.toUpperCase()).replace(/^./, c => c.toUpperCase()) : prod;
+          const k = s.id + '|' + name.toLowerCase();
+          if (seen.has(k)) return; seen.add(k);
+          rows.push({ prod: name, bod: makers[0], also: makers.slice(1).join(', '), makers, n: makers.length, st: makers.length === 1 ? 'sole' : 'listed', equip: EQUIP.test(name) && !/(trap|supplies|kit|seat|carrier|trim|brassware|valve|fitting|accessor)/i.test(name),
+            lens: lensOf(s.id), sec: s.id, page: pageAt(at), para: paraAt(t, at), part: 2 });
+        });
+      }
+      /* Part 3 naming one maker overrides the Part 2 list ("only Nibco ball valves") */
+      const p3 = t.search(/PART\s*3\s*[-–—:.]*\s*EXECUTION/i);
+      if (p3 > 0) rows.filter(r => r.sec === s.id).forEach(r => {
+        r.makers.forEach(mk => {
+          const word = mk.split(/[\s,\/]/)[0]; if (word.length < 4) return;
+          const re = new RegExp(`(only|exclusively|shall be manufactured by|no (other|substitut\\w*))[^.]{0,80}\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b|\\b${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b[^.]{0,60}(only|no substitut\\w*|no exceptions)`, 'i');
+          const x = t.slice(p3).match(re);
+          if (x && !r.exec) r.exec = { maker: mk, page: pageAt(p3 + x.index), says: x[0].slice(0, 160) };
+        });
+      });
+    });
+    return rows;
+  }
+
+  /* pipe material by system: piping-class tables + Part 3 "Piping Applications" */
+  const MATS = [
+    ['PVC', /\b(PVC|polyvinyl chloride|ABS)\b/i, 1], ['CPVC', /\bCPVC\b/i, 1.4], ['PEX', /\bPEX\b/i, 1.5],
+    ['No-hub cast iron', /(no[- ]hub|hubless)/i, 2.2], ['Hub-and-spigot cast iron', /(bell and spigot|hub[- ]and[- ]spigot|service weight)/i, 2.6],
+    ['Cast iron', /cast[- ]iron/i, 2.4], ['Ductile iron', /ductile iron/i, 3], ['Copper Type M', /type\s*M\b/i, 3.1],
+    ['Copper Type L', /type\s*(K or L|L)\b/i, 3.5], ['Copper Type K', /type\s*K\b(?! or L)/i, 3.9], ['Copper', /\bcopper\b/i, 3.4],
+    ['Steel Schedule 40', /(schedule|sch\.?)\s*40[^.]{0,20}steel|steel pipe[^.]{0,30}(schedule|sch\.?)\s*40|black steel/i, 3.2], ['Galvanized steel', /galvanized steel pipe/i, 3.3],
+    ['Stainless steel', /stainless/i, 5], ['Brass', /\bbrass pipe/i, 5],
+  ];
+  const matsIn = s0 => { const s = s0.replace(/(cast|malleable|ductile)[- ]iron (threaded |flanged? )?(flanges?|flange fittings|fittings)/gi, ''); const out = []; MATS.forEach(([n, re]) => { if (re.test(s) && !out.includes(n)) out.push(n); }); if (out.includes('CPVC')) { const i = out.indexOf('PVC'); if (i >= 0 && !/\bPVC\b(?!.*CPVC)/i.test(s.replace(/CPVC/gi, ''))) out.splice(i, 1); } if (out.some(x => /cast iron/.test(x) && x !== 'Cast iron')) { const i = out.indexOf('Cast iron'); if (i >= 0) out.splice(i, 1); } if (out.some(x => /^Copper Type/.test(x))) { const i = out.indexOf('Copper'); if (i >= 0) out.splice(i, 1); } return out; };
+  const RANK = Object.fromEntries(MATS.map(([n, , r]) => [n, r]));
+  const SERVICES = [
+    ['Domestic water, underground', 'water', /domestic (cold |hot )?water\s+underground/i], ['Domestic water, above ground', 'water', /domestic (cold |hot )?water\s+above ground/i],
+    ['Sanitary waste and vent, underground', 'dwv', /sanitary[^.]{0,40}?underground/i], ['Sanitary waste and vent, above ground', 'dwv', /sanitary[^.]{0,40}?above ground/i],
+    ['Storm drainage, underground', 'dwv', /storm[^.]{0,30}?underground/i], ['Storm drainage, above ground', 'dwv', /storm[^.]{0,30}?above ground/i],
+    ['Condensate drainage, underground', 'dwv', /condensate drain\w*\s+underground/i], ['Condensate drainage, above ground', 'dwv', /condensate drain\w*\s+above ground/i],
+    ['Chilled water', 'hydronic', /chilled[- ]water (piping|supply|system)/i], ['Heating hot water', 'hydronic', /(heating )?hot[- ]water (heating )?(piping|supply|system)/i], ['Condenser water', 'hydronic', /condenser[- ]water (piping|supply|system)/i],
+    ['Refrigerant liquid and hot-gas lines', 'refrig', /(hot[- ]gas and liquid lines|liquid lines)/i], ['Refrigerant suction lines', 'refrig', /suction lines/i],
+    ['Natural gas', 'gas', /natural[- ]gas (piping|distribution)/i],
+  ];
+  /* the PDF's letter spacing ("C ondensate", "Hot - water") would hide a system name from the patterns */
+  const fixSpacing = x => x.replace(/\s+-\s+/g, '-').replace(/\b([A-Z]) (?=[a-z]{3,})/g, '$1');
+  const PIPE_SYS = /(water|drain|waste|vent|storm|condensate|refrigerant|suction|liquid|hot-gas|gas piping|steam|chilled|condenser|heating)/i;
+  function readMaterials(sections, bodies) {
+    const rows = [];
+    const famOf = label => /blowdown|relief/i.test(label) ? 'other' : /drain|waste|vent|storm|sanitary/i.test(label) ? 'dwv' : /refrigerant|suction|liquid|hot-gas/i.test(label) ? 'refrig' : /(heating|chilled|condenser|hydronic|hot-water heating)/i.test(label) ? 'hydronic' : /domestic|potable|cold water|hot water/i.test(label) ? 'water' : /gas/i.test(label) ? 'gas' : 'other';
+    sections.filter(s => ['22', '23'].includes(s.div)).forEach(s => {
+      const { t, pageAt } = secText(s, bodies, fixSpacing);
+      /* piping classes: "Piping Class CI1 ITEM LIMITS DESCRIPTION PIPE & FITTINGS … JOINTS" */
+      const cls = {}; let m; const cre = /Piping Class\s+([A-Z]{1,4}\d{0,2}[A-Z]?)\s+ITEM\s+LIMITS\s+DESCRIPTION\s+PIPE(?:\s*&\s*FITTINGS)?\s+(.{0,200}?)\s+JOINTS/g;
+      while ((m = cre.exec(t))) { const mats = matsIn(m[2]); if (mats.length) cls[m[1]] = { mats, page: pageAt(m.index) }; }
+      const codes = Object.keys(cls);
+      if (codes.length) {
+        const hits = [];
+        SERVICES.forEach(([sys, fam, re]) => { const g = new RegExp(re.source, 'gi'); let x; while ((x = g.exec(t))) { if (!hits.some(h => h.sys === sys)) hits.push({ sys, fam, at: x.index }); } });
+        hits.sort((a, b) => a.at - b.at);
+        const codeRe = new RegExp(`\\b(${codes.join('|')})\\b(\\*{0,2})`, 'g');
+        hits.forEach((h, i) => {
+          const end = Math.min(i + 1 < hits.length ? hits[i + 1].at : h.at + 520, h.at + 520);
+          const seg = t.slice(h.at, end), main = [], cond = [], small = [];
+          let x; codeRe.lastIndex = 0;
+          while ((x = codeRe.exec(seg))) { const c = x[1], star = x[2]; (star === '*' ? cond : star === '**' ? small : main).includes(c) || (star === '*' ? cond : star === '**' ? small : main).push(c); }
+          if (!main.length && !cond.length) return;
+          const mats = [...new Set(main.flatMap(c => cls[c].mats))];
+          const cmats = [...new Set(cond.flatMap(c => cls[c].mats))].filter(x => !mats.includes(x));
+          const foot = (seg.match(/\*\s*If allowed by code[^.]*\./i) || [''])[0].replace(/^\*\s*/, '');
+          rows.push({ lens: lensOf(s.id) === 'sm' ? 'hvac' : lensOf(s.id), sys: h.sys, fam: h.fam, allowed: mats.length ? mats : cmats, cond: mats.length ? cmats : [], condNote: cmats.length && mats.length ? `${cmats.join(', ')} only at some branches${foot ? ' (' + foot.replace(/\.$/, '').toLowerCase() + ')' : ''}` : '',
+            classes: main.concat(cond.map(c => c + '*')), sec: s.id, page: pageAt(h.at), para: paraAt(t, h.at), part: partAt(t, h.at) || 2, src: 'Piping schedule ' + main.concat(cond.map(c => c + '*')).join(', ') });
+        });
+      }
+      /* Part 3 article "3.1 PIPING APPLICATIONS A. Hot-water heating piping, aboveground, NPS 2 and smaller, shall be any of the following: 1. Type L …" */
+      const are = /[1-3]\.\d{1,2}\s+[A-Z ,-]{0,40}PIPING APPLICATIONS/g; let pa;
+      while ((pa = are.exec(t))) {
+        const from = pa.index, rest = t.slice(from + pa[0].length, from + 6000);
+        const endAt = rest.search(/\s[1-3]\.\d{1,2}\s+[A-Z]{3}/);
+        const seg = endAt > 0 ? rest.slice(0, endAt) : rest;
+        seg.split(/\s(?=[A-H]\.\s+[A-Z])/).forEach(it => {
+          const c = it.indexOf(':'); if (c < 0) return;
+          const label = it.slice(0, c).replace(/^\s*[A-H]\.\s+/, '').replace(/,?\s*(shall|must) be.*$/i, '').replace(/\s+/g, ' ').trim();
+          const mats = matsIn(it.slice(c + 1));
+          if (!mats.length || label.length > 110 || !PIPE_SYS.test(label)) return;
+          const svc = SERVICES.find(([, , re]) => re.test(label));
+          const off = from + pa[0].length + Math.max(0, seg.indexOf(it));
+          rows.push({ lens: lensOf(s.id) === 'sm' ? 'hvac' : lensOf(s.id), sys: label.replace(/\s+,/g, ',').replace(/^./, ch => ch.toUpperCase()), fam: svc ? svc[1] : famOf(label), allowed: mats, cond: [], sec: s.id, page: pageAt(off), para: paraAt(t, off) || pa[0].match(/[1-3]\.\d{1,2}/)[0], part: partAt(t, off) || 3, src: 'Piping applications' });
+        });
+      }
+    });
+    /* one row per system and section */
+    const out = []; rows.forEach(r => { if (!out.some(x => x.sec === r.sec && x.sys.toLowerCase() === r.sys.toLowerCase())) out.push(r); });
+    /* the catch: the cheapest material the book lists for that kind of piping is not allowed on this system */
+    const famMin = {};
+    out.forEach(r => r.allowed.concat(r.cond || []).forEach(x => { if (famMin[r.fam] == null || RANK[x] < RANK[famMin[r.fam]]) famMin[r.fam] = x; }));
+    out.forEach(r => {
+      r.cheapest = r.allowed.slice().sort((a, b) => RANK[a] - RANK[b])[0];
+      const fm = famMin[r.fam];
+      r.catch = !!(fm && ['dwv', 'water', 'hydronic'].includes(r.fam) && RANK[r.cheapest] - RANK[fm] >= 1);
+      if (r.catch) r.missing = fm;
+    });
+    return out;
+  }
+
+  /* warranties: every term written in Divisions 21-25, against the house standard */
+  function readWarranties(sections, bodies) {
+    const rows = [], seen = new Set();
+    sections.filter(s => ['22', '23', '25'].includes(s.div)).forEach(s => {
+      const { t, pageAt } = secText(s, bodies);
+      const re = /(Warranty Period(?: for)?\s*([^:]{2,90}?)\s*:|warrant\w*)[^.]{0,140}?\b(one|two|three|four|five|six|seven|eight|nine|ten|fifteen|twenty|\d{1,2})\s*(?:\(\d+\)\s*)?[- ]?years?\b/gi;
+      let m;
+      while ((m = re.exec(t))) {
+        const yrs = numOf(m[3]); if (!yrs || yrs > 30) continue;
+        const ctx = t.slice(Math.max(0, m.index - 30), m.index + m[0].length + 60);
+        if (/(experience|in business|years of|for not less than \d+ years (prior|before))/i.test(ctx) && !/warrant/i.test(m[0].slice(0, 12))) continue;
+        const item = (m[2] || '').replace(/^.*Warranty Period(?: for)?\s*/i, '').replace(/^[\s.\d)]+/, '').replace(/^(the )/i, '').replace(/\s+-\s+/g, '-').trim() || s.title;
+        const k = s.id + '|' + item.toLowerCase() + '|' + yrs;
+        if (seen.has(k)) continue; seen.add(k);
+        const refrigPipe = /refrigera\w*[^.]{0,30}(pip|line)/i.test(item + ' ' + ctx) && !/compressor/i.test(item);
+        rows.push({ sec: s.id, title: s.title, item: item.length > 70 ? item.slice(0, 67) + '…' : item, years: yrs, std: refrigPipe ? 5 : 1, page: pageAt(m.index), para: paraAt(t, m.index), lens: lensOf(s.id), says: tidy(t.slice(m.index, m.index + m[0].length + 40)).slice(0, 220) });
+      }
+    });
+    rows.forEach(r => { r.extended = r.years > r.std; });
+    return rows;
+  }
+
+  /* after award: what each section asks the PM to submit and turn over (Part 1 SUBMITTALS / CLOSEOUT SUBMITTALS) */
+  function readDeliv(sections, bodies, lex) {
+    const rows = [], seen = new Set();
+    sections.filter(s => ['22', '23', '25'].includes(s.div)).forEach(s => {
+      const { t, pageAt } = secText(s, bodies);
+      const re = /[1-3]\.\d{1,2}\s+((?:ACTION |INFORMATIONAL |CLOSEOUT |MAINTENANCE MATERIAL )?SUBMITTALS)\b/g; let m;
+      while ((m = re.exec(t))) {
+        const kind = /CLOSEOUT|MAINTENANCE/.test(m[1]) ? 'Closeout' : 'Submittal';
+        const rest = t.slice(re.lastIndex, re.lastIndex + 2500), end = rest.search(/\s[1-3]\.\d{1,2}\s+[A-Z]{3}/);
+        (end > 0 ? rest.slice(0, end) : rest).split(/\s(?=[A-H]\.\s+[A-Z])/).forEach(it => {
+          const mm = it.match(/^\s*[A-H]\.\s+([A-Z][A-Za-z ,&\/()'-]{2,60}?)\s*[:.]/); if (!mm) return;
+          const d = mend(mm[1].replace(/\s+/g, ' ').trim(), lex), k = s.id + '|' + d.toLowerCase();
+          if (seen.has(k) || d.length < 4) return; seen.add(k);
+          const t2 = /operation|maintenance|warrant|record|as-built|extra materials|spare/i.test(d) ? 'Closeout' : kind;
+          rows.push({ t: t2, d: `${d}: ${s.title}`, when: t2 === 'Closeout' ? 'At closeout, before Substantial Completion' : 'Before fabrication or installation (01 3300)', who: 'Architect / engineer', lens: lensOf(s.id), sec: s.id, page: pageAt(m.index), para: (m[0].match(/[1-3]\.\d{1,2}/) || [''])[0] });
+        });
+      }
+    });
+    return rows.slice(0, 160);
+  }
+
+  /* the schedules turned into findings the estimator decides on, each cited to its clause.
+     {co} in proposal wording is replaced by the bidding company's name on the page. */
+  const orList = a => a.length > 2 ? a.slice(0, -1).join(', ') + ' or ' + a[a.length - 1] : a.join(' or ');
+  const lowMat = m => /^(PVC|CPVC|PEX)$/.test(m) ? m : m.replace(/^./, c => c.toLowerCase());
+  function houseFindings(book) {
+    const F = [], C = [], inp = book.inputs || {}, P = book.profile || {};
+    let n = 0;
+    const id = () => 'K' + String(++n).padStart(2, '0');
+    (inp.mfr || []).filter(r => r.equip && r.st !== 'others' && r.n < 3).forEach(r => F.push({ id: id(), rule: 'mfrlimit', sec: r.sec, page: r.page, para: r.para, part: 2, sev: r.n === 1 ? 'high' : 'med', cat: 'Manufacturers',
+      title: r.n === 1 ? `${r.prod}: one maker named (${r.bod})` : `${r.prod}: only ${r.n} makers named`, says: `${r.prod}. Manufacturers: ${r.makers.join('; ')}.`,
+      impact: `Equipment makers are where the price swings. ${r.n === 1 ? 'With one maker there is no price competition.' : 'Two makers limit the competition.'} A public job must name at least three; on a private job a cheaper maker needs a substitution request.`,
+      act: 'note', amt: 0, basis: '', lens: r.lens, mfr: r, qual: `${r.prod} priced as ${orList(r.makers)}, the makers named in Section ${r.sec}${r.para ? ' para ' + r.para : ''}.` }));
+    (inp.mfr || []).filter(r => r.exec).forEach(r => F.push({ id: id(), rule: 'mfrexec', sec: r.sec, page: r.exec.page, para: '', part: 3, sev: 'high', cat: 'Manufacturers',
+      title: `${r.prod}: Part 3 names ${r.exec.maker} only`, says: r.exec.says, impact: `Part 3 Execution governs Part 2: price ${r.exec.maker}, even though Part 2 lists ${r.makers.length} makers.`, act: 'note', amt: 0, basis: '', lens: r.lens, mfr: r,
+      qual: `${r.prod} priced as ${r.exec.maker} per Section ${r.sec} Part 3.` }));
+    const FAM = { dwv: 'drainage piping', water: 'water piping', hydronic: 'hydronic piping' };
+    (inp.mat || []).filter(r => r.catch && !r.find).forEach(r => F.push({ id: id(), rule: 'matcatch', sec: r.sec, page: r.page, para: r.para, part: r.part, sev: 'high', cat: 'Material',
+      title: `${r.sys}: ${r.cheapest} required, no ${r.missing}`, says: `${r.sys}: ${r.allowed.join(', ')}${r.condNote ? '; ' + r.condNote : ''} (${r.src}).`,
+      impact: `The book allows ${r.missing} on other ${FAM[r.fam] || 'piping'}, but not on this system${r.part === 3 ? ', and Part 3 Execution governs' : ''}. Price ${r.cheapest}, the cheapest allowed, and state it in the proposal.`,
+      act: 'clarify', amt: 0, basis: '', lens: r.sec.startsWith('22') ? 'plumb' : 'hvac', mat: r,
+      qual: `${r.sys} priced in ${lowMat(r.cheapest)} per Section ${r.sec}${r.para ? ' para ' + r.para : ''}${r.condNote ? '; ' + r.condNote : ''}.` }));
+    /* shown only while the job profile says renovation (the page decides; the estimator can flip it) */
+    const pad = (book.findings || []).find(f => f.rule === 'pads') || (book.findings || []).find(f => /equipment pads|isolat/i.test(f.title));
+    if ((P.reno && P.reno.v) || pad) {
+      const R = P.reno || {};
+      const cid = 'KR1', fid = id();
+      F.push({ id: fid, rule: 'renosupport', onlyIf: 'reno', sec: pad ? pad.sec : R.sec, page: pad ? pad.page : R.page, para: pad ? pad.para : '', part: pad ? pad.part : 1, sev: 'high', cat: 'Existing structure',
+        title: 'Renovation: confirm the existing structure takes the new equipment', says: pad ? pad.says : R.why,
+        impact: 'Old floors may not carry concrete equipment pads. Isolation pads or structural reinforcement found mid-job can be a seven-figure miss: RFI the structural capacity before pricing pads.',
+        act: 'rfi', rfi: cid, amt: 0, basis: '', lens: 'all' });
+      C.push({ id: cid, kind: 'existing', type: 'existing', onlyIf: 'reno', lens: 'all', sev: 'high', title: 'Existing structure: capacity for new mechanical equipment and pads',
+        a: { sec: pad ? pad.sec : R.sec, page: pad ? pad.page : R.page, para: pad ? pad.para : '', says: pad ? pad.says : (R.why || '') },
+        b: R.sec ? { sec: R.sec, page: R.page, para: '', says: R.why } : { sec: '—', page: null, para: '', says: 'The job profile marks this as work in an existing building.' },
+        q: 'This work is in an existing building. Confirm the existing floors and roof can carry the new mechanical equipment on concrete pads as specified, or state the required supports (vibration-isolation pads, curbs or structural reinforcement) and who provides any reinforcement. Bid assumes the existing structure is adequate and equipment sits on standard concrete pads.',
+        cost: 'Equipment supports and any reinforcement in an old structure.' });
+    }
+    return { findings: F, conflicts: C };
   }
 
   /* ---------------- shared helpers for the hub + RFI pages ---------------- */
@@ -534,7 +838,7 @@
     return [
       `REQUEST FOR INFORMATION  ${rfiNo(n)}${c.rev ? '  Rev ' + c.rev : ''}`,
       `To: ${book.cm || 'Construction Manager'} (route via CM per Section 01 3100)`,
-      `From: McCorvey Sheet Metal Works — Preconstruction`,
+      `From: ${book.from || 'McCorvey Sheet Metal Works'} — Preconstruction`,
       `Project: ${book.name}${book.bid && book.bid.bidNo ? '   Bid: ' + book.bid.bidNo : ''}`,
       `Date: ${today}`,
       `Subject: ${c.title}`,
@@ -542,11 +846,12 @@
       ``,
       `Question: ${q}`,
       assume ? `Bid assumption pending response: ${assume}` : '',
-      `Impact: ${c.cost || 'To be determined.'} McCorvey reserves the right to submit cost and schedule impact within the notice period of Section 01 3100.`,
+      `Impact: ${c.cost || 'To be determined.'} ${book.short || 'McCorvey'} reserves the right to submit cost and schedule impact within the notice period of Section 01 3100.`,
     ].filter(x => x !== '').join('\n');
   }
 
   const PARTS = { 1: 'General', 2: 'Products', 3: 'Execution' };
   window.SpecEngine = { PARTS, assignParts, analyze, extract, openPdf, buildSections, diffBooks, stampDiffs, staleRfis, lensOf, inLens, LENSES, DIV_NAMES, YOURS, HOOKS, RULES,
-    mend, wordCounts, store, activeBook, decisions, saveDecisions, amtOf, decOf, secTitle, cite, rfiNo, rfiText };
+    mend, wordCounts, store, activeBook, decisions, saveDecisions, amtOf, decOf, secTitle, cite, rfiNo, rfiText,
+    readProfile, readMfrs, readMaterials, readWarranties, houseFindings, analyzePages, MATRANK: RANK };
 })();

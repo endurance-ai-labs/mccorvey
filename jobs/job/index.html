@@ -34,7 +34,7 @@
 </main>
 
 <script src="/mccorvey/js/data.js?v=20261013k"></script>
-<script src="/mccorvey/js/util.js?v=20261016h"></script>
+<script src="/mccorvey/js/util.js?v=20261017a"></script>
 <script src="/mccorvey/js/nav.js?v=20261016h"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
 <script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
@@ -158,7 +158,7 @@ function secOverview(m) {
     </div>
 
     <div class="demo-panel">
-      <div class="demo-panel-head"><h2>Schedule of Values ${showMargins ? '— Internal (cost & margin)' : internal ? '— Field Production' : '— Progress'}</h2><span style="display:flex;gap:6px;align-items:center">${internal ? srcChip('st') + srcChip('qb') : ''}<span class="k">${internal ? '% complete from STRATUS field tracking · costs from Viewpoint Vista' : 'owner view'}</span></span></div>
+      <div class="demo-panel-head"><h2>Schedule of Values ${showMargins ? '— Internal (cost & margin)' : internal ? '— Field Production' : '— Progress'}</h2><span style="display:flex;gap:6px;align-items:center">${internal ? srcChip('st') + srcChip('qb') + srcChip('ss') : ''}<span class="k">${internal ? '% complete from STRATUS field tracking · costs from Viewpoint Vista · PM sheet in Smartsheet' : 'owner view'}</span></span></div>
       <div class="demo-tbl-wrap grid-scroll" style="max-height:none">
         <table class="demo-tbl">
           <thead><tr><th>Item</th><th>Description of Work</th><th style="text-align:right">Scheduled Value</th><th>% Complete</th><th style="text-align:right">Earned</th>${showMargins ? '<th style="text-align:right">Budget Cost</th><th style="text-align:right">Cost to Date</th><th style="text-align:right">Margin</th>' : ''}</tr></thead>
@@ -701,7 +701,7 @@ function secBilling(m) {
     </div>`).join('')}
 
     <div class="demo-panel" style="margin-bottom:22px">
-      <div class="demo-panel-head"><h2>Payment Applications (AIA G702/G703)</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}<span class="k">synced from Viewpoint Vista · retainage ${ret}%</span></span></div>
+      <div class="demo-panel-head"><h2>Payment Applications (AIA G702/G703)</h2><span style="display:flex;gap:6px;align-items:center">${srcChip('qb')}${srcChip('ss')}<span class="k">synced from Viewpoint Vista · invoice status written back to Smartsheet · retainage ${ret}%</span></span></div>
       <table class="demo-tbl tbl-left">
         <thead><tr><th>App #</th><th>Description</th><th>Period To</th><th style="text-align:right">Amount Certified</th><th>Status</th><th></th></tr></thead>
         <tbody>${paRows}

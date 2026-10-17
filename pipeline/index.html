@@ -24,7 +24,7 @@
 <main class="page"><div class="demo-wrap" id="app"></div></main>
 
 <script src="/mccorvey/js/data.js?v=20261013k"></script>
-<script src="/mccorvey/js/util.js?v=20261016h"></script>
+<script src="/mccorvey/js/util.js?v=20261017a"></script>
 <script src="/mccorvey/js/nav.js?v=20261016h"></script>
 <script src="/mccorvey/vendor/chart.umd.min.js"></script>
 <script src="/mccorvey/js/mccorvey-brain.js?v=20261013k" defer></script>
@@ -39,6 +39,27 @@ if (!me || me.perms.external || !(can('bids') || can('margins'))) {
   render();
 }
 
+/* public bid openings: bids read aloud, low bid wins; a bid far under the field is usually missing scope (demo tabulations) */
+function publicBidsHTML() {
+  const PUBTAB = [
+    { proj: 'County Courthouse Annex — Mechanical (public)', opened: -9, bond: 5, bids: [['Our bid', 10020000], ['Bidder B', 10960000], ['Bidder C', 11480000], ['Bidder D', 7010000]] },
+    { proj: 'State University Science Hall — Plumbing (public)', opened: -23, bond: 5, bids: [['Bidder B', 4310000], ['Our bid', 4385000], ['Bidder C', 4590000]] },
+  ];
+  const med = a => { const s = a.slice().sort((x, y) => x - y), m = Math.floor(s.length / 2); return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  return `<div class="demo-panel" style="margin-bottom:22px">
+    <div class="demo-panel-head"><h2>Public Bid Openings</h2><span class="k">bids read aloud · low bid wins · outliers flagged</span></div>
+    <div class="demo-two">${PUBTAB.map(t => {
+      const B = t.bids.slice().sort((a, b) => a[1] - b[1]), low = B[0][1];
+      const out = B.map(b => { const rest = B.filter(x => x !== b).map(x => x[1]); return { b, out: b[1] < med(rest) * 0.8, vsMed: b[1] / med(rest) - 1 }; });
+      const flag = out.find(x => x.out), ours = B.findIndex(b => b[0] === 'Our bid'), next = flag ? B.filter(b => b !== flag.b)[0] : null;
+      return `<div><div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline;margin-bottom:8px"><b style="font-size:13px;color:var(--color-cloud-whisper)">${esc(t.proj)}</b><span class="k">opened ${fmtDate(addDays(todayISO(), t.opened))} · bid bond ${t.bond}%</span></div>
+        <table class="demo-tbl tbl-left"><thead><tr><th>Bidder</th><th style="text-align:right">Bid</th><th style="text-align:right">vs low</th><th style="text-align:right">vs the field</th><th></th></tr></thead><tbody>
+        ${out.map(({ b, out: o, vsMed }) => `<tr${b[0] === 'Our bid' ? ' style="font-weight:800"' : ''}><td>${esc(b[0])}</td><td style="text-align:right">${fmt$(b[1])}</td><td style="text-align:right">${b[1] === low ? 'LOW' : '+' + ((b[1] / low - 1) * 100).toFixed(1) + '%'}</td><td style="text-align:right">${vsMed > 0 ? '+' : ''}${(vsMed * 100).toFixed(0)}%</td><td>${o ? '<span class="demo-chip" style="color:#c8102e;border-color:#c8102e">LIKELY SCOPE MISS</span>' : ''}</td></tr>`).join('')}</tbody></table>
+        <div class="ynote" style="margin-top:8px">${flag ? `${esc(flag.b[0])} is ${Math.abs(flag.vsMed * 100).toFixed(0)}% under the field: almost certainly missing scope. It can withdraw by forfeiting its ${t.bond}% bid bond (${fmt$(flag.b[1] * t.bond / 100)}); then ${next[0] === 'Our bid' ? `<b>our ${fmt$(next[1])} is low</b>` : esc(next[0]) + ' is low'}.` : ours === 0 ? 'We are low and inside the field: a clean award.' : `We are ${((B[ours][1] / low - 1) * 100).toFixed(1)}% over the low bid, inside the field.`}</div></div>`;
+    }).join('')}</div>
+    <div class="ynote" style="margin-top:10px">Demo tabulations. On public work the spec book governs ("rip and read"): Spec Review's house rules check the three-maker rule and separate plumbing and mechanical bids before the number goes in.</div>
+  </div>`;
+}
 function render() {
   const showMargin = can('margins');
   const P = BID_PIPELINE;
@@ -126,6 +147,8 @@ function render() {
         <div class="demo-chart" style="height:230px"><canvas id="ch-sector"></canvas></div>
       </div>
     </div>
+
+    ${publicBidsHTML()}
 
     <div class="demo-panel" style="margin-bottom:22px;border-left:3px solid var(--mccorvey-red)">
       <div class="demo-panel-head"><h2>Win More of What You Bid</h2><span class="k">flagship module</span></div>

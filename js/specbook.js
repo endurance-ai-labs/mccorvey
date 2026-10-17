@@ -350,11 +350,23 @@
       says: 'Process piping class PCC-9 (Sch 80 PVC) to be installed by the "Piping Installation Contractor", who owns thermal and seismic analysis.', impact: 'Not clearly yours. Exclude unless invited.', act: 'exclude' },
     { id: 'H28', sec: '23 0700', off: 2, para: '1.6.B', sev: 'info', cat: 'Scope', title: 'Duct insulation installer must be a commercial insulation firm',
       says: 'Installers regularly employed in commercial/industrial insulation work.', impact: 'Carry the insulation sub-sub explicitly.', act: 'note', lens: 'sm' },
+
+    /* ---- house-rule findings: painting and coordination ---- */
+    { id: 'N01', rule: 'paint9', sec: '09 9123', off: 2, para: '1.2.C', sev: 'med', cat: 'Painting', title: 'Division 09 paints exposed piping, ductwork and equipment',
+      says: 'In finished areas and mechanical rooms, paint exposed piping, insulated piping, ductwork, hangers, supports and mechanical equipment not factory finished. Color-code piping per ASME A13.1.',
+      impact: 'Painting of exposed mechanical work sits with the painter in Division 09. Confirm Divisions 22/23 do not also assign it to you, and carry it as a clarification.', act: 'clarify', lens: 'all',
+      qual: 'Painting of exposed piping, ductwork, hangers and equipment is by Division 09 (Section 09 9123); not included.' },
+    { id: 'N02', rule: 'paintmech', sec: '22 0553', off: 2, para: '3.2.B', sev: 'med', cat: 'Painting', title: 'Hot-water piping in mechanical rooms field-painted red',
+      says: 'Domestic hot-water and hot-water return piping exposed in mechanical rooms shall be field painted red over the jacket. Factory color-coded jackets are acceptable in lieu of painting.',
+      impact: 'Painting written into the plumbing scope. Paying a painter is usually cheaper than color-coded jackets.', act: 'price', amt: 18600, basis: '≈2,400 LF exposed hot-water piping × painter rate', lens: 'plumb' },
+    { id: 'N03', rule: 'bimcoord', sec: '01 3100', off: 3, para: '1.5.B', sev: 'info', cat: 'Coordination', title: 'LOD 400 coordination models with weekly clash meetings',
+      says: 'Prepare coordination drawings as LOD 400 models; attend weekly clash-detection meetings until each area is signed; maintain the model through as-built record drawings.',
+      impact: 'Covered by the BIM coordination package (a percentage of equipment, material and labor). Check nothing here goes beyond it.', act: 'note', lens: 'all' },
   ];
   F.forEach(f => { f.page = pg(f.sec, f.off); });
   /* bid requirement: must = required to bid ("shall"), call = your call (commercial/risk),
      open = needs an RFI answer, not = not required (outside your scope), info = no bid impact */
-  const REQ = { F01: 'must', F02: 'must', F03: 'call', F04: 'must', F05: 'call', F06: 'call', F07: 'must', F08: 'must', F09: 'must', F10: 'must', F11: 'must', F12: 'must', F13: 'call', F14: 'must', F15: 'must', F16: 'must', F17: 'open', F18: 'must', F19: 'must', F20: 'call', F21: 'must', F22: 'must', F23: 'open', F24: 'open', H01: 'must', H02: 'must', H03: 'must', H04: 'must', H05: 'must', H06: 'must', H07: 'must', H08: 'must', H09: 'must', H10: 'must', H11: 'must', H12: 'call', H13: 'open', H14: 'must', H15: 'must', H16: 'must', H17: 'must', H18: 'must', H19: 'must', H20: 'open', H21: 'must', H22: 'must', H23: 'must', H24: 'must', H25: 'call', H26: 'must', H27: 'not', H28: 'must', P01: 'must', P02: 'must', P03: 'must', P04: 'open', P05: 'must', P06: 'must', P07: 'must', P08: 'open', P09: 'must', P10: 'must', P11: 'open', P12: 'must', P13: 'must', P14: 'info' };
+  const REQ = { N01: 'call', N02: 'must', N03: 'must', F01: 'must', F02: 'must', F03: 'call', F04: 'must', F05: 'call', F06: 'call', F07: 'must', F08: 'must', F09: 'must', F10: 'must', F11: 'must', F12: 'must', F13: 'call', F14: 'must', F15: 'must', F16: 'must', F17: 'open', F18: 'must', F19: 'must', F20: 'call', F21: 'must', F22: 'must', F23: 'open', F24: 'open', H01: 'must', H02: 'must', H03: 'must', H04: 'must', H05: 'must', H06: 'must', H07: 'must', H08: 'must', H09: 'must', H10: 'must', H11: 'must', H12: 'call', H13: 'open', H14: 'must', H15: 'must', H16: 'must', H17: 'must', H18: 'must', H19: 'must', H20: 'open', H21: 'must', H22: 'must', H23: 'must', H24: 'must', H25: 'call', H26: 'must', H27: 'not', H28: 'must', P01: 'must', P02: 'must', P03: 'must', P04: 'open', P05: 'must', P06: 'must', P07: 'must', P08: 'open', P09: 'must', P10: 'must', P11: 'open', P12: 'must', P13: 'must', P14: 'info' };
   F.forEach(f => { f.req = REQ[f.id]; });
   /* CSI Part each finding sits in: from its paragraph number (1.x General, 2.x Products, 3.x Execution) */
   F.forEach(f => { f.part = /^[123]\./.test(f.para) ? +f.para[0] : f.id === 'F18' ? 3 : null; });
@@ -502,18 +514,34 @@
   ];
 
   /* base takeoff used when "Start bid sheet from this book" is pressed */
+  /* base takeoff by trade (demo quantities and rates): lens sm = ductwork, hvac = HVAC piping and equipment, plumb = plumbing,
+     all = every trade. The BIM coordination package is not a takeoff line: the page computes it as a percentage. */
   const TAKEOFF = [
-    { scope: 'Rectangular duct — galvanized, per SMACNA', unit: 'lbs', qty: 1180000, mat: 0.72, shopUPH: 75, fieldUPH: 42 },
-    { scope: 'Spiral & round duct', unit: 'LF', qty: 46000, mat: 9.40, shopUPH: 9, fieldUPH: 6.5 },
-    { scope: 'Double-wall insulated duct', unit: 'lbs', qty: 82000, mat: 1.35, shopUPH: 45, fieldUPH: 35 },
-    { scope: 'Welded stainless exhaust — NFPA 96', unit: 'LF', qty: 1400, mat: 46, shopUPH: 1.6, fieldUPH: 2.2 },
-    { scope: 'Air devices (GRDs) — furnish & install', unit: 'ea', qty: 1960, mat: 74, shopUPH: 0, fieldUPH: 1.43 },
-    { scope: 'Fire/smoke dampers & accessories', unit: 'ea', qty: 410, mat: 410, shopUPH: 0, fieldUPH: 0.5 },
-    { scope: 'Volume dampers & access doors', unit: 'ea', qty: 1240, mat: 38, shopUPH: 0, fieldUPH: 3 },
-    { scope: 'Flex duct & connections', unit: 'LF', qty: 6800, mat: 4.20, shopUPH: 0, fieldUPH: 25 },
-    { scope: 'Duct liner & external wrap (insulation sub)', unit: 'LS', qty: 1, mat: 420000, shopUPH: 0, fieldUPH: 0, mkup: 8 },
-    { scope: 'Rigging, lifts & equipment', unit: 'LS', qty: 1, mat: 220000, shopUPH: 0, fieldUPH: 0 },
-    { scope: 'BIM coordination & shop drawings (LOD 400)', unit: 'LS', qty: 1, mat: 210000, shopUPH: 0, fieldUPH: 0 },
+    { scope: 'Rectangular duct — galvanized, per SMACNA', unit: 'lbs', qty: 1180000, mat: 0.72, shopUPH: 75, fieldUPH: 42, lens: 'sm' },
+    { scope: 'Spiral & round duct', unit: 'LF', qty: 46000, mat: 9.40, shopUPH: 9, fieldUPH: 6.5, lens: 'sm' },
+    { scope: 'Double-wall insulated duct', unit: 'lbs', qty: 82000, mat: 1.35, shopUPH: 45, fieldUPH: 35, lens: 'sm' },
+    { scope: 'Welded stainless exhaust — NFPA 96', unit: 'LF', qty: 1400, mat: 46, shopUPH: 1.6, fieldUPH: 2.2, lens: 'sm' },
+    { scope: 'Air devices (GRDs) — furnish & install', unit: 'ea', qty: 1960, mat: 74, shopUPH: 0, fieldUPH: 1.43, lens: 'sm' },
+    { scope: 'Fire/smoke dampers & accessories', unit: 'ea', qty: 410, mat: 410, shopUPH: 0, fieldUPH: 0.5, lens: 'sm' },
+    { scope: 'Volume dampers & access doors', unit: 'ea', qty: 1240, mat: 38, shopUPH: 0, fieldUPH: 3, lens: 'sm' },
+    { scope: 'Flex duct & connections', unit: 'LF', qty: 6800, mat: 4.20, shopUPH: 0, fieldUPH: 25, lens: 'sm' },
+    { scope: 'Duct liner & external wrap (insulation sub)', unit: 'LS', qty: 1, mat: 420000, shopUPH: 0, fieldUPH: 0, mkup: 8, lens: 'sm' },
+    { scope: 'Hydronic piping — steel and copper, prefabricated', unit: 'LF', qty: 18500, mat: 38, shopUPH: 6, fieldUPH: 2.5, lens: 'hvac' },
+    { scope: 'Refrigerant piping — ACR copper', unit: 'LF', qty: 9200, mat: 14, shopUPH: 0, fieldUPH: 4, lens: 'hvac' },
+    { scope: 'HVAC equipment — furnish (rooftop units, DOAS, chillers, boilers)', unit: 'LS', qty: 1, mat: 4200000, shopUPH: 0, fieldUPH: 0, mkup: 15, lens: 'hvac', equip: true },
+    { scope: 'HVAC equipment — set, connect and start up', unit: 'ea', qty: 186, mat: 900, shopUPH: 0, fieldUPH: 0.04, lens: 'hvac' },
+    { scope: 'Hydronic specialties, valves and pumps', unit: 'LS', qty: 1, mat: 420000, shopUPH: 0, fieldUPH: 0, lens: 'hvac' },
+    { scope: 'Piping insulation (insulation sub)', unit: 'LS', qty: 1, mat: 360000, shopUPH: 0, fieldUPH: 0, mkup: 12, lens: 'hvac' },
+    { scope: 'Temperature controls — Division 25 (controls sub)', unit: 'LS', qty: 1, mat: 1150000, shopUPH: 0, fieldUPH: 0, mkup: 12, lens: 'hvac', ctl: true },
+    { scope: 'Piping tests, flushing and water treatment', unit: 'LS', qty: 1, mat: 85000, shopUPH: 0, fieldUPH: 0, lens: 'hvac' },
+    { scope: 'Sanitary waste and vent — cast iron and PVC', unit: 'LF', qty: 21000, mat: 22, shopUPH: 5, fieldUPH: 2.2, lens: 'plumb' },
+    { scope: 'Domestic water — copper Type L', unit: 'LF', qty: 24000, mat: 16, shopUPH: 6, fieldUPH: 2.6, lens: 'plumb' },
+    { scope: 'Storm drainage', unit: 'LF', qty: 8200, mat: 26, shopUPH: 4, fieldUPH: 1.8, lens: 'plumb' },
+    { scope: 'Natural gas piping', unit: 'LF', qty: 5200, mat: 18, shopUPH: 4, fieldUPH: 2, lens: 'plumb' },
+    { scope: 'Plumbing fixtures and trim — furnish and install', unit: 'ea', qty: 640, mat: 780, shopUPH: 0, fieldUPH: 0.25, lens: 'plumb' },
+    { scope: 'Water heaters, pumps and plumbing specialties', unit: 'LS', qty: 1, mat: 380000, shopUPH: 0, fieldUPH: 0, lens: 'plumb' },
+    { scope: 'Plumbing tests, flushing and disinfection', unit: 'LS', qty: 1, mat: 60000, shopUPH: 0, fieldUPH: 0, lens: 'plumb' },
+    { scope: 'Rigging, lifts & equipment', unit: 'LS', qty: 1, mat: 220000, shopUPH: 0, fieldUPH: 0, lens: 'all' },
   ];
 
 
@@ -557,7 +585,54 @@
     { prod: 'HVAC variable-frequency drives', bod: 'ABB', also: 'Danfoss, Yaskawa', st: 'listed', lens: 'hvac', sec: '23 0513', off: 2, para: '2.3' },
     { prod: 'Packaged air compressor', bod: 'Atlas Copco', also: 'Kaeser, Ingersoll Rand', st: 'listed', lens: 'plumb', sec: '22 1519', off: 3, para: '2.1' },
     { prod: 'Plumbing fixtures and flush valves', bod: 'Sloan', also: '', st: 'sole', lens: 'plumb', sec: '22 4000', off: 2, para: '2.1' },
+    { prod: 'Packaged rooftop air-conditioning units', bod: 'Trane', also: 'Daikin', st: 'listed', lens: 'hvac', sec: '23 7416', off: 2, para: '2.1', equip: true },
+    { prod: 'Rotary-screw water chillers', bod: 'Trane', also: 'Daikin, Carrier', st: 'listed', lens: 'hvac', sec: '23 6426', off: 2, para: '2.1', equip: true,
+      exec: { maker: 'Trane', off: 6, says: 'Provide Trane chillers only, to match the campus chiller plant and controls; no other manufacturer will be accepted.' } },
+    { prod: 'Condensing boilers', bod: 'Lochinvar', also: 'AERCO, Fulton', st: 'listed', lens: 'hvac', sec: '23 5216', off: 2, para: '2.1', equip: true },
+    { prod: 'Dedicated outdoor-air units', bod: 'Daikin', also: 'Trane, AAON', st: 'listed', lens: 'hvac', sec: '23 7333', off: 2, para: '2.1', equip: true },
+    { prod: 'VRF heat pump systems', bod: 'Mitsubishi', also: 'Daikin', st: 'listed', lens: 'hvac', sec: '23 8126', off: 2, para: '2.1', equip: true },
+    { prod: 'Hydronic pumps', bod: 'Bell & Gossett', also: 'Armstrong, Taco', st: 'listed', lens: 'hvac', sec: '23 2123', off: 2, para: '2.1', equip: true },
+    { prod: 'HVAC fans', bod: 'Greenheck', also: 'Loren Cook, Twin City Fan', st: 'listed', lens: 'sm', sec: '23 3400', off: 2, para: '2.1', equip: true },
+    { prod: 'Fuel-fired domestic water heaters', bod: 'A. O. Smith', also: 'Lochinvar, PVI', st: 'listed', lens: 'plumb', sec: '22 3400', off: 2, para: '2.1', equip: true },
+    { prod: 'Domestic water pumps', bod: 'Bell & Gossett', also: 'Grundfos, Armstrong', st: 'listed', lens: 'plumb', sec: '22 1123', off: 2, para: '2.1', equip: true },
+    { prod: 'Ball valves', bod: 'Nibco', also: 'Apollo, Milwaukee, Hammond', st: 'listed', lens: 'plumb', sec: '22 0523', off: 3, para: '2.3',
+      exec: { maker: 'Nibco', off: 7, says: 'Ball valves for domestic water service: Nibco only, to match the Owner\'s maintenance stock. No other manufacturer will be accepted.' } },
   ];
+
+  /* pipe material by system: what Part 2 lists, what the Part 3 piping applications allow, and the catch */
+  const MAT = [
+    { sys: 'Sanitary waste and vent, underground', fam: 'dwv', allowed: ['Hub-and-spigot cast iron'], listed: 'PVC, no-hub cast iron, hub-and-spigot cast iron, copper DWV', sec: '22 1316', off: 8, para: '3.1.A', part: 3, src: 'Piping applications', catch: true, missing: 'PVC' },
+    { sys: 'Sanitary waste and vent, above ground', fam: 'dwv', allowed: ['PVC', 'No-hub cast iron'], sec: '22 1316', off: 8, para: '3.1.B', part: 3, src: 'Piping applications' },
+    { sys: 'Condensate drainage, above ground', fam: 'dwv', allowed: ['No-hub cast iron'], sec: '22 1316', off: 5, para: '2.4.C', part: 2, src: 'Pipe and fittings', catch: true, missing: 'PVC', find: 'P01' },
+    { sys: 'Storm drainage, underground', fam: 'dwv', allowed: ['PVC', 'Hub-and-spigot cast iron'], sec: '22 1413', off: 6, para: '3.1.A', part: 3, src: 'Piping applications' },
+    { sys: 'Storm drainage, above ground', fam: 'dwv', allowed: ['PVC', 'No-hub cast iron'], sec: '22 1413', off: 6, para: '3.1.B', part: 3, src: 'Piping applications' },
+    { sys: 'Domestic water, above ground', fam: 'water', allowed: ['Copper Type L'], sec: '22 1116', off: 3, para: '2.1', part: 2, src: 'Pipe and fittings', find: 'P02' },
+    { sys: 'Domestic water, underground', fam: 'water', allowed: ['Copper Type K', 'Ductile iron'], sec: '22 1116', off: 9, para: '3.1.A', part: 3, src: 'Piping applications' },
+    { sys: 'Chilled and heating hot water, NPS 2 and smaller', fam: 'hydronic', allowed: ['Copper Type L', 'Steel Schedule 40'], sec: '23 2113', off: 10, para: '3.1.A', part: 3, src: 'Piping applications' },
+    { sys: 'Chilled and heating hot water, NPS 2-1/2 and larger', fam: 'hydronic', allowed: ['Steel Schedule 40'], sec: '23 2113', off: 10, para: '3.1.B', part: 3, src: 'Piping applications' },
+    { sys: 'Refrigerant suction, liquid and hot-gas', fam: 'refrig', allowed: ['Copper Type L'], sec: '23 2300', off: 4, para: '3.1', part: 3, src: 'Piping applications' },
+  ];
+
+  /* warranties as written, against the one-year house standard (refrigeration piping five) */
+  const WARR = [
+    { item: 'Compressors and refrigeration circuit', years: 5, std: 1, sec: '23 7416', off: 1, para: '1.8.A.1', lens: 'hvac' },
+    { item: 'Gas heat exchangers', years: 10, std: 1, sec: '23 7416', off: 1, para: '1.8.A.2', lens: 'hvac' },
+    { item: 'Chiller, parts and labor, entire unit', years: 5, std: 1, sec: '23 6426', off: 1, para: '1.7', lens: 'hvac' },
+    { item: 'Grease duct system', years: 20, std: 1, sec: '23 3113.19', off: 1, para: '1.5', lens: 'sm', find: 'H12' },
+    { item: 'Packaged air compressor', years: 2, std: 1, sec: '22 1519', off: 12, para: '1.8', lens: 'plumb', find: 'P09' },
+    { item: 'Water heater tanks', years: 5, std: 1, sec: '22 3400', off: 1, para: '1.6', lens: 'plumb' },
+    { item: 'Refrigerant piping', years: 5, std: 5, sec: '23 2300', off: 1, para: '1.6', lens: 'hvac' },
+    { item: 'Boiler heat exchangers', years: 10, std: 1, sec: '23 5216', off: 1, para: '1.6', lens: 'hvac' },
+  ];
+
+  /* the job, read from Divisions 00/01: private owner, new buildings with a fit-out of the existing dock, controls carried with HVAC */
+  const PROFILE = {
+    public: { v: false, sec: '01 1000', off: 0, why: 'Owner is private: Bluebonnet Distribution Holdings, LLC.' },
+    reno: { v: true, sec: '01 3516', off: 0, why: 'Building C ties into the existing dock and shell; 01 3516 Alteration Project Procedures is in the book.' },
+    controls: { v: 'carried', sec: '25 0900', off: 0, why: 'Division 25 controls are in the book (25 0900) and carried with HVAC.' },
+    bond: { v: false, pct: 5, why: '' },
+    owner: 'Bluebonnet Distribution Holdings, LLC',
+  };
 
   /* src: book = stated in the spec book, cm = not in the book (get it from the CM's bid package), rfi = open question, flow = produced by this tool */
   const BIDFORM = [
@@ -603,7 +678,10 @@
     else if (r.sec) r.page = pg(r.sec, r.off);
   };
   DUCT.forEach(r => { r.lens = 'sm'; cites(r); r.text = `${r.sys}: ${r.press}, Seal Class ${r.seal}, ${r.mat}. ${r.cons}. Insulation: ${r.ins}. Leak test: ${r.test}.`; });
-  MFR.forEach(r => { cites(r); r.text = `${r.prod}. Manufacturers: ${r.bod}${r.also ? '; ' + r.also : ''}${r.st === 'sole' ? '. No substitution.' : '.'}`; });
+  MFR.forEach(r => { cites(r); r.makers = [r.bod].concat(r.also ? r.also.split(', ') : []); r.n = r.makers.length; r.part = 2; if (r.exec) r.exec.page = pg(r.sec, r.exec.off); r.text = `${r.prod}. Manufacturers: ${r.bod}${r.also ? '; ' + r.also : ''}${r.st === 'sole' ? '. No substitution.' : '.'}`; });
+  MAT.forEach(r => { cites(r); r.cheapest = r.allowed[0]; r.cond = []; r.lens = r.sec.startsWith('22') ? 'plumb' : 'hvac'; });
+  WARR.forEach(r => { cites(r); r.extended = r.years > r.std; });
+  ['public', 'reno', 'controls'].forEach(k => { const x = PROFILE[k]; if (x.sec) x.page = pg(x.sec, x.off); });
   BIDFORM.forEach(r => { r.lens = 'all'; cites(r); r.text = r.item + '. ' + r.note; });
   DELIV.forEach(r => { cites(r); r.text = r.d + '. ' + r.when + '.'; });
 
@@ -632,7 +710,8 @@
     diffs: D,
     matrix: M,
     takeoff: TAKEOFF,
-    inputs: { duct: DUCT, mfr: MFR, bidform: BIDFORM, deliv: DELIV },
+    inputs: { duct: DUCT, mfr: MFR, bidform: BIDFORM, deliv: DELIV, mat: MAT, warr: WARR },
+    profile: PROFILE,
     totalPages: p - 1,
   };
 })();
