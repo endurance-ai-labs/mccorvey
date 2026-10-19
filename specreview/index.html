@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019d">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019d">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019d">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019e">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019e">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019e">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -602,16 +602,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261019d"></script>
-<script src="/mccorvey/js/util.js?v=20261019d"></script>
-<script src="/mccorvey/js/nav.js?v=20261019d"></script>
-<script src="/mccorvey/js/specbook.js?v=20261019d"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261019d"></script>
-<script src="/mccorvey/js/buildups.js?v=20261019d"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261019d"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261019d"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261019d"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261019d" defer></script>
+<script src="/mccorvey/js/data.js?v=20261019e"></script>
+<script src="/mccorvey/js/util.js?v=20261019e"></script>
+<script src="/mccorvey/js/nav.js?v=20261019e"></script>
+<script src="/mccorvey/js/specbook.js?v=20261019e"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261019e"></script>
+<script src="/mccorvey/js/buildups.js?v=20261019e"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261019e"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261019e"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261019e"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261019e" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -1122,12 +1122,12 @@ const qualText = f => (f.qual || (QUAL[f.id] || '').replace(/\bMcCorvey\b(?! She
 /* ===================== PREFLIGHT ===================== */
 function checks() {
   const out = [];
-  const add = (level, stepKey, msg, sub, fix, fixLbl) => out.push({ level, step: stepKey, msg, sub, fix, fixLbl });
+  const add = (level, stepKey, msg, sub, fix, fixLbl, soft) => out.push({ level, step: stepKey, msg, sub, fix, fixLbl, soft });
   if (!META.gc) add('error', 'load', 'General contractor / CM is blank', 'Needed on the proposal and every RFI.', "go('load','gc')", 'Fill in');
   if (!META.bidNo) add('error', 'load', 'Bid number is blank', '', "go('load','bidNo')", 'Fill in');
   if (!META.due) add('error', 'load', 'Bid due date is blank', '', "go('load','due')", 'Fill in');
   else if (daysTo(META.due) < 0) add('error', 'load', 'Bid due date has passed', fmtDate(META.due), "go('load','due')", 'Fix date');
-  else if (daysTo(META.due) <= 3) add('warn', 'load', `Bid due in ${daysTo(META.due)} day${daysTo(META.due) === 1 ? '' : 's'}`, fmtDate(META.due));
+  else if (daysTo(META.due) <= 3) add('warn', 'load', `Bid due in ${daysTo(META.due)} day${daysTo(META.due) === 1 ? '' : 's'}`, fmtDate(META.due), '', '', true);
 
   /* bid form items the spec book cannot settle: one confirm each, checked before the proposal goes out */
   const F = FS();
@@ -1138,9 +1138,9 @@ function checks() {
   const zero = F.filter(needsAmt);
   if (zero.length) add('error', 'decide', `${zero.length} priced finding${zero.length > 1 ? 's have' : ' has'} no dollar amount`, 'Enter the $, or carry it as an allowance (listed in the proposal as not included).', "go('decide','noamt')", 'Fix');
   const rx = F.filter(f => reqOf(f) === 'must' && dec(f).act === 'exclude');
-  if (rx.length) add('warn', 'decide', `${rx.length} required item${rx.length > 1 ? 's are' : ' is'} excluded`, 'The spec says "shall". Excluding it makes the bid non-compliant unless the GC agrees.', "go('decide','req')", 'Review');
+  if (rx.length) add('warn', 'decide', `${rx.length} required item${rx.length > 1 ? 's are' : ' is'} excluded`, 'The spec says "shall". Excluding it makes the bid non-compliant unless the GC agrees.', "go('decide','req')", 'Review', true);
   const al = ALLOWS();
-  if (al.length) add('warn', 'decide', `${al.length} item${al.length > 1 ? 's' : ''} carried as allowances (TBD)`, 'Listed in the proposal as not included in the base bid, to be priced.', "go('decide','allow')", 'Review');
+  if (al.length) add('warn', 'decide', `${al.length} item${al.length > 1 ? 's' : ''} carried as allowances (TBD)`, 'Listed in the proposal as not included in the base bid, to be priced.', "go('decide','allow')", 'Review', true);
 
   const noAmt = [], noText = [];
   DIFFS().forEach(d => d.changes.forEach((c, i) => { const r = chgResp(d, i); if (r.resp === 'add' && !r.amt) noAmt.push(d.sec); if (r.resp === 'qual' && !r.text.trim()) noText.push(d.sec); }));
@@ -1148,7 +1148,7 @@ function checks() {
   if (noText.length) add('warn', 'changes', `${noText.length} change qualification${noText.length > 1 ? 's are' : ' is'} blank`, '', "go('changes')", 'Fix');
   const un = DIFFS().filter(d => !acked(d));
   if (un.length) add('error', 'changes', `${un.length} changed section${un.length > 1 ? 's' : ''} not confirmed`, 'Confirm each change is in your number.', "go('changes')", 'Confirm');
-  if (BOOK.local && !PRIOR && DIFFS().length) add('warn', 'changes', 'Line-level changes not compared', 'Load the prior issue PDF to see each changed sentence.', "$('#pick-prior').click()", 'Load prior');
+  if (BOOK.local && !PRIOR && DIFFS().length) add('warn', 'changes', 'Line-level changes not compared', 'Load the prior issue PDF to see each changed sentence.', "$('#pick-prior').click()", 'Load prior', true);
 
   const C = CONFS();
   staleSecs().forEach(s => {
@@ -1168,16 +1168,16 @@ function checks() {
     if (!S.lines.some(l => BC.inc(l) && !l.scope.startsWith(BC.ADDER))) add('error', 'proposal', 'Bid sheet has no base scope lines', '', "location.href='/mccorvey/bidmodel/'", 'Open sheet');
     const T = BC.totals(S);
     if (T.margin < BC.FLOOR) add('error', 'proposal', `Margin ${T.margin.toFixed(1)}% is below the ${BC.FLOOR}% walk-away floor`, '', "location.href='/mccorvey/bidmodel/'", 'Adjust');
-    else if (T.margin < BC.TARGET) add('warn', 'proposal', `Margin ${T.margin.toFixed(1)}% is under the ${BC.TARGET}% target`, '');
+    else if (T.margin < BC.TARGET) add('warn', 'proposal', `Margin ${T.margin.toFixed(1)}% is under the ${BC.TARGET}% target`, '', '', '', true);
     if (T.mp === 'over') add('error', 'proposal', 'Not enough crew to staff this job on the bid schedule', `${T.fieldNeed.toFixed(0)} field / ${T.shopNeed.toFixed(0)} shop needed`, "location.href='/mccorvey/bidmodel/'", 'Adjust');
-    else if (T.mp === 'tight') add('warn', 'proposal', 'Crew check is tight (over 85% of available)', '');
+    else if (T.mp === 'tight') add('warn', 'proposal', 'Crew check is tight (over 85% of available)', '', '', '', true);
   }
   return out;
 }
 function stepState(k, CK) {
   const mine = k === 'proposal' ? CK : CK.filter(c => c.step === k);
   if (mine.some(c => c.level === 'error')) return 'err';
-  if (mine.some(c => c.level === 'warn')) return 'warn';
+  if (mine.some(c => c.level === 'warn' && !c.soft)) return 'warn';
   if (k === 'load' && !META.started) return '';
   return 'done';
 }
@@ -1250,7 +1250,7 @@ function stepsHTML(CK) {
 function stepBar(CK) {
   const i = STEPS.findIndex(s => s[0] === step); if (i < 0) return '';
   const [k, l] = STEPS[i], next = STEPS[i + 1], st = stepState(k, CK);
-  const left = (k === 'proposal' ? CK : CK.filter(c => c.step === k)).filter(c => c.level !== 'info');
+  const left = (k === 'proposal' ? CK : CK.filter(c => c.step === k)).filter(c => c.level === 'error' || (c.level === 'warn' && !c.soft));
   const done = st === 'done';
   const msg = done ? `<b>✓ ${l} complete</b>${k === 'proposal' ? ' · preflight passed, ready to issue' : ''}`
     : k === 'load' && !META.started ? `<b>Step 1 · ${l}</b> · bid info fills in from the book; edit anything below`
@@ -2458,10 +2458,12 @@ function finishStep(k) {
   }
   if (k === 'decide') {
     let n = 0, al = 0;
-    FS().forEach(f => { const d = dec(f); if (d.ok) return; if (needsAmt(f)) { DEC[f.id] = Object.assign({}, DEC[f.id], { act: 'price', allow: true, ok: true }); al++; } else { DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; } });
+    FS().forEach(f => { const d = dec(f); if (d.ok && !needsAmt(f)) return; if (needsAmt(f)) { DEC[f.id] = Object.assign({}, DEC[f.id], { act: 'price', allow: true, ok: true }); al++; } else { DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; } });
     saveDec(); if (n) did.push(`${n} finding${n > 1 ? 's' : ''} accepted as recommended`); if (al) did.push(`${al} carried as allowances`);
   }
   if (k === 'changes') {
+    /* an Add $ with no amount falls back to "already in my price"; a blank qualification gets its suggested wording back */
+    DIFFS().forEach(d => d.changes.forEach((c, i) => { const r = chgResp(d, i), k = chgKey(d, i); if (r.resp === 'add' && !r.amt) DEC[k] = Object.assign({}, DEC[k], { resp: 'in' }); if (r.resp === 'qual' && !r.text.trim()) { const o = Object.assign({}, DEC[k]); delete o.text; DEC[k] = o; } }));
     const D = DIFFS().filter(d => !acked(d)); D.forEach(d => DEC['chg:' + d.sec] = { ack: true });
     saveDec(); if (D.length) did.push(`${D.length} changed section${D.length > 1 ? 's' : ''} confirmed in price`);
   }
@@ -2576,9 +2578,9 @@ function repaintCard(id) {
 }
 function acceptList(list) {
   let n = 0, skipped = 0;
-  list.forEach(f => { const d = dec(f); if (d.ok) return; if (needsAmt(f)) { skipped++; return; } DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; });
+  list.forEach(f => { const d = dec(f); if (d.ok && !needsAmt(f)) return; if (needsAmt(f)) { DEC[f.id] = Object.assign({}, DEC[f.id], { act: 'price', allow: true, ok: true }); skipped++; return; } DEC[f.id] = Object.assign({}, DEC[f.id], { act: d.act, ok: true }); n++; });
   saveDec(); rerender();
-  toast(`${n} accepted as recommended${skipped ? ` · ${skipped} need a $ or "Carry as allowance"` : ''}`);
+  toast(`${n} accepted as recommended${skipped ? ` · ${skipped} with no $ yet carried as allowances (enter a $ any time)` : ''}`);
 }
 function acceptAll(nonHighOnly) { acceptList(FS().filter(f => !nonHighOnly || f.sev !== 'high')); }
 function acceptShown() {
@@ -2605,7 +2607,7 @@ function jumpChg(sec) {
   el.style.outline = '2px solid #c8102e'; setTimeout(() => el.style.outline = '', 1800);
 }
 function ack(sec, on) { DEC['chg:' + sec] = { ack: on }; saveDec(); rerender(); }
-function ackAll() { DIFFS().forEach(d => DEC['chg:' + d.sec] = { ack: true }); saveDec(); rerender(); toast('All changes confirmed in price'); }
+function ackAll() { finishStep('changes'); rerender(); toast('All changes confirmed in price'); }
 function toggleRfi(id, on) { DEC[id] = Object.assign({}, DEC[id], { act: on ? 'on' : 'off' }); saveDec(); rerender(); }
 function setStatus(id, s) {
   const c = ALLCONFS().find(x => x.id === id), o = rs(id), prev = o.status;
