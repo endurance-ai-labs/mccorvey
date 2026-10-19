@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019a">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019a">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019a">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019b">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019b">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019b">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -84,6 +84,52 @@
   .pdoc .f2-std { margin-top:26px; padding-top:14px; border-top:2px solid #14283c; } .pdoc .f2-std li { font-size:11.3px; }
   .pdoc a.ie { color:inherit; font-weight:800; text-decoration:underline dotted; } .pdoc a.ie.ex { color:#a3142f; }
   @media print { .pdoc a.ie { text-decoration:none; font-weight:inherit; color:inherit !important; } #print-root .pdoc .pb { break-before:page; page-break-before:always; border-top:0; } }
+  /* the company letter (Form #200): Segoe UI, navy headings, blue labels, boxed amounts, the letterhead frame */
+  .pdoc.kw { font-family:'Segoe UI Semilight','Segoe UI',Calibri,Arial,sans-serif; font-weight:300; font-size:13px; color:#262626; line-height:1.45; position:relative; padding:0 34px 26px 82px; border:1px solid #d8dde3; border-radius:0; background:#fff; overflow:hidden; }
+  .pdoc.kw { background:linear-gradient(#01253e,#01253e) 0 0/100% 28px no-repeat, linear-gradient(#ec1f27,#ec1f27) 0 28px/100% 14px no-repeat, linear-gradient(#01253e,#01253e) 0 0/33px 100% no-repeat, linear-gradient(#ec1f27,#ec1f27) 33px 0/19px 100% no-repeat, #fff; }
+  .pdoc.kw.draft::before { top:34px; }
+  .pdoc.kw .kw-first { margin:0 0 18px; padding-top:58px; } .pdoc.kw.art .kw-first { padding-top:0; margin:0 -34px 8px -82px; }
+  .pdoc.kw .kw-art { display:block; width:100%; height:auto; aspect-ratio:8.5/1.45; object-fit:cover; object-position:top; }
+  .pdoc.kw .kw-logo { height:58px; }
+  .pdoc.kw .kw-wm { display:flex; align-items:center; gap:10px; } .pdoc.kw .kw-wm b { font-family:'Times New Roman',Georgia,serif; font-weight:700; font-size:36px; letter-spacing:.02em; color:#01253e; font-variant:small-caps; }
+  .pdoc.kw .kw-wm .sw { width:58px; height:38px; border-radius:58px 58px 0 0; background:linear-gradient(180deg,#ec1f27 0 38%,#fff 38% 46%,#01253e 46%); }
+  .pdoc.kw .kw-meta { display:grid; grid-template-columns:90px 1fr; gap:14px 10px; margin:6px 0 22px; } .pdoc.kw .kw-meta b { font-weight:300; } .pdoc.kw .ref-b { color:#1f4e79; }
+  .pdoc.kw p { margin:0 0 12px; } .pdoc.kw .ref { white-space:normal; font-size:11px; }
+  .pdoc.kw ol { margin:0 0 6px; padding-left:44px; } .pdoc.kw ol li { margin:0 0 1px; } .pdoc.kw ol.lo { list-style:lower-alpha; padding-left:30px; margin:2px 0; } .pdoc.kw ol.up { list-style:upper-alpha; padding-left:30px; margin:2px 0; }
+  .pdoc.kw .kw-lab { color:#1f4e79; font-size:12.5px; margin:16px 0 0; text-transform:uppercase; }
+  .pdoc.kw table.kw-amt { width:100%; border-collapse:collapse; margin:0 0 12px; font-size:12.5px; } .pdoc.kw table.kw-amt td { border:1px solid #404040; padding:1px 6px; text-align:left; font-variant-numeric:normal; color:#1f4e79; }
+  .pdoc.kw table.kw-amt td.d { border-right:0; } .pdoc.kw table.kw-amt td.a { width:48px; text-align:right; border-left:0; } .pdoc.kw table.kw-amt td.c { width:14px; border-right:0; } .pdoc.kw table.kw-amt td.v { width:96px; text-align:right; border-left:0; } .pdoc.kw table.kw-amt td i { font-size:10.5px; } .pdoc.kw table.kw-amt .ind { padding-left:42px; color:#1f4e79; }
+  .pdoc.kw table.kw-amt tr + tr td { border-top:0; } .pdoc.kw table.kw-amt.alt td.d { color:#1f4e79; }
+  .pdoc.kw .kw-rule { border-top:1px solid #7f7f7f; margin:14px 0 0; }
+  .pdoc.kw .kw-none { font-size:12.5px; margin:2px 0 10px 4px; }
+  .pdoc.kw .kw-h { font-family:'Segoe UI Semibold','Segoe UI',Arial,sans-serif; font-weight:600; color:#1f3864; font-size:13px; margin:16px 0 4px; }
+  .pdoc.kw .kw-sign { margin-top:6px; } .pdoc.kw .kw-sign .co { margin-top:2px; } .pdoc.kw .kw-sign .scr { font-family:'Edwardian Script ITC','Brush Script MT','Segoe Script',cursive; font-size:30px; font-weight:400; line-height:1.1; margin:6px 0 2px; color:#1a1a1a; }
+  .pdoc.kw .kw-std { margin-top:28px; padding-top:16px; border-top:1px dashed #c9d0d8; } .pdoc.kw .kw-std li { font-size:12px; } .pdoc.kw .kw-form { font-size:9px; color:#404040; margin-top:6px; }
+  .pdoc.kw .kw-foot { display:flex; justify-content:space-between; gap:20px; margin-top:26px; padding-top:8px; border-top:2px solid #ec1f27; font-family:Georgia,'Times New Roman',serif; font-size:11.5px; color:#01253e; line-height:1.3; } .pdoc.kw .kw-foot .r { text-align:right; } .pdoc.kw .kw-foot b { font-weight:700; }
+  .pdoc.kw .kw-sign .ppl { border-bottom:0; cursor:default; } .pdoc.kw .kw-sign .ppl::after { content:none; }
+  .pdoc.kw a.ie { color:inherit; font-weight:inherit; text-decoration:underline dotted #1f4e79; } .pdoc.kw a.ie.ex { color:#9c1428; }
+  @media (max-width:640px) { .pdoc.kw { padding:0 14px 20px 60px; } .pdoc.kw.art .kw-first { margin:0 -14px 8px -60px; } .pdoc.kw .kw-meta { grid-template-columns:76px 1fr; } .pdoc.kw .kw-wm b { font-size:26px; } .pdoc.kw .kw-foot { flex-direction:column; gap:6px; } .pdoc.kw .kw-foot .r { text-align:left; } }
+  @media print {
+    #print-root.kwp { page:kwletter; position:relative; }
+    #print-root.kwp .kwp-bg { position:fixed; inset:0; z-index:0; }
+    #print-root.kwp .kwp-bg img, #print-root.kwp .kwp-first img { position:absolute; inset:0; width:100%; height:100%; }
+    #print-root.kwp .kwp-bg .run { position:absolute; top:0.48in; right:0.5in; font:italic 10.5pt 'Segoe UI Semilight','Segoe UI',Calibri,sans-serif; color:#1f3864; }
+    #print-root.kwp .kwp-first { position:absolute; left:0; top:0; width:100%; height:10.72in; background:#fff; z-index:1; }
+    #print-root.kwp .kwp-bg > i, #print-root.kwp .kwp-first > i { position:absolute; display:block; } #print-root.kwp i.t { left:0; right:0; top:0; height:0.275in; background:#01253e; } #print-root.kwp i.r { left:0; right:0; top:0.275in; height:0.135in; background:#ec1f27; }
+    #print-root.kwp i.l { left:0; top:0; bottom:0; width:0.316in; background:#01253e; } #print-root.kwp i.l2 { left:0.316in; top:0.275in; bottom:0; width:0.18in; background:#ec1f27; }
+    #print-root.kwp i.f { left:0.7in; right:0.35in; bottom:0.83in; height:0.025in; background:#ec1f27; }
+    #print-root.kwp .kwp-foot { position:absolute; left:0.7in; right:0.35in; bottom:0.3in; display:flex; justify-content:space-between; font:10pt Georgia,'Times New Roman',serif; color:#01253e; line-height:1.3; } #print-root.kwp .kwp-foot .r { text-align:right; }
+    #print-root.kwp .pr-t { position:relative; z-index:2; width:100%; }
+    #print-root.kwp .kwp-th { height:0.85in; } #print-root.kwp .kwp-tf { height:1.15in; } #print-root.kwp .kwp-td { padding:0 0.5in 0 0.8in; }
+    #print-root.kwp .pdoc.kw { border:0; padding:0; overflow:visible; font-size:10.4pt; background:transparent; }
+    #print-root.kwp .pdoc.kw.draft::before { position:static; display:block; width:max-content; margin:0 0 6px auto; }
+    #print-root.kwp .pdoc.kw > *:not(.kw-first) { margin-left:0; margin-right:0; }
+    #print-root.kwp .pdoc.kw .kw-first { height:0.62in; padding:0; margin:0 0 6px; overflow:hidden; } #print-root.kwp .pdoc.kw .kw-first > * { display:none; }
+    #print-root.kwp .pdoc.kw.drawn .kw-first { height:0.95in; } #print-root.kwp .pdoc.kw.drawn .kw-first > * { display:flex; } #print-root.kwp .pdoc.kw.drawn .kw-first > img { display:block; }
+    #print-root.kwp .pdoc.kw .kw-foot { display:none; }
+    #print-root.kwp .pdoc.kw .kw-std { border-top:0; margin-top:0; padding-top:0.1in; }
+    #print-root.kwp .pdoc.kw table.kw-amt, #print-root.kwp .pdoc.kw li { break-inside:avoid; }
+  }
   .vs { display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin:14px 0 4px; }
   .vs > div { border:1px solid var(--color-border); border-left:3px solid #c8102e; border-radius:10px; padding:10px 14px; background:var(--color-bg-2); }
   .vs b { display:block; font-size:19px; font-weight:800; color:var(--color-cloud-whisper); font-variant-numeric:tabular-nums; } .vs span { display:block; font-size:11.5px; color:var(--color-text-muted); margin-top:2px; }
@@ -553,16 +599,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261019a"></script>
-<script src="/mccorvey/js/util.js?v=20261019a"></script>
-<script src="/mccorvey/js/nav.js?v=20261019a"></script>
-<script src="/mccorvey/js/specbook.js?v=20261019a"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261019a"></script>
-<script src="/mccorvey/js/buildups.js?v=20261019a"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261019a"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261019a"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261019a"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261019a" defer></script>
+<script src="/mccorvey/js/data.js?v=20261019b"></script>
+<script src="/mccorvey/js/util.js?v=20261019b"></script>
+<script src="/mccorvey/js/nav.js?v=20261019b"></script>
+<script src="/mccorvey/js/specbook.js?v=20261019b"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261019b"></script>
+<script src="/mccorvey/js/buildups.js?v=20261019b"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261019b"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261019b"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261019b"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261019b" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -1802,7 +1848,7 @@ function paneProposal(CK) {
           <button class="pa-btn" onclick="copyProposal()">Copy text</button>
           <button class="pa-btn" onclick="newRevision()" title="Keep this as a superseded revision and start the next one">Start Rev ${String.fromCharCode(revOf().charCodeAt(0) + 1)}</button>
         </span></div>
-      <div id="pdoc" class="pdoc ${errs.length ? 'draft' : ''}">${proposalHTML(S, T)}</div>
+      <div id="pdoc" class="pdoc ${META.fmt === 'detail' ? '' : 'kw ' + (letterhead().art ? 'art' : 'drawn')} ${errs.length ? 'draft' : ''}">${proposalHTML(S, T)}</div>
     </div>
     ${handoffHTML()}`;
 }
@@ -2123,28 +2169,51 @@ function form200HTML(S, T) {
     ...(answered.length ? [`RFI responses incorporated:${L(answered.map(c => `${esc(rs(c.id).answer)} <span class="ref">(${E.rfiNo(N[c.id])})</span>`), 'alpha')}`] : []),
     ...(DIFFS().filter(acked).length ? [`Reissued sections reviewed and included: ${DIFFS().filter(acked).map(d => `${d.sec} (${iss(d.to)})`).join(', ')}.`] : []),
   ];
-  const head = AFF()
-    ? `<div class="f2-lh"><div class="wm"><b>${esc(CO().toUpperCase())}</b><span>${esc(CONAME().replace(/^[^ ]+ /, '').toUpperCase())}</span></div><div class="ad">${ENT[ENTK()].line.map(esc).join('<br>')}<br><span>A McCorvey Company</span></div></div>`
-    : `<div class="f2-lh"><img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works"><div class="ad">McCorvey Sheet Metal Works, L.P.<br>8610 Wallisville Road, Houston, TX 77029<br>(713) 672-7545</div></div>`;
-  const body = `${head}
-    <div class="f2-meta"><b>Date:</b><span>${new Date().toLocaleDateString('en-US')}</span><b>ATTN:</b><span>${esc(META.attn || 'Estimating Department')}<br>${esc(META.gc || '—')}</span><b>Reference:</b><span>${esc(META.gc || '')}${META.gc ? '<br>' : ''}${esc(projName())}${META.bidNo ? ` <span class="ref">(${esc(META.bidNo)})</span>` : ''}</span></div>
-    <p>${esc(CO())} is pleased to submit our proposal for the project referenced above. This proposal includes labor, material, equipment and supervision to perform the work in accordance with the following scope and clarifications. We acknowledge receipt of the following:</p>
-    ${L([BOOK.sections.some(x => x.id === '00 0115') ? 'Mechanical and plumbing drawings as listed in Section 00 0115, List of Drawing Sheets.' : 'Mechanical and plumbing drawings as issued with the bid documents.',
-      `Specifications, ${iss(BOOK.bookIssue)}${BOOK.bookDate ? ' dated ' + fmtDate(BOOK.bookDate) : ''}${BOOK.engineer ? ', prepared by ' + esc(BOOK.engineer) : ''}.`,
-      ...issued.map(v => `${esc((v.label.split('— ')[1] || v.label))}${v.date ? ' dated ' + fmtDate(v.date) : ''}${v.illustrative ? ' <span class="ref">(issue label illustrative)</span>' : ''}.`)])}
-    <h3 class="f2-h">Base Bid</h3>${bid}
-    <h3 class="f2-h">Alternates</h3>${alts.length || subs.length ? `<table class="f2-bid"><tbody>${alts.map(x => `<tr><td class="l">${esc(x.l.scope.replace(BC.ADDER, ''))}</td><td class="add">ADD</td><td>${money0(x.c.sell * (1 + T.a))}</td></tr>`).join('')}${subs.map(x => `<tr><td class="l">Voluntary: ${esc(x.m)} in lieu of ${esc(x.f.mfr.exec ? x.f.mfr.exec.maker : ors(x.f.mfr.makers))} for ${esc(low(x.f.mfr.prod))}, pending approval</td><td class="add">DEDUCT</td><td>On approval</td></tr>`).join('')}</tbody></table>` : '<p>None requested in the bid documents.</p>'}
-    <h3 class="f2-h">Job Specific Inclusions and Exclusions</h3>${L(jobItems)}
-    ${hv ? `<h3 class="f2-h">HVAC</h3>${L(hvItems)}` : ''}
-    ${pl ? `<h3 class="f2-h">Plumbing</h3>${L(plItems)}` : ''}
-    <p style="margin-top:16px">We appreciate the opportunity to quote this project and earn your business. We look forward to a thorough review of our proposal at your convenience.</p>
-    <p style="margin:10px 0 0">Respectfully,<br><b>${esc(CO().toUpperCase())}</b></p>
-    <div class="f2-std pb"><div class="f2-lh sm">${AFF() ? `<div class="wm"><b>${esc(CO().toUpperCase())}</b></div>` : '<img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey">'}<div class="ad">${esc(CONAME())}</div></div>
-      <h3 class="f2-h">Standard Clarifications</h3>
-      <ol>${page.items.map(it => `<li>${esc(it.t)}${it.subs && it.subs.length ? `<ol class="alpha">${it.subs.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</li>`).join('')}</ol>
-      ${page.form ? `<p class="ref" style="margin-top:8px">${esc(page.form)}</p>` : ''}
-    </div>`;
-  return body + sigHTML(p, fpOf(body));
+  const LH = letterhead();
+  const amtRow = (d, add, v, cls) => `<tr class="${cls || ''}"><td class="d">${d}</td><td class="a">${add || ''}</td><td class="c">$</td><td class="v">${typeof v === 'number' ? Math.round(v).toLocaleString() : v}</td></tr>`;
+  let bidT = '<p style="color:#c8102e;font-weight:700">Pricing appears here once the bid sheet is built (see Pricing above).</p>';
+  if (S && T) {
+    const A = tradeAmts(S, T), both = hv && pl && META.lens !== 'sm';
+    const blk = (name, v, bv) => `<table class="kw-amt"><tbody>${amtRow(`${name} <i>– ${both ? 'Stand Alone' : 'Base Bid'}</i>`, '', v, 'hd')}${amtRow('<span class="ind">Bond</span>', 'ADD', bv)}</tbody></table>`;
+    bidT = `${hv ? blk(META.lens === 'sm' ? 'HVAC Ductwork' : 'HVAC', both ? A.mc : A.mc + A.pl, both ? A.bmc : A.bmc + A.bpl) : ''}${pl ? blk('Plumbing', both ? A.pl : A.pl + A.mc, both ? A.bpl : A.bpl + A.bmc) : ''}`;
+  }
+  const altRows = alts.map(x => amtRow(esc(x.l.scope.replace(BC.ADDER, '')), 'ADD', x.c.sell * (1 + T.a))).concat(subs.map(x => amtRow(`Voluntary – ${esc(x.m)} in lieu of ${esc(x.f.mfr.exec ? x.f.mfr.exec.maker : ors(x.f.mfr.makers))}, ${esc(low(x.f.mfr.prod))}`, 'DEDUCT', 'on approval')));
+  const LU = (arr) => `<ol class="up">${arr.map(x => `<li>${x}</li>`).join('')}</ol>`;
+  const hvL = hvItems.map(t => t.replace(/<ol class="alpha">/g, '<ol class="lo">'));
+  const plL = plItems.map(t => t.replace(/<ol class="alpha">/g, '<ol class="up">'));
+  const signer = p.name || 'Estimator';
+  const body = `<div class="kw-first">${LH.first}</div>
+    <div class="kw-meta"><b>Date:</b><span>${new Date().toLocaleDateString('en-US')}</span>
+      <b>ATTN:</b><span>${esc(META.attn || 'Estimating Department')}<br>${esc(META.gc || '—')}</span>
+      <b>Reference:</b><span class="ref-b">${esc(projName())}${META.bidNo ? ` (${esc(META.bidNo)})` : ''}</span></div>
+    <p>${esc(CO())} is pleased to submit our Proposal for the project referenced above. This proposal includes labor, material, equipment, and supervision required to perform the work in accordance with the following scope and clarifications. We acknowledge receipt of the following:</p>
+    ${L([BOOK.sections.some(x => x.id === '00 0115') ? 'Mechanical &amp; Plumbing Drawings as listed in Section 00 0115, List of Drawing Sheets.' : 'Mechanical &amp; Plumbing Drawings as issued with the bid documents.',
+      `Specifications ${iss(BOOK.bookIssue)}${BOOK.bookDate ? ' dated ' + new Date(BOOK.bookDate + 'T12:00:00').toLocaleDateString('en-US') : ''}${BOOK.engineer ? ' and prepared by ' + esc(BOOK.engineer) : ''}.`,
+      ...issued.map(v => `${esc((v.label.split('— ')[1] || v.label))}${v.date ? ' dated ' + new Date(v.date + 'T12:00:00').toLocaleDateString('en-US') : ''}${v.illustrative ? ' <span class="ref">(issue label illustrative)</span>' : ''}.`)], 'num')}
+    <div class="kw-lab">BASE BID</div>${bidT}
+    <div class="kw-rule"></div>
+    <div class="kw-lab">ALTERNATES</div>${altRows.length ? `<table class="kw-amt alt"><tbody>${altRows.join('')}</tbody></table>` : '<p class="kw-none">None requested in the bid documents.</p>'}
+    <div class="kw-h">JOB SPECIFIC INCLUSIONS AND EXCLUSIONS:</div>${L(jobItems, 'num')}
+    ${hv ? `<div class="kw-h">HVAC:</div>${L(hvL, 'num')}` : ''}
+    ${pl ? `<div class="kw-h">PLUMBING:</div>${L(plL, 'num')}` : ''}
+    <p style="margin-top:14px">We appreciate the opportunity to quote this project and earn your business. We look forward to a thorough review of our proposal at your convenience.</p>
+    <div class="kw-sign"><div>Respectfully,</div><div class="co">${esc(AFF() ? CO().toUpperCase() : 'McCORVEY')}</div><div class="scr">${esc(signer)}</div><div>${esc(signer)}</div><div>${esc(p.title || 'Estimator')}</div></div>
+    <div class="kw-std pb">
+      <div class="kw-h">STANDARD CLARIFICATIONS</div>
+      <ol class="num">${page.items.map(it => `<li>${esc(it.t)}${it.subs && it.subs.length ? `<ol class="lo">${it.subs.map(x => `<li>${esc(x)}</li>`).join('')}</ol>` : ''}</li>`).join('')}</ol>
+      ${page.form ? `<div class="kw-form">${esc(page.form)}</div>` : ''}
+    </div>
+    <div class="kw-foot">${LH.foot}</div>`;
+  SIG_FP = fpOf(body);
+  return body;
+}
+/* the company's letterhead: its own artwork when the template is loaded on this laptop, else the frame drawn here */
+function letterhead() {
+  const T = AFF() && ENTK() === 'kw' ? tplGet() : null;
+  const foot = AFF() ? `<div><b>8848 Red Oak Boulevard</b><br>Suite D<br>Charlotte, North Carolina 28217</div><div class="r">(980) 289-4390<br>sales@kirlinway.com<br>www.kirlinway.com</div>`
+    : `<div><b>8610 Wallisville Road</b><br>Houston, Texas 77029</div><div class="r">(713) 672-7545<br>McCorvey Sheet Metal Works, L.P.</div>`;
+  const logo = AFF() ? `<div class="kw-wm"><span class="sw"></span><b>${esc(CO().toUpperCase().replace('-', ' '))}</b></div>` : `<img class="kw-logo" src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works">`;
+  return { first: T && T.first ? `<img class="kw-art" src="${T.first}" alt="">` : logo, cont: T && T.cont ? T.cont : '', firstArt: T && T.first ? T.first : '', run: (T && T.run) || (AFF() ? CONAME() : 'McCorvey Sheet Metal Works, L.P.'), foot: T && T.first ? '' : foot, art: !!(T && T.first) };
 }
 function proposalHTML(S, T) { return META.fmt === 'detail' ? detailHTML(S, T) : form200HTML(S, T); }
 /* load the company's own standard clarifications from its proposal template (.docx), read in this browser only */
@@ -2153,13 +2222,21 @@ async function loadTemplate(file) {
   try {
     if (!window.JSZip) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js'; sc.onload = res; sc.onerror = () => rej(new Error('Could not load the .docx reader')); document.head.appendChild(sc); });
     const z = await JSZip.loadAsync(file), xml = await z.file('word/document.xml').async('string');
+    /* letterhead artwork: the first-page header and the default header images; the default header's text */
+    const rels = async f => { const r = z.file(f); if (!r) return {}; const x = await r.async('string'); const o = {}; (x.match(/<Relationship [^>]+>/g) || []).forEach(t => { const id = (t.match(/Id="([^"]+)"/) || [])[1], tg = (t.match(/Target="([^"]+)"/) || [])[1]; if (id && tg) o[id] = tg; }); return o; };
+    const dr = await rels('word/_rels/document.xml.rels'), sect = (xml.match(/<w:sectPr[\s\S]*?<\/w:sectPr>/g) || []).pop() || '';
+    const hdr = type => { const m = sect.match(new RegExp(`<w:headerReference[^>]*w:type="${type}"[^>]*r:id="([^"]+)"|<w:headerReference[^>]*r:id="([^"]+)"[^>]*w:type="${type}"`)); const id = m && (m[1] || m[2]); return id && dr[id] ? 'word/' + dr[id] : null; };
+    const art = async h => { if (!h) return ''; const hr = await rels(h.replace('word/', 'word/_rels/') + '.rels'); const img = Object.values(hr).find(t => /media\//.test(t)); if (!img) return ''; const f = z.file('word/' + img.replace(/^\.\.\//, '')); if (!f) return ''; return 'data:image/' + (img.split('.').pop() === 'jpg' ? 'jpeg' : img.split('.').pop()) + ';base64,' + await f.async('base64'); };
+    const firstH = hdr('first'), defH = hdr('default');
+    const first = await art(firstH), cont = await art(defH);
+    let run = ''; if (defH && z.file(defH)) { const hx = await z.file(defH).async('string'); const paras = hx.split('</w:p>').map(px => (px.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || []).map(t => t.replace(/<[^>]+>/g, '')).join('').trim()).filter(Boolean); run = paras[0] || ''; }
     const paras = (xml.match(/<w:p[ >][\s\S]*?<\/w:p>/g) || []).map(px => ({ t: (px.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) || []).map(x => x.replace(/<[^>]+>/g, '')).join('').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/\s+/g, ' ').trim(), lvl: +((px.match(/<w:ilvl w:val="(\d)"/) || [0, 0])[1]) })).filter(x => x.t);
     const i = paras.findIndex(x => /^STANDARD CLARIFICATIONS$/i.test(x.t));
     if (i < 0) throw new Error('No STANDARD CLARIFICATIONS section in that file');
     const items = []; let form = '';
     paras.slice(i + 1).forEach(x => { if (/^Form\s*#/i.test(x.t)) { form = x.t; return; } if (x.lvl > 0 && items.length) items[items.length - 1].subs.push(x.t); else items.push({ t: x.t, subs: [] }); });
-    try { localStorage.setItem(TPL_KEY, JSON.stringify({ items, form, name: file.name, at: new Date().toLocaleDateString('en-US') })); } catch (e) {}
-    rerender(); toast(`Standard clarifications loaded from ${file.name}: ${items.length} items${form ? ', ' + form : ''}. Kept on this laptop only`);
+    try { localStorage.setItem(TPL_KEY, JSON.stringify({ items, form, name: file.name, at: new Date().toLocaleDateString('en-US'), first, cont, run })); } catch (e) { try { localStorage.setItem(TPL_KEY, JSON.stringify({ items, form, name: file.name, run })); } catch (e2) {} }
+    rerender(); toast(`Template loaded from ${file.name}: letterhead${first ? '' : ' (not found)'} and ${items.length} standard clarifications. Kept on this laptop only`);
   } catch (e) { toast('Could not read that template: ' + e.message); }
 }
 function clearTemplate() { try { localStorage.removeItem(TPL_KEY); } catch (e) {} rerender(); toast('Back to the general standard clarifications'); }
@@ -2169,7 +2246,7 @@ function formPanel() {
     <div class="demo-panel-head"><h2>Proposal format</h2><span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="seg jp-seg"><button class="${META.fmt !== 'detail' ? 'on' : ''}" onclick="META.fmt='f200';saveMeta();rerender()">Company letter (Form #200)</button><button class="${META.fmt === 'detail' ? 'on' : ''}" onclick="META.fmt='detail';saveMeta();rerender()">Detailed breakdown</button></span></span></div>
     ${META.fmt === 'detail' ? '' : `<div class="sb-form" style="grid-template-columns:1fr 2fr;align-items:end">
       <label class="sb-f"><span>ATTN (GC contact)</span><input data-meta="attn" value="${esc(META.attn || '')}" placeholder="Estimating Department"></label>
-      <div class="sb-f"><span>Standard clarifications page</span><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${T ? `<span class="fd-ok">✓ ${esc(T.name)}${T.form ? ' · ' + esc(T.form) : ''} · on this laptop only</span><button class="pa-btn" onclick="clearTemplate()">Use general wording</button>` : `<span class="ynote">General wording. Load your template (.docx) to print your own page; it is read here and never uploaded.</span>`}<button class="pa-btn" onclick="$('#pick-tpl').click()">${T ? 'Replace template' : 'Load your template (.docx)'}</button></div></div>
+      <div class="sb-f"><span>Standard clarifications page</span><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${T ? `<span class="fd-ok">✓ ${esc(T.name)}${T.first ? ' · letterhead' : ''}${T.form ? ' · ' + esc(T.form) : ''} · on this laptop only</span><button class="pa-btn" onclick="clearTemplate()">Use general wording</button>` : `<span class="ynote">Drawn letterhead and general wording. Load your template (.docx) for your own letterhead and standard page; it is read here and never uploaded.</span>`}<button class="pa-btn" onclick="$('#pick-tpl').click()">${T ? 'Replace template' : 'Load your template (.docx)'}</button></div></div>
     </div>
     <div class="ynote" style="margin-top:8px">Every <b>include / exclude</b> in the letter is set from the decisions and the job profile. Click one in the proposal to flip it.</div>`}
   </div>`;
@@ -2581,14 +2658,22 @@ function buildPrintRoot() {
   clearPrintRoot();
   const draft = checks().some(c => c.level === 'error');
   const root = document.createElement('div'); root.id = 'print-root';
-  root.innerHTML = `<table class="pr-t"><thead><tr><td></td></tr></thead><tbody><tr><td><div class="pdoc ${draft ? 'draft' : ''}">${doc.innerHTML}</div></td></tr></tbody><tfoot><tr><td></td></tr></tfoot></table>`;
+  const kw = doc.classList.contains('kw');
+  if (kw) {
+    const LH = letterhead();
+    root.className = 'kwp';
+    root.innerHTML = `<div class="kwp-bg">${LH.cont ? `<img src="${LH.cont}" alt="">` : '<i class="t"></i><i class="r"></i><i class="l"></i><i class="l2"></i><i class="f"></i>'}<span class="run">${esc(LH.run)}</span>${LH.art ? '' : `<div class="kwp-foot">${letterhead().foot || ''}</div>`}</div>
+      <div class="kwp-first">${LH.firstArt ? `<img src="${LH.firstArt}" alt="">` : `<i class="t"></i><i class="r"></i><i class="l"></i><i class="l2"></i><i class="f"></i><div class="kwp-foot">${LH.foot}</div>`}</div>
+      <table class="pr-t"><thead><tr><td class="kwp-th"></td></tr></thead><tbody><tr><td class="kwp-td"><div class="pdoc kw ${LH.art ? 'art' : 'drawn'} ${draft ? 'draft' : ''}">${doc.innerHTML}</div></td></tr></tbody><tfoot><tr><td class="kwp-tf"></td></tr></tfoot></table>`;
+  } else root.innerHTML = `<table class="pr-t"><thead><tr><td></td></tr></thead><tbody><tr><td><div class="pdoc ${draft ? 'draft' : ''}">${doc.innerHTML}</div></td></tr></tbody><tfoot><tr><td></td></tr></tfoot></table>`;
   document.body.appendChild(root); document.body.classList.add('printing-proposal');
   const pc = document.createElement('style'); pc.id = 'print-page-css';
   const tag = `${propNo()} · Rev ${revOf()} · ${CONAME()}`.replace(/["\\]/g, '');
+  if (kw) pc.textContent = `@page kwletter { size: letter; margin: 0 0 0.28in 0; @bottom-center { content: counter(page); font: 8.5pt 'Segoe UI', Arial, sans-serif; color: #404040; vertical-align: top; } } @page kwletter:first { @bottom-center { content: none; } }`; else
   pc.textContent = `@page proposal { size: letter; margin: 0 0 0.45in 0; @bottom-left { content: "${tag}"; font: 8pt Arial, sans-serif; color: #5a6676; margin-left: 0.7in; vertical-align: top; } @bottom-right { content: "Page " counter(page) " of " counter(pages); font: 8pt Arial, sans-serif; color: #5a6676; margin-right: 0.7in; vertical-align: top; } }`;
   document.head.appendChild(pc);
   window.__ptitle = document.title;
-  document.title = ['McCorvey Proposal', BOOK.name, META.bidNo].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
+  document.title = [kw ? CO() + ' Proposal' : 'McCorvey Proposal', projName(), META.bidNo].filter(Boolean).join(' - ').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, ' ').trim();
   return true;
 }
 function clearPrintRoot() {
