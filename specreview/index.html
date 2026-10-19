@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019b">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019b">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019b">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019c">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019c">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019c">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -599,16 +599,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261019b"></script>
-<script src="/mccorvey/js/util.js?v=20261019b"></script>
-<script src="/mccorvey/js/nav.js?v=20261019b"></script>
-<script src="/mccorvey/js/specbook.js?v=20261019b"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261019b"></script>
-<script src="/mccorvey/js/buildups.js?v=20261019b"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261019b"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261019b"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261019b"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261019b" defer></script>
+<script src="/mccorvey/js/data.js?v=20261019c"></script>
+<script src="/mccorvey/js/util.js?v=20261019c"></script>
+<script src="/mccorvey/js/nav.js?v=20261019c"></script>
+<script src="/mccorvey/js/specbook.js?v=20261019c"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261019c"></script>
+<script src="/mccorvey/js/buildups.js?v=20261019c"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261019c"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261019c"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261019c"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261019c" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -1839,7 +1839,7 @@ function paneProposal(CK) {
       </div>
     </div>
     ${formPanel()}
-    ${META.fmt === 'detail' ? wordingPanel() : ''}
+    ${FMT() === 'detail' ? wordingPanel() : ''}
     <div class="demo-panel" style="margin-bottom:6px">
       <div class="demo-panel-head"><h2>Proposal</h2>
         <span style="display:flex;gap:8px;flex-wrap:wrap">
@@ -1848,7 +1848,7 @@ function paneProposal(CK) {
           <button class="pa-btn" onclick="copyProposal()">Copy text</button>
           <button class="pa-btn" onclick="newRevision()" title="Keep this as a superseded revision and start the next one">Start Rev ${String.fromCharCode(revOf().charCodeAt(0) + 1)}</button>
         </span></div>
-      <div id="pdoc" class="pdoc ${META.fmt === 'detail' ? '' : 'kw ' + (letterhead().art ? 'art' : 'drawn')} ${errs.length ? 'draft' : ''}">${proposalHTML(S, T)}</div>
+      <div id="pdoc" class="pdoc ${FMT() === 'detail' ? '' : 'kw ' + (letterhead().art ? 'art' : 'drawn')} ${errs.length ? 'draft' : ''}">${proposalHTML(S, T)}</div>
     </div>
     ${handoffHTML()}`;
 }
@@ -2210,12 +2210,14 @@ function form200HTML(S, T) {
 /* the company's letterhead: its own artwork when the template is loaded on this laptop, else the frame drawn here */
 function letterhead() {
   const T = AFF() && ENTK() === 'kw' ? tplGet() : null;
-  const foot = AFF() ? `<div><b>8848 Red Oak Boulevard</b><br>Suite D<br>Charlotte, North Carolina 28217</div><div class="r">(980) 289-4390<br>sales@kirlinway.com<br>www.kirlinway.com</div>`
+  const foot = ENTK() !== 'kw' && AFF() ? `<div><b>${esc(CONAME())}</b><br>${ENT[ENTK()].line.map(esc).join('<br>')}</div><div class="r"></div>` : AFF() ? `<div><b>8848 Red Oak Boulevard</b><br>Suite D<br>Charlotte, North Carolina 28217</div><div class="r">(980) 289-4390<br>sales@kirlinway.com<br>www.kirlinway.com</div>`
     : `<div><b>8610 Wallisville Road</b><br>Houston, Texas 77029</div><div class="r">(713) 672-7545<br>McCorvey Sheet Metal Works, L.P.</div>`;
   const logo = AFF() ? `<div class="kw-wm"><span class="sw"></span><b>${esc(CO().toUpperCase().replace('-', ' '))}</b></div>` : `<img class="kw-logo" src="/mccorvey/assets/brand/mccorvey-logo.png" alt="McCorvey Sheet Metal Works">`;
   return { first: T && T.first ? `<img class="kw-art" src="${T.first}" alt="">` : logo, cont: T && T.cont ? T.cont : '', firstArt: T && T.first ? T.first : '', run: (T && T.run) || (AFF() ? CONAME() : 'McCorvey Sheet Metal Works, L.P.'), foot: T && T.first ? '' : foot, art: !!(T && T.first) };
 }
-function proposalHTML(S, T) { return META.fmt === 'detail' ? detailHTML(S, T) : form200HTML(S, T); }
+/* the company letter (Form #200) is Kirlin-Way's; McCorvey fabricates and does custom metal work, so it keeps the detailed proposal until its own layout is built */
+const FMT = () => AFF() ? (META.fmt === 'detail' ? 'detail' : 'f200') : 'detail';
+function proposalHTML(S, T) { return FMT() === 'detail' ? detailHTML(S, T) : form200HTML(S, T); }
 /* load the company's own standard clarifications from its proposal template (.docx), read in this browser only */
 async function loadTemplate(file) {
   if (!file) return;
@@ -2242,9 +2244,11 @@ async function loadTemplate(file) {
 function clearTemplate() { try { localStorage.removeItem(TPL_KEY); } catch (e) {} rerender(); toast('Back to the general standard clarifications'); }
 function formPanel() {
   const T = tplGet();
+  if (!AFF()) return `<div class="demo-panel" style="margin-bottom:18px"><div class="demo-panel-head"><h2>Proposal format</h2><span class="k">McCorvey detailed proposal</span></div>
+    <div class="ynote">McCorvey's proposal covers fabricate-only, fabricate-and-install and custom metal work, so it keeps this detailed layout. Switch the company to Kirlin-Way for the Form #200 letter.</div></div>`;
   return `<div class="demo-panel" style="margin-bottom:18px">
-    <div class="demo-panel-head"><h2>Proposal format</h2><span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="seg jp-seg"><button class="${META.fmt !== 'detail' ? 'on' : ''}" onclick="META.fmt='f200';saveMeta();rerender()">Company letter (Form #200)</button><button class="${META.fmt === 'detail' ? 'on' : ''}" onclick="META.fmt='detail';saveMeta();rerender()">Detailed breakdown</button></span></span></div>
-    ${META.fmt === 'detail' ? '' : `<div class="sb-form" style="grid-template-columns:1fr 2fr;align-items:end">
+    <div class="demo-panel-head"><h2>Proposal format</h2><span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span class="seg jp-seg"><button class="${FMT() !== 'detail' ? 'on' : ''}" onclick="META.fmt='f200';saveMeta();rerender()">Kirlin-Way letter (Form #200)</button><button class="${FMT() === 'detail' ? 'on' : ''}" onclick="META.fmt='detail';saveMeta();rerender()">Detailed breakdown</button></span></span></div>
+    ${FMT() === 'detail' ? '' : `<div class="sb-form" style="grid-template-columns:1fr 2fr;align-items:end">
       <label class="sb-f"><span>ATTN (GC contact)</span><input data-meta="attn" value="${esc(META.attn || '')}" placeholder="Estimating Department"></label>
       <div class="sb-f"><span>Standard clarifications page</span><div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">${T ? `<span class="fd-ok">✓ ${esc(T.name)}${T.first ? ' · letterhead' : ''}${T.form ? ' · ' + esc(T.form) : ''} · on this laptop only</span><button class="pa-btn" onclick="clearTemplate()">Use general wording</button>` : `<span class="ynote">Drawn letterhead and general wording. Load your template (.docx) for your own letterhead and standard page; it is read here and never uploaded.</span>`}<button class="pa-btn" onclick="$('#pick-tpl').click()">${T ? 'Replace template' : 'Load your template (.docx)'}</button></div></div>
     </div>
