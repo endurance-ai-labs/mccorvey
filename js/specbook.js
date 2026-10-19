@@ -528,7 +528,7 @@
     { scope: 'Duct liner & external wrap (insulation sub)', unit: 'LS', qty: 1, mat: 420000, shopUPH: 0, fieldUPH: 0, mkup: 8, lens: 'sm' },
     { scope: 'Hydronic piping — steel and copper, prefabricated', unit: 'LF', qty: 18500, mat: 38, shopUPH: 6, fieldUPH: 2.5, lens: 'hvac' },
     { scope: 'Refrigerant piping — ACR copper', unit: 'LF', qty: 9200, mat: 14, shopUPH: 0, fieldUPH: 4, lens: 'hvac' },
-    { scope: 'HVAC equipment — furnish (rooftop units, DOAS, chillers, boilers)', unit: 'LS', qty: 1, mat: 4200000, shopUPH: 0, fieldUPH: 0, mkup: 15, lens: 'hvac', equip: true },
+    { scope: 'HVAC equipment — furnish (rooftop units, DOAS, chillers, boilers)', unit: 'LS', qty: 1, mat: 4200000, shopUPH: 0, fieldUPH: 0, mkup: 21, lens: 'hvac', equip: true },
     { scope: 'HVAC equipment — set, connect and start up', unit: 'ea', qty: 186, mat: 900, shopUPH: 0, fieldUPH: 0.04, lens: 'hvac' },
     { scope: 'Hydronic specialties, valves and pumps', unit: 'LS', qty: 1, mat: 420000, shopUPH: 0, fieldUPH: 0, lens: 'hvac' },
     { scope: 'Piping insulation (insulation sub)', unit: 'LS', qty: 1, mat: 360000, shopUPH: 0, fieldUPH: 0, mkup: 12, lens: 'hvac' },

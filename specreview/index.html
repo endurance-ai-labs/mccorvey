@@ -6,9 +6,9 @@
 <title>Spec Book to Proposal — MSM Operations Portal</title>
 <meta name="description" content="McCorvey Sheet Metal — one guided flow from spec book to issued proposal: load, decide findings, confirm changes, send RFIs, preflight-checked proposal. Demo environment, fictional sample book.">
 <link rel="icon" type="image/png" href="/mccorvey/assets/brand/mccorvey-mark.png">
-<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019c">
-<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019c">
-<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019c">
+<link rel="stylesheet" href="/mccorvey/css/theme.css?v=20261019d">
+<link rel="stylesheet" href="/mccorvey/css/demo.css?v=20261019d">
+<link rel="stylesheet" href="/mccorvey/css/mccorvey.css?v=20261019d">
 <style>
   .sb-mode { display:inline-flex; align-items:center; gap:7px; font-size:10px; font-weight:800; letter-spacing:.1em; padding:5px 11px; border-radius:999px; background:rgba(255,255,255,.1); color:#fff; border:1px solid rgba(255,255,255,.2); }
   .sb-mode i { width:7px; height:7px; border-radius:50%; background:#f0b429; }
@@ -29,6 +29,8 @@
   .sb-step.warn .k { background:var(--color-amber); color:#fff; }
   .sb-step.on { border-color:#14283c; box-shadow:0 0 0 2px #14283c inset; }
 
+  .sb-next { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; padding:7px 8px 7px 14px; border:1px solid var(--color-border); border-left:3px solid #b98a36; border-radius:10px; background:var(--color-bg-2); font-size:12.5px; color:var(--color-text-muted); }
+  .sb-next b { color:var(--color-cloud-whisper); } .sb-next.done { border-left-color:#2f9e6e; } .sb-next.done b { color:#2f9e6e; } .sb-next > span { flex:1 1 280px; min-width:0; } .sb-next .pa-btn { white-space:nowrap; flex:0 0 auto; width:auto; }
   .sb-nav { display:flex; justify-content:space-between; gap:10px; margin:22px 0 8px; flex-wrap:wrap; }
   .sb-nav .pa-btn { height:44px; padding:0 22px; font-size:13px; }
 
@@ -555,6 +557,7 @@
 
   @media (max-width: 1000px) {
     .sb-steps { grid-template-columns:repeat(5, minmax(128px,1fr)); overflow-x:auto; scrollbar-width:none; }
+    .sb-steps .sb-next { position:sticky; left:0; justify-self:start; width:min(100%, calc(100vw - 80px)); box-sizing:border-box; }
     .sb-form { grid-template-columns:1fr 1fr; }
     .sb-kpis, .pr-tiles { grid-template-columns:1fr 1fr; }
   }
@@ -599,16 +602,16 @@
 <div class="dv" id="dv"><div class="dv-bg" onclick="closeDoc()"></div><aside class="dv-pane" id="dv-pane" role="dialog" aria-label="Spec book page"></aside></div>
 <div class="sb-cfm" id="cfm" onclick="if(event.target===this)closeCfm()"><div class="bx" id="cfm-bx" role="dialog" aria-modal="true"></div></div>
 
-<script src="/mccorvey/js/data.js?v=20261019c"></script>
-<script src="/mccorvey/js/util.js?v=20261019c"></script>
-<script src="/mccorvey/js/nav.js?v=20261019c"></script>
-<script src="/mccorvey/js/specbook.js?v=20261019c"></script>
-<script src="/mccorvey/js/pricebook.js?v=20261019c"></script>
-<script src="/mccorvey/js/buildups.js?v=20261019c"></script>
-<script src="/mccorvey/js/illustrative.js?v=20261019c"></script>
-<script src="/mccorvey/js/spec-engine.js?v=20261019c"></script>
-<script src="/mccorvey/js/bidcalc.js?v=20261019c"></script>
-<script src="/mccorvey/js/mccorvey-brain.js?v=20261019c" defer></script>
+<script src="/mccorvey/js/data.js?v=20261019d"></script>
+<script src="/mccorvey/js/util.js?v=20261019d"></script>
+<script src="/mccorvey/js/nav.js?v=20261019d"></script>
+<script src="/mccorvey/js/specbook.js?v=20261019d"></script>
+<script src="/mccorvey/js/pricebook.js?v=20261019d"></script>
+<script src="/mccorvey/js/buildups.js?v=20261019d"></script>
+<script src="/mccorvey/js/illustrative.js?v=20261019d"></script>
+<script src="/mccorvey/js/spec-engine.js?v=20261019d"></script>
+<script src="/mccorvey/js/bidcalc.js?v=20261019d"></script>
+<script src="/mccorvey/js/mccorvey-brain.js?v=20261019d" defer></script>
 <script>
 if (!isSignedIn() && !location.search.includes('enter')) location.replace('/mccorvey/welcome/');
 McCorveyNav.renderTopbar({ subtitle: 'Preconstruction — Spec Book to Proposal' });
@@ -1241,7 +1244,27 @@ function stepsHTML(CK) {
   return STEPS.map(([k, l], i) => {
     const st = stepState(k, CK);
     return `<button class="sb-step ${st} ${step === k ? 'on' : ''}" onclick="go('${k}')"><span class="k">${st === 'done' ? '✓' : i + 1}</span><span class="t"><b>${l}</b><span>${sub[k]}</span></span></button>`;
-  }).join('');
+  }).join('') + stepBar(CK);
+}
+/* under the steps, always in view: what is left in this step and one click to finish it with the recommended choices */
+function stepBar(CK) {
+  const i = STEPS.findIndex(s => s[0] === step); if (i < 0) return '';
+  const [k, l] = STEPS[i], next = STEPS[i + 1], st = stepState(k, CK);
+  const left = (k === 'proposal' ? CK : CK.filter(c => c.step === k)).filter(c => c.level !== 'info');
+  const done = st === 'done';
+  const msg = done ? `<b>✓ ${l} complete</b>${k === 'proposal' ? ' · preflight passed, ready to issue' : ''}`
+    : k === 'load' && !META.started ? `<b>Step 1 · ${l}</b> · bid info fills in from the book; edit anything below`
+    : `<b>${left.length} left in ${l}</b> · ${esc(left[0] ? left[0].msg : '')}${left.length > 1 ? ` and ${left.length - 1} more` : ''}`;
+  const lbl = { load: 'Fill in and start', decide: 'Accept the recommended decisions', changes: 'Confirm all changes', rfis: 'Add and send the RFIs', proposal: 'Finish the proposal' }[k];
+  const btn = done ? (next ? `<button class="pa-btn primary" onclick="go('${next[0]}')">Next: ${next[1]} →</button>` : `<button class="pa-btn primary" onclick="issueProposal()">Issue proposal (print / PDF)</button>`)
+    : `<button class="pa-btn primary" onclick="completeStep()">✓ ${lbl}</button>`;
+  return `<div class="sb-next ${done ? 'done' : ''}"><span>${msg}</span>${btn}</div>`;
+}
+function completeStep() {
+  if (step === 'load') return startReview();
+  const did = finishStep(step); rerender();
+  const left = checks().filter(c => c.level === 'error' && (step === 'proposal' || c.step === step));
+  toast(left.length ? `Done except: ${left[0].msg}` : `${STEPS.find(s => s[0] === step)[1]} complete${did.length ? ' · ' + did.join(' · ') : ''}`);
 }
 function navHTML() {
   const i = STEPS.findIndex(s => s[0] === step), prev = STEPS[i - 1], next = STEPS[i + 1];
