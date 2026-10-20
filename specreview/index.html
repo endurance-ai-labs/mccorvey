@@ -929,7 +929,7 @@ function clausesIn(sec) {
   };
   BOOK.findings.filter(f => f.sec === sec).forEach(f => put(f.page, f.para, f.says, { t: 'FINDING · ' + sevL[f.sev], c: f.sev === 'high' ? 'high' : '', label: f.title }, 'f-' + f.id));
   BOOK.conflicts.forEach(c => ['a', 'b', 'c'].forEach(k => { const x = c[k]; if (x && x.sec === sec) put(x.page, x.para, x.says, { t: 'RFI · ' + rtLabel(c), c: c.sev === 'high' ? 'high' : '', label: c.title }, 'c-' + c.id + k); }));
-  if (BOOK.inputs) Object.entries(BOOK.inputs).forEach(([k, rows]) => rows.forEach((r, i) => { if (r.sec === sec && !r.find) put(r.page, r.para, r.text, { t: 'BID INPUT', c: '', label: r.sys || r.prod || r.item || r.d }, 'i-' + k + i); }));
+  if (BOOK.inputs) Object.entries(BOOK.inputs).filter(([, rows]) => Array.isArray(rows)).forEach(([k, rows]) => rows.forEach((r, i) => { if (r.sec === sec && !r.find) put(r.page, r.para, r.text, { t: 'BID INPUT', c: '', label: r.sys || r.prod || r.item || r.d }, 'i-' + k + i); }));
   BOOK.diffs.filter(d => d.sec === sec).forEach(d => d.changes.forEach((ch, i) => put(ch.page, ch.para, ch.after || ch.before, { t: 'CHANGED ' + iss(d.to).toUpperCase() + ((BOOK.sample || ch.illustrative) && ch.amt ? ' · ' + (ch.amt > 0 ? '+' : '') + money(ch.amt) : ''), c: 'chg', label: 'Changed in ' + iss(d.to) }, 'd-' + sec + '-' + i, { before: ch.before, after: ch.after })));
   return [...m.values()].sort((a, b) => a.page - b.page || String(a.para).localeCompare(String(b.para), undefined, { numeric: true }));
 }
