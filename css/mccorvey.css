@@ -141,7 +141,7 @@ label.yfld > * { margin-top: 5px; width: 100%; display: block; }
 .ytoolrow .spacer { flex: 1; }
 .yclick { cursor: pointer; }
 .demo-watermark {
-  position: fixed; bottom: 8px; right: 14px; z-index: 900; pointer-events: none;
+  position: fixed; bottom: 8px; left: 14px; z-index: 900; pointer-events: none;
   font-size: 9.5px; letter-spacing: 1.6px; color: var(--color-slate-hint); text-transform: uppercase;
 }
 
@@ -182,9 +182,10 @@ label.yfld > * { margin-top: 5px; width: 100%; display: block; }
 .brand { display: flex; align-items: center; gap: 12px; }
 .msm-logo { height: 40px; width: auto; display: block; }
 [data-theme="dark"] .msm-logo { content: url('/mccorvey/assets/brand/mccorvey-logo.png'); }
-.msm-brand-text { display: flex; flex-direction: column; line-height: 1.25; }
+.msm-brand-text { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; max-width: 240px; }
+.msm-brand-text > div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .msm-name { font-size: 12.5px; font-weight: 800; letter-spacing: 0.06em; color: var(--color-cloud-whisper); }
-@media (max-width: 1180px) { .msm-brand-text { display: none; } }
+@media (max-width: 1440px) { .msm-brand-text { display: none; } }
 .ydoc-head .msm-logo { height: 56px; }
 
 /* ---- sign-in overlay (user-based role access) ---- */

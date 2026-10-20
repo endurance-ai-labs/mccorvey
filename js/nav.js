@@ -238,17 +238,7 @@ function renderTopbar(opts = {}) {
       </div>`;
   }
 
-  const tickerHtml = TICKER.map(t =>
-    `<span class="ticker-item"><span class="ticker-label">${t[0]}</span><span class="ticker-value">${t[1]}</span><span class="ticker-change ${t[3]}">${t[2]}</span></span>`
-  ).join('<span class="ticker-sep">·</span>') + '<span class="ticker-sep">·</span>';
-
-  const marqueeItems = MARQUEE.map(m =>
-    `<span class="news-marquee-item"><span class="news-marquee-source">${m[0]}</span><span class="news-marquee-text">${m[1]}</span><span class="news-marquee-sep">—</span></span>`
-  ).join('');
-
   target.outerHTML = `
-    <div class="news-marquee" id="news-marquee"><div class="news-marquee-track">${marqueeItems}${marqueeItems}</div></div>
-    <div class="market-ticker" id="market-ticker"><div class="ticker-track">${tickerHtml}${tickerHtml}</div></div>
     <div class="portal-topbar">
       <a class="brand" href="/mccorvey/" style="cursor:pointer;text-decoration:none">
         <img src="/mccorvey/assets/brand/mccorvey-logo.png" alt="MSM — McCorvey Sheet Metal Works, L.P." class="msm-logo">
@@ -326,14 +316,6 @@ function renderTopbar(opts = {}) {
   _wireModeToggle();
   _fillJobFlyouts();
 
-  // match ticker scroll speed (px/s) to the news marquee above it
-  (function syncTickerSpeed(tries) {
-    const mt = document.querySelector('.news-marquee-track');
-    const tt = document.querySelector('.ticker-track');
-    if (!mt || !tt) return;
-    if ((!mt.scrollWidth || !tt.scrollWidth) && tries < 40) return requestAnimationFrame(() => syncTickerSpeed(tries + 1));
-    if (mt.scrollWidth && tt.scrollWidth) tt.style.animationDuration = (37 * tt.scrollWidth / mt.scrollWidth).toFixed(1) + 's';
-  })(0);
 }
 
 function _wireModeToggle() {

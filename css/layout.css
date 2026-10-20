@@ -139,7 +139,7 @@
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   position: sticky;
-  top: 55px;
+  top: 0;
   z-index: 1000;
   border-bottom: 1px solid var(--topbar-border);
 }
@@ -484,7 +484,7 @@ body.nav-open .nav-toggle-bar:nth-child(3)    { transform: translateY(-6px) rota
   border-bottom: 1px solid var(--subnav-border);
   padding: 0 28px;
   position: sticky;
-  top: 111px;
+  top: 56px;
   z-index: 998;
 }
 /* Empty placeholder — same structure, invisible. Height matches filled subnav exactly. */
@@ -548,7 +548,7 @@ body.nav-open .nav-toggle-bar:nth-child(3)    { transform: translateY(-6px) rota
   border-bottom: 1px solid var(--color-border);
   padding: 0 28px;
   position: sticky;
-  top: 111px;
+  top: 56px;
   z-index: 999;
 }
 .subnav-inner { display: flex; gap: 2px; padding: 8px 0; }
@@ -675,7 +675,7 @@ body.nav-open .nav-toggle-bar:nth-child(3)    { transform: translateY(-6px) rota
 
 /* ---- Layout responsive ---- */
 @media (max-width: 900px) {
-  .portal-topbar         { padding: 0 16px; top: 55px; }
+  .portal-topbar         { padding: 0 16px; top: 0; }
   .portal-topbar-meta    { display: none; }
   .brand-name            { font-size: 13px; }
   .brand-subtitle        { display: none; }
@@ -698,7 +698,7 @@ body.nav-open .nav-toggle-bar:nth-child(3)    { transform: translateY(-6px) rota
   .page-title    { font-size: 18px; }
   .news-marquee  { display: none; }
   .market-ticker { top: 0; padding: 5px 12px; font-size: 10px; }
-  .portal-topbar { top: 28px; background: var(--topbar-bg); }
+  .portal-topbar { top: 0; background: var(--topbar-bg); }
 }
 
 /* ---- Nested asset flyout (Assets item in the Portfolio dropdown + sub-nav pill) ---- */
