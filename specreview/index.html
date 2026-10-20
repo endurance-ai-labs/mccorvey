@@ -918,18 +918,21 @@ const citeBtn = (sec, para, page, key) => page
   ? `<button class="cite" onclick="openDoc('${sec}',${page},'${key || ''}')" title="Open the spec book at this page">${E.cite(sec, para, page)} ↗</button>`
   : `<span class="cite">${E.cite(sec, para, page)}</span>`;
 const PARTS = { 1: 'PART 1 — GENERAL', 2: 'PART 2 — PRODUCTS', 3: 'PART 3 — EXECUTION' };
+/* one pill per tag kind (×n when several items share a clause), and every item's name, not just the first */
+const tagPills = c => { const n = new Map(); c.tags.forEach(t => { const k = t.c + '|' + t.t; n.set(k, Object.assign({}, t, { n: (n.get(k) || { n: 0 }).n + 1 })); }); return [...n.values()].map(t => `<span class="${t.c}">${esc(t.t)}${t.n > 1 ? ' ×' + t.n : ''}</span>`).join(''); };
+const tagLabels = c => [...new Set(c.tags.map(t => t.label).filter(Boolean))];
 function clausesIn(sec) {
   const m = new Map();
   const put = (page, para, text, tag, key, extra) => {
     if (!page) return;
-    const k = page + '|' + (para || String(text).slice(0, 60));
+    const k = page + '|' + (para || String(text || '').slice(0, 60));
     const c = m.get(k) || Object.assign({ page, para, text, tags: [], keys: [] }, extra);
     if (extra && extra.before != null && c.before == null) Object.assign(c, extra, { text });
     c.tags.push(tag); c.keys.push(key); m.set(k, c);
   };
   BOOK.findings.filter(f => f.sec === sec).forEach(f => put(f.page, f.para, f.says, { t: 'FINDING · ' + sevL[f.sev], c: f.sev === 'high' ? 'high' : '', label: f.title }, 'f-' + f.id));
   BOOK.conflicts.forEach(c => ['a', 'b', 'c'].forEach(k => { const x = c[k]; if (x && x.sec === sec) put(x.page, x.para, x.says, { t: 'RFI · ' + rtLabel(c), c: c.sev === 'high' ? 'high' : '', label: c.title }, 'c-' + c.id + k); }));
-  if (BOOK.inputs) Object.entries(BOOK.inputs).filter(([, rows]) => Array.isArray(rows)).forEach(([k, rows]) => rows.forEach((r, i) => { if (r.sec === sec && !r.find) put(r.page, r.para, r.text, { t: 'BID INPUT', c: '', label: r.sys || r.prod || r.item || r.d }, 'i-' + k + i); }));
+  if (BOOK.inputs) Object.entries(BOOK.inputs).filter(([, rows]) => Array.isArray(rows)).forEach(([k, rows]) => rows.forEach((r, i) => { if (r.sec === sec && !r.find) put(r.page, r.para, r.text || r.says || '', { t: 'BID INPUT', c: '', label: r.sys || r.prod || r.item || r.d || r.title }, 'i-' + k + i); }));
   BOOK.diffs.filter(d => d.sec === sec).forEach(d => d.changes.forEach((ch, i) => put(ch.page, ch.para, ch.after || ch.before, { t: 'CHANGED ' + iss(d.to).toUpperCase() + ((BOOK.sample || ch.illustrative) && ch.amt ? ' · ' + (ch.amt > 0 ? '+' : '') + money(ch.amt) : ''), c: 'chg', label: 'Changed in ' + iss(d.to) }, 'd-' + sec + '-' + i, { before: ch.before, after: ch.after })));
   return [...m.values()].sort((a, b) => a.page - b.page || String(a.para).localeCompare(String(b.para), undefined, { numeric: true }));
 }
@@ -951,13 +954,13 @@ function renderDoc() {
   const body = here.map((c, i) => {
     const part = PARTS[String(c.para)[0]];
     const ph = part && part !== lastPart ? `<div class="dv-part">${part}</div>` : ''; if (part) lastPart = part;
-    let txt = esc(c.text);
+    let txt = c.text ? esc(c.text) : esc(tagLabels(c).join('; '));
     if (c.before != null && c.after != null) {
       if (c.before && c.after) { const w = wdiff(c.before, c.after); txt = w[1] + `<span style="display:block;margin-top:5px;font-size:11.5px;color:#7b8794"><span style="font-family:Arial;font-size:9px;font-weight:700;letter-spacing:.06em">PRIOR ISSUE READ:</span> ${w[0]}</span>`; }
       else if (c.after) txt = `<ins>${esc(c.after)}</ins>`; else txt = `<del>${esc(c.before)}</del>`;
     }
     const hl = DV.key ? c.keys.includes(DV.key) : i === 0;
-    return `${i ? '<div class="dv-gap"></div>' : ''}${ph}<p class="dv-cl ${hl ? 'hl' : ''}" ${hl ? 'id="dv-hl"' : ''}><span class="pn">${esc(c.para)}</span>${txt}<span class="dv-tags">${c.tags.map(t => `<span class="${t.c}">${esc(t.t)}</span>`).join('')}</span></p>`;
+    return `${i ? '<div class="dv-gap"></div>' : ''}${ph}<p class="dv-cl ${hl ? 'hl' : ''}" ${hl ? 'id="dv-hl"' : ''}><span class="pn">${esc(c.para)}</span>${txt}<span class="dv-tags">${tagPills(c)}</span></p>`;
   }).join('');
   $('#dv-pane').innerHTML = `
     <div class="dv-bar"><b>${s.id} ${esc(s.title)}</b><span>Book page ${pgs(DV.page)} of ${pgs(BOOK.totalPages)}</span>
@@ -971,7 +974,7 @@ function renderDoc() {
         <div class="dv-gap"></div>
         <div class="dv-pf"><span>${s.id} – ${DV.page - s.start + 1} of ${s.pages}</span><span>Book p. ${pgs(DV.page)}</span></div>
       </div>
-      <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>${c.para === 'Header' ? 'issue stamp' : 'para ' + esc(c.para)} · ${esc(c.tags[0].label)}</span></button>`).join('')}</div>
+      <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>${c.para === 'Header' ? 'issue stamp' : 'para ' + esc(c.para)} · ${esc(tagLabels(c)[0] || '')}${tagLabels(c).length > 1 ? ' +' + (tagLabels(c).length - 1) + ' more' : ''}</span></button>`).join('')}</div>
       <div class="dv-note">Sample book is fictional. On your own book this link opens the PDF itself at the cited page.</div>
     </div>`;
   const h = document.getElementById('dv-hl'); if (h) setTimeout(() => h.scrollIntoView({ block: 'center' }), 30);
@@ -988,14 +991,14 @@ function renderPdf() {
     pane.dataset.u = FILE_URL || '';
     pane.innerHTML = `<div class="dv-bar" id="dv-pbar"></div><div class="dv-pdfbody"><div class="dv-frame" id="dv-frame">${FILE
       ? '<div class="ld" id="dv-ld">Opening the page…</div><div class="dv-sheet" id="dv-sheet"></div>'
-      : `<div class="dv-nofile"><p>This book's PDF was held in the tab's memory and is gone after a reload. Pick the same file to see the page. Nothing is read again and your decisions stay as they are.</p><label class="pa-btn primary">Choose ${esc(BOOK.name)}.pdf<input type="file" accept="application/pdf,.pdf" hidden onchange="reattach(this.files[0]);this.value=''"></label></div>`}</div><aside class="dv-side" id="dv-side"></aside></div>`;
+      : `<div class="dv-nofile"><p>This browser couldn't keep a copy of the book's PDF. Pick the same file to see the page. Nothing is read again and your decisions stay as they are.</p><label class="pa-btn primary">Choose ${esc(BOOK.name)}.pdf<input type="file" accept="application/pdf,.pdf" hidden onchange="reattach(this.files[0]);this.value=''"></label></div>`}</div><aside class="dv-side" id="dv-side"></aside></div>`;
   }
   $('#dv-pbar').innerHTML = `<b>${s.id} ${esc(s.title)}</b><span>Book page ${pgs(DV.page)} of ${pgs(BOOK.totalPages)}</span>
     <span class="sp">${FILE_URL ? `<a href="${FILE_URL}#page=${DV.page}" target="_blank" rel="noopener" title="Whole PDF in the browser's viewer">New tab</a>` : ''}<button ${prev ? '' : 'disabled'} onclick="docPage(${prev || 0})">‹ Prev flagged</button><button ${next ? '' : 'disabled'} onclick="docPage(${next || 0})">Next flagged ›</button><button onclick="closeDoc()" aria-label="Close">Close</button></span>`;
   const hk = DV.key || (here[0] && here[0].keys[0]);
   $('#dv-side').innerHTML = `<h4>Flagged on p. ${pgs(DV.page)}</h4>
-    ${here.length ? here.map(c => `<div class="dv-q ${c.keys.includes(hk) ? 'hl' : ''}"><span class="lb">${esc(c.tags[0].label)}</span>“${esc(c.text)}”<span class="dv-tags">${c.tags.map(t => `<span class="${t.c}">${esc(t.t)}</span>`).join('')}</span></div>`).join('') : '<div class="dv-q">Nothing flagged on this page.</div>'}
-    <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>${esc(c.tags[0].label)}</span></button>`).join('')}</div>`;
+    ${here.length ? here.map(c => `<div class="dv-q ${c.keys.includes(hk) ? 'hl' : ''}"><span class="lb">${tagLabels(c).map(esc).join('<br>')}</span>${c.text ? `“${esc(c.text)}”` : ''}<span class="dv-tags">${tagPills(c)}</span></div>`).join('') : '<div class="dv-q">Nothing flagged on this page.</div>'}
+    <div class="dv-list"><h4>Flagged in this section · ${all.length}</h4>${all.map(c => `<button class="${c.page === DV.page ? 'on' : ''}" onclick="docPage(${c.page},'${c.keys[0]}')"><b>p. ${pgs(c.page)}</b><span>${esc(tagLabels(c)[0] || '')}${tagLabels(c).length > 1 ? ' +' + (tagLabels(c).length - 1) + ' more' : ''}</span></button>`).join('')}</div>`;
   if (FILE) drawPage(here, hk);
 }
 async function drawPage(here, hk) {
@@ -1043,11 +1046,22 @@ function clauseBoxes(tc, vp, text) {
     return { x: t[4] - 1, y: t[5] - h * 0.95, w: it.width * vp.scale + 2, h: h * 1.25 };
   }).filter(r => r.w > 2 && r.h > 2);
 }
-function setFile(file) {
+function setFile(file, restored) {
   if (FILE_URL) URL.revokeObjectURL(FILE_URL);
   if (VDOC) VDOC.then(d => d.destroy(), () => {});
   FILE = file; FILE_URL = URL.createObjectURL(file); VDOC = null;
+  if (!restored) PDFDB.put(file);
 }
+/* a copy of the book's PDF kept in this browser (IndexedDB), so a reload still shows the pages. It never leaves the machine. */
+const PDFDB = {
+  open() { return new Promise((res, rej) => { const r = indexedDB.open('msm-spec-pdf', 1); r.onupgradeneeded = () => r.result.createObjectStore('f'); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); },
+  async put(file) {
+    try { const db = await this.open(); await new Promise((res, rej) => { const t = db.transaction('f', 'readwrite'); t.objectStore('f').put({ name: file.name, blob: file }, 'cur'); t.oncomplete = res; t.onerror = t.onabort = () => rej(t.error); }); db.close(); } catch (e) { console.warn('PDF not kept for reload', e); }
+  },
+  async get() {
+    try { const db = await this.open(); const v = await new Promise((res, rej) => { const q = db.transaction('f').objectStore('f').get('cur'); q.onsuccess = () => res(q.result); q.onerror = () => rej(q.error); }); db.close(); return v ? new File([v.blob], v.name, { type: 'application/pdf' }) : null; } catch (e) { return null; }
+  },
+};
 /* after a reload: pick the same PDF again to see its pages, without re-reading it */
 function reattach(file) {
   if (!file) return;
@@ -2857,6 +2871,7 @@ document.addEventListener('dragover', e => e.preventDefault());
 document.addEventListener('drop', e => { e.preventDefault(); const f = [...(e.dataTransfer.files || [])].find(x => /pdf$/i.test(x.type) || /\.pdf$/i.test(x.name)); if (!f) return; if (DV && BOOK.local && !FILE && f.name.replace(/\.pdf$/i, '') === BOOK.name) reattach(f); else loadBook(f); });
 
 if (BOOK.local) setTimeout(() => toast('Your book\'s decisions are restored; reload the PDF to compare issues'), 600);
+if (BOOK.local) PDFDB.get().then(f => { if (f && !FILE && f.name.replace(/\.pdf$/i, '') === BOOK.name) { setFile(f, true); if (DV) renderDoc(); } });
 render();
 </script>
 </body>
