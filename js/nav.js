@@ -278,6 +278,7 @@ function renderTopbar(opts = {}) {
             </div>
             <div class="nav-dropdown-divider"></div>
             <a href="#" class="nav-dropdown-item" onclick="event.preventDefault();restartDemo()" title="Clears the access code, the user and every demo change on this browser, then opens the landing page">Restart demo</a>
+            ${serverAuth() ? `<a href="/mccorvey/admin/" class="nav-dropdown-item" title="Invite people by email and manage who has access">Invite people</a>` : ''}
             <a href="#" class="nav-dropdown-item" onclick="event.preventDefault();signOutUser()">Sign out</a>
           </div>
         </div>

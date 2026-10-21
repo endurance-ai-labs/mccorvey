@@ -136,7 +136,11 @@ function setRole(id) {
   } catch (e) {}
   window.location.reload();
 }
-function signOutUser() { try { localStorage.removeItem('msm-role'); } catch (e) {} window.location.reload(); }
+function signOutUser() {
+  try { localStorage.removeItem('msm-role'); } catch (e) {}
+  if (serverAuth()) { fetch('/api/auth/sign-out', { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}', credentials: 'same-origin' }).finally(() => { window.location.href = '/login/'; }); return; }
+  window.location.reload();
+}
 /* ---- restart the whole demo: forget the access code, the user and every demo change on this browser (theme kept), then open the landing page ---- */
 function restartDemo() {
   try { [localStorage, sessionStorage].forEach(st => Object.keys(st).filter(k => k.startsWith('msm-') && k !== 'msm-theme').forEach(k => st.removeItem(k))); } catch (e) {}
@@ -144,7 +148,9 @@ function restartDemo() {
 }
 
 /* ---- access gate: portal code required before the user picker ---- */
-function gateOK() { try { return localStorage.getItem('msm-gate') === 'ok'; } catch (e) { return false; } }
+/* On the hosted portal (mccorvey.enduranceai.dev) the server already checked a real sign-in, so the demo access code is skipped. */
+function serverAuth() { const h = location.hostname; return h.endsWith('enduranceai.dev') || h.endsWith('.vercel.app'); }
+function gateOK() { if (serverAuth()) return true; try { return localStorage.getItem('msm-gate') === 'ok'; } catch (e) { return false; } }
 function tryGate(ev) {
   ev.preventDefault();
   const inp = document.getElementById('gate-code');

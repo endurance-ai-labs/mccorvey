@@ -1,0 +1,3 @@
+.yates-serve/
+*.log
+node_modules/

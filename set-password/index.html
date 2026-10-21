@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Set your password · McCorvey Operations Portal</title>
+<link rel="icon" type="image/png" href="/auth-assets/mccorvey-mark.png">
+<link rel="stylesheet" href="/auth-assets/auth.css">
+</head>
+<body>
+<div class="band"></div>
+<main>
+  <div class="card">
+    <img class="logo" src="/auth-assets/mccorvey-logo.png" alt="McCorvey Sheet Metal Works, L.P.">
+    <h1>Set your password</h1>
+    <p class="sub">Choose a password for the McCorvey Operations Portal. Use at least 10 characters.</p>
+    <form id="f">
+      <label for="p1">New password</label>
+      <input id="p1" type="password" autocomplete="new-password" minlength="10" maxlength="128" required>
+      <label for="p2">Confirm password</label>
+      <input id="p2" type="password" autocomplete="new-password" minlength="10" maxlength="128" required>
+      <button class="full" type="submit" id="go">Save password</button>
+      <div class="msg" id="msg"></div>
+    </form>
+    <div class="foot">Link expired? <a class="link" href="/login/">Request a new one from the sign-in page.</a></div>
+  </div>
+</main>
+<script src="/auth-assets/auth.js"></script>
+<script>
+const qs = new URLSearchParams(location.search);
+const token = qs.get('token');
+const msg = document.getElementById('msg');
+const f = document.getElementById('f');
+if (!token || qs.get('error')) {
+  setMsg(msg, 'This link is no longer valid. Links expire after 15 minutes; request a new one from the sign-in page.', 'err');
+  f.querySelectorAll('input,button').forEach(x => x.disabled = true);
+}
+f.addEventListener('submit', async e => {
+  e.preventDefault();
+  const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value;
+  if (p1.length < 10) return setMsg(msg, 'Use at least 10 characters.', 'err');
+  if (p1 !== p2) return setMsg(msg, 'The two passwords do not match.', 'err');
+  const btn = document.getElementById('go'); btn.disabled = true; setMsg(msg, 'Saving…');
+  try {
+    await authCall('reset-password', { newPassword: p1, token });
+    history.replaceState(null, '', '/set-password/');
+    location.replace('/login/?set=1');
+  } catch (err) {
+    setMsg(msg, 'Could not save: ' + err.message + '. If the link expired, request a new one from the sign-in page.', 'err');
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

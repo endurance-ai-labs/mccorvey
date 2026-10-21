@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Portal access · McCorvey Operations Portal</title>
+<link rel="icon" type="image/png" href="/auth-assets/mccorvey-mark.png">
+<link rel="stylesheet" href="/auth-assets/auth.css">
+</head>
+<body>
+<div class="band"></div>
+<main>
+  <div class="card wide">
+    <img class="logo" src="/auth-assets/mccorvey-logo.png" alt="McCorvey Sheet Metal Works, L.P.">
+    <h1>Portal access</h1>
+    <p class="sub">Invite someone by email. They get a link to set their own password, then sign in. Only admins can use this page.</p>
+
+    <form id="inv">
+      <div class="row">
+        <div><label for="name">Name</label><input id="name" autocomplete="off" required></div>
+        <div><label for="email">Email</label><input id="email" type="email" autocomplete="off" required></div>
+        <button type="submit" id="go">Send invite</button>
+      </div>
+      <div class="msg" id="msg"></div>
+    </form>
+
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Added</th><th></th></tr></thead>
+        <tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody>
+      </table>
+    </div>
+    <div class="foot"><a class="link" href="/mccorvey/">Back to the portal</a> &nbsp; <button class="link" id="out">Sign out</button></div>
+  </div>
+</main>
+<script src="/auth-assets/auth.js"></script>
+<script>
+const msg = document.getElementById('msg');
+const rows = document.getElementById('rows');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let me = null;
+
+function sendLink(email) {
+  return authCall('request-password-reset', { email, redirectTo: location.origin + '/set-password/' });
+}
+
+async function load() {
+  try {
+    const s = await authCall('get-session');
+    me = s && s.user;
+    if (!me || !String(me.role || '').split(',').includes('admin')) {
+      rows.innerHTML = '<tr><td colspan="5">Your account is not an admin, so you cannot invite people. Ask Ramzy.</td></tr>';
+      document.getElementById('inv').querySelectorAll('input,button').forEach(x => x.disabled = true);
+      return;
+    }
+    const data = await authCall('admin/list-users?limit=200&sortBy=createdAt&sortDirection=desc');
+    const users = (data && data.users) || [];
+    rows.innerHTML = users.length ? users.map(u => `<tr>
+      <td>${esc(u.name)}</td><td>${esc(u.email)}</td>
+      <td><span class="tag">${esc(u.role || 'user')}</span></td>
+      <td>${u.createdAt ? esc(new Date(u.createdAt).toLocaleDateString('en-US', { timeZone: 'America/Chicago' })) : '–'}</td>
+      <td style="white-space:nowrap"><button class="link" data-resend="${esc(u.email)}">Resend link</button>${u.id !== me.id ? `<button class="link" data-remove="${esc(u.id)}" data-who="${esc(u.email)}">Remove</button>` : ''}</td>
+    </tr>`).join('') : '<tr><td colspan="5">No one yet.</td></tr>';
+  } catch (err) {
+    rows.innerHTML = '<tr><td colspan="5">Could not load the list: ' + esc(err.message) + '</td></tr>';
+  }
+}
+
+document.getElementById('inv').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = document.getElementById('name').value.trim();
+  const email = document.getElementById('email').value.trim().toLowerCase();
+  const btn = document.getElementById('go'); btn.disabled = true; setMsg(msg, 'Creating the account…');
+  try {
+    // The account starts with a random password nobody sees; the emailed link replaces it.
+    await authCall('admin/create-user', { email, name, password: randomSecret(), role: 'user' });
+    setMsg(msg, 'Sending the set-password email…');
+    await sendLink(email);
+    setMsg(msg, 'Invite sent to ' + email + '. The link expires in 15 minutes; use Resend link if they miss it.', 'ok');
+    e.target.reset();
+    load();
+  } catch (err) {
+    setMsg(msg, 'Could not invite ' + email + ': ' + err.message, 'err');
+  }
+  btn.disabled = false;
+});
+
+rows.addEventListener('click', async e => {
+  const r = e.target.closest('[data-resend]');
+  const d = e.target.closest('[data-remove]');
+  if (r) {
+    r.disabled = true;
+    try { await sendLink(r.dataset.resend); setMsg(msg, 'New link sent to ' + r.dataset.resend + '.', 'ok'); }
+    catch (err) { setMsg(msg, 'Could not send: ' + err.message, 'err'); }
+    r.disabled = false;
+  }
+  if (d) {
+    if (!confirm('Remove ' + d.dataset.who + '? They lose access right away.')) return;
+    try { await authCall('admin/remove-user', { userId: d.dataset.remove }); setMsg(msg, 'Removed ' + d.dataset.who + '.', 'ok'); load(); }
+    catch (err) { setMsg(msg, 'Could not remove: ' + err.message, 'err'); }
+  }
+});
+
+document.getElementById('out').onclick = async () => {
+  try { await authCall('sign-out', {}); } catch (e) {}
+  location.replace('/login/');
+};
+load();
+</script>
+</body>
+</html>

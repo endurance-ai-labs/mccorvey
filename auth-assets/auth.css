@@ -1,0 +1,30 @@
+:root{--navy:#14283c;--red:#c8102e;--ink:#1b2430;--mute:#5d6878;--line:#d9dee5;--bg:#f3f5f8;--card:#fff;--ok:#1f7a4d}
+@media (prefers-color-scheme:dark){:root{--ink:#e7ebf0;--mute:#9aa6b5;--line:#2c3a4b;--bg:#0e1824;--card:#15212f}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;display:flex;flex-direction:column}
+.band{background:var(--navy);height:6px;border-bottom:3px solid var(--red)}
+main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:56px 16px}
+.card{width:100%;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:2px;padding:32px 28px}
+.card.wide{max-width:860px}
+.logo{height:44px;width:auto;display:block;margin-bottom:18px}
+h1{font-size:20px;margin:0 0 4px;font-weight:700}
+.sub{color:var(--mute);margin:0 0 22px}
+label{display:block;font-size:12px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);margin:14px 0 6px}
+input{width:100%;font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:2px;background:var(--card);color:var(--ink)}
+input:focus{outline:2px solid var(--red);outline-offset:-1px}
+button{font:inherit;font-weight:700;padding:11px 16px;border:0;border-radius:2px;background:var(--red);color:#fff;cursor:pointer}
+button.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.6;cursor:default}
+.full{width:100%;margin-top:20px}
+.row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.row>div{flex:1;min-width:180px}
+.msg{margin-top:14px;font-size:13px;min-height:1.2em}
+.msg.err{color:var(--red);font-weight:600}.msg.ok{color:var(--ok);font-weight:600}
+.link{color:var(--red);font-weight:600;text-decoration:none;cursor:pointer;background:none;padding:0;font-size:13px}
+.foot{color:var(--mute);font-size:12px;margin-top:22px;border-top:1px solid var(--line);padding-top:14px}
+table{width:100%;border-collapse:collapse;margin-top:18px;font-size:13px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--line)}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--mute)}
+td .link{margin-right:12px}
+.tag{font-size:11px;font-weight:700;padding:2px 6px;border:1px solid var(--line);border-radius:2px;color:var(--mute)}
+.scroll{overflow-x:auto}

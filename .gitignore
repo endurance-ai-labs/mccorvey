@@ -1,2 +1,8 @@
 .yates-serve/
 *.log
+node_modules/
+.vercel/
+.env*
+
+.vercel
+.env*

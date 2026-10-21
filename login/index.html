@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Sign in · McCorvey Operations Portal</title>
+<link rel="icon" type="image/png" href="/auth-assets/mccorvey-mark.png">
+<link rel="stylesheet" href="/auth-assets/auth.css">
+</head>
+<body>
+<div class="band"></div>
+<main>
+  <div class="card">
+    <img class="logo" src="/auth-assets/mccorvey-logo.png" alt="McCorvey Sheet Metal Works, L.P.">
+    <h1 id="title">Operations Portal</h1>
+    <p class="sub" id="sub">Sign in with the email you were invited with.</p>
+
+    <form id="signin">
+      <label for="email">Email</label>
+      <input id="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="full" type="submit" id="go">Sign in</button>
+      <div class="msg" id="msg"></div>
+      <button type="button" class="link" id="forgot">Forgot your password?</button>
+    </form>
+
+    <form id="reset" hidden>
+      <label for="remail">Email</label>
+      <input id="remail" type="email" autocomplete="username" required>
+      <button class="full" type="submit" id="rgo">Email me a link</button>
+      <div class="msg" id="rmsg"></div>
+      <button type="button" class="link" id="back">Back to sign in</button>
+    </form>
+
+    <div class="foot">Private demo by Endurance AI Labs. Access is by invitation only.</div>
+  </div>
+</main>
+<script src="/auth-assets/auth.js"></script>
+<script>
+const qs = new URLSearchParams(location.search);
+const next = safeNext(qs.get('next'));
+const msg = document.getElementById('msg');
+if (qs.get('set') === '1') setMsg(msg, 'Password saved. Sign in to continue.', 'ok');
+
+// Already signed in? Go straight through.
+authCall('get-session').then(s => { if (s && s.user) location.replace(next); }).catch(() => {});
+
+document.getElementById('signin').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('go'); btn.disabled = true; setMsg(msg, 'Signing in…');
+  try {
+    await authCall('sign-in/email', { email: document.getElementById('email').value.trim(), password: document.getElementById('password').value });
+    location.replace(next);
+  } catch (err) {
+    setMsg(msg, 'That email and password did not match. Try again or reset your password.', 'err');
+    btn.disabled = false;
+  }
+});
+
+const show = which => {
+  document.getElementById('signin').hidden = which !== 'signin';
+  document.getElementById('reset').hidden = which !== 'reset';
+  document.getElementById('sub').textContent = which === 'reset' ? 'We will email you a link to set a new password.' : 'Sign in with the email you were invited with.';
+};
+document.getElementById('forgot').onclick = () => { document.getElementById('remail').value = document.getElementById('email').value; show('reset'); };
+document.getElementById('back').onclick = () => show('signin');
+document.getElementById('reset').addEventListener('submit', async e => {
+  e.preventDefault();
+  const rmsg = document.getElementById('rmsg'); const btn = document.getElementById('rgo'); btn.disabled = true;
+  try {
+    await authCall('request-password-reset', { email: document.getElementById('remail').value.trim(), redirectTo: location.origin + '/set-password/' });
+  } catch (err) {}
+  // Same answer whether or not the email has an account.
+  setMsg(rmsg, 'If that email has access, a link is on its way. It expires in 15 minutes.', 'ok');
+  btn.disabled = false;
+});
+</script>
+</body>
+</html>

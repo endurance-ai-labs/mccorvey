@@ -1,0 +1,10 @@
+{
+  "name": "mccorvey-portal",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "dependencies": {
+    "@neondatabase/auth": "0.7.0-beta",
+    "@vercel/functions": "3.10.0"
+  }
+}
